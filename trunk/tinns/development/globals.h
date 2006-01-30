@@ -1,0 +1,63 @@
+/*
+	TinNS (TinNS is not a Neocron Server)
+	Copyright (C) 2005 Linux Addicted Community
+	maintainer Akiko <akiko@gmx.org>
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+	02110-1301, USA.
+*/
+
+/*
+	globals.h
+
+	MODIFIED: 12 September 2005 Akiko
+	REASON: - exchanged Pretender Strings by TinNS
+                - removed some Windows specific code
+	MODIFIED: 16 Dec 2005 bakkdoor
+	REASON: - Added global ClientManager and Chat Interface
+	MODIFIED: 22 Dec 2005 Namikon
+	REASON: - Added GPL
+
+*/
+
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
+extern class PConsole *Console;
+extern class PRConsole *RemoteConsole;
+extern class PConfig *Config;
+extern class PGameDefs *GameDefs;
+extern class PDatabase *Database;
+extern class PFileSystem *Filesystem;
+extern class PServer *Server;
+extern class PPatchServer *PatchServer;
+extern class PInfoServer *InfoServer;
+extern class PGameServer *GameServer;
+
+//multiuser chat
+extern class PClientManager *ClientManager;
+extern class PChat *Chat;
+
+//MySQL-Support
+extern class PMySQL* MySQL;
+
+//Vehicles
+extern class PVehicles *Vehicles;
+
+bool InitTinNS();
+void ShutdownTinNS();
+
+#endif
+

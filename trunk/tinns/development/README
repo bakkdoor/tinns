@@ -1,0 +1,15 @@
+Quick and dirty readme file for TinNS
+--------------------------------------
+
+
+To install TinNS, you have to edit the Makefile first.
+Search for "mysql.h" and put that path in "inc="
+Search for "libmysqlclient.a" and put that path in "lib="
+
+Now type "make" to compile TinNS. You'll get a few warnings in HawkNL,
+just ignore them.
+
+If you have problems while compiling, ask in the forum!
+
+
+- Namikon

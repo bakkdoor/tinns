@@ -1,0 +1,3 @@
+<accounts>
+    <account name="admin" password="admin" id="1" level="admin" console="1" />
+</accounts>

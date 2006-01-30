@@ -1,0 +1,6 @@
+trunk/src/developing -> newest branch
+trunk/src/stable -> this is going to be a stable branch
+trunk/src/testing -> this is for testing, right now it uses an older HawkNL
+trunk/docs -> this documentation stuff
+trunk/tools -> contains some tools useful for the server and the server files
+trunk/datapack -> contains missing files, modified files and patches

@@ -1,0 +1,9 @@
+<playerchar id="1" name="Mr. Tester">
+	<type value="4"/>
+	<profession value="1"/>
+	<faction value="1">
+		<!-- faction relations here -->
+	</faction>
+	<model value="2"/>
+	<location value="1"/>
+</playerchar>
