@@ -90,7 +90,7 @@ class ConnectionUDP
             int                 write(double data);
             int                 write(const char* string);
 
-            const char*         getLocalAddress();
+            char*         getLocalAddress();
 };
 
 #endif
