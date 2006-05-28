@@ -45,6 +45,7 @@ PClient::PClient(int Index)
 	mConnection = PCC_NONE;
 	mUDP_ID = 0;
 	mSessionID = 37917;
+	TMP_UDP_PORT = 0;
 }
 
 PClient::~PClient()

@@ -63,7 +63,7 @@ class ServerSocket
             void                update();
             bool                newConnection();
             ConnectionTCP*      getTCPConnection();
-            ConnectionUDP*      getUDPConnection();
+            ConnectionUDP*      getUDPConnection(long adress, int tmpport);
 
             bool                isDataAvailable(int sockfd);
 

@@ -18,4 +18,4 @@ gameserver: $(OBJECTS)
 	mv gameserver ../../
 
 clean:
-	-rm $(OBJECTS) gameserver
+	-rm $(OBJECTS) ../../gameserver

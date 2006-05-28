@@ -70,6 +70,7 @@ class PClient
 		u16 mSessionID;
 		PClientLevel mLevel;
 		int mConnection;
+		int TMP_UDP_PORT;
 
 		// new multiuser-chat implementation //
         int m_ZoneID;
@@ -84,7 +85,9 @@ class PClient
 		inline u32 GetCharID() const { return mCharID; }
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
 		inline u16 GetSessionID() const { return 37917 + mUDP_ID; }
+		inline int GetTMPUDPPort() const { return TMP_UDP_PORT; } // Temp solution
 
+		inline void SetTMPUDPPort(int port) { TMP_UDP_PORT = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
 		inline void SetUDP_ID(int id) { if (mUDP_ID == 0xffff) { mUDP_ID = 0; } else { mUDP_ID = id; } }
 		inline void IncreaseUDP_ID()

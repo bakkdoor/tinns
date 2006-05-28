@@ -173,7 +173,7 @@ ConnectionTCP* ServerSocket::getTCPConnection()
     return 0;
 }
 
-ConnectionUDP* ServerSocket::getUDPConnection()
+ConnectionUDP* ServerSocket::getUDPConnection(long adress, int tmpport)
 {
     int udpSockfd;
 
@@ -198,7 +198,7 @@ ConnectionUDP* ServerSocket::getUDPConnection()
         return 0;
     }
 
-        ConnectionUDP* udpConn = new ConnectionUDP(udpSockfd, Port);
+    ConnectionUDP* udpConn = new ConnectionUDP(udpSockfd, Port, adress, tmpport);
 
 	m_LastUDPPort++;
 

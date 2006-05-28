@@ -33,13 +33,25 @@
 
 #include "../patch/tinns.h"
 
-ConnectionUDP::ConnectionUDP(int sockfd, int port)
+ConnectionUDP::ConnectionUDP(int sockfd, int port, int adress, int tmpport)
 {
     m_Sockfd = sockfd;
     m_Port = port;
 
     m_TimeOutValue = DEFAULT_TIMEOUT;
     m_LastActive = std::clock();
+
+    m_RemoteAddr.sin_family = AF_INET;       // host byte order
+    m_RemoteAddr.sin_port = htons(tmpport);     // short, network byte order
+    m_RemoteAddr.sin_addr.s_addr = adress;   // TODO: Get IP of client
+
+    Console->Print("Peer IP address: %s", inet_ntoa(m_RemoteAddr.sin_addr));
+    Console->Print("Peer port      : %d", ntohs(m_RemoteAddr.sin_port));
+
+
+
+//    m_RemoteAddr.sin_addr.s_addr = INADDR_ANY; // automatically fill with my IP
+//    memset(&(m_RemoteAddr.sin_zero), '\0', 8); // zero the rest of the struct
 }
 
 
@@ -58,7 +70,7 @@ void ConnectionUDP::flushSendBuffer()
         if(written == -1)
         {
             written = 0;
-            perror("udp-send");
+            perror("udp-send1");
             close(m_Sockfd);
         }
         else if(written > 0)
@@ -113,7 +125,7 @@ bool ConnectionUDP::update()
 		int written = sendto(m_Sockfd, m_SendBuffer, MaxWrite, 0, (struct sockaddr *)&m_RemoteAddr, sizeof(struct sockaddr));
 		if(written == -1) // error while sending data -> output error-msg to console
 		{
-		    perror("udp-send");
+		    perror("udp-send2");
 
 		    //close(m_Sockfd);
             return false;

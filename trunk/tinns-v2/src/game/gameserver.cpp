@@ -347,6 +347,7 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 			//Client->SetRemoteUDPAddr(*(u32*)&Packet[5], *(u16*)&Packet[9]);
 			State->TCP.mState = PGameState::TCP::GS_GETSTATUS;
 			Console->Print("Gameserver: User '%s' entered game (%08x:%04x)", UserID, *(u32*)&Packet[5], *(u16*)&Packet[9]);
+			Client->SetTMPUDPPort(*(int*)&Packet[9]);
 		}
 	}
 	else
@@ -691,7 +692,7 @@ bool PGameServer::HandleGameInfo(PClient *Client, PGameState *State, const u8 *P
 	{
 		int PortFix = Config->GetOptionInt("debug_mode");
 
-		ConnectionUDP* udpConn = ServerSock->getUDPConnection();
+		ConnectionUDP* udpConn = ServerSock->getUDPConnection(IPStringToDWord(Client->GetAddress()), Client->GetTMPUDPPort());
 		Client->setUDPConnection(udpConn);
 
 		u16 Port = Client->getUDPConn()->getPort();
@@ -712,9 +713,11 @@ bool PGameServer::HandleGameInfo(PClient *Client, PGameState *State, const u8 *P
 		Console->Print("Serving char id :%d", Client->GetCharID()); //NEW
 
 		u32 IP = IPStringToDWord(Config->GetOption("server_ip").c_str());
-
+//Console->Print("IP-1 %d", IP);
 		if (IP == 0)
 			IP = 0x0100007f;
+
+//Console->Print("IP-2 %d", IP);
 		*(u32*)&GameInfo[13] = IP;
 		*(u16*)&GameInfo[17] = Port;
 
@@ -726,10 +729,10 @@ bool PGameServer::HandleGameInfo(PClient *Client, PGameState *State, const u8 *P
 
 		State->TCP.mState = PGameState::TCP::GS_INGAME;
 		State->UDP.mState = PGameState::UDP::GUS_SYNC0;
-
         // Mark char as Online
         PChar *Char = Database->GetChar(Client->GetCharID());
         Char->SetOnlineStatus(true);
+
 		//Console->Print("UDP Setup: %s", nlGetErrorStr(nlGetError()));
 	}
 	else

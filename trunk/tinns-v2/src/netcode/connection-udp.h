@@ -30,7 +30,6 @@
 	MODIFIED: 09 Feb 2006 bakkdoor
 	REASON: - introduced
 */
-
 #ifndef CONNECTIONUDP_H
 #define CONNECTIONUDP_H
 
@@ -59,7 +58,7 @@ class ConnectionUDP
 
             int                 m_Port;
     public:
-            ConnectionUDP(int sockfd, int port);
+            ConnectionUDP(int sockfd, int port, int adress, int tmpport);
             ~ConnectionUDP();
 
             bool                update();
