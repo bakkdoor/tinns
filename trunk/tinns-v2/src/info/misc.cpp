@@ -137,6 +137,18 @@ std::string GetAccessString(int level)
 
 void GetSVNRev(char *version)
 {
+#if defined(TINNS_VERSION_INFO)
+    if(sizeof(TINNS_VERSION_INFO) > 10)
+    {
+        Console->LClose();
+        Console->Print("WARNING: TINNS_VERSION_INFO TOO LONG! MAX IS 10");
+        sprintf(version, "ERROR");
+    }
+    else
+    {
+        sprintf(version, TINNS_VERSION_INFO);
+    }
+#else
 	FILE *f;
 
 	if ((f = fopen(".svn/entries", "r")) != NULL) {
@@ -151,10 +163,11 @@ void GetSVNRev(char *version)
 
 		if (sscanf(line," %*[^\"]\"%d%*[^\n]", &rev) == 1)
 		{
-			sprintf(version, "%d", rev);
+			sprintf(version, "SVN %d", rev);
 			return;
 		}
 	}
 
     sprintf(version, "Unknown");
+#endif
 }

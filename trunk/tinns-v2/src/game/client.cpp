@@ -34,7 +34,7 @@
             - added modifications by Namikon
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PClient::PClient(int Index)
 {

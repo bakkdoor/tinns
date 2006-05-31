@@ -36,7 +36,7 @@
         REASON: - Added GPL
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // subskill.def, names and parameters of all subskills
 

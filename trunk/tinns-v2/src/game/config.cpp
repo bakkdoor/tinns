@@ -38,7 +38,7 @@
         REASON: - Started to replace XML with CFG files
 */
 
-#include "tinns.h"
+#include "main.h"
 
 
 PConfig::PConfig()
@@ -56,11 +56,11 @@ bool PConfig::LoadOptions()
 	char *Opt, *Val;
 	int numOptions = 0;
 
-	ConfigFile = fopen("./database/config.cfg","r");
+	ConfigFile = fopen("./conf/gameserver.conf","r");
 
 	if(!ConfigFile)
 	{
-	    Console->Print("%s Cant open file", Console->ColorText(RED, BLACK, "[Error]"));
+	    Console->Print("%s Cant open file \"gameserver.conf\"", Console->ColorText(RED, BLACK, "[Error]"));
         return false;
 	}
 
@@ -91,19 +91,31 @@ bool PConfig::LoadOptions()
             continue;
         }
 
-	    if(!strcmp(Opt, "sql_host"))
+	    if(!strcmp(Opt, "info_sql_host"))
             numOptions++;
-	    else if(!strcmp(Opt, "sql_port"))
+	    else if(!strcmp(Opt, "info_sql_port"))
             numOptions++;
-	    else if(!strcmp(Opt, "sql_username"))
+	    else if(!strcmp(Opt, "info_sql_username"))
             numOptions++;
-	    else if(!strcmp(Opt, "sql_password"))
+	    else if(!strcmp(Opt, "info_sql_password"))
             numOptions++;
-	    else if(!strcmp(Opt, "sql_database"))
+	    else if(!strcmp(Opt, "info_sql_database"))
+            numOptions++;
+	    else if(!strcmp(Opt, "game_sql_host"))
+            numOptions++;
+	    else if(!strcmp(Opt, "game_sql_port"))
+            numOptions++;
+	    else if(!strcmp(Opt, "game_sql_username"))
+            numOptions++;
+	    else if(!strcmp(Opt, "game_sql_password"))
+            numOptions++;
+	    else if(!strcmp(Opt, "game_sql_database"))
             numOptions++;
 	    else if(!strcmp(Opt, "server_name"))
             numOptions++;
-	    else if(!strcmp(Opt, "server_ip"))
+	    else if(!strcmp(Opt, "server_ip"))  // Siehe config file. Evtl weg
+            numOptions++;
+	    else if(!strcmp(Opt, "gameserver_port"))
             numOptions++;
 	    else if(!strcmp(Opt, "server_version"))
             numOptions++;
@@ -111,33 +123,7 @@ bool PConfig::LoadOptions()
             numOptions++;
 	    else if(!strcmp(Opt, "gm_slots"))
             numOptions++;
-	    else if(!strcmp(Opt, "client_path"))  // Is not used yet
-            numOptions++;
 	    else if(!strcmp(Opt, "defs_path"))
-            numOptions++;
-	    else if(!strcmp(Opt, "auto_accounts"))
-            numOptions++;
-	    else if(!strcmp(Opt, "patchserver_port"))
-            numOptions++;
-	    else if(!strcmp(Opt, "patches_path"))
-            numOptions++;
-	    else if(!strcmp(Opt, "file_path"))
-            numOptions++;
-	    else if(!strcmp(Opt, "max_file_xfers"))
-            numOptions++;
-	    else if(!strcmp(Opt, "patch_packet_size"))
-            numOptions++;
-	    else if(!strcmp(Opt, "infoserver_port"))
-            numOptions++;
-	    else if(!strcmp(Opt, "gameserver_port"))
-            numOptions++;
-	    else if(!strcmp(Opt, "debug_mode"))
-            numOptions++;
-	    else if(!strcmp(Opt, "useudpport"))
-            numOptions++;
-	    else if(!strcmp(Opt, "rconsole_enabled"))
-            numOptions++;
-	    else if(!strcmp(Opt, "rconsole_port"))
             numOptions++;
 
 	    if(Opt && Val)
@@ -146,7 +132,7 @@ bool PConfig::LoadOptions()
             mOptions.insert(std::make_pair(Opt, Val));
 	    }
 	}
-	if(numOptions == 23)
+	if(numOptions == 17)
 	{
 	    Console->LPrint(GREEN, BLACK, "Success");
 	    Console->LClose();
@@ -160,38 +146,6 @@ bool PConfig::LoadOptions()
         return false;
     }
 }
-
-/*bool PConfig::LoadOptions()
-{
-	Console->Print("Loading configuration file...");
-	TiXmlDocument doc("./database/config.xml");
-	if(doc.LoadFile())
-	{
-		TiXmlElement *Root = doc.RootElement();
-		if(Root)
-		{
-			TiXmlElement *op = Root->FirstChildElement("option");
-			while(op)
-			{
-				const char *name = op->Attribute("name");
-				const char *value = op->Attribute("value");
-				if(name && value)
-					mOptions.insert(std::make_pair(name, value));
-
-				op = op->NextSiblingElement("option");
-			}
-
-			return true;
-			Console->Print(GREEN, BLACK, "Success");
-		}
-	}
-
-	// no config file or no options
-	Console->LPrint(RED, BLACK, "Failed");
-	Console->LPrint(" (No config found)");
-    Console->LClose();
-	return false;
-}*/
 
 const std::string &PConfig::GetOption(const char *Name) const
 {

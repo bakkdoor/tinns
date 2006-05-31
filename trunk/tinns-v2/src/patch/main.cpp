@@ -19,17 +19,14 @@
 	02110-1301, USA.
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // for handling strg-c signal to shutdown in correct way
 void signal_handler(int signal)
 {
     if (signal == SIGINT)
     {
-        //cout << "Shutting down TinNS" << endl;
-
-        //exit(0);
-        ShutdownTinNS();
+        Shutdown();
     }
     else
     {
@@ -58,7 +55,6 @@ int main()
 		sched_yield();
 	}
 
-	//ShutdownTinNS();
 
 	return 0;
 }

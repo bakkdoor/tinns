@@ -19,34 +19,15 @@
 	02110-1301, USA.
 */
 
+#ifndef VERSION_H
+#define VERSION_H
 
+// SVN Version override for release builts.
+// Only uncomment these lines if you want to compile binary releases
+// or if you want to create a tarball from SVN to release a "stable" version.
+//#define TINNS_VERSION_PATCH "0.0.2"
+//#define TINNS_VERSION_INFO "0.0.2"
+//#define TINNS_VERSION_GAME "0.0.2"
 
-/*
-	misc.h
-
-	MODIFIED: 25 Dec 2005 Namikon
-	REASON: - Added GPL
-	MODIFIED: 07 Jan 2006 Namikon
-	REASON: - Added function to trim a string/char
-*/
-
-#ifndef MISC_H
-#define MISC_H
-
-#ifdef _MSC_VER
-	#pragma once
-#endif
-
-u32 IPStringToDWord(const char *IP);
-void GetSVNRev(char *version);
-
-void PrintPacket(u8 *Packet, int PacketSize);
-
-void Trim(char *t);
-void Trim(std::string *stString);
-void RTrim(char *t);
-void RTrim(std::string *stString);
-void LTrim(char *t);
-void LTrim(std::string *stString);
 #endif
 

@@ -36,7 +36,7 @@
         REASON: - Added GPL
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // characters.def contains all ingame characters (player types, npc's, monsters)
 

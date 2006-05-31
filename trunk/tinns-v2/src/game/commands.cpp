@@ -61,7 +61,7 @@
 	- Fix Wastelandsyncy
 */
 
-#include "tinns.h"
+#include "main.h"
 
 char output[2048];
 
@@ -157,7 +157,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        //Client->IncreaseUDP_ID();
        Client->SetUDP_ID(Client->GetUDP_ID()+1);
        *(u16*)&timepacket[1] = Client->GetUDP_ID();
-       //*(u16*)&timepacket[3] = Client->GetSessionID();
+           //(u16*)&timepacket[3] = Client->GetSessionID();
        *(u16*)&timepacket[3] = 37917+Client->GetUDP_ID();
        *(u16*)&timepacket[7] = Client->GetUDP_ID();
        *(u32*)&timepacket[10] = newtime;
@@ -280,11 +280,11 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        }
 
        sprintf(query, "DELETE FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", worlditemID, Location);
-       if(MySQL->Query(query))
+       if(MySQL->GameQuery(query))
        {
            sprintf(answer, "Unable to delete worlditemID %d, see console for MySQL error", worlditemID);
            Chat->send(Client, CHAT_DIRECT, "System", answer);
-           MySQL->ShowSQLError();
+           MySQL->ShowGameSQLError();
            return;
        }
        else
@@ -332,11 +332,11 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
                return;
            }
            sprintf (query, "INSERT INTO world_items (wi_worlditem_id, wi_worlditem_map, wi_type, wi_option1, wi_option2) VALUES (%d, %d, %d, %d, %d)", worlditemID, Location, worlditemType, worlditemOp1, worlditemOp2);
-           if(MySQL->Query(query))
+           if(MySQL->GameQuery(query))
            {
                sprintf(answer, "Error while adding WorlditemID %d to MySQL DB. See console output for MySQL error", worlditemID);
                Chat->send(Client, CHAT_DIRECT, "System", answer);
-               MySQL->ShowSQLError();
+               MySQL->ShowGameSQLError();
                return;
            }
            sprintf(answer, "Added worlditemID %d, location %d as type %d", worlditemID, Location, worlditemType);
@@ -362,10 +362,10 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
            PChar *Char = Database->GetChar(Client->GetCharID());
            Console->Print("IngameCommand: Adding Worlddoor ID %d, Location %d to Database", doorID, Char->GetLocation());
            sprintf(query, "INSERT INTO world_doors (`wd_world_id`, `wd_type`, `wd_world_map`) VALUES ('%d', '%d', '%d');", doorID, doorType, Char->GetLocation());
-           if(MySQL->Query(query) > 0)
+           if(MySQL->GameQuery(query) > 0)
            {
                Chat->send(Client, CHAT_DIRECT, "System", "Failed to add door; Check console for MySQL error");
-               Console->Print("Failed to add door! MySQL returned %s", mysql_error(MySQL->GetHandle()));
+               Console->Print("Failed to add door! MySQL returned %s", mysql_error(MySQL->GetGameHandle()));
                return;
            }
            if(doorType == 2)

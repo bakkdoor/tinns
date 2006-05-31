@@ -51,7 +51,7 @@ a_status:
 1 = Online
 2 = Banned
 */
-#include "tinns.h"
+#include "main.h"
 
 PAccount::PAccount()
 {
@@ -185,10 +185,10 @@ void PAccount::SQLSave()
 {
     char query[1024];
     sprintf(query, "UPDATE accounts SET a_username = '%s', a_password = '%s', a_priv = %d, a_status = %d WHERE a_id = %d LIMIT 1;", GetName().c_str(), GetPassword().c_str(), mLevel, mStatus, GetID());
-    if(MySQL->Query(query))
+    if(MySQL->InfoQuery(query))
     {
         //Console->Print("Failed to update Account %d", GetID());
-        MySQL->ShowSQLError();
+        MySQL->ShowInfoSQLError();
         return;
     }
 }
@@ -204,7 +204,7 @@ void PAccount::SetBannedStatus(int banneduntil)
 
     char query[255];
     sprintf(query, "UPDATE accounts SET a_status = %d, a_bandate = %d WHERE a_id = %d", status, banneduntil, mID);
-    if(MySQL->Query(query))
+    if(MySQL->InfoQuery(query));
     {
         Console->Print(RED, BLACK, "Error, cant update banned status for Account %d", mID);
     }
@@ -232,11 +232,11 @@ bool PAccounts::SQLLoad()
     int nAcc=0;
     bool HasAdminAcc = false;
 
-    result = MySQL->ResQuery("SELECT * FROM accounts");
+    result = MySQL->InfoResQuery("SELECT * FROM accounts");
     if(result == NULL)
     {
         Console->Print(RED, BLACK, "Failed to load AccountData from SQL");
-        MySQL->ShowSQLError();
+        MySQL->ShowInfoSQLError();
         return false;
     }
 
@@ -447,7 +447,7 @@ void PAccounts::SQLUpdate()
 //    bool HasAdminAcc = false;
     int id = 0;
 
-    result = MySQL->ResQuery("SELECT * FROM accounts");
+    result = MySQL->InfoResQuery("SELECT * FROM accounts");
     if(result == NULL) {
         Console->Print(RED, BLACK, "Failed to update AccountData from SQL");
         return;

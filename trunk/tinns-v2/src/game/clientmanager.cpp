@@ -31,7 +31,7 @@
 	REASON: - introduced
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PClientManager::PClientManager()
 {

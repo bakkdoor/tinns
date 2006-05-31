@@ -41,12 +41,12 @@
                   Dont forget to use LClose() after using LPrint :)
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PConsole::PConsole()
 {
 	std::time(&mLastLogTime);
-	mLogFile.open(PATH_LOG);
+	mLogFile.open("log/gameserver.log");
 }
 
 PConsole::~PConsole()
@@ -184,5 +184,5 @@ void PConsole::Update()
 	std::time_t t;
 	std::time(&t);
 	if(std::difftime(t, mLastLogTime) >= 900)
-		Print("--MARK--\n");
+		Print("--MARK--");
 }

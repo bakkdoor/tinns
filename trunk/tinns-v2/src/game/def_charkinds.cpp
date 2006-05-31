@@ -36,7 +36,7 @@
         REASON: - Added GPL
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // charkinds are character templates used for player char creation
 

@@ -38,7 +38,7 @@
             - Removed IncreaseSubSkill and IncreaseMainSkill
 
 */
-#include "tinns.h"
+#include "main.h"
 
 void PSkillHandler::SetMainSkill(MAIN_SKILLS Skill, int value)
 {

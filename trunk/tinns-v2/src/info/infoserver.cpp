@@ -61,7 +61,7 @@ void PInfoServer::Start()
 	u16 Port = Config->GetOptionInt("infoserver_port");
 	if(Port == 0)
 		Port = INFO_PORT;
-	Console->LPrint("Starting infoserver on port %i...", Port);
+	Console->LPrint("Starting Infoserver on port %i...", Port);
 
 	if(ServerSock->open(Port))
 	{

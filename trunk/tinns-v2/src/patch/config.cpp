@@ -19,7 +19,7 @@
 	02110-1301, USA.
 */
 
-#include "tinns.h"
+#include "main.h"
 
 
 PConfig::PConfig()
@@ -41,7 +41,7 @@ bool PConfig::LoadOptions()
 
 	if(!ConfigFile)
 	{
-	    Console->Print("%s Cant open file", Console->ColorText(RED, BLACK, "[Error]"));
+	    Console->Print("%s Cant open file \"patchserver.conf\"", Console->ColorText(RED, BLACK, "[Error]"));
         return false;
 	}
 

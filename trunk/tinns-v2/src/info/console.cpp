@@ -158,11 +158,9 @@ void PConsole::LClose()
 
 void PConsole::Update()
 {
-    /*
 	// place a marker into the log each 15 minutes if no output has been generated
 	std::time_t t;
 	std::time(&t);
 	if(std::difftime(t, mLastLogTime) >= 900)
-		Print("--MARK--\n");
-    */
+		Print("--MARK--");
 }

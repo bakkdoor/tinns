@@ -31,7 +31,7 @@
 	REASON: - introduced
 */
 
-#include "../patch/tinns.h"
+#include "../patch/main.h"
 
 ServerSocket::ServerSocket()
 {
@@ -96,7 +96,7 @@ bool ServerSocket::open(int port)
     // keep track of the biggest file descriptor
     m_FdMaxTCP = m_ListenerTCP; // so far, it's this one
 
-    Console->Print("Server running on port %d", port);
+    //Console->Print("Server running on port %d", port);
 
     m_TimeOut.tv_sec = 0;
     m_TimeOut.tv_usec = 30;

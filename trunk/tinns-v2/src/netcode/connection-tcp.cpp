@@ -31,7 +31,7 @@
 	REASON: - introduced
 */
 
-#include "../patch/tinns.h"
+#include "../patch/main.h"
 
 ConnectionTCP::ConnectionTCP(int sockfd, struct sockaddr_in addr, ServerSocket* server)
 {

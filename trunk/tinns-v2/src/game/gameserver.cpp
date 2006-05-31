@@ -66,7 +66,7 @@
 */
 
 
-#include "tinns.h"
+#include "main.h"
 
 struct PGameState
 {
@@ -569,7 +569,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 					{
 						char query[100];
 						sprintf(query, "DELETE FROM characters WHERE c_id = %d LIMIT 1", CharID);
-						if(MySQL->Query(query))
+						if(MySQL->GameQuery(query))
 							Console->Print("Char %s not removed!", CharID);
 						else
 							Console->Print("Char %s removed!", CharID);

@@ -31,7 +31,7 @@
 	REASON: - introduced
 */
 
-#include "../patch/tinns.h"
+#include "../patch/main.h"
 
 ConnectionUDP::ConnectionUDP(int sockfd, int port, int adress, int tmpport)
 {

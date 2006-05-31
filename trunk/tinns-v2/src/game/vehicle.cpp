@@ -31,7 +31,7 @@
         REASON: - initial release by Namikon
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PVehicles::PVehicles()
 {

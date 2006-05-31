@@ -38,7 +38,7 @@
         REASON: - Changed mChars->Load(); to mChars->SQLLoad();
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PDatabase::PDatabase() {
 	mAccounts = 0;

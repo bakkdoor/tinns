@@ -41,7 +41,7 @@
     - Add missing values for char, like sex and model details (head, torso, body)
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PChar::PChar()
 {
@@ -66,7 +66,7 @@ bool PChar::SQLLoad(int CharID) {
     char query[1024];
 
     sprintf(query, "SELECT * FROM characters WHERE c_id = %d LIMIT 1", CharID);
-    result = MySQL->ResQuery(query);
+    result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
         //Console->Print(RED, BLACK, "Unable to load data from MySQL DB!");
@@ -499,13 +499,13 @@ void PChars::SQLLoad()
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-    result = MySQL->ResQuery("SELECT c_id, c_name, a_id FROM characters");
+    result = MySQL->GameResQuery("SELECT c_id, c_name, a_id FROM characters");
     if(result == NULL)
     {
         Console->LPrint(RED, BLACK, "FAILED");
         Console->Print(" Unable to load data from MySQL DB");
         Console->LClose();
-        MySQL->ShowSQLError();
+        MySQL->ShowGameSQLError();
         exit(0);
     }
     while((row = mysql_fetch_row(result)))

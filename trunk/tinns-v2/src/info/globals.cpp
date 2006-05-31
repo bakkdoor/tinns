@@ -54,6 +54,7 @@ bool Init()
 	Console->LPrint("You are running TinNS Infoserver version");
 	Console->LPrint(GREEN, BLACK, " %s", svnrev);
 	Console->LClose();
+
 	ServerSock = new ServerSocket();
 	Server = new PServer();
 	Config = new PConfig();

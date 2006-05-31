@@ -1,0 +1,57 @@
+<GPL>
+	TinNS (TinNS is not a Neocron Server)
+	Copyright (C) 2005 Linux Addicted Community
+	maintainer Akiko <akiko@gmx.org>
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+	02110-1301, USA.
+</GPL>
+
+Developers:
+- Akiko
+- bakkdoor
+- Namikon
+
+> Recent changes
+====================
+Namikon; 31.05.2006 22:12 GMT+1
+----------
+<General changes>
+- Introduced CHANGELOG file
+- Added version.h to enable a way to create release tarballs/binaries
+- Fixed a dozen of typos and bugs from the additions of the last 2 days
+- "Clean build"; Should compile without any error now. (Note: Not "work", "compile" :) )
+
+
+<Source changes>
+[GAME]
+globals.cpp :: ShutdownTinNS()
+  - Renamed to Shutdown()
+  - Added svn version output to startup procedure
+  - Fixed minor typos/console outputs
+config.cpp :: LoadOptions()
+  - Changed configfile, now loads data from /conf/gameserver.cfg
+  - Added full 2 DB support (was: "sql_*" now: "info_sql_*" and "game_sql_*")
+
+[INFO]
+
+[PATCH]
+globals.cpp :: ShutdownTinNS()
+  - Renamed to Shutdown()
+
+[ALL]
+misc.cpp :: GetSVNRev()
+  - Added handling for version.h defines
+====================

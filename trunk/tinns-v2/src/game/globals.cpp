@@ -36,11 +36,10 @@
             - Added shiny and colored copyright box :D
 */
 
-#include "tinns.h"
+#include "main.h"
 PVehicles *Vehicles = 0;
 PMySQL *MySQL = 0;
 PConsole *Console = 0;
-//PRConsole *RemoteConsole = 0;
 PServer *Server = 0;
 PConfig *Config = 0;
 PGameDefs *GameDefs = 0;
@@ -56,7 +55,7 @@ PChat *Chat = 0;
 bool InitTinNS()
 {
 	Console = new PConsole();
-	Console->Print("Starting TinNS...");
+	Console->Print("Starting TinNS Gameserver");
 	Console->Print(WHITE, BLUE, "/-------------------------------------------------------------------\\");
 	Console->Print(WHITE, BLUE, "|               TinNS (TinNS is not a Neocron Server)               |");
     Console->Print(WHITE, BLUE, "|            Copyright (C) 2005 Linux Addicted Community            |");
@@ -72,13 +71,17 @@ bool InitTinNS()
 	Console->Print(WHITE, BLUE, "|-------------------------------------------------------------------|");
 	Console->Print(WHITE, BLUE, "|  This project is under GPL, see any source file for more details  |");
 	Console->Print(WHITE, BLUE, "\\-------------------------------------------------------------------/");
-	Console->Print("You are running TinNS version %s", Console->ColorText(GREEN, BLACK, "SVN 41"));
+
+	char svnrev[10];
+	GetSVNRev(svnrev);
+	Console->LPrint("You are running TinNS Gameserver version");
+	Console->LPrint(GREEN, BLACK, " %s", svnrev);
+	Console->LClose();
+
 	Config = new PConfig();
 	if(!Config->LoadOptions())
-	{
-		Console->Print("Config error, init aborted");
-		return false;
-	}
+	    Shutdown();
+
 	std::string MyName = Config->GetOption("server_name");
 	std::string IP = Config->GetOption("server_ip");
 	char myCname[100], myCip[100];
@@ -87,15 +90,8 @@ bool InitTinNS()
 	Console->Print("My name is '%s', and my address is %s", myCname, myCip);
 
 	MySQL = new PMySQL();
-    if(MySQL->Connect() == false) {
-        delete MySQL;
-        delete Config;
-        delete Console;
-        delete ServerSock;
-        exit(0);
-    }
-
-	//RemoteConsole = new PRConsole();
+    if(MySQL->Connect() == false)
+	    Shutdown();
 
 	Filesystem = new PFileSystem();
 
@@ -117,16 +113,13 @@ bool InitTinNS()
 	return true;
 }
 
-void ShutdownTinNS()
+void Shutdown()
 {
 	Server->Shutdown();
-	if(Chat) delete Chat;
-//	if(ClientManager) delete ClientManager;
-
 	if(GameServer) delete GameServer;
+	if(Chat) delete Chat;
 	if(Server) delete Server;
 	if(Filesystem) delete Filesystem;
-//	if(RemoteConsole) delete RemoteConsole;
 	if(GameDefs) delete GameDefs;
 	if(Database) delete Database;
 	if(MySQL) delete MySQL;

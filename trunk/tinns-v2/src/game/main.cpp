@@ -37,7 +37,7 @@
     REASON: - Added color to console outputs
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // for handling strg-c signal to shutdown in correct way
 void signal_handler(int signal)
@@ -47,7 +47,7 @@ void signal_handler(int signal)
         //cout << "Shutting down TinNS" << endl;
 
         //exit(0);
-        ShutdownTinNS();
+        Shutdown();
     }
     else
     {
@@ -67,7 +67,7 @@ int main()
 
 	//RemoteConsole->Start();
 	GameServer->Start();
-	Console->Print("TinNS is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
+	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
 	while(1)
 	{
@@ -76,14 +76,10 @@ int main()
 		Database->Update();
 		GameServer->Update();
 		Console->Update();
-		//RemoteConsole->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);
 		sched_yield();
 	}
 
-	//ShutdownTinNS();
-
 	return 0;
 }
-

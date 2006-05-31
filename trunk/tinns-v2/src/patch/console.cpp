@@ -19,12 +19,12 @@
 	02110-1301, USA.
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PConsole::PConsole()
 {
 	std::time(&mLastLogTime);
-	mLogFile.open(PATH_LOG);
+	mLogFile.open("log/patchserver.log");
 }
 
 PConsole::~PConsole()
@@ -162,5 +162,5 @@ void PConsole::Update()
 	std::time_t t;
 	std::time(&t);
 	if(std::difftime(t, mLastLogTime) >= 900)
-		Print("--MARK--\n");
+		Print("--MARK--");
 }

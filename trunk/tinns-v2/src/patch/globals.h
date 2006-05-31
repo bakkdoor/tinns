@@ -32,7 +32,7 @@ extern class PPatchServer *PatchServer;
 //multiuser chat
 
 bool InitTinNS();
-void ShutdownTinNS();
+void Shutdown();
 
 #endif
 

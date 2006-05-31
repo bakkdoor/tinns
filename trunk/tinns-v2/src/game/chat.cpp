@@ -49,7 +49,7 @@
                 Chat->send(receiverClient, CHAT_DIRECT, Database->GetChar(authorClient->GetCharID())->GetName().c_str(), text);
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PChat::PChat()
 {

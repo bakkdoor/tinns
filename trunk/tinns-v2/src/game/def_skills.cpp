@@ -36,7 +36,7 @@
         REASON: - Added GPL
 */
 
-#include "tinns.h"
+#include "main.h"
 
 // skill.def includes skill names and skill/subskill mapping
 

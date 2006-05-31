@@ -19,7 +19,7 @@
 	02110-1301, USA.
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PClient::PClient(int Index)
 {

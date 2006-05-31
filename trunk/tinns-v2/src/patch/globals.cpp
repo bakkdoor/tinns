@@ -19,7 +19,8 @@
 	02110-1301, USA.
 */
 
-#include "tinns.h"
+#include "main.h"
+
 ServerSocket* ServerSock = 0;
 PConsole *Console = 0;
 PServer *Server = 0;
@@ -56,14 +57,14 @@ bool InitTinNS()
 	Config = new PConfig();
 	Server = new PServer();
 	if(!Config->LoadOptions())
-	    ShutdownTinNS();
+	    Shutdown();
 
 	PatchServer = new PPatchServer();
 
 	return true;
 }
 
-void ShutdownTinNS()
+void Shutdown()
 {
 	if(PatchServer) delete PatchServer;
 	if(Config) delete Config;

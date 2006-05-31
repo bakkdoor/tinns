@@ -36,7 +36,7 @@
         REASON: - Added GPL
 */
 
-#include "tinns.h"
+#include "main.h"
 
 /*
 	implements file access semantics for Neocron .pak files

@@ -38,7 +38,7 @@
         REASON: - Added color to console outputs
 */
 
-#include "tinns.h"
+#include "main.h"
 
 struct PPatchState
 {
@@ -112,16 +112,16 @@ void PPatchServer::Start()
 {
 	u16 Port = Config->GetOptionInt("patchserver_port");
 	if(Port==0)
-		Port=8040;
+		Port=PATCH_PORT;
 
-	Console->LPrint("Starting patchserver on port %i...", Port);
+	Console->LPrint("Starting Patchserver on port %i...", Port);
 	if(ServerSock->open(Port))
 	{
 	    Console->LPrint(GREEN, BLACK, "Success");
 	}
 	else
 	{
-		Console->LPrint(RED, BLACK, "[ERROR]");
+		Console->LPrint(RED, BLACK, "ERROR");
 	}
 	Console->LClose();
 }

@@ -55,7 +55,7 @@
             - Fixed several worldnames
 */
 
-#include "tinns.h"
+#include "main.h"
 
 void SendZone(PClient *Client, int loc)
 {

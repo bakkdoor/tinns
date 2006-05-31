@@ -57,7 +57,7 @@ extern class PMySQL* MySQL;
 extern class PVehicles *Vehicles;
 
 bool InitTinNS();
-void ShutdownTinNS();
+void Shutdown();
 
 #endif
 

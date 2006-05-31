@@ -46,28 +46,46 @@
 class PMySQL
 {
     private:
-        int port;
-        char host[100];
-    	char userName[100];
-        char password[100];
-        char database[100];
-        MYSQL *dbHandle;
+        int info_port;
+        char info_host[100];
+    	char info_userName[100];
+        char info_password[100];
+        char info_database[100];
+        MYSQL *info_dbHandle;
+
+        int game_port;
+        char game_host[100];
+    	char game_userName[100];
+        char game_password[100];
+        char game_database[100];
+        MYSQL *game_dbHandle;
+
+        int GameDBInuse;
+        int InfoDBInuse;
 
     public:
         PMySQL();
         ~PMySQL();
 
-        inline MYSQL *GetHandle() { return dbHandle; };
+        inline MYSQL *GetInfoHandle() { return info_dbHandle; };
+        inline MYSQL *GetGameHandle() { return game_dbHandle; };
 
         bool Connect();
-        int Query(const char *query);
-        MYSQL_RES *ResQuery(const char *query);
+
+        int InfoQuery(const char *query);
+        MYSQL_RES *InfoResQuery(const char *query);
+        int GameQuery(const char *query);
+        MYSQL_RES *GameResQuery(const char *query);
+
         int GetWorldItemType(unsigned short ID, int Location);
         int GetWorldItemOption(unsigned short ID, int Location, int option);
         int GetWorldDoorType(unsigned int ID, int Location);
         int GetAptID(unsigned int AptLoc, const u8 *pass);
         int GetAptType(int AptID);
         int GetAptOwner(int loc);
-        void ShowSQLError();
+        void ShowInfoSQLError();
+        void ShowGameSQLError();
+        void FreeGameSQLResult(MYSQL_RES *res);
+        void FreeInfoSQLResult(MYSQL_RES *res);
 };
 #endif

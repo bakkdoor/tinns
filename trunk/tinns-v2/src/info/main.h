@@ -22,6 +22,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "../version.h"
+
 #define INFO_PORT 7000
 #define MAX_INFO_CLIENTS 50
 

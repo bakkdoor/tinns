@@ -33,7 +33,7 @@
         MODIFIED: 25 Dec 2005 Namikon
         REASON: - Added GPL
 */
-#include "tinns.h"
+#include "main.h"
 
 PServer::PServer()
 {
@@ -102,7 +102,7 @@ void PServer::Update()
 void PServer::Shutdown()
 {
     Console->Print("======================");
-	Console->Print("Shutting down TinNS...");
+	Console->Print("Shutting down Gameserver...");
 	for(int i=0; i<mMaxClients+mGMSlots; i++)
 	{
 		if(mClients[i])

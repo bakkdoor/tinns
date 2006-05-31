@@ -48,16 +48,15 @@
 	REASON: - Added mysql.h, sql.h for MySQL support
     MODIFIED: 01 Jan 2006 Namikon
 	REASON: - Moved skill.h before chars.h (char.h needs skill.h now)
+    MODIFIED: 30 May 2006 Namikon
+	REASON: - Removed all useless includes to complete the server splitup; Also renamed tinns.h to main.h
 
 */
 
-#ifndef TINNS_H
-#define TINNS_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#define TINNS_VERSION "0.2.1 tinns (pretender linux port)"
-#define PATH_LOG "./logs/server.log"
-#define PATH_CHARS "./database/playerchars"
-#define PATH_DATABASE "./database"
+#include "../version.h"
 
 #define DEF_CHARACTERS "characters.def"
 #define DEF_SKILLS "skills.def"
@@ -68,7 +67,6 @@
 #define DEF_HACK "hack.def"
 #define DEF_ITEMS "items.def"
 
-#define INFO_PORT 7000
 #define GAME_PORT 12000
 
 //basic includes
@@ -98,9 +96,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 /*
-#include "GM/gmMachine.h"
-#include "GM/gmCall.h"
+#include "../gamemonkey/gmMachine.h"
+#include "../gamemonkey/gmCall.h"
 */
+#include "console.h"
 //tinns includes
 #include "types.h"
 
@@ -110,10 +109,7 @@
 #include "../netcode/connection-tcp.h"
 #include "../netcode/connection-udp.h"
 #include "../netcode/serversocket.h"
-//#include "TinyXML/tinyxml.h"
 #include "vehicle.h"
-#include "console.h"
-//#include "rconsole.h"
 #include "config.h"
 #include "filesystem.h"
 #include "defparser.h"
@@ -134,14 +130,11 @@
 #include "database.h"
 #include "client.h"
 #include "server.h"
-#include "gameserver.h"
 #include "misc.h"
+#include "gameserver.h"
 #include "globals.h"
 #include "zoning.h"
 
-//#include "mutex.h"
-//#include "semaphore.h"
-//#include "thread.h"
 #include "chat.h"
 #include "commands.h"
 #include "clientmanager.h"

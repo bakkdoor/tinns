@@ -45,46 +45,75 @@
         REASON: - Added color to console outputs
                 - Changed a few lines on the Get* functions (another std::atoi thing)
 */
-#include "tinns.h"
+#include "main.h"
 
 PMySQL::PMySQL()
 {
-    port = Config->GetOptionInt("sql_port");
-    strcpy(host, Config->GetOption("sql_host").c_str());
-    strcpy(userName, Config->GetOption("sql_username").c_str());
-    strcpy(password, Config->GetOption("sql_password").c_str());
-    strcpy(database, Config->GetOption("sql_database").c_str());
+    InfoDBInuse = 0;
+    GameDBInuse = 0;
+    info_port = Config->GetOptionInt("info_sql_port");
+    strcpy(info_host, Config->GetOption("info_sql_host").c_str());
+    strcpy(info_userName, Config->GetOption("info_sql_username").c_str());
+    strcpy(info_password, Config->GetOption("info_sql_password").c_str());
+    strcpy(info_database, Config->GetOption("info_sql_database").c_str());
+
+    game_port = Config->GetOptionInt("game_sql_port");
+    strcpy(game_host, Config->GetOption("game_sql_host").c_str());
+    strcpy(game_userName, Config->GetOption("game_sql_username").c_str());
+    strcpy(game_password, Config->GetOption("game_sql_password").c_str());
+    strcpy(game_database, Config->GetOption("game_sql_database").c_str());
 }
 
 PMySQL::~PMySQL()
 {
     Console->Print("Closing MySQL connection...");
-    mysql_close(dbHandle);
+    mysql_close(info_dbHandle);
+    mysql_close(game_dbHandle);
 }
 
 bool PMySQL::Connect()
 {
-    Console->LPrint("Establishing link to MySQL Database...");
+    Console->LPrint("Establishing link to Infoserver Database...");
 
-	dbHandle = mysql_init(NULL);
+    info_dbHandle = mysql_init(NULL);
 
-	if(dbHandle)
-	{
-		//Console->Print("MySQL-Handle successfully initialized.");
-	}
-	else
-	{
-		Console->LPrint(RED, BLACK, "[ERROR]");
-		Console->LClose();
-		Console->Print(" MySQL-Handle couldn't be created!");
-		exit(0);
-	}
-
-    if(!mysql_real_connect(dbHandle, host, userName, password, database, port, NULL, 0))
+    if(!info_dbHandle)
     {
-		Console->LPrint(RED, BLACK, "[ERROR]");
-		Console->LClose();
-        Console->Print("Unable to connect to MySQL Database. MySQL returned: %s", mysql_error(dbHandle));
+        Console->LPrint(RED, BLACK, "[ERROR]");
+        Console->LClose();
+        Console->Print(" Unable to create MySQL-Handle!");
+        exit(0);
+    }
+
+    if(!mysql_real_connect(info_dbHandle, info_host, info_userName, info_password, info_database, info_port, NULL, 0))
+    {
+        Console->LPrint(RED, BLACK, "[ERROR]");
+        Console->LClose();
+        Console->Print("Unable to connect to Infoserver Database. MySQL returned: %s", mysql_error(info_dbHandle));
+    }
+    else
+    {
+        Console->LPrint(GREEN, BLACK, "Success");
+        Console->LClose();
+    }
+// <><><><><><><><> Gameserver DB <><><><><><><><>
+    Console->LPrint("Establishing link to Gameserver Database...");
+
+    game_dbHandle = mysql_init(NULL);
+
+    if(!game_dbHandle)
+    {
+        Console->LPrint(RED, BLACK, "[ERROR]");
+        Console->LClose();
+        Console->Print(" Unable to create MySQL-Handle!");
+        exit(0);
+    }
+
+    if(!mysql_real_connect(game_dbHandle, game_host, game_userName, game_password, game_database, game_port, NULL, 0))
+    {
+        Console->LPrint(RED, BLACK, "[ERROR]");
+        Console->LClose();
+        Console->Print("Unable to connect to Gameserver Database. MySQL returned: %s", mysql_error(game_dbHandle));
         return false;
     }
     else
@@ -93,74 +122,143 @@ bool PMySQL::Connect()
         Console->LClose();
         return true;
     }
-}
 
-MYSQL_RES *PMySQL::ResQuery(const char *query)
+}
+// ----------------------------------------------------
+MYSQL_RES *PMySQL::InfoResQuery(const char *query)
 {
     int sql_result = 0;
     MYSQL_RES *result;
 
-    sql_result = mysql_real_query(dbHandle, query, strlen(query));
+    sql_result = mysql_real_query(info_dbHandle, query, strlen(query));
     if(sql_result)
     {
         return NULL;
     }
-    result = mysql_store_result(dbHandle);
+    result = mysql_store_result(info_dbHandle);
     if(!result)
     {
         return NULL;
     }
+    if(InfoDBInuse == true)
+    {
+        Console->Print("%s another info_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"));
+    }
 
+    InfoDBInuse = true;
     return result;
 }
 
-int PMySQL::Query(const char *query)
+int PMySQL::InfoQuery(const char *query)
 {
     int sql_result = 0;
-    sql_result = mysql_real_query(dbHandle, query, strlen(query));
+    sql_result = mysql_real_query(info_dbHandle, query, strlen(query));
 
     return sql_result;
 }
 
-void PMySQL::ShowSQLError()
+void PMySQL::ShowInfoSQLError()
 {
-    Console->Print(RED, BLACK, "MySQL Error: %s", mysql_error(dbHandle));
+    Console->Print(RED, BLACK, "MySQL Error: %s", mysql_error(info_dbHandle));
+}
+void PMySQL::FreeInfoSQLResult(MYSQL_RES *res)
+{
+    if(InfoDBInuse > 0)
+    {
+        mysql_free_result(res);
+        InfoDBInuse--;
+    }
+    else
+        Console->Print("PMySQL::FreeInfoSQLResult: Nothing to free...");
+}
+// ----------------------------------------------------
+MYSQL_RES *PMySQL::GameResQuery(const char *query)
+{
+    int sql_result = 0;
+    MYSQL_RES *result;
+
+    sql_result = mysql_real_query(game_dbHandle, query, strlen(query));
+    if(sql_result)
+    {
+        return NULL;
+    }
+    result = mysql_store_result(game_dbHandle);
+    if(!result)
+    {
+        return NULL;
+    }
+    if(GameDBInuse > 0)
+    {
+        Console->Print("%s another game_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"));
+    }
+
+    GameDBInuse = true;
+    return result;
 }
 
-int PMySQL::GetWorldItemType(unsigned short ID, int Location) {
+int PMySQL::GameQuery(const char *query)
+{
+    int sql_result = 0;
+    sql_result = mysql_real_query(game_dbHandle, query, strlen(query));
+
+    return sql_result;
+}
+
+void PMySQL::ShowGameSQLError()
+{
+    Console->Print(RED, BLACK, "MySQL Error: %s", mysql_error(game_dbHandle));
+}
+void PMySQL::FreeGameSQLResult(MYSQL_RES *res)
+{
+    if(GameDBInuse > 0)
+    {
+        mysql_free_result(res);
+        GameDBInuse--;
+    }
+    else
+        Console->Print("PMySQL::FreeGameSQLResult: Nothing to free...");
+}
+// ----------------------------------------------------
+int PMySQL::GetWorldItemType(unsigned short ID, int Location)
+{
     char query[2048];
     MYSQL_RES *result;
     MYSQL_ROW row;
     sprintf(query, "SELECT wi_type FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", ID, Location);
 
-    if (mysql_real_query(dbHandle, query, strlen(query)))
+    result = GameResQuery(query);
+    if(!result)
     {
-        return -1;
+        Console->Print("%s Cannot get WorldItemType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+        ShowGameSQLError();
+        return 0;
     }
     else
     {
-        result = mysql_store_result(dbHandle);
-        if (result)
+        if(mysql_num_rows(result) > 1)
         {
-            if(mysql_num_rows(result) > 1)
-            {
-                return -2;
-            }
-            else
-            {
-                row = mysql_fetch_row(result);
-                if(row == NULL) {
-                    return -1;
-                }
-
-                return std::atoi(row[0]);
-            }
+            FreeGameSQLResult(result);
+            return -2;
         }
         else
         {
-            return -1;
+            row = mysql_fetch_row(result);
+            if(row == NULL)
+            {
+                FreeGameSQLResult(result);
+                return -1;
+            }
+            int ret_val = std::atoi(row[0]);
+            FreeGameSQLResult(result);
+            return ret_val;
         }
     }
+/*    else
+    {
+        FreeGameSQLResult(result);
+        return -1;
+    }
+*/
     return -1;
 }
 
@@ -174,40 +272,45 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
         return -1;
     }
     sprintf(query, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
-    //Console->Print("MySQL Query: %s", query);
-    //return -1;
-    if (mysql_real_query(dbHandle, query, strlen(query)))
+    result = GameResQuery(query);
+    if(!result)
     {
-        return -1;
+        Console->Print("%s Cannot get WorldItemOption; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+        ShowGameSQLError();
+        return 0;
     }
     else
     {
-        result = mysql_store_result(dbHandle);
-        if (result)
+        if(mysql_num_rows(result) > 1)
         {
-            if(mysql_num_rows(result) > 1)
-            {
-                return -2;
-            }
-            else
-            {
-                row = mysql_fetch_row(result);
-                if(row == NULL) {
-                    return -1;
-                }
-
-                return std::atoi(row[0]);
-            }
+            FreeGameSQLResult(result);
+            return -2;
         }
         else
         {
-            return -1;
+            row = mysql_fetch_row(result);
+            if(row == NULL)
+            {
+                FreeGameSQLResult(result);
+                return -1;
+            }
+            int ret_val = std::atoi(row[0]);
+            FreeGameSQLResult(result);
+            return ret_val;
         }
     }
+/*
+    else
+    {
+        FreeGameSQLResult(result);
+        return -1;
+    }
+*/
     return -1;
 }
 
-int PMySQL::GetWorldDoorType(unsigned int ID, int Location) {
+int PMySQL::GetWorldDoorType(unsigned int ID, int Location)
+{
     char query[2048];
     MYSQL_RES *result;
     MYSQL_ROW row;
@@ -220,15 +323,17 @@ int PMySQL::GetWorldDoorType(unsigned int ID, int Location) {
     {
         sprintf(query, "SELECT wd_type FROM world_doors WHERE wd_world_id = %d AND wd_world_map = %d", ID, Location);
     }
+    result = GameResQuery(query);
 
-    if(mysql_real_query(dbHandle, query, strlen(query)))
-        return -1;
-
-    result = mysql_store_result(dbHandle);
-    if (result)
+    if(!result)
     {
+        Console->Print("%s Cannot get WorldDoorType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+        ShowGameSQLError();
+        return 0;
+    } else {
         if(mysql_num_rows(result) > 1)
         {
+            FreeGameSQLResult(result);
             return -2;
         }
         else
@@ -236,16 +341,21 @@ int PMySQL::GetWorldDoorType(unsigned int ID, int Location) {
             row = mysql_fetch_row(result);
             if(row == NULL)
             {
+                FreeGameSQLResult(result);
                 return -1;
             }
-
-            return std::atoi(row[0]);
+            int ret_val = std::atoi(row[0]);
+            FreeGameSQLResult(result);
+            return ret_val;
         }
     }
+/*
     else
     {
+        FreeGameSQLResult(result);
         return -1;
     }
+*/
     return -1;
 }
 
@@ -260,23 +370,25 @@ int PMySQL::GetAptID(unsigned int AptLoc, const u8 *pass)
         return 1;
 
     sprintf(query, "SELECT apt_id FROM apartments WHERE apt_location = %i AND apt_password = \"%s\"", AptLoc, pass);
-    result = ResQuery(query);
+    result = GameResQuery(query);
 
     if(!result)
     {
         Console->Print("%s Cannot get AppartmentID; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowSQLError();
+        ShowGameSQLError();
         return 0;
     }
 
     if(mysql_num_rows(result) == 0)
     {
+        FreeGameSQLResult(result);
         return 0;
     }
     else
     {
         row = mysql_fetch_row(result);
         type = std::atoi(row[0]);
+        FreeGameSQLResult(result);
     }
 
     return (type + 100000);
@@ -290,23 +402,25 @@ int PMySQL::GetAptType(int AptID)
     char query[255];
 
     sprintf(query, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - 100000);
-    result = ResQuery(query);
+    result = GameResQuery(query);
 
     if(!result)
     {
         Console->Print("%s Cannot get AppartmentType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowSQLError();
+        ShowGameSQLError();
         return 0;
     }
 
     if(mysql_num_rows(result) == 0)
     {
+        FreeGameSQLResult(result);
         return 0;
     }
     else
     {
         row = mysql_fetch_row(result);
         type = std::atoi(row[0]);
+        FreeGameSQLResult(result);
     }
 
     return type;
@@ -321,22 +435,24 @@ int PMySQL::GetAptOwner(int loc)
 
     sprintf (query, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - 100000);
 
-    result = ResQuery(query);
+    result = GameResQuery(query);
     if(!result)
     {
         Console->Print("%s Cannot get AppartmentType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowSQLError();
+        ShowGameSQLError();
         return 0;
     }
 
     if(mysql_num_rows(result) == 0)
     {
+        FreeGameSQLResult(result);
         return 0;
     }
     else
     {
         row = mysql_fetch_row(result);
         owner = std::atoi(row[0]);
+        FreeGameSQLResult(result);
     }
 
     return owner;

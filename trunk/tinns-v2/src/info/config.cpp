@@ -40,7 +40,7 @@ bool PConfig::LoadOptions()
 
 	if(!ConfigFile)
 	{
-	    Console->Print("%s Cant open file", Console->ColorText(RED, BLACK, "[Error]"));
+	    Console->Print("%s Cant open file \"infoserver.conf\"", Console->ColorText(RED, BLACK, "[Error]"));
         return false;
 	}
 

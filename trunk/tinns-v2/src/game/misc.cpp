@@ -38,7 +38,7 @@
         REASON: - Added function to trim a string/char
 */
 
-#include "tinns.h"
+#include "main.h"
 
 u32 IPStringToDWord(const char *IP)
 {
@@ -161,4 +161,41 @@ void LTrim(std::string *stString)
 		return;
 	}
 
+}
+
+void GetSVNRev(char *version)
+{
+#if defined(TINNS_VERSION_GAME)
+    if(sizeof(TINNS_VERSION_GAME) > 10)
+    {
+        Console->LClose();
+        Console->Print("WARNING: TINNS_VERSION_GAME TOO LONG! MAX IS 10");
+        sprintf(version, "ERROR");
+    }
+    else
+    {
+        sprintf(version, TINNS_VERSION_GAME);
+    }
+#else
+	FILE *f;
+
+	if ((f = fopen(".svn/entries", "r")) != NULL) {
+		char line[1024];
+		int rev;
+		while (fgets(line,1023,f))
+		{
+			if (strstr(line,"revision="))
+                break;
+		}
+		fclose(f);
+
+		if (sscanf(line," %*[^\"]\"%d%*[^\n]", &rev) == 1)
+		{
+			sprintf(version, "SVN %d", rev);
+			return;
+		}
+	}
+
+    sprintf(version, "Unknown");
+#endif
 }

@@ -17,18 +17,15 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 	02110-1301, USA.
-
-	tinns.h - main include file, contains all needed includes and important definitions
-
-    MODIFIED: 09 Feb 2006 bakkdoor
-    REASON: - added netcode-specific headers
 */
 
-#ifndef TINNS_H
-#define TINNS_H
+#ifndef MAIN_H
+#define MAIN_H
 
-#define TINNS_VERSION "0.2.1 tinns (pretender linux port)"
-#define PATH_LOG "./logs/server.log"
+#include "../version.h"
+
+#define PATCH_PORT 7000
+#define MAX_PATCH_CLIENTS 50
 
 #include <cstdio>
 #include <ctime>

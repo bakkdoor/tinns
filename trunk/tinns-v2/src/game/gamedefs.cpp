@@ -39,7 +39,7 @@
 	      to load the pak files from the defs directory
 */
 
-#include "tinns.h"
+#include "main.h"
 
 PGameDefs::PGameDefs()
 {
