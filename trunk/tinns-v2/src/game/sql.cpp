@@ -43,7 +43,12 @@
                 - Added missing "return NULL" to ResQuery
         MODIFIED: 06 Jan 2006 Namikon
         REASON: - Added color to console outputs
-                - Changed a few lines on the Get* functions (another std::atoi thing)
+                - Changed a few lines on the Get* functions (another std::atoi thing)              
+        MODIFIED: 26 Jul 2006 Hammag                
+        REASON: - Added CheckResCount() for DB Res memory leak tracking (to be done in the main loop)
+                    rather than through Info/GameResQuery()
+                - fixed InfoDBInuse and GameDBInuse updating
+                - inhibited Info/GameDBInuse warning message in Info/GameResQuery()
 */
 #include "main.h"
 
@@ -69,6 +74,24 @@ PMySQL::~PMySQL()
     Console->Print("Closing MySQL connection...");
     mysql_close(info_dbHandle);
     mysql_close(game_dbHandle);
+}
+
+void PMySQL::CheckResCount()
+{
+  static int MaxInfoDBCount = 0;
+  static int MaxGameDBCount = 0;
+ 
+  if (InfoDBInuse > MaxInfoDBCount)
+  {
+    Console->Print("%s Max In-use InfoDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Warning]"), InfoDBInuse, InfoDBInuse-MaxInfoDBCount);
+    MaxInfoDBCount = InfoDBInuse;
+  }
+  
+  if (GameDBInuse > MaxGameDBCount)
+  {
+    Console->Print("%s Max In-use GameDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Warning]"), GameDBInuse, GameDBInuse-MaxGameDBCount);
+    MaxGameDBCount = GameDBInuse;
+  }
 }
 
 bool PMySQL::Connect()
@@ -140,12 +163,14 @@ MYSQL_RES *PMySQL::InfoResQuery(const char *query)
     {
         return NULL;
     }
-    if(InfoDBInuse == true)
+    //if(InfoDBInuse == true)
+    /*if(InfoDBInuse > 0)
     {
-        Console->Print("%s another info_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"));
-    }
+        Console->Print("%s another (%d) info_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"), InfoDBInuse);
+    }*/
 
-    InfoDBInuse = true;
+    //InfoDBInuse = true;
+    InfoDBInuse++;
     return result;
 }
 
@@ -187,12 +212,13 @@ MYSQL_RES *PMySQL::GameResQuery(const char *query)
     {
         return NULL;
     }
-    if(GameDBInuse > 0)
+    /*if(GameDBInuse > 0)
     {
-        Console->Print("%s another game_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"));
-    }
+        Console->Print("%s another (%d) game_dbHandle result is still in use", Console->ColorText(YELLOW, BLACK, "[Warning]"), GameDBInuse);
+    }*/
 
-    GameDBInuse = true;
+    //GameDBInuse = true;
+    GameDBInuse++;
     return result;
 }
 

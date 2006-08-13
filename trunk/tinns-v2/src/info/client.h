@@ -50,7 +50,7 @@ class PClient
 		inline ConnectionTCP* getTCPConn() const { return m_TCPConnection; }
 
 		inline int GetConnection() const { return mConnection; }
-		inline const char *GetAddress() const { return m_TCPConnection->getLocalAddress(); }
+		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
 
 		void InfoDisconnect();
 

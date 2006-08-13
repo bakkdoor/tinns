@@ -36,6 +36,13 @@
         REASON: - Added GPL
         MODIFIED: 06 Jan 2006 Namikon
         REASON: - Added color to console outputs
+        
+        MODIFIED: 01 Jul 2006 hammag
+        REASON: - added set timeout to 10 msec (for ReadSetTCP select) in Start()
+	                to avoid useless 100% CPU use
+	          
+        ToDo:
+          - Take main loop timeout setting from config file
 */
 
 #include "main.h"
@@ -124,6 +131,7 @@ void PPatchServer::Start()
 		Console->LPrint(RED, BLACK, "ERROR");
 	}
 	Console->LClose();
+	ServerSock->settimeout(0, 10000);
 }
 
 void PPatchServer::Update()

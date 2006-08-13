@@ -53,11 +53,15 @@
 	MODIFIED: 17 Jan 2006 Namikon
 	REASON: - File rewritten. Now, only 1 packet is send, like the real servers (that one fixed subway)
             - Fixed several worldnames
+	MODIFIED: 26 Jul 2006 Hammag
+	REASON:   - Fixed world 1086 5area mc5) worldname (from NeoX source)
+	
+	TODO: Get the worldnames from worlds.ini, take alternate worldfile from worldinfo.def into account
 */
 
 #include "main.h"
 
-void SendZone(PClient *Client, int loc)
+void SendZone(PClient *Client, u32 loc)
 {
 	//TODO : FIX case for worldroute and 5 missing id 505
 
@@ -66,13 +70,12 @@ void SendZone(PClient *Client, int loc)
 
 	Socket->SetTimeOutValue(0xffff);
 
-    std::string worldName;
+  std::string worldName;
 
-	int i = Char->GetLocation();
-
-	if(i > 100000)
+	if(loc > 100000)
 	{
-	    switch(loc)
+	    u32 i = MySQL->GetAptType(Char->GetLocation()); // changed from NeoX
+	    switch(i)
 	    {
 	        // Plaza
 	        case 1:
@@ -2442,7 +2445,8 @@ void SendZone(PClient *Client, int loc)
             //Area MC5
             case 1086:
             {
-                worldName = "area_mc5/h_14";
+                //worldName = "area_mc5/h_14";
+                worldName = "terrain/h_14";
                 break;
             }
             case 1084:
@@ -2895,12 +2899,24 @@ void SendZone(PClient *Client, int loc)
         }//close switch
 	}
 
-    u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, loc, (loc >> 8), (loc >> 16), (loc >> 24), 0x00, 0x00, 0x00, 0x00};
-    packet1[1] = worldName.size() + 11;
+/* minor changes */
+  u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  *(u16*) &packet1[1] = (u16) (worldName.size() + 11);
+  *(u32*) &packet1[5] = loc;
+  //u8 packet3[] = {0x00};
+
+	Socket->write(packet1, sizeof(packet1));
+	Socket->write(worldName.c_str(), worldName.size() + 1);
+	//Socket->write(packet3, sizeof(packet3));
+
+/* old
+  u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, loc, (loc >> 8), (loc >> 16), (loc >> 24), 0x00, 0x00, 0x00, 0x00};
+  packet1[1] = worldName.size() + 11;
 	u8 packet3[] = {0x00};
 
 	Socket->write(packet1, sizeof(packet1));
 	Socket->write(worldName.c_str(), worldName.size());
 	Socket->write(packet3, sizeof(packet3));
+*/
 }
 

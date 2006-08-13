@@ -36,6 +36,19 @@
 
     MODIFIED: 13 Dec 2005 bakkdoor
     REASON: - added multiuser chat
+    
+    MODIFIED: 27 Jul 2006 Hammag
+    REASON: - added mTransactionID member
+            - re-added IncreaseUDP_ID() // but I don't understand well what SetUDP_ID() does ...
+
+    MODIFIED: 05 Aug 2006 Hammag
+    REASON: - changed TMP_UDP_PORT/SetTMPUDPPort()/GetTMPUDPPort() to mRemotePort/SetRemoteUDPPort()/GetRemoteUDPPort()
+                which corresponds to the real purpose of these members
+            - added GetID() as an alias os GetIndex() for better coherency with other classes
+    
+    TODO:   - check that SetUDP_ID, and the mSessionID(UDP_ID_HIGH) real use,
+                and if UDP_ID and mSessionID must be synced (like in NeoX) or not
+
 */
 
 #ifndef CLIENT_H
@@ -60,7 +73,7 @@ enum PClientLevel
 class PClient
 {
 	private :
-        ConnectionTCP* m_TCPConnection;
+    ConnectionTCP* m_TCPConnection;
 		ConnectionUDP* m_UDPConnection;
 
 		PAccount *mAccount;
@@ -68,9 +81,10 @@ class PClient
 		u32 mCharID;
 		u16 mUDP_ID;
 		u16 mSessionID;
+		u16 mTransactionID;
 		PClientLevel mLevel;
 		int mConnection;
-		int TMP_UDP_PORT;
+		int mRemotePort;
 
 		// new multiuser-chat implementation //
         int m_ZoneID;
@@ -81,31 +95,32 @@ class PClient
 		PClient(int Index);
 		~PClient();
 
-		inline int GetIndex() const { return mIndex; }
+		inline int GetIndex() const { return mIndex; } // better use GetID()
+		inline int GetID() const { return mIndex; } // for better coherency with other classes
+		inline int GetLocalID() const { return mIndex + 1; }
 		inline u32 GetCharID() const { return mCharID; }
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
-		inline u16 GetSessionID() const { return 37917 + mUDP_ID; }
-		inline int GetTMPUDPPort() const { return TMP_UDP_PORT; } // Temp solution
+		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+		inline u16 GetTransactionID() {return mTransactionID; }
+		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 
-		inline void SetTMPUDPPort(int port) { TMP_UDP_PORT = port; } // Temp solution
+		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
 		inline void SetUDP_ID(int id) { if (mUDP_ID == 0xffff) { mUDP_ID = 0; } else { mUDP_ID = id; } }
-		inline void IncreaseUDP_ID()
-		{
-		    mUDP_ID++;
-		    mSessionID = 37917 + mUDP_ID;
-        };
-
+		inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
+    inline void ResetTransactionID() { mTransactionID = 10170; }
+    inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
+    
 		inline PClientLevel GetLevel() const { return mLevel; }
 
-        inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
-        inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
+    inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
+    inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
 
-        inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
-        inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
+    inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
+    inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
 
 		inline int GetConnection() const { return mConnection; }
-		inline const char *GetAddress() const { return m_TCPConnection->getLocalAddress(); }
+		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
 		inline PAccount *GetAccount() const { return mAccount; }
 
 		void GameDisconnect();

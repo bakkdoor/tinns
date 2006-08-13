@@ -26,6 +26,9 @@
 
 	MODIFIED: 25 Dec 2005 Namikon
 	REASON: - Added GPL
+	
+	MODIFIED: 29 Jul 2006 Hammag
+	REASON:  - Added skin modifiers fields
 */
 
 #ifndef DEF_CHARACTERS_H
@@ -41,6 +44,10 @@ class PDefCharacter
 		int mIndex;
 		std::string mName;
 		int mModel;
+		int mHead;
+		int mTorso;
+		int mLegs;
+		
 	public :
 		PDefCharacter();
 		~PDefCharacter();
@@ -50,6 +57,9 @@ class PDefCharacter
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetModel() const { return mModel; }
+		inline int GetHead() const { return mHead; }
+		inline int GetTorso() const { return mTorso; }
+		inline int GetLegs() const { return mLegs; }
 };
 
 #endif

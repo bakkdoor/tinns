@@ -29,6 +29,18 @@
 
 	MODIFIED: 09 Feb 2006 bakkdoor
 	REASON: - introduced
+
+  MODIFIED: 25 Jul 2006 hammag
+	REASON: - changed member data prefix from "m_" to "m" in for homogeneity with the reste of TinNS code
+	        - added private members data mQueueIn and mQueueOut
+	        - added public members methods SendMessage(), GetMessage(), DeleteOutgoingMessages() and modified code accordingly
+	        - removed old read/write member data, and added a compatibility mSendBufferMsg* member
+	        
+	MODIFIED: 05 Aug 2006 hammag
+	REASON: - renamed "getLocalAddress()" to "getRemoteAddress()" as it is ... what it does !
+
+	TODO:   - remove old read/write compatibility methods when not needed anymore
+	        - see .cpp for current implementation limits
 */
 
 #ifndef CONNECTIONTCP_H
@@ -37,51 +49,66 @@
 static const int RECVBUFFERSIZE = 4096;
 static const int SENDBUFFERSIZE = 4096;
 
-static const clock_t DEFAULT_TIMEOUT = 60;
+static const time_t DEFAULT_TIMEOUT = 60;
 
 class ServerSocket;
 
 class ConnectionTCP
 {
     private:
-            int                 m_Sockfd;
-            struct sockaddr_in  m_RemoteAddr;
+            int                 mSockfd;
+            struct sockaddr_in  mRemoteAddr;
 
-            u8                  m_ReceiveBuffer[RECVBUFFERSIZE];
-            u8                  m_SendBuffer[SENDBUFFERSIZE];
+//            u8                  mReceiveBuffer[RECVBUFFERSIZE];
+//            u8                  mSendBuffer[SENDBUFFERSIZE];
 
-            int                 m_SendSize;
-            int                 m_RecvSize;
-            int                 m_RecvRewind;
+//            int                 mSendSize;
+//            int                 mRecvSize;
+//            int                 mRecvRewind;
 
-            std::clock_t        m_LastActive;
-            std::clock_t        m_TimeOutValue;
+            std::time_t        mLastActive;
+            std::time_t        mTimeOutValue;
 
-            bool                m_bConnected;
+            bool                mbConnected;
 
-            ServerSocket*	    m_ServerSocket; // pointer to the serversocket
-
+            ServerSocket*	    mServerSocket; // pointer to the serversocket
+            
+            std::queue<PMessage*> mQueueIn;
+            std::queue<PMessage*> mQueueOut;
+            
+            PMessage* mReceiveBufferMsg;
+            
     public:
             ConnectionTCP(int sockfd, struct sockaddr_in addr, ServerSocket* server);
             ~ConnectionTCP();
 
-            struct sockaddr_in  getAddr() { return m_RemoteAddr; }
-            int                 getSockfd() { return m_Sockfd; }
-
+            struct sockaddr_in  getAddr() { return mRemoteAddr; }
+            int                 getSockfd() { return mSockfd; }
+            char*               getRemoteAddress();
+            
                                 // add pointer to serversocket-instance
-            void                setServer(ServerSocket* server){ if(server) { m_ServerSocket = server; } }
+            void                setServer(ServerSocket* server){ if(server) { mServerSocket = server; } }
 
             bool                timeOut() const;
-            inline clock_t      GetTimeOutValue() const { return m_TimeOutValue; }
-            inline void         SetTimeOutValue(clock_t Value) { m_TimeOutValue = Value; }
+            inline time_t       GetTimeOutValue() const { return mTimeOutValue; }
+            inline void         SetTimeOutValue(time_t Value) { mTimeOutValue = Value; }
 
-            bool		        update();
-            bool                isConnected() { return m_bConnected; }
-
+            bool		            update();
+            bool                isConnected() { return mbConnected; }
+            
+            inline void SendMessage(PMessage* nMessage) { mQueueOut.push(nMessage); }
+            PMessage* GetMessage();
+            void DeleteOutgoingMessages();
+            
+/**************** Old I/F compatibility stuff ******************/       
+    private:
+            PMessage* mSendBufferMsg; // for old I/F compatibility only
+              
+    public:                             
             void                flushSendBuffer();
 
-            inline int          getRecvBufferSize() const { return m_RecvSize; }
-            inline int          getSendBufferSize() const { return m_SendSize; }
+            int                 getRecvBufferSize();
+            int                 getSendBufferSize();
 
             // returns a pointer to the internal receive buffer
             // Size contains the number of octets to read (or 0 to read entire buffer)
@@ -95,8 +122,6 @@ class ConnectionTCP
             int                 write(float data);
             int                 write(double data);
             int                 write(const char* string);
-
-            char*               getLocalAddress();
 };
 
 #endif

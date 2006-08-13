@@ -29,18 +29,30 @@
 
 	MODIFIED: 09 Feb 2006 bakkdoor
 	REASON: - introduced
+	
+  MODIFIED: 01 Jul 2006 hammag
+	REASON: - added settimeout method
+	REASON: - added fd_set m_MainSetUDP private member
+	REASON: - added fd_set m_MainSetGlobal private member (=m_MainSetTCP + m_MainSetUDP)
+
+  MODIFIED: 05 Aug 2006 hammag
+	REASON: - server UDP port is now taken in the range [gameserver_udpport_min, gameserver_udpport_max] set in config
+	        - removed m_LastUDPPort which is not used anymore (might be used again in futur for faster free udp port allocation)
+
 */
 
 #ifndef SERVERSOCKET_H
 #define SERVERSOCKET_H
 
-class Connection;
+//class Connection; // removed... this class doesn't exist
 
 class ServerSocket
 {
     private:
             fd_set              m_MainSetTCP; // master file descriptor list for tcp-connections
             fd_set              m_ReadSetTCP; // temp file descriptor list for select() for tcp-connections
+            fd_set              m_MainSetUDP; // master file descriptor list for udp-connections
+            fd_set              m_MainSetGlobal; // master file descriptor list for udp+tcp connections
 
             struct sockaddr_in  m_ServerAddr; // server address
 
@@ -51,7 +63,7 @@ class ServerSocket
 
             bool                m_bNewTCPConnection;
 
-            int                 m_LastUDPPort;
+            //int                 m_LastUDPPort; // not used anymore
 
             struct timeval      m_TimeOut;
 
@@ -59,11 +71,12 @@ class ServerSocket
             ServerSocket();
             ~ServerSocket();
 
+            void                settimeout(long timeout_sec, long timeout_usec);
             bool                open(int port);
             void                update();
             bool                newConnection();
             ConnectionTCP*      getTCPConnection();
-            ConnectionUDP*      getUDPConnection(long adress, int tmpport);
+            ConnectionUDP*      getUDPConnection(long remoteadress, int remoteport);
 
             bool                isDataAvailable(int sockfd);
 

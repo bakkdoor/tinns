@@ -43,7 +43,7 @@ class PClient
 		inline int GetIndex() const { return mIndex; }
 
 		inline int GetConnection() const { return mConnection; }
-		inline const char *GetAddress() const { return m_TCPConnection->getLocalAddress(); }
+		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
 
 		void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; mConnection = PCC_PATCH; }
 

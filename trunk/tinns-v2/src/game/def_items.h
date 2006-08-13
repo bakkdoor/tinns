@@ -26,6 +26,9 @@
 
 	MODIFIED: 25 Dec 2005 Namikon
 	REASON: - Added GPL
+	
+  MODIFIED: 10 Jul Hammag
+  REASON: - Full Item Def implementation
 */
 
 #ifndef DEF_ITEMS_H
@@ -39,29 +42,29 @@ class PDefItems
 {
 	private :
 
-		int mIndex;//1
-        std::string mName;//2
-		int mUnknow03;
-		int mUnknow04;
-		int mUnknow05;
-		int mUnknow06;
-		int mUnknow07;
-		int mUnknow08;
-		int mUnknow09;
-		int mUnknow10;
-		int mUnknow11;
-		int mUnknow12;
-		int mUnknow13;
-		int mUnknow14;
-		int mUnknow15;
-		int mUnknow16;
-        int mUnknow17;
-		int mUnknow18;
-		int mUnknow19;
-		int mUnknow20;
-		int mUnknow21;
-		int mUnknow22;
-		int mUnknow23;
+    int mIndex;//1
+    std::string mName;//2
+    //int mModel; // used for IG display
+    int mType;
+    int mValue1;
+    int mValue2;
+    int mValue3;
+    // int mBmNum; // used IG for inventory display
+    // int mmBmNumIndex; // used IG for inventory display
+    int mSizeX;
+    int mSizeY;	
+    // int mSmallbmnum; // used IG for inventory display
+    float mWeight;
+    int mStackable;
+    float mFillWeight;
+    int mQualifier;
+    // int mGfxmods; // used IG ?
+    int mItemGroupID;	
+    int mTextDescID;
+    int mBasePrice;
+    int mTechlevel;
+    int mItemflags;
+    // std::mShortname; // used IG for display on inventories Icons
 
 	public :
 		PDefItems();
@@ -71,7 +74,21 @@ class PDefItems
 
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
-
+    inline const int GetType() const { return mType; }
+    inline const int GetValue1() const { return mValue1; }
+    inline const int GetValue2() const { return mValue2; }
+    inline const int GetValue3() const { return mValue3; }
+    inline const int GetSizeX() const { return mSizeX; }
+    inline const int GetSizeY() const { return mSizeY; }
+    inline const float GetWeight() const { return mWeight; }
+    inline const bool IsStackable() const { return (mStackable == 1); }
+    inline const float GetFillWeight() const { return mFillWeight; }
+    inline const int GetQualifier() const { return mQualifier; }
+    inline const int GetItemGroupID() const { return mItemGroupID; }	
+    inline const int GetTextDescID() const { return mTextDescID; }
+    inline const int GetBasePrice() const { return mBasePrice; }
+    inline const int GetTechlevel() const { return mTechlevel; }
+    inline const int GetItemflags() const { return mItemflags; }
 };
 
 #endif

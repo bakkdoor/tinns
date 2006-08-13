@@ -45,7 +45,9 @@ PClient::PClient(int Index)
 	mConnection = PCC_NONE;
 	mUDP_ID = 0;
 	mSessionID = 37917;
-	TMP_UDP_PORT = 0;
+	mRemotePort = 0;
+	m_TCPConnection = NULL;
+	m_UDPConnection = NULL;
 }
 
 PClient::~PClient()
@@ -53,12 +55,27 @@ PClient::~PClient()
     if(m_TCPConnection)
     {
         delete m_TCPConnection;
+        m_TCPConnection = NULL;
     }
     if(m_UDPConnection)
     {
         delete m_UDPConnection;
+        m_UDPConnection = NULL;
     }
 }
+
+/*void PClient::IncreaseUDP_ID()
+{
+  if (++mUDP_ID > 65534)
+  {
+    mUDP_ID = 0; // is 65533 the higher valid value ???
+  }
+	//mSessionID = 37917 + mUDP_ID;
+  if (++mSessionID > 65534)
+  {
+    mSessionID = 0; // is 65533 the higher valid value ???
+  }
+}*/
 
 void PClient::GameDisconnect()
 {
@@ -67,15 +84,40 @@ void PClient::GameDisconnect()
 	if(m_TCPConnection)
 	{
 	    delete m_TCPConnection;
+      m_TCPConnection = NULL;
 	}
-	m_TCPConnection = 0;
-
+	
 	if(m_UDPConnection)
 	{
 	    delete m_UDPConnection;
+	    m_UDPConnection = NULL;
 	}
-	m_UDPConnection = 0;
-
+	
+  /**** Will be better to put that char-saving-at-disconnect in Char destructor, when only used Chars will be loaded ****/
+  PChar *tChar = Database->GetChar(mCharID);
+  if (tChar)
+  {
+    if (tChar->IsDirty())
+    {
+      bool res = tChar->SQLSave();
+      if (res)
+        Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) saved before disconnect.", tChar->GetID(), mIndex);
+      else
+        Console->Print(RED, BLACK, "GameDisconnect: Char %i (Client %i) saved before disconnect FAILED.", tChar->GetID(), mIndex);
+    }
+    else
+    {
+      Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) no save needed.", tChar->GetID(), mIndex);
+      if (!tChar->IsOnline())
+        Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex);
+    }
+  }
+  else
+  {
+    //Console->Print(YELLOW, BLACK, "GameDisconnect: Client %i had no char online.", mIndex);
+  }
+  /**********************************/
+    
 	//mConnection &= ~PCC_GAME;
 	mConnection = PCC_NONE;
 }
@@ -113,9 +155,9 @@ void PClient::Update()
         else
         {
             if(!m_UDPConnection->update())
-			{
-			    GameServer->UDPStreamClosed(this);
-			}
+			      {
+			        GameServer->UDPStreamClosed(this);
+			      }
         }
     }
 }

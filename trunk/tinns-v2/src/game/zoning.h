@@ -31,14 +31,16 @@
 	REASON: - Initial Release
 	MODIFIED: 23 Dec 2005 Namikon
 	REASON: - Added GPL
-
+	MODIFIED: 28 Jul 2005 Hammag
+	REASON: - changed loc parameter type from int to u32
+	
 */
 
 #ifndef ZONING_H
 #define ZONING_H
 
 //void SendZone(PClient *Client, PGameState *State,int loc);
-void SendZone(PClient *Client, int loc);
+void SendZone(PClient *Client, u32 loc);
 
 #endif
 

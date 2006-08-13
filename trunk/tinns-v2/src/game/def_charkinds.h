@@ -109,8 +109,10 @@ class PDefCharKind
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetType() const { return mType; }
-		inline const PSkillInfo &GetSkillInfo(int Skill) const { return mSkillInfo[Skill]; }
+		inline const PSkillInfo &GetSkillInfo(int Skill) const { return mSkillInfo[Skill-1]; }
 
+    inline int GetStartMoney() const { return mMoney; }
+    inline u32 GetStartInventory(u8 Index) const { return ((Index < 7) ?  mInventory[Index] : 0); }
 		// TODO: mission get() functions
 };
 

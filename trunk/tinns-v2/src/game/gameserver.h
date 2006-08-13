@@ -39,8 +39,9 @@ class PGameServer
 {
 	private :
 		int mNumClients;
-		u32 mGameTime;
-
+		u32 mBaseGameTime;
+    struct timespec mStartTime;
+    
 		typedef std::map<PClient*, struct PGameState*> GameStateMap;
 		GameStateMap ClientStates;
 
@@ -72,8 +73,8 @@ class PGameServer
 //		bool HandleUDPType03(PClient *Client, PGameState *State, const u8 *Packet, int PacketSize);
         bool HandleUDPType03(PGameState *State);
 
-//		void SendBaseLine(PClient *Client, PGameState *State);
-		void SendBaseLine(PClient *Client);
+		void SendBaseLine(PClient *Client, PGameState *State); // reactivated State param for state changing at the right time (for futur use mostly)
+//		void SendBaseLine(PClient *Client); 
 
 		void SendUDPType13(PClient *Client, PGameState *State, u8 *Packet, int PacketSize);
 
@@ -85,8 +86,22 @@ class PGameServer
 		void Update();
 		void ClientDisconnected(PClient *Client);
 		void UDPStreamClosed(PClient *Client);
-		inline void SetGameTime(u32 newtime) { mGameTime = newtime; };
+		void SetGameTime(u32 newtime);
+		u32 GetGameTime();
+		
+/**** Packet building & sending function put here in wait for a better place ****/
+//Does NOT includes UDP_ID increment when needed, no UDP_ID / SessionID setting
+// as these must be set on a by message destination basis
+
+PMessage* BuildCharHelloMsg(PClient* Client); 
+PMessage* BuildCharClanInfoMsg (PClient* nClient, u16 nReqType, u32 nCharId);
+PMessage* BuildCharHealthUpdateMsg (PClient* nClient);
+PMessage* BuildCharPosUpdateMsg (PClient* nClient);
+PMessage* BuildCharSittingMsg (PClient* nClient, u16 nState);
+
 };
+
 void ChangeLocation(int ClientNum);
+
 #endif
 

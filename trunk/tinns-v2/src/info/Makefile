@@ -14,7 +14,7 @@ OBJECTS=$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))
 all: infoserver
 
 infoserver: $(OBJECTS)
-	$(CXX) -o $@ $(OBJECTS) -lpthread -lz -lm -lcrypt -L"/usr/lib/mysql/" -lmysqlclient
+	$(CXX) -o $@ $(OBJECTS) -lrt -lpthread -lz -lm -lcrypt -L"/usr/lib/mysql/" -lmysqlclient
 	mv infoserver ../../
 
 clean:

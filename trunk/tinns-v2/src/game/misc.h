@@ -48,5 +48,7 @@ void RTrim(char *t);
 void RTrim(std::string *stString);
 void LTrim(char *t);
 void LTrim(std::string *stString);
+std::string &Ssprintf(const char *fmt, ...);
+void AddToString(std::string *sstring, const char *fmt, ...);
 #endif
 

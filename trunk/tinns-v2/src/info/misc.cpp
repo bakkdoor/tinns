@@ -19,6 +19,13 @@
 	02110-1301, USA.
 */
 
+
+/*
+	MODIFIED: 01 Jul 2006 hammag
+	REASON: - add IPlongToString()
+	
+*/
+
 #include "main.h"
 
 u32 IPStringToDWord(const char *IP)
@@ -33,6 +40,14 @@ u32 IPStringToDWord(const char *IP)
 	return (d<<24)|(c<<16)|(b<<8)|a;
 }
 
+char *IPlongToString(const u32 IP)
+{
+  struct in_addr in_IP;
+  
+  in_IP.s_addr = IP;
+  return inet_ntoa(in_IP);
+}
+	
 void Trim(char *t)
 {
 	RTrim(t);

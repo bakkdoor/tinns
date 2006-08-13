@@ -182,7 +182,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 			mInventory[Idx-InventoryStart] = std::atoi(i->c_str());
 		}
 	}
-
+	
 	return true;
 }
 

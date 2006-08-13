@@ -24,17 +24,23 @@
 /*
 	main.cpp - this is the main file with the main function
 
-	MODIFIED: 12 Sep 2005 Akiko
-	REASON: - removed some of the Windows specific code
-		- replaced SleepEx method by the Linux equivalent
-	MODIFIED: 26 Sep 2005 Akiko
-	REASON:	- added GPL
+  	MODIFIED: 12 Sep 2005 Akiko
+  	REASON: - removed some of the Windows specific code
+  		- replaced SleepEx method by the Linux equivalent
+  	MODIFIED: 26 Sep 2005 Akiko
+  	REASON:	- added GPL
     MODIFIED: 23 Dec 2005 bakkdoor
-	REASON: - Added <csignal> & signalHandler -> catch strg-c and shutdown nicely
+	  REASON: - Added <csignal> & signalHandler -> catch strg-c and shutdown nicely
     MODIFIED: 25 Dec 2005 Namikon
-	REASON: - Fixed shutdown procedure, wont cause segfault anymore
+	  REASON: - Fixed shutdown procedure, wont cause segfault anymore
     MODIFIED: 06 Jan 2006 Namikon
-    REASON: - Added color to console outputs
+    REASON: - Added color to console outputs    
+    MODIFIED: 01 Jul 2006 Hammag
+	  REASON: - commented out sched_yield() in main loop, as it is
+	            not needed anymore with a right timeout for ReadSetTCP select
+    MODIFIED: 26 Jul 2006 Hammag
+	  REASON: - added memory leak check in the main loop for unreleased DB Ressources and messages          
+
 */
 
 #include "main.h"
@@ -64,21 +70,25 @@ int main()
 	if(!InitTinNS())
 		while(1)
 			sleep(1);
-
+  
 	//RemoteConsole->Start();
 	GameServer->Start();
+	//GameServer->SetGameTime(0);
+	
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
 	while(1)
 	{
-	    ServerSock->update();
+	  ServerSock->update();
 		Server->Update();
 		Database->Update();
 		GameServer->Update();
+		PMessage::CheckMsgCount(); // Memory leak check
+		MySQL->CheckResCount(); // Memory leak check		
 		Console->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);
-		sched_yield();
+		//sched_yield();
 	}
 
 	return 0;

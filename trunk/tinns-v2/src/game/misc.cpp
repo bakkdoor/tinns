@@ -199,3 +199,17 @@ void GetSVNRev(char *version)
     sprintf(version, "Unknown");
 #endif
 }
+
+std::string &Ssprintf(const char *fmt, ...)
+{
+  static std::string tmpstring;
+  char buff[1024];
+ 	va_list args;
+ 	
+	va_start(args, fmt);
+  vsnprintf(buff, 1024, fmt, args );
+  va_end(args);
+  buff[1023] = '\0';
+  tmpstring = buff;
+  return tmpstring;
+}

@@ -25,9 +25,9 @@
 // SVN Version override for release builts.
 // Only uncomment these lines if you want to compile binary releases
 // or if you want to create a tarball from SVN to release a "stable" version.
-//#define TINNS_VERSION_PATCH "0.0.2"
-//#define TINNS_VERSION_INFO "0.0.2"
-//#define TINNS_VERSION_GAME "0.0.2"
+//#define TINNS_VERSION_PATCH "0.2.0"
+//#define TINNS_VERSION_INFO "0.2.0"
+//#define TINNS_VERSION_GAME "0.2.0"
 
 #endif
 

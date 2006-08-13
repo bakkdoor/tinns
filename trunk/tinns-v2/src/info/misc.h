@@ -19,6 +19,13 @@
 	02110-1301, USA.
 */
 
+
+/*
+	MODIFIED: 01 Jul 2006 hammag
+	REASON: - add IPlongToString()
+	
+*/
+
 #ifndef MISC_H
 #define MISC_H
 
@@ -27,6 +34,7 @@
 #endif
 
 u32 IPStringToDWord(const char *IP);
+char *IPlongToString(const u32 IP);
 std::string GetAccessString(int level);
 void GetSVNRev(char *version);
 

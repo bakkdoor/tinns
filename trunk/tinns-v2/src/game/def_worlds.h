@@ -50,7 +50,7 @@ class PDefWorld
 
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
-		inline const std::string &GetDatFile() const { return mName; }
+		inline const std::string &GetDatFile() const { return mDatFile; }
 		inline int GetFlags() const { return mFlags; }
 };
 

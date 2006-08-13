@@ -19,6 +19,13 @@
 	02110-1301, USA.
 */
 
+
+/*
+    MODIFIED: 6 Jul 2006 Hammag
+	  REASON: - moved include "types.h" before include "../netcode/main.h" to permit compile
+*/
+
+
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -37,6 +44,7 @@
 #include <sstream>
 #include <map>
 #include <list>
+#include <queue>
 #include <unistd.h>
 #include <iostream>
 #include <stdarg.h>
@@ -50,19 +58,20 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
+//#include "../netcode/connection-tcp.h"
+//#include "../netcode/connection-udp.h"
+//#include "../netcode/serversocket.h"
 
 //tinns includes
 #include "types.h"
+#include "../netcode/main.h"
 
 // MySQL Support
 #include "mysql.h"
 #include "sql.h"
-#include "../netcode/connection-tcp.h"
-#include "../netcode/connection-udp.h"
-#include "../netcode/serversocket.h"
 #include "console.h"
 #include "config.h"
 #include "accounts.h"

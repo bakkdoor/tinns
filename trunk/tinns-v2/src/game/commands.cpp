@@ -56,6 +56,17 @@
         MODIFIED: 02 Jan Namikon
         REASON: - Added command @debug to enable/disable debug output of world item IDs (DIRECT> System: ID: <id> LOC: <world>)
 
+        MODIFIED: 29 Jul Hammag
+        REASON: - Added command @skin to play with skins :-P
+                  Usage:  @skin #<chardef idx>
+                                  for use with the index id from characters.def
+                      or  @skin <model>|-|# [<head>[ <torso>[ <legs>]]]
+                                  <model> is the model id found after the model name in characters.def
+                                  # resets to real char skin
+                                  - means current skin
+                                  incrementaly optional <head>, <torso> and <legs> are values 0-9
+                      As a side effect, just doing @skin - will display you current skin infos (and change to the same ...)
+                                  
 	ToDo:
 	- Fix Subwaysyncy
 	- Fix Wastelandsyncy
@@ -169,11 +180,11 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
    }
 // -------------------------------------------------------
    if(strcmp(Command, "warp") == 0) {
-       int zoneID = 0;
-       zoneID = std::atoi(Arg1);
+       int zoneID = std::atoi(Arg1);
+       int SpawnPointID = std::atoi(Arg2);
 
        if(zoneID == 0) {
-           Chat->send(Client, CHAT_DIRECT, "System", "Syntax error. @warp <zoneid>");
+           Chat->send(Client, CHAT_DIRECT, "System", "Syntax error. @warp <zoneid> [<spawn location>]");
            return;
        }
 
@@ -186,11 +197,14 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
 
        PChar *Char = Database->GetChar(Client->GetCharID());
 
-	   u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8,
+	   /* u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8,
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
         0xcf, 0x03, 0x00, 0x01, 0x00, 0x15, 0x1b, 0x22, 0x01, 0x00, 0x00,
         0x1f, 0x49, 0x82, 0x81, 0x81, 0xe5, 0x6b, 0x04, 0xd5, 0x76, 0x01,
-        0x00, 0x00, 0x00, 0x11, 0x11};
+        0x00, 0x00, 0x00, 0x11, 0x11}; */
+     u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8, // shortened version from NeoX
+        0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
+        0xcf, 0x03, 0x00, 0x01, 0x00};
 
        //Client->IncreaseUDP_ID();
        Client->SetUDP_ID(Client->GetUDP_ID()+1);
@@ -199,13 +213,22 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        *(u16*)&ZonePacket[7] = Client->GetUDP_ID();
        *(u32*)&ZonePacket[15] = zoneID;
 
+       *(u16*)&ZonePacket[10] = Client->GetLocalID(); // from NeoX
+       *(u16*)&ZonePacket[19] = SpawnPointID; // from NeoX
+       // ZonePacket[1] = (char)Test; // from NeoX
        Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, def->GetName().c_str());
 
        Char->SetLocation(zoneID);
-       Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));
+       Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));	
    }
 // -------------------------------------------------------
+#define DISABLE_RAWF
    if(strcmp(Command, "rawf") == 0) {
+#ifdef DISABLE_RAWF
+Chat->send(Client, CHAT_DIRECT, "System", "Command disabled, request logged");
+Console->Print(RED, BLACK, "Client %d requested file %s with proto %s", Client->GetCharID(), Arg1, Arg2);
+return;
+#else
        if(strcmp(Arg2, "udp") != 0 && strcmp(Arg2, "tcp") != 0) {
           //SendDChat(Client, "SYSTEM", "Syntax is @rawf <file> <udp/tcp>");
           Chat->send(Client, CHAT_DIRECT, "System", "Syntax is @rawf <file> <udp/tcp>");
@@ -255,6 +278,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
             Chat->send(Client, CHAT_DIRECT, "System", output);
 
        }
+#endif
    }
 // -------------------------------------------------------
    if(strcmp(Command, "delworlditem") == 0) {
@@ -469,6 +493,95 @@ Console->Print("SendChat");
       }
 
    }
+// -------------------------------------------------------
+/*
+                  Usage:  @skin #<chardef idx>
+                                  for use with the index id from characters.def
+                      or  @skin <model>|-|# [<head>[ <torso>[ <legs>]]]
+                                  <model> is the model id found after the model name in characters.def
+                                  # resets to real char skin (optionnaly modified by following args)
+                                  - means current skin
+                                  incrementaly optional <head>, <torso> and <legs> are values 0-9
+*/
+  if(strcmp(Command, "skin") == 0)
+  {
+    
+    u32 SkinVal1, Skinval2, Skinval3, Skinval4;
+    PChar *SkinChar = Database->GetChar(Client->GetCharID());
+    std::stringstream SkinChat;
+    char SkinStr[128];
+    
+    if(Arg1[0] == '\0')
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@skin ( #<chardef idx> ) | ( <model> | # [<head>[ <torso>[ <legs>]]] )");
+    }
+    else
+    {
+      if ((Arg1[0] == '#') && (Arg1[1] != '\0'))
+      {
+        SkinVal1 = atoi(Arg1+1);
+        SkinChar->SetCurrentLookFromCharType(atoi(Arg1+1));
+        SkinChat << "Skin set to the skin of char type ";
+        SkinChat << (int)SkinVal1;
+      }
+      else
+      {
+        if ((Arg1[0] == '#') && (Arg1[1] == '\0'))
+        {
+          SkinChar->GetRealLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+        }
+        else if ((Arg1[0] == '-') && (Arg1[1] == '\0'))
+        {
+          SkinChar->GetCurrentLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+        }
+        else
+        {
+          SkinVal1 = atoi(Arg1);
+        }
+        
+        if(Arg2[0] != '\0')
+        {
+          if(Arg2[0] != '-')
+          {
+            Arg2[1] = '\0';
+            Skinval2 = atoi(Arg2);
+          }
+          if(Arg3[0] != '\0')
+          {
+            if(Arg3[0] != '-')
+            {
+              Arg3[1] = '\0';
+              Skinval3 = atoi(Arg3);
+            }
+            if(Arg4[0] != '\0')
+            {
+              if(Arg4[0] != '-')
+              {
+                Arg4[1] = '\0';
+                Skinval4 = atoi(Arg4);
+              }
+            }
+          }
+        }
+        
+        SkinChar->SetCurrentLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+        
+        SkinChat << "Skin set to model ";
+        SkinChat << (int)SkinVal1 << " with head " << (int)Skinval2 << ", torso " << (int)Skinval3 << ", legs " << (int)Skinval4;          
+      }
+
+      snprintf(SkinStr, 127, "%s", SkinChat.str().c_str());
+      SkinStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", SkinStr);
+// Temp
+      PMessage* tmpMsg = GameServer->BuildCharHelloMsg(Client); 
+      int nbSent = ClientManager->UDPBroadcast(tmpMsg, Client);
+//Console->Print(GREEN, BLACK, "Client %d: (Skin) update message sent to %d chars", Client->GetIndex(), nbSent);
+nbSent = nbSent; // to avoid compliation warning
+
+    }
+  }
+// -------------------------------------------------------   
 }
 
 bool SendRawFile(PClient *Client, char *FileName, int protocoll) {

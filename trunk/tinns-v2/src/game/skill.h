@@ -117,8 +117,8 @@ class PSkillHandler
         inline PMainSkills()
         {
             mINT = mCON = mSTR = mDEX = mPSI = 0;
-            mINTsp = mINTsp = mINTsp = mINTsp = mINTsp = 0;
-            mINTxp = mINTxp = mINTxp = mINTxp = mINTxp = 0.f;
+            mINTsp = mCONsp = mSTRsp = mDEXsp = mPSIsp = 0;
+            mINTxp = mCONxp = mSTRxp = mDEXxp = mPSIxp = 0.f;
         }
     };
 

@@ -47,17 +47,205 @@ PChar::PChar()
 {
 	mID = 0;
 	mAccount = 0;
+	mGender = 0;
+	mClass = 0;
 	mProfession = 1;
 	mFaction = 1;
-	mModel = 0;
-	mType = 0;
+	//mModel = 0;
+	//mType = 0;
+	mRealHead = 0;  // Base Skin elements, in complement of (computed) mType
+	mRealTorso = 0; // " Head shouldn't be changeable, except in case of surgery !!!
+	mRealLegs = 0;  // "
+	mSkin = 0;  // Current Skin elements
+	mHead = 0;  // "
+	mTorso = 0; // "
+	mLegs = 0;  // "
+		
 	mLocation = 1;
+	mApt=0;
 	mCash = 0;
 
-    mIsOnline = false;
-	mDirtyFlag = false;
+  mIsOnline = false;
+  mDirtyFlag = false;
 
 	Skill = new PSkillHandler();
+}
+
+PChar::~PChar()
+{
+  delete Skill;
+}
+
+void PChar::SetProfession(u32 Profession)
+{
+  const PDefCharKind *def = GameDefs->GetCharKindDef(Profession);
+  if (def == NULL)
+  {
+    Console->Print(RED, BLACK, "Char %d: Invalid profession %d", mID, Profession);
+    mProfession = 10;
+    mClass = 0;
+  }
+  else
+  {
+    mProfession = Profession;
+    mClass = def->GetType();
+  }
+  SetDirtyFlag(); 
+}
+
+u32 PChar::GetSkinFromCharType(u32 nType)
+{
+  const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
+  if (nDefCharacter)
+  {
+    return ((u32)(nDefCharacter->GetModel()));
+  }
+  else
+    return 0;
+}
+
+inline u32 PChar::GetBaseModel()
+{
+  return GetSkinFromCharType(GetType());
+}
+
+void PChar::SetRealLook(u32 nHead, u32 nTorso, u32 nLegs)
+{
+  mRealHead = nHead;
+  mRealTorso = nTorso;
+  mRealLegs = nLegs;
+  SetDirtyFlag(); 
+  ResetCurrentLook();
+}
+
+void PChar::GetRealLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs)
+{
+  nSkin = GetBaseModel();
+  nHead = mRealHead;
+  nTorso = mRealTorso;
+  nLegs = mRealLegs;
+}
+
+void PChar::SetCurrentLookFromCharType(u32 nType)
+{
+  int iHead, iTorso, iLegs;
+  u32 nSkin, nHead, nTorso, nLegs;
+  
+  const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
+  if (nDefCharacter)
+  {
+    nSkin = (u32) nDefCharacter->GetModel();
+    iHead = nDefCharacter->GetHead();
+    iTorso = nDefCharacter->GetTorso();
+    iLegs = nDefCharacter->GetLegs();
+    
+    if ((iHead < 0) || (iTorso < 0) || (iLegs < 0))
+    {
+      // do something !
+      nHead = nTorso = nLegs = 0;
+    }
+    else
+    {
+      nHead = iHead % 10;
+      nTorso = iTorso % 10;
+      nLegs = iLegs % 10;
+    }
+    
+    SetCurrentLook(nSkin, nHead, nTorso, nLegs);
+  }
+}
+
+void PChar::SetCurrentLook(u32 nSkin, u32 nHead, u32 nTorso, u32 nLegs)
+{
+  mSkin = nSkin;
+  mHead = nHead;
+  mTorso = nTorso;
+  mLegs = nLegs;
+  // Ingame skin update will be done automagically in the normal update flow
+  // A flag could also be set somewhere (preferably in Char si that we don't have to care if ingame or not)
+  //    to request quicker ingame update
+}
+
+void PChar::ResetCurrentLook()
+{
+  SetCurrentLook(GetSkinFromCharType(GetType()), mRealHead, mRealTorso, mRealLegs);
+}
+    
+// GetCurrentLook will later have to take Power Armors and GM overrides into account    
+void PChar::GetCurrentLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs)
+{
+  nSkin = mSkin;
+  nHead = mHead;
+  nTorso = mTorso;
+  nLegs = mLegs;
+}
+
+void PChar::SetBaseSkills()
+{
+  const PDefCharKind *def = GameDefs->GetCharKindDef(mProfession);
+  //Console->Print(YELLOW, BLACK, "PChar::SetBaseSkills() Profession: %d",def->GetIndex());
+  if (def == NULL)
+  {
+    Console->Print(RED, BLACK, "PChar::SetBaseSkills: GetCharKindDef=NULL");
+    return;
+  }
+  Skill->SetMainSkill(MS_INT, def->GetSkillInfo(MS_INT).mStart);
+  Skill->SetMainSkill(MS_CON, def->GetSkillInfo(MS_CON).mStart);
+  Skill->SetMainSkill(MS_DEX, def->GetSkillInfo(MS_DEX).mStart);
+  Skill->SetMainSkill(MS_STR, def->GetSkillInfo(MS_STR).mStart);
+  Skill->SetMainSkill(MS_PSI, def->GetSkillInfo(MS_PSI).mStart);
+  // management of SP needed ? NC Client seem to calculate what remains ...
+  // or put SP setting after subskill setting ?
+  /* Skill->SetSP(MS_INT, (short) ??? ));
+  Skill->SetSP(MS_CON, ((short) ??? ));
+  Skill->SetSP(MS_DEX, (short) ??? ));
+  Skill->SetSP(MS_STR, (short) ??? ));
+  Skill->SetSP(MS_PSI, ((short) ??? )); */
+  // what about XPs ?
+  /* Skill->SetXP(MS_INT, ??? ));
+  Skill->SetXP(MS_CON, ??? ));
+  Skill->SetXP(MS_DEX, ??? ));
+  Skill->SetXP(MS_STR, ??? ));
+  Skill->SetXP(MS_PSI, ??? )); */ 
+  Console->Print(YELLOW, BLACK, "PChar::SetBaseSkills() not fully functionnal - unused skill points will be lost");
+}
+
+void PChar::SetBaseSubskills(u8 NSZNb, const char* NonZeroSubskills)
+{
+  int i;
+  
+  if (NSZNb == 0)
+    return;
+  
+  for (i = 0; i < NSZNb; i++)
+  {
+     Skill->SetSubSkill((SUB_SKILLS) NonZeroSubskills[2 * i], (int) NonZeroSubskills[2 * i +1]);
+  }
+}
+
+void PChar::SetBaseInventory()
+{
+  u8 i;
+  u32 BaseItemID;
+  const PDefCharKind *def = GameDefs->GetCharKindDef(mProfession);
+  
+  //mCash = 5000;
+  mCash = def->GetStartMoney();
+  
+  for (i = 0; i < 8 ; i++)
+  {
+    BaseItemID = def->GetStartInventory(i);
+    if (BaseItemID) {
+      Console->Print(GREEN, BLACK, "Adding item %d to base inventory", BaseItemID);
+      PItem* NewItem = new PItem(BaseItemID);
+      if (NewItem->GetItemID())
+        mInventory.PutItem(NewItem);
+      else
+        Console->Print(RED, BLACK, "Invalid item ID !");
+    }
+  }
+
+  Console->Print(YELLOW, BLACK, "Warning: Inventory are saved to DB at creation but not reloaded nor transfered ingame (for now)");
 }
 
 bool PChar::SQLLoad(int CharID) {
@@ -77,36 +265,72 @@ bool PChar::SQLLoad(int CharID) {
         SetID(CharID);
         SetName(row[1]);
 
+        // Gender
+        int genvalue = std::atoi(row[c_sex]);
+        if((genvalue == 0) || (genvalue == 1))
+            mGender = static_cast<u32>(genvalue);
+        else
+        {
+          Console->Print(RED, BLACK, "Bad gender value: %d (Char ID %d)", genvalue, mID);
+          mGender = 0;
+        }
+
         // Profession
         int profvalue = std::atoi(row[c_profession]);
-            if(GameDefs->GetCharDef(profvalue))
-                mProfession = static_cast<u32>(profvalue);
-        else
-            mProfession = 1;
-
-        // Faction
-        //int facvalue = std::atoi(row[c_faction]);
-        //    if(GameDefs->GetFactionDef(facvalue))
-        //        mFaction = static_cast<u32>(facvalue);
+        SetProfession( static_cast<u32>(profvalue));
+         
+        // Class
+        //int classvalue = std::atoi(row[c_class]);
+        //if(classvalue < 4)
+        //    mClass = static_cast<u32>(classvalue);
         //else
+        //{
+        //  Console->Print(RED, BLACK, "Bad class value: %d (Char ID %d)", classvalue, mID);
+        //  classvalue = 0;
+        //}
+            
+        // Faction
+        int facvalue = std::atoi(row[c_faction]);
+        if(GameDefs->GetFactionDef(facvalue))
+            mFaction = static_cast<u32>(facvalue);
+        else
             mFaction = 1;
 
-        // Model
-        //int modvalue = std::atoi(row[c_model]);
-        //mModel = static_cast<u32>(modvalue);
-        mModel = 1;
-
+        /* // Model
+        int modvalue = std::atoi(row[c_model]);
+        mModel = static_cast<u32>(modvalue);
+        mModel = 10; */
+        int headvalue = std::atoi(row[c_head]);
+        int torsovalue = std::atoi(row[c_torso]);
+        int legsvalue = std::atoi(row[c_legs]);
+        SetRealLook(static_cast<u32>(headvalue), static_cast<u32>(torsovalue), static_cast<u32>(legsvalue));
+            
         // Type
-        //int typevalue = std::atoi(row[c_type]);
-        //mType = static_cast<u32>(typevalue);
-        mType = 1;
+        /*
+        int typevalue = std::atoi(row[c_type]);
+        mType = static_cast<u32>(typevalue);
+        //mType = 1; */
 
         // Location
         int locvalue = std::atoi(row[c_location]);
         mLocation = static_cast<u32>(locvalue);
-
+        
+        int posvalue = std::atoi(row[c_pos_x]);
+        Coords.mX = static_cast<u16>(posvalue);
+        posvalue = std::atoi(row[c_pos_y]);
+        Coords.mY = static_cast<u16>(posvalue);
+        posvalue = std::atoi(row[c_pos_z]);
+        Coords.mZ = static_cast<u16>(posvalue);
+        posvalue = std::atoi(row[c_angle_ud]);
+        Coords.mUD = static_cast<u8>(posvalue);
+        posvalue = std::atoi(row[c_angle_lr]);
+        Coords.mLR = static_cast<u8>(posvalue);        
+        
+        int primapt = std::atoi(row[c_apt]);
+        mApt  = static_cast<u32>(primapt);
+        
         // Cash
-        float cashvalue = std::atof(row[c_cash]);
+        f32 cashvalue = std::atof(row[c_cash]);
         mCash = static_cast<u32>(cashvalue);
 
         // ---------------------------------------------
@@ -165,7 +389,12 @@ bool PChar::SQLLoad(int CharID) {
         Skill->SetSubSkill(SK_PSR, std::atoi(row[c_psr]));
         Skill->SetSubSkill(SK_WPW, std::atoi(row[c_wpw]));
         // ---------------------------------------------
+        // Inventory
+        // ---------------------------------------------
+        mInventory.SQLLoad(mID);
+        // + Belt, Implants(&Armor), Gogo, GR list, Chats settings & friendlist
     }
+    MySQL->FreeGameSQLResult(result);
     return true;
 }
 
@@ -255,9 +484,182 @@ bool PChar::SQLLoad(int CharID) {
 	return false;
 }
 */
-void PChar::Save() // TO BE REWRITTEN!!!!
+
+bool PChar::SQLCreate() // Specific method for creation in order to avoid existence check with each save
 {
-    return;
+    std::string query, queryv;
+
+    query = "INSERT INTO characters (c_id";
+    queryv = ") VALUES (NULL";
+    
+    query += ",c_name";
+    queryv = queryv + ",'" + mName + "'";
+
+    query += ",a_id";
+    queryv += Ssprintf(",'%u'", mAccount);
+    query += ",c_class";
+    queryv += Ssprintf(",'%u'", mClass);
+    query += ",c_sex";
+    queryv += Ssprintf(",'%u'", mGender);
+    query += ",c_profession";   
+    queryv += Ssprintf(",'%u'", mProfession);
+    query += ",c_faction";
+    queryv += Ssprintf(",'%u'", mFaction);
+    query += ",c_head";
+    queryv += Ssprintf(",'%u'", mRealHead);
+    query += ",c_torso";
+    queryv += Ssprintf(",'%u'", mRealTorso);
+    query += ",c_legs";
+    queryv += Ssprintf(",'%u'", mRealLegs);
+    //query += ",c_model";
+    //queryv += Ssprintf(",'%u'", mModel);
+    //query += ",c_type";
+    //queryv += Ssprintf(",'%u'", mType);
+    query += ",c_location";
+    queryv += Ssprintf(",'%u'", mLocation);
+    query += ",c_cash";
+    queryv += Ssprintf(",'%u'", mCash);
+
+    query = query + queryv + ");";
+    
+    if ( MySQL->GameQuery(query.c_str()) )
+    {
+        Console->Print(RED, BLACK, "PChar::SQLCreate could not add char %s to database", mName.c_str());
+        Console->Print("Query was:");
+        Console->Print("%s", query.c_str());
+        MySQL->ShowGameSQLError();
+        return false;
+    }
+    else
+    {
+        mID = MySQL->GetLastGameInsertId();
+        //Console->Print(GREEN, BLACK, "New char %s got ID %d", mName.c_str(), mID);
+        mDirtyFlag = true;
+        return true;
+    }
+}
+
+bool PChar::SQLSave()
+{ 
+    std::string query;
+    //std::string ts;
+
+/* TODO:
+  - Mostly at creation/load :
+            c_apt, (or when first GR to primary apt to avoid creation of unused apt?)
+            (c_slot)
+  - At save/load :
+            SoulLight ???
+            FactionSymp[] ???
+            Chest change: style, brightness, color
+            Legs change: style, brightness, color
+            mHealt, mStamina, mMana (not in DB !!!)
+            How to compute MaxHealth etc. ?
+*/                    
+    query = "UPDATE characters SET";
+    
+    query += Ssprintf(" c_location='%u'", mLocation);
+    query += Ssprintf(",c_pos_x='%u'", Coords.mX);
+    query += Ssprintf(",c_pos_y='%u'", Coords.mY);
+    query += Ssprintf(",c_pos_z='%u'", Coords.mZ);
+    query += Ssprintf(",c_angle_ud='%u'", Coords.mUD);
+    query += Ssprintf(",c_angle_lr='%u'", Coords.mLR);
+    query += Ssprintf(",c_cash='%u'", mCash);
+    query += Ssprintf(",c_apt='%u'", mApt);
+    
+    query += Ssprintf(",c_head='%u'", mRealHead);
+    query += Ssprintf(",c_torso='%u'", mRealTorso);
+    query += Ssprintf(",c_legs='%u'", mRealLegs);
+
+    query += Ssprintf(",c_faction='%u'", mFaction);
+        
+    /* This group of fiels shouldn't change in-game
+    query = query + ",c_name='" + mName + "'";    
+    query += Ssprintf(",a_id='%u'", mAccount);
+    query += Ssprintf(",c_class='%u'", mClass);
+    query += Ssprintf(",c_sex='%u'", mGender);
+    query += Ssprintf(",c_profession='%u'", mProfession);
+    // query += Ssprintf(",c_model='%u'", mModel);
+    // query += Ssprintf(",c_type='%u'", mType);
+    */
+    
+        // ---------------------------------------------
+        // Saving skills --- MAIN Skills with SP and XP
+        // ---------------------------------------------
+    query += Ssprintf(",c_int_lvl='%u'", Skill->GetMainSkill(MS_INT));
+    query += Ssprintf(",c_con_lvl='%u'", Skill->GetMainSkill(MS_CON));
+    query += Ssprintf(",c_dex_lvl='%u'", Skill->GetMainSkill(MS_DEX));
+    query += Ssprintf(",c_str_lvl='%u'", Skill->GetMainSkill(MS_STR));
+    query += Ssprintf(",c_psi_lvl='%u'", Skill->GetMainSkill(MS_PSI));
+        // ---------------------------------------------
+    query += Ssprintf(",c_int_pts='%u'", Skill->GetSP(MS_INT));
+    query += Ssprintf(",c_con_pts='%u'", Skill->GetSP(MS_CON));
+    query += Ssprintf(",c_dex_pts='%u'", Skill->GetSP(MS_DEX));
+    query += Ssprintf(",c_str_pts='%u'", Skill->GetSP(MS_STR));
+    query += Ssprintf(",c_psi_pts='%u'", Skill->GetSP(MS_PSI));
+        // ---------------------------------------------
+    query += Ssprintf(",c_int_xp='%u'", Skill->GetXP(MS_INT));
+    query += Ssprintf(",c_con_xp='%u'", Skill->GetXP(MS_CON));
+    query += Ssprintf(",c_dex_xp='%u'", Skill->GetXP(MS_DEX));
+    query += Ssprintf(",c_str_xp='%u'", Skill->GetXP(MS_STR));
+    query += Ssprintf(",c_psi_xp='%u'", Skill->GetXP(MS_PSI));
+        // ---------------------------------------------
+        // SubSkills
+        // ---------------------------------------------
+    query += Ssprintf(",c_mc='%u'", Skill->GetSubSkill(SK_MC));
+    query += Ssprintf(",c_hc='%u'", Skill->GetSubSkill(SK_HC));
+    query += Ssprintf(",c_tra='%u'", Skill->GetSubSkill(SK_TRA));
+    query += Ssprintf(",c_for='%u'", Skill->GetSubSkill(SK_FOR));
+    query += Ssprintf(",c_pc='%u'", Skill->GetSubSkill(SK_PC));
+    query += Ssprintf(",c_rc='%u'", Skill->GetSubSkill(SK_RC));
+    query += Ssprintf(",c_tc='%u'", Skill->GetSubSkill(SK_TC));
+    query += Ssprintf(",c_vhc='%u'", Skill->GetSubSkill(SK_VHC));
+    query += Ssprintf(",c_agl='%u'", Skill->GetSubSkill(SK_AGL));
+    query += Ssprintf(",c_rep='%u'", Skill->GetSubSkill(SK_REP));
+    query += Ssprintf(",c_rec='%u'", Skill->GetSubSkill(SK_REC));
+    query += Ssprintf(",c_rcl='%u'", Skill->GetSubSkill(SK_RCL));
+    query += Ssprintf(",c_atl='%u'", Skill->GetSubSkill(SK_ATL));
+    query += Ssprintf(",c_end='%u'", Skill->GetSubSkill(SK_END));
+    query += Ssprintf(",c_fir='%u'", Skill->GetSubSkill(SK_FIR));
+    query += Ssprintf(",c_enr='%u'", Skill->GetSubSkill(SK_ENR));
+    query += Ssprintf(",c_xrr='%u'", Skill->GetSubSkill(SK_XRR));
+    query += Ssprintf(",c_por='%u'", Skill->GetSubSkill(SK_POR));
+    query += Ssprintf(",c_htl='%u'", Skill->GetSubSkill(SK_HLT));
+    query += Ssprintf(",c_hck='%u'", Skill->GetSubSkill(SK_HCK));
+    query += Ssprintf(",c_brt='%u'", Skill->GetSubSkill(SK_BRT));
+    query += Ssprintf(",c_psu='%u'", Skill->GetSubSkill(SK_PSU));
+    query += Ssprintf(",c_wep='%u'", Skill->GetSubSkill(SK_WEP));
+    query += Ssprintf(",c_cst='%u'", Skill->GetSubSkill(SK_CST));
+    query += Ssprintf(",c_res='%u'", Skill->GetSubSkill(SK_RES));
+    query += Ssprintf(",c_imp='%u'", Skill->GetSubSkill(SK_IMP));
+    query += Ssprintf(",c_ppu='%u'", Skill->GetSubSkill(SK_PPU));
+    query += Ssprintf(",c_apu='%u'", Skill->GetSubSkill(SK_APU));
+    query += Ssprintf(",c_mst='%u'", Skill->GetSubSkill(SK_MST));
+    query += Ssprintf(",c_ppw='%u'", Skill->GetSubSkill(SK_PPW));
+    query += Ssprintf(",c_psr='%u'", Skill->GetSubSkill(SK_PSR));
+    query += Ssprintf(",c_wpw='%u'", Skill->GetSubSkill(SK_WPW));
+        // ---------------------------------------------
+
+    query += Ssprintf(" WHERE c_id='%u' LIMIT 1;", mID);
+    
+    if ( MySQL->GameQuery( query.c_str()) )
+    {
+        Console->Print(RED, BLACK, "PChar::SQLSave could not save char %s (%u) to database", mName.c_str(), mID);
+        Console->Print("Query was:");
+        Console->Print("%s", query.c_str());
+        MySQL->ShowGameSQLError();
+        return false;
+    }
+
+    if (! mInventory.SQLSave(mID))
+      return false;
+      
+    // + Belt, Implants(&Armor), Gogo, GRs,
+    // Chats settings (?), directs & buddies,
+    
+    mDirtyFlag = false;
+    return true;
+}
 /*
 	std::stringstream fname;
 	fname << "./database/playerchars/" << GetID() << ".xml" << '\0';
@@ -302,12 +704,11 @@ void PChar::Save() // TO BE REWRITTEN!!!!
 		std::rename(tempname.str().c_str(), fname.str().c_str());
 	} else
 	{
-		Console->Print("PChar: could not save char %s (%d)", mName.c_str(), mID);
+		Console->Print("PChar: could not save char %s (%u)", mName.c_str(), mID);
 	}
 
 	mDirtyFlag = false;
 */
-}
 
 void PChar::SetOnlineStatus(bool IsOnline)
 {
@@ -317,11 +718,13 @@ void PChar::SetOnlineStatus(bool IsOnline)
 
     if(IsOnline)
     {
-        onlinestatus = 0;
+        onlinestatus = 0; // Strange ????
+        mIsOnline = true;
     }
     else
     {
-        onlinestatus = 1;
+        onlinestatus = 1; // Strange ????
+        mIsOnline = false;
     }
 
 //    sprintf(query, "UPDATE charlist SET c_isonline = %d WHERE a_id = %d AND c_id = %d", onlinestatus, mAccount, mID);
@@ -336,8 +739,9 @@ void PChar::SetOnlineStatus(bool IsOnline)
 
 void PChar::FillinCharDetails(u8 *Packet)
 {
-    const PDefCharKind *def = GameDefs->GetCharKindDef(mType);
-
+    //const PDefCharKind *def = GameDefs->GetCharKindDef(GetType());
+    const PDefCharKind *def = GameDefs->GetCharKindDef(GetProfession());
+    
     if(!Packet)
         return;
 
@@ -357,8 +761,8 @@ void PChar::FillinCharDetails(u8 *Packet)
     Packet[76] = (u8)Skill->GetMainSkill(MS_STR);
     Packet[77] = (u16)Skill->GetSP(MS_STR);
     Packet[79] = (u32)Skill->GetXP(MS_STR);
-    Packet[83] = (u8)def->GetSkillInfo(MS_DEX).mGrow;
-    Packet[84] = (u8)def->GetSkillInfo(MS_DEX).mMax;
+    Packet[83] = (u8)def->GetSkillInfo(MS_STR).mGrow;
+    Packet[84] = (u8)def->GetSkillInfo(MS_STR).mMax;
 
     Packet[85] = (u8)Skill->GetMainSkill(MS_DEX);
     Packet[86] = (u16)Skill->GetSP(MS_DEX);
@@ -483,6 +887,7 @@ void PChar::FillinCharDetails(u8 *Packet)
 PChars::PChars()
 {
 	mLastID = 0;
+	mLastSave = std::time(NULL);
 }
 
 PChars::~PChars()
@@ -519,6 +924,7 @@ void PChars::SQLLoad()
             int CharID = std::atoi(row[0]);
             if(info->SQLLoad(CharID))
             {
+                info->SetDirtyFlag(false);
                 info->SetAccount(Account->GetID());
                 mLastID = max(mLastID, info->GetID());
                 if(!mChars.insert(std::make_pair(info->GetID(), info)).second)
@@ -544,8 +950,9 @@ void PChars::SQLLoad()
             Console->Print(MAGENTA, BLACK, "Ignoring chars of inexistant account %i", AccId);
         }
     }
+    MySQL->FreeGameSQLResult(result);
     Console->Print("%s Loaded %i player chars", Console->ColorText(GREEN, BLACK, "[Success]"), nChars);
-	mLastSave = std::clock();
+	  mLastSave = std::time(NULL);
 }
 
 /*void PChars::Load()
@@ -605,12 +1012,25 @@ void PChars::SQLLoad()
 	}
 
 	Console->Print("Loaded %i player chars", nChars);
-	mLastSave = std::clock();
+	mLastSave = std::time(NULL);
 }
 */
-void PChars::Save()
+void PChars::SQLSave()
 {
+  // saves all dirty-flagged chars
+  	int nChars = 0;
+  	for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
+	  {
+		    PChar *Char = i->second;
+		    if(Char->IsDirty())
+    		{
+    			if (Char->SQLSave())
+    			  ++nChars;
+    		}
+		}
+		Console->Print("%i characters saved", nChars);
     return;
+}
 /*	// saves all dirty-flagged chars and maintains global character list
 	int nChars = 0;
 	typedef std::map<u32, std::list<PChar*>*> AccCharList;
@@ -658,7 +1078,6 @@ void PChars::Save()
 	}
 	Console->Print("%i characters saved", nChars);
 */
-}
 
 PChar *PChars::GetChar(u32 CharID) const
 {
@@ -686,11 +1105,14 @@ PChar *PChars::GetChar(const std::string &Name) const
 
 void PChars::Update()
 {
-	std::clock_t t = std::clock();
+	//std::time_t t = std::time(NULL);
+	std::time_t t = std::time(NULL); // change to time() to have real time instead of cpu used time
 
 	// autosave characters every 10 minutes
 	//NEW CHANGED TO 5 min
-	if((t-mLastSave)/CLOCKS_PER_SEC >= 300)
+	//Console->Print("T: %d Last: %d", t, mLastSave); // Doesn't work !!!
+	//if((t-mLastSave)/CLOCKS_PER_SEC >= 600)
+	if((t-mLastSave) >= 60) // tmp changed to 1 for testing
 	{
 		bool NeedSave = false;
 		for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
@@ -704,25 +1126,42 @@ void PChars::Update()
 
 		if(NeedSave)
 		{
-			Console->Print("Autosaving characters...");
-			Save();
+			Console->Print("Some characters need autosaving...");
+			SQLSave();
 			Console->Print("Autosave done.");
 		}
 		mLastSave = t;
 	}
 }
 
-PChar *PChars::CreateChar(u32 Account, const std::string &Name, u32 Type, u32 Model)
+PChar *PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
 {
 	PChar *Char = new PChar();
 	Char->SetName(Name);
-	Char->SetModel(Model);
-	Char->SetType(Type);
+	//Char->SetModel(Model);
+	Char->SetGender(Gender);
+	Char->SetProfession(Profession);
+	Char->SetFaction(Faction);
+	Char->SetRealLook(Head, Torso, Legs);
+	Char->SetBaseSkills();
+	Char->SetBaseSubskills(NZSNb, NonZeroSubskills);
+	Char->SetBaseInventory();
 	Char->SetAccount(Account);
-	mChars.insert(std::make_pair(++mLastID, Char));
-	Char->SetID(mLastID);
-	Char->SetDirtyFlag(true);
-	Save();
-
-	return Char;
+	Char->SetCharSlot(Slot);
+	
+	//mChars.insert(std::make_pair(++mLastID, Char));
+	//Char->SetID(mLastID); mID is now set in PChar::SQLCreate() from database c_id auto_increment value
+	Char->SetDirtyFlag();
+	if (Char->SQLCreate())
+	{
+	  if (Char->SQLSave())
+	  {
+	    mChars.insert(std::make_pair(Char->GetID(), Char));
+	    if (mLastID < Char->GetID())
+	      mLastID = Char->GetID(); // just in case it is needed somewhere. To be removed later with all LastID.
+      return Char;
+    }
+  }
+  return NULL;
 }

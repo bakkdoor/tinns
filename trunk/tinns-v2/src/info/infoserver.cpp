@@ -19,6 +19,16 @@
 	02110-1301, USA.
 */
 
+
+/*
+  MODIFIED: 01 Jul 2006 hammag
+	REASON: - added set timeout to 10 msec (for ReadSetTCP select) in Start()
+	          to avoid useless 100% CPU use
+	          
+    ToDo:
+    - Take main loop timeout setting from config file
+*/
+
 #include "main.h"
 
 struct PInfoState
@@ -73,6 +83,7 @@ void PInfoServer::Start()
 		Console->LPrint(RED, BLACK, "Failed");
 		Console->LClose();
 	}
+	ServerSock->settimeout(0, 10000);
 	GSLiveCheck();
 }
 
@@ -336,10 +347,11 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			}
 
 			u8 AUTHFAILED_HEADER[] = {0xfe, 0x0c, 0x00, 0x83, 0x86, 0x05, 0x00, 0x06, 0x00};
-			u8 AUTHFAILED_FOOTER[] = {0x00};
+			u8 AUTHFAILED_FOOTER[] = {0x00, 0x40};
 
-			AUTHFAILED_HEADER[1] = errorReason.size() + 8;
-			AUTHFAILED_HEADER[7] = errorReason.size() + 1;
+			*(u16*)&AUTHFAILED_HEADER[1] = errorReason.size() + 8;
+			*(u16*)&AUTHFAILED_HEADER[7] = errorReason.size() + 1;
+			//*(u8*)&AUTHFAILED_FOOTER[1] = {0x40};
 
 			Socket->write(AUTHFAILED_HEADER, sizeof(AUTHFAILED_HEADER));
 			Socket->write(errorReason.c_str(), errorReason.size());
@@ -408,12 +420,12 @@ bool PInfoServer::HandleServerList(PClient *Client, const u8 *Packet, int Packet
                 *(u16*)&SERVERLIST[9] = it->second.mPlayers;
                 if(it->second.mOnline == true)
                 {
-                    Console->Print("Sending server name: %s ip: %d player: %d port: %d online: yes", it->second.mName, it->second.mIp, it->second.mPlayers, it->second.mPort);
+                    Console->Print("Sending server name: %s ip: %s player: %d port: %d online: yes", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
                     *(u16*)&SERVERLIST[11] = 1;
                 }
                 else if(it->second.mOnline == false)
                 {
-                    Console->Print("Sending server name: %s ip: %d player: %d port: %d online: no", it->second.mName, it->second.mIp, it->second.mPlayers, it->second.mPort);
+                    Console->Print("Sending server name: %s ip: %s player: %d port: %d online: no", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
                     *(u16*)&SERVERLIST[11] = 0;
                 }
                 Socket->write(SERVERLIST, sizeof(SERVERLIST));

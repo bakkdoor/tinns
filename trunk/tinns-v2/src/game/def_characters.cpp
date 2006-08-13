@@ -69,9 +69,21 @@ bool PDefCharacter::LoadFromDef(PTokenList *Tokens)
 
 			case 3 :
 				mModel = std::atoi(i->c_str()); break;
+				  
+			case 4 : // 0
+				continue;
+				  
+			case 5 :
+				mHead = std::atoi(i->c_str()); break;
+				  
+			case 6 :
+				mTorso = std::atoi(i->c_str()); break;
+				  
+			case 7 :
+				mLegs = std::atoi(i->c_str()); break;
 		}
 
-		if(Idx==4)
+		if(Idx==7)
 			return true;
 	}
 

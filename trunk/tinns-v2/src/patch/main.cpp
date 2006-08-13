@@ -17,8 +17,13 @@
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 	02110-1301, USA.
-*/
 
+
+        MODIFIED: 01 Jul 2006 hammag
+	      REASON: - commented out sched_yield() in main loop, as it is
+	              not needed anymore with a right timeout for ReadSetTCP select
+
+*/	                
 #include "main.h"
 
 // for handling strg-c signal to shutdown in correct way
@@ -49,10 +54,10 @@ int main()
 
 	while(1)
 	{
-	    ServerSock->update();
-	    Server->Update();
+	  ServerSock->update();
+	  Server->Update();
 		PatchServer->Update();
-		sched_yield();
+		// sched_yield();
 	}
 
 

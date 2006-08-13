@@ -50,7 +50,12 @@
 	REASON: - Moved skill.h before chars.h (char.h needs skill.h now)
     MODIFIED: 30 May 2006 Namikon
 	REASON: - Removed all useless includes to complete the server splitup; Also renamed tinns.h to main.h
-
+    MODIFIED: 6 Jul 2006 Hammag
+	  REASON: - moved include "types.h" before include "../netcode/main.h" to permit compile
+    MODIFIED: 10 Jul 2006 Hammag
+	  REASON: - added inventory.h
+	  REASON: - added item.h
+	  
 */
 
 #ifndef MAIN_H
@@ -79,6 +84,7 @@
 #include <sstream>
 #include <map>
 #include <list>
+#include <queue>
 #include <unistd.h>
 #include <iostream>
 #include <stdarg.h>
@@ -92,23 +98,25 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
+//#include <arpa/inet.h>
+//#include "../netcode/connection-tcp.h"
+//#include "../netcode/connection-udp.h"
+//#include "../netcode/serversocket.h"
+
+//tinns includes
+#include "types.h"
+#include "../netcode/main.h"
 /*
 #include "../gamemonkey/gmMachine.h"
 #include "../gamemonkey/gmCall.h"
 */
 #include "console.h"
-//tinns includes
-#include "types.h"
 
 // MySQL Support
 #include "mysql.h"
 #include "sql.h"
-#include "../netcode/connection-tcp.h"
-#include "../netcode/connection-udp.h"
-#include "../netcode/serversocket.h"
 #include "vehicle.h"
 #include "config.h"
 #include "filesystem.h"
@@ -134,6 +142,8 @@
 #include "gameserver.h"
 #include "globals.h"
 #include "zoning.h"
+#include "item.h"
+#include "inventory.h"
 
 #include "chat.h"
 #include "commands.h"

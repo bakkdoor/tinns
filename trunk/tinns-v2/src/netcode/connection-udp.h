@@ -29,53 +29,85 @@
 
 	MODIFIED: 09 Feb 2006 bakkdoor
 	REASON: - introduced
+	
+	MODIFIED: 01 Jul 2006 hammag
+	REASON: - added private member m_ServerSocket
+	            and added corresponding parameter in constructor;
+	            
+  MODIFIED: 24 Jul 2006 hammag
+	REASON: - changed member data prefix from "m_" to "m" in for homogeneity with the reste of TinNS code
+	        - added private members data mQueueIn and mQueueOut
+	        - added public members methods SendMessage(), GetMessage(), DeleteOutgoingMessages() and modified code accordingly
+	        - removed old read/write member data, and added a compatibility mSendBufferMsg* member
+
+	MODIFIED: 05 Aug 2006 hammag
+	REASON: - renamed "getLocalAddress()" to "getRemoteAddress()" as it is ... what it does !	        
+	        
+	TODO:   - remove old read/write compatibility methods when not needed anymore
+	        - see .cpp for current implementation limits
+	
 */
+
 #ifndef CONNECTIONUDP_H
 #define CONNECTIONUDP_H
 
 //static const int RECVBUFFERSIZE = 4096;
 //static const int SENDBUFFERSIZE = 4096;
 
-//static const clock_t DEFAULT_TIMEOUT = 60;
+//static const time_t DEFAULT_TIMEOUT = 60;
 
 class ServerSocket;
 
 class ConnectionUDP
 {
     private:
-            int                 m_Sockfd;
-            struct sockaddr_in  m_RemoteAddr;
+            int                 mSockfd;
+            struct sockaddr_in  mRemoteAddr;
 
-            u8                  m_ReceiveBuffer[RECVBUFFERSIZE];
-            u8                  m_SendBuffer[SENDBUFFERSIZE];
+//            u8                  mReceiveBuffer[RECVBUFFERSIZE];
+//            u8                  mSendBuffer[SENDBUFFERSIZE];
 
-            int                 m_SendSize;
-            int                 m_RecvSize;
-            int                 m_RecvRewind;
+//            int                 mSendSize;
+//            int                 mRecvSize;
+//            int                 mRecvRewind;
 
-            std::clock_t        m_LastActive;
-            std::clock_t        m_TimeOutValue;
+            std::time_t        mLastActive;
+            std::time_t        mTimeOutValue;
 
-            int                 m_Port;
+            int                 mPort;
+            ServerSocket*       mServerSocket; // pointer to the serversocket
+            
+            std::queue<PMessage*> mQueueIn;
+            std::queue<PMessage*> mQueueOut;
+            
     public:
-            ConnectionUDP(int sockfd, int port, int adress, int tmpport);
+            ConnectionUDP(int sockfd, int port, int remoteadress, int remoteport, ServerSocket* server);
             ~ConnectionUDP();
 
             bool                update();
-            void                flushSendBuffer();
 
-            int                 getPort() { return m_Port; }
-
-            struct sockaddr_in  getAddr() { return m_RemoteAddr; }
-            int                 getSockfd() { return m_Sockfd; }
-
+            int                 getPort() { return mPort; }
+            struct sockaddr_in  getAddr() { return mRemoteAddr; }
+            int                 getSockfd() { return mSockfd; }
+            char*               getRemoteAddress();
+            
             bool                timeOut() const;
-            inline clock_t      getTimeOutValue() const { return m_TimeOutValue; }
-            inline void         setTimeOutValue(clock_t Value) { m_TimeOutValue = Value; }
-
-            inline int          getRecvBufferSize() const { return m_RecvSize; }
-            inline int          getSendBufferSize() const { return m_SendSize; }
-
+            inline time_t       getTimeOutValue() const { return mTimeOutValue; }
+            inline void         setTimeOutValue(time_t Value) { mTimeOutValue = Value; }
+            
+            inline void SendMessage(PMessage* nMessage) { if (nMessage) mQueueOut.push(nMessage); }
+            inline int GetReadyMessagesNumber() { return mQueueIn.size(); }
+            PMessage* GetMessage();
+            void DeleteOutgoingMessages();
+            
+/**************** Old I/F compatibility stuff ******************/
+    private:
+            PMessage* mSendBufferMsg;    
+              
+    public:
+            int                 getRecvBufferSize();
+            int                 getSendBufferSize();
+            void                flushSendBuffer();
             // returns a pointer to the internal receive buffer
             // Size contains the number of octets to read (or 0 to read entire buffer)
             // number of octets available is returned in Size
@@ -89,7 +121,7 @@ class ConnectionUDP
             int                 write(double data);
             int                 write(const char* string);
 
-            char*               getLocalAddress();
+
 };
 
 #endif

@@ -34,6 +34,8 @@
     MODIFIED: 06 Jan 2006 Namikon
     REASON: - Added color to console outputs
             - Added shiny and colored copyright box :D
+    MODIFIED: 22 Jul 2006 Hammag
+    REASON: - Added Server NOT NULL check to avoid segfault when shuting down during startup        
 */
 
 #include "main.h"
@@ -115,7 +117,7 @@ bool InitTinNS()
 
 void Shutdown()
 {
-	Server->Shutdown();
+	if(Server) Server->Shutdown();
 	if(GameServer) delete GameServer;
 	if(Chat) delete Chat;
 	if(Server) delete Server;
@@ -125,7 +127,7 @@ void Shutdown()
 	if(MySQL) delete MySQL;
 	if(Config) delete Config;
 	if(Console) delete Console;
-    if(ServerSock) delete ServerSock;
-    exit(0);
+  if(ServerSock) delete ServerSock;
+  exit(0);
 }
 

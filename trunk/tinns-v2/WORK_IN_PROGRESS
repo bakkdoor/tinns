@@ -1,0 +1,24 @@
+The purpose of this proposed file is to give a fairly up to date view
+on the work in progress, to avoid double work...
+
+Hammag; 08.07.2006 - updated 30.07.2006
+-----
+The aim of the modifications I'm on is to have a full character login,
+that is a char that displays as expected ingame (for himself at first),
+and has his stats and changes well kept in DB.
+
+It involves modification of:
+ - [DONE] full char creation with use of profession templates (for money and inventory)
+    except for :
+      - remaining SP calculation
+      - starting XP calculation
+ - additions and modifications on some char data definitions
+ - char items and containers management
+ - [DONE] char data saving in DB including inventory
+     But belt, implants & armor, chat conf and other secondary info not implemented yet
+ - modifications to char loading from DB
+    [DONE] for inventory
+    [NOT DONE] for rest of char items and complementary infos (see above)
+ - minor modifications to autosave
+    [DONE] but more improvements will have to be done when more efficiency needed
+ - [DONE]full filling-in of the baseline for char visual aspects, stats and inventory

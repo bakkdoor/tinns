@@ -71,6 +71,7 @@ bool PAccount::AddChar(u32 CharID)
 		if(mChars[i]==0)
 		{
 			mChars[i]=CharID;
+			Console->Print("Added char %d to in-mem account %d", CharID, mID);
 			return true;
 		}
 	}

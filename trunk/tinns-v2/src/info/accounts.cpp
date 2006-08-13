@@ -89,9 +89,11 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
                 {
                     return -6;
                 }
-                sprintf(query, "INSERT INTO accounts (a_username, a_password, a_priv, a_status) VALUES (%s, %s, %d, %d)", User, Pass, 0, 0);
+                sprintf(query, "INSERT INTO accounts (a_username, a_password, a_priv, a_status) VALUES ('%s', '%s', %d, %d)", User, Pass, 0, 0);
                 if(MySQL->Query(query))
                 {
+                    Console->Print("MySQL Error, unable to execute Query %s", query);
+                    MySQL->ShowSQLError();
                     return -4;
                 }
                 else

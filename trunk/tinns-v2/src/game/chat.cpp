@@ -70,19 +70,27 @@ void PChat::sendBuddy(PClient* author, char* text, bool debugOut=false)
 
 void PChat::sendConnectedList(PClient* receiver, bool debugOut)
 {
-    char* text = "(Connected Player (CharName))";
+	char* text = "Connected Players are:]";
+    send(receiver, CHAT_DIRECT, "[System", text, debugOut);
+
+    int counter = 1;
 
     // send the list of currently connected players to receiver
-    for(ClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        send(receiver, CHAT_LOCAL, Database->GetChar(it->second->GetCharID())->GetName().c_str(), text, debugOut);
+		char counterText[5];
+		sprintf(counterText, "%d", counter);
+
+        send(receiver, CHAT_DIRECT, Database->GetChar(it->second->GetCharID())->GetName().c_str(), counterText, debugOut);
+
+        counter++;
     }
 }
 
 void PChat::sendLocal(PClient* author, char* text, bool debugOut)
 {
     // send the message to all clients that are in Area (Radius = X (needs to be defined somewhere!))
-    for(ClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
         if(author != it->second) // if its not the client, that send the message to the server
         {
@@ -90,6 +98,49 @@ void PChat::sendLocal(PClient* author, char* text, bool debugOut)
             {
                 PClient* receiver = it->second;
                 send(receiver, CHAT_LOCAL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendGM(PClient* author, char* text, bool debugOut)
+{
+    if(author->GetLevel() >= PCL_GM) // Only send GM> chat when user is an Gamemaster or higher
+    {
+        // send the message to all GameMasters.
+        for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+        {
+            if(author != it->second) // if its not the client, that send the message to the server
+            {
+                if(it->second) // only send if the client is existing!
+                {
+                    PClient* receiver = it->second;
+                    if(receiver->GetLevel() >= PCL_GM) // Only send GM chat if RECEIVER is GM or higher
+                        send(receiver, CHAT_GM, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+
+                    Console->Print("Sending GM Chat");
+                }
+            }
+        }
+    }
+}
+
+void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
+{
+    if(author->GetLevel() >= PCL_ADMIN) // Only send ADMIN> chat when user is an serveradmin
+    {
+        // send the message to ALL users online
+        for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+        {
+            if(author != it->second) // if its not the client, that send the message to the server
+            {
+                if(it->second) // only send if the client is existing!
+                {
+                    PClient* receiver = it->second;
+                    send(receiver, CHAT_ADMIN, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+
+                    Console->Print("Sending Admin Chat");
+                }
             }
         }
     }
@@ -104,7 +155,7 @@ void PChat::sendClan(PClient* author, char* text, bool debugOut=false)
 
     int ClanID = authorChar->getClanID(); // get clanID of author
 
-    for(ClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
     {
         if(author != it->second && Database->GetChar(it->second->GetCharID())->getClanID() == ClanID) // if its not the client, that send the message to the server and if it has the same clan id
         {
@@ -128,7 +179,7 @@ void PChat::sendTeam(PClient* author, char* text, bool debugOut=false)
 
     int TeamID = authorChar->getTeamID(); // get TeamID of author
 
-    for(ClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
     {
         if(author != it->second && Database->GetChar(it->second->GetCharID())->getTeamID() == TeamID) // if its not the client, that send the message to the server and if it has the same team id
         {
@@ -207,6 +258,7 @@ void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debu
 
     // Sending direct chat packet and removing dynamic array
     Socket->write(DChatPacket, packetsize);
+    Socket->flushSendBuffer();
     delete[] DChatPacket;
 }
 
@@ -219,7 +271,7 @@ void PChat::sendZone(PClient* author, char* text, bool debugOut=false)
 
     int TeamID = authorChar->getZoneID(); // get TeamID of author
 
-    for(ClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
     {
         if(author != it->second && Database->GetChar(it->second->GetCharID())->getZoneID() == ZoneID)
         {
@@ -404,6 +456,7 @@ bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickNam
 
     // Sending direct chat packet and removing dynamic array
     Socket->write(ChatPacket, packetsize);
+    Socket->flushSendBuffer();
     delete[] ChatPacket;
 
     return true;

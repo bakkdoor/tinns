@@ -28,32 +28,47 @@
 	- bakkdoor
 
 	MODIFIED: 13 Dec 2005 bakkdoor
-	REASON: - introduced
+	REASON: - introduced	
+	MODIFIED: 29 Jul 2006 Hammag
+	REASON: - added UDP broadcast fonction
+	        - added "zone players say Hello" fonction
+	        - changed type ClientMap to PClientMap, changed members name prefix m_ to m 
+	        
+	MODIFIED: 12 Aug 2006 Hammag
+	REASON: - duplicated UDPBroadcast() in two prototypes
+	        
 */
 
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
-typedef std::map<int, PClient*> ClientMap;
+typedef std::map<int, PClient*> PClientMap;
 
 class PClientManager
 {
     private:
-            int  	    m_LastID;
-            ClientMap	m_ClientList;
+            //int  	    mLastID;
+            PClientMap	mClientList;
 
     public:
             PClientManager();
             ~PClientManager();
 
-            ClientMap::iterator   getClientListBegin() { return m_ClientList.begin(); }
-            ClientMap::iterator   getClientListEnd() { return m_ClientList.end(); }
+            PClientMap::iterator   getClientListBegin() { return mClientList.begin(); }
+            PClientMap::iterator   getClientListEnd() { return mClientList.end(); }
 
-            bool 		addClientToList(PClient* newClient);
-            void 		deleteClientFromListByID(int id);
-            bool 		deleteClientFromList(PClient* delClient); // maybe no use for this...
-            PClient* 	getClientByID(int id); // returns pointer to a client for further use
-            int 	    getClientID(PClient* _client);
+            bool addClientToList(PClient* newClient);
+            //void deleteClientFromListByID(int id);
+            void deleteClientFromList(int id);
+            //bool deleteClientFromList(PClient* delClient); // maybe no use for this...
+            PClient* getClientByID(int id); // returns pointer to a client for further use
+            // int getClientID(PClient* _client); do _client->GetLocalID()
+            
+            // each function return the number of messages sent.
+            int UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX = 0, u16 nY = 0, u16 nZ = 0, u16 nMaxDist = 0); // message is not deleted by method
+            int UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxDist = 0); // message is not deleted by method
+            int SendUDPZoneWelcomeToClient(PClient* nClient);
+
 };
 
 #endif

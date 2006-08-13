@@ -38,6 +38,14 @@
         MODIFIED: 30 Dec 2005 bakkdoor
         REASON: - changed mysql_init() parameter to null to prevent segfault
                 - added checking for dbHandle to prevent segfault
+        MODIFIED: 07 Jul 2006 Hammag                
+        REASON: - Added GetLastGameInsertId() and GetLastInfoInsertId()        
+        MODIFIED: 26 Jul 2006 Hammag                
+        REASON: - Added CheckResCount() for DB Res memory leak tracking (to be done in the main loop)
+                    rather than through Info/GameResQuery()
+                - fixed InfoDBInuse and GameDBInuse updating
+                - inhibited Info/GameDBInuse warning message in Info/GameResQuery()
+        
 */
 
 #ifndef MYSQL_H
@@ -67,6 +75,8 @@ class PMySQL
         PMySQL();
         ~PMySQL();
 
+        void CheckResCount();
+          
         inline MYSQL *GetInfoHandle() { return info_dbHandle; };
         inline MYSQL *GetGameHandle() { return game_dbHandle; };
 
@@ -87,5 +97,7 @@ class PMySQL
         void ShowGameSQLError();
         void FreeGameSQLResult(MYSQL_RES *res);
         void FreeInfoSQLResult(MYSQL_RES *res);
+        inline u32 GetLastGameInsertId() { return mysql_insert_id(game_dbHandle); };
+        inline u32 GetLastInfoInsertId() { return mysql_insert_id(info_dbHandle); };
 };
 #endif

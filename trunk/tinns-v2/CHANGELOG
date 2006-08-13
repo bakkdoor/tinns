@@ -55,3 +55,138 @@ globals.cpp :: ShutdownTinNS()
 misc.cpp :: GetSVNRev()
   - Added handling for version.h defines
 ====================
+Hammag; 06.07.2006 02:17 GMT+1
+----------
+<General changes>
+- Put UDP sockets in non-blocking mode.
+- Checked and modified all socket related stuff to work in non-blocking mode.
+- Lowered CPU use from 100% to ~0% by changing from sched_yield() to I/O wait sleep using Select.
+  This avoid runingthe main loop when there's nothing to do (some more improvements are to come
+  on this topic).
+- The socket Select now waits for any tcp OR UDP socket incoming data.
+- Fixed some pointer issues in netcode.
+
+
+<Source changes>
+[GAME]
+ 
+[INFO]
+misc.h
+ - added declaration of utility function IPlongToString()
+misc.cpp :: IPlongToString()
+ - implemented function to convert IP address in u32 format to string
+infoserver.cpp :: HandleServerList()
+ - now use IPlongToString() to display server IP on Console
+
+[PATCH]
+
+[ALL]
+patchserver.cpp, infoserver.cpp, gameserver.cpp :: Start()
+ - set 10 msec timeout for socket select, which sets the max wait time
+  for the main loop when no activity.
+
+main.cpp
+ - commented out sched_yield() in main loop, as it is not needed anymore.
+
+main.h
+ - moved-up tinns-specific types include to ready them for netcode compilation
+
+[NETCODE]
+connection-tcp.cpp :: ConnectionTCP()
+ - moved-in non-blocking setting from ServerSocket::getTCPConnection()
+    for better class coherency
+connection-tcp.cpp :: update()
+ - modified to deal correctly with would-block socket writes.
+ - fixed a pointer and size issue in socket recv
+
+connection-udp.h :: class
+ - added private member m_ServerSocket
+ - added ServerSocket parameter in constructor prototype
+ 
+connection-udp.cpp :: ConnectionUDP()
+ - modified to set m_ServerSocket from constructor parameters
+connection-udp.cpp :: ~ConnectionUDP()
+ - added socket removal from fd sets by calling m_ServerSocket->delSocketFromSet
+connection-udp.cpp :: update()
+ - modified to check m_ServerSocket->isDataAvailable() before trying to read from socket
+ - fixed a pointer and size issue in socket recv
+
+serversocket.h :: class
+ - added settimeout public method
+ - added fd_set m_MainSetUDP private member
+ - added fd_set m_MainSetGlobal private member (= m_MainSetTCP + m_MainSetUDP)
+ 
+serversocket.cpp :: ServerSocket()
+ - moved m_TimeOut initialization in constructor
+ - added m_MainSetUDP and m_MainSetGlobal init
+serversocket.cpp :: settimeout()
+ - implemented method to set m_TimeOut to permit tuning
+serversocket.cpp :: open()
+ - added m_MainSetUDP and m_MainSetGlobal init
+ - added m_ListenerTCP to m_MainSetGlobal too
+serversocket.cpp :: update()
+ - now m_MainSetGlobal is copied to m_ReadSetTCP set,
+ - added a local fdMax for select
+ - use a temp timeout structure in select as select doc says select implementation
+    for Linux could change this value
+serversocket.cpp :: getUDPConnection()
+ - now pass this pointer to new ConnectionUDP constructor
+ - new UDP sockets are added to m_MainSetUDP and m_MainSetGlobal,
+    and kept track of in m_FdMaxUDP
+serversocket.cpp :: getTCPConnection()
+ - fixed a struct length issue (?) in accept
+ - now new TCP sockets are added to m_MainSetGlobal too
+ - moved non-blocking setting to ConnectionTCP::ConnectionTCP() for better class coherency
+serversocket.cpp :: delSocketFromSet()
+ - added removal of sockfd from m_MainSetUDP and m_MainSetGlobal too
+ 
+====================
+Hammag; 30.07.2006 02:17 GMT+1
+----------
+<General changes>
+ - Baseline fixed, full zoning now really works with multiplayer
+ - Multiuser now works. Multiple login + mutual viewing.
+    Now a char displays as expected ingame for himself as for others.(some movement/positionning glitches remain)
+ - Warning: code for using items hasn't been fixed, so every thing 2nd+ user does will be
+     attriuted to 1st user and provoque OOO flood.
+     So don't try using items, except for the first user.
+ - added @skin command. Reminder use by @skin, little mode description in commands.cpp header
+
+<Source changes>
+[GAME]
+ - Many changes in many files
+ - amongst other, rewrited baseline.inc.cpp with new PMessage object as an exemple
+ - added PItem & PInventory classes
+
+[NETCODE]
+ - Added PMessage class for network message input/output
+ - UDP & TCP connection classes now has an interface for PMessages
+ 
+====================
+Hammag; 06.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - code for using items should now be fixed for most case (see above) so activating items in multiuser mode is no longer a limitation
+ - a similar issue in @warp command has been solved (and spawn location added as an optional command line parameter as in NeoX)
+ - further modifications to the netcode to cope with NAT. New options added to config file
+ - rework of the config.cpp implementation, to enable easy addition of new option and more explicit error checking. See comments at begining of config.cpp
+ - gametime flow fixed. Start time is set to 0 ATM
+ - other minor changes. See source files starts for info
+ - conf/gameserver.conf extended with NAT related options
+
+<Source changes>
+[GAME]
+ - Many changes in many files for modifications stated above
+ - Changes to ClientManager to make it work and add methods to dispatch messages to clients
+ - game/Makefile updated
+ 
+[NETCODE]
+ - Changes in most files for modifications stated above
+
+[INFO]
+client.cpp :: GetAdress()
+  - updated implementation to use ConnectionTCP::GetRemoteAddress()
+
+[PATCH]
+client.cpp :: GetAdress()
+  - updated implementation to use ConnectionTCP::GetRemoteAddress()

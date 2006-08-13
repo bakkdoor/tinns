@@ -63,7 +63,13 @@ void PDatabase::Update() {
 	mChars->Update();
 }
 
-PChar *PDatabase::CreateChar(u32 Account, const std::string &Name, u32 Type, u32 Model) {
+/*PChar *PDatabase::CreateChar(u32 Account, const std::string &Name, u32 Type, u32 Model) {
 	return(mChars->CreateChar(Account, Name, Type, Model));
+}*/
+PChar *PDatabase::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+      u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
+{
+  return (mChars->CreateChar(Account, Name, Gender, Profession, Faction,
+					     Head, Torso, Legs, NZSNb, NonZeroSubskills, Slot));
 }
 

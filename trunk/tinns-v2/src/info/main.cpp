@@ -19,6 +19,13 @@
 	02110-1301, USA.
 */
 
+/*	
+        MODIFIED: 01 Jul 2006 hammag
+	      REASON: - commented out sched_yield() in main loop, as it is
+	              not needed anymore with a right timeout for ReadSetTCP select
+	              
+*/
+
 #include "main.h"
 
 void signal_handler(int signal)
@@ -42,13 +49,13 @@ int main()
 
 	while(1)
 	{
-	    ServerSock->update();
-	    Server->Update();
+	  ServerSock->update();
+	  Server->Update();
 		InfoServer->Update();
 		Console->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);
-		sched_yield();
+		//sched_yield();
 	}
 
 	return 0;
