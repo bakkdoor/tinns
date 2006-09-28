@@ -24,10 +24,8 @@
 PServer::PServer()
 {
 	mNumClients = 0;
-	//mMaxClients = Config->GetOptionInt("maxclients");
-	//mGMSlots = Config->GetOptionInt("gm_slots");
-	mMaxClients = 5;
-	mGMSlots = 2;
+	mMaxClients = Config->GetOptionInt("maxclients");
+	mGMSlots = Config->GetOptionInt("gm_slots");
 
 	if(mMaxClients==0)
 		mMaxClients=1;
@@ -46,7 +44,7 @@ PServer::~PServer()
 
 int PServer::NewClient()
 {
-    Console->Print("%d %d", mMaxClients, mGMSlots);
+//Console->Print("%d %d", mMaxClients, mGMSlots);
 	if(mNumClients==mMaxClients+mGMSlots)
 		return -1;
 	for(int i=0; i<mMaxClients+mGMSlots; i++)

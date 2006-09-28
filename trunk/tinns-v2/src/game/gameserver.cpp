@@ -65,10 +65,15 @@
 	          to avoid useless 100% CPU use
   MODIFIED: 30 Jul 2006 hammag
 	REASON: - Fixed 0x13 0x03 0x1F message filters to enable other char than ID 1 to play ... :P
-
   MODIFIED: 12 Aug 2006 hammag
 	REASON: - Fixed	BuildCharPosUpdateMsg() to send correct characters orientation to other characters
-		          
+  MODIFIED: 26 Aug 2006 hammag
+	REASON: - removed use of GAME_PORT define as this info is available in Config object with a default value
+
+  MODIFIED: 17 Sep 2006 hammag
+	REASON: - Moved all UDP message management code to decoder classes
+	        - REmoved corresponding code from gameserver.cpp & .h
+			          
     TODO:
     - Deny login if char is already online (More information about the login procedure is necessary to do that)
     - Take main loop timeout setting from config file
@@ -76,81 +81,31 @@
     - Add Check of Char offline (and unloaded) before deleting (from the char choosing i/f) if multiple login allowed for the same account
     - Check if adding to Client to Client manager shouldn't be done only one UDP connection done ?
         => Risk of sending UDP chat on non-socket ????
-    - put back management of default value for gameserver_port in config.cpp
-
 */
 
 
 #include "main.h"
 
-struct PGameState
-{
-	struct TCP
-	{
-		enum State
-		{
-			GS_UNKNOWN,
-			GS_CONNECTED,
-			GS_HANDSHAKE0,
-			GS_AUTHENTICATE,
-			GS_GAMEDATA,
-			GS_REQUESTCHARS,
-			GS_CHARLIST,
-			GS_GETSTATUS,
-			GS_GAMEINFO,
-			GS_INGAME
-		} mState;
-
-		bool mWaitSend;	// wait-for-completition flag
-	} TCP;
-
-	struct UDP
-	{
-		enum State
-		{
-			GUS_UNKNOWN,
-			GUS_SYNC0,
-			GUS_SYNC1,
-			GUS_SYNC2,
-			GUS_SYNC3
-		} mState;
-
-		bool mSynced;
-		u16 mServerPacketNum;
-		u16 mSequence;
-		//u16 mClientPacketNum;
-	} UDP;
-
-	PGameState()
-	{
-		TCP.mState = TCP::GS_UNKNOWN;
-		TCP.mWaitSend = false;
-
-		UDP.mState = UDP::GUS_UNKNOWN;
-		UDP.mSynced = false;
-		UDP.mServerPacketNum = 0x9c9f;
-		UDP.mSequence = 2;
-		//UDP.mClientPacketNum = 0;
-	};
-};
+#include "msgdecoder.h"
+#include "msgbuilder.h"
 
 // ------------------------------------
 
 PGameServer::PGameServer()
 {  
   mNumClients = 0;
+  MsgDecoder = new PUdpMsgDecoder();
 }
 
 PGameServer::~PGameServer()
 {
     ServerSock->closeServer();
+    delete MsgDecoder;
 }
 
 void PGameServer::Start()
 {
 	u16 Port = Config->GetOptionInt("gameserver_port");
-	if (Port == 0)
-		Port = GAME_PORT;
 	Console->LPrint("Starting gameserver on port %i...", Port);
 
 	if (ServerSock->open(Port))
@@ -166,6 +121,14 @@ void PGameServer::Start()
 	
 	SetGameTime(0);	//Init time
 
+  // Init random generator
+  struct timespec tmpTime;
+	if (!clock_gettime(CLOCK_REALTIME, &tmpTime))
+	{
+	  srandom((u32)tmpTime.tv_sec);
+//Console->Print("Initializing random generator. First value is %d", random());
+	}  
+	
   if (Config->GetOptionInt("gameserver_udpport_max") - Config->GetOptionInt("gameserver_udpport_min") + 1 < Config->GetOptionInt("maxclients"))
   {
     Console->Print("%s UDP port range setting doesn't allow for the simultaneous max clients set in config", Console->ColorText(YELLOW, BLACK, "[Warning]"));
@@ -796,6 +759,12 @@ IP = IPStringToDWord(IPServerString.c_str());
     PChar *Char = Database->GetChar(Client->GetCharID());
     Char->SetOnlineStatus(true); //Also using this info to check if Char may have to be saved at client disconnect
 
+    // hello-message from server..
+    std::string serverName = Config->GetOption("server_name");
+    std::string helloMessage = "Welcome on " + serverName + " - A TinNS Neocron Server.";
+    char* message = (char*) helloMessage.c_str();
+    Chat->send(Client, CHAT_DIRECT, "System", message, false);
+    
 		//Console->Print("UDP Setup: %s", nlGetErrorStr(nlGetError()));
 	}
 	else
@@ -807,339 +776,46 @@ IP = IPStringToDWord(IPServerString.c_str());
 	return (true);
 }
 
-bool PGameServer::HandleUDPType03(PGameState *State)
-{
-	if(State->UDP.mState == PGameState::UDP::GUS_SYNC1)
-	{
-//Console->Print("Synced 1");
-		State->UDP.mState = PGameState::UDP::GUS_SYNC2;
-	}
-
-	return (true);
-}
-
-u32 GetTickCount()
-{
-	return (0);
-}
-
-bool PGameServer::HandleUDPType13(PClient *Client, PGameState *State, const u8 *Packet, int PacketSize)
-{
-  PChar *Char = Database->GetChar(Client->GetCharID());
-	u8 type = *(u8*)&Packet[1];
-  PMessage* outMsg;
-  
-// temp check on char localID
-/* if ((Packet[4] == 0x1f) && ((*(u16*)&Packet[5]) != Client->GetLocalID()) && (State->UDP.mState >= PGameState::UDP::GUS_SYNC3) )
-{
-  Console->Print(YELLOW, BLACK, "Client %d: Bad Local ID received 0x%04hx, for 0x%04hx on server side",Client->GetIndex(), (*(u16*)&Packet[5]), Client->GetLocalID()); 
-  Console->Print(YELLOW, BLACK, "Client %d: Packet 0x13 was type (1)0x%02hhx, (4)0x%02hhx, (7)0x%02hhx, (8)0x%02hhx",Client->GetIndex(), Packet[1], Packet[4], Packet[8]); 
-} */
-
-	switch (type)
-	{
-		/******************************/
-		case 0x03:
-		{
-			if ((Packet[4] == 0x22) && ((Packet[5] == 0x0d) || (Packet[5] == 0x03) ))  // Zoning
-			{
-                #include "_inc/zoning.inc.cpp"
-			}
-			else if ((Packet[4] == 0x22) && (Packet[5] == 0x06))  // Char or Clan infoReq
-      {
-        outMsg = BuildCharClanInfoMsg(Client, *(u16*)&Packet[7], *(u16*)&Packet[9]);
-        Client->getUDPConn()->SendMessage(outMsg);
-      }
-			else if ((Packet[0] == 0x06) && (Packet[4] != 0x24))  // Packets are out of order
-			//else if (Packet[4] == 0x01) // NeoX's way of identifying OOO packets
-			{
-				Console->Print("Out of Order! (at 0x%04hx)", *(u16*)&Packet[5]);
-			}
-			else if ((Packet[4] == 0x1f) /*&& (Packet[5] == 0x01)*/ && (Packet[7] == 0x17)) // USE Packet (Original written by MaxxJag)
-			{
-                #include "_inc/use_main.inc.cpp"
-			}
-			else if ((Packet[4] == 0x1f) /*&& (Packet[5] == 0x01)*/ && (Packet[7] == 0x25) && (Packet[8] == 0x04))  // Change on subskills
-			{
-                #include "_inc/subskills.inc.cpp"
-			}
-			else if ((Packet[4] == 0x1f) && (Packet[7] == 0x1e))  // Inventory Moving
-			{
-			    //#include "_inc/inventory.inc.cpp" <- Someone has to write that :)
-			}
-			else if ((Packet[4] == 0x1f) && (Packet[7] == 0x22)) // Leaving Chair
-			{
-                #include "_inc/use_chair.inc.cpp"
-            }
-            else if ((Packet[4] == 0x1f) && (Packet[7] == 0x38))  // Entering Appartment with password
-            {
-                #include "_inc/use_aptaccess.inc.cpp"
-            }
-            else if ((Packet[4] == 0x1f) && (Packet[7] == 0x3d) && (Packet[8] == 0x04))  // Zoning via GenRep
-            {
-                #include "_inc/zoning.inc.cpp"
-            }
-            else if ((Packet[4] == 0x1f) && (Packet[7] == 0x3d) && (Packet[8] == 0x02))  // Add Genrep
-            {
-                #include "_inc/use_genrep.inc.cpp"
-            }
-            else if ((Packet[4] == 0x1f) && (Packet[7] == 0x3d) && (Packet[8] == 0x0f))  // Getting on Vehicle
-            {
-                #include "_inc/use_vehicle.inc.cpp"
-            }
-            else if ((Packet[4] == 0x1f) && (Packet[7] == 0x33) && (Packet[8] == 0x01))  // Adding player to Direct
-            {
-                #include "_inc/chat_direct.inc.cpp"
-			}
-			else if (Packet[4] == 0x1f) /*&& (Packet[5] == 0x01) && (Packet[6] == 0x00)) */
-			{
-			    if(Packet[7] == 0x1B || Packet[7] == 0x3B)
-			    {
-                    // See chat.h and chat.cpp for the complete chat-handling
-                    Chat->HandleGameChat(Client, Packet);
-			    }
-			    else if (Packet[7] == 0x02)  // Player jumps
-			    {
-			        #include "_inc/player_jump.inc.cpp"
-			    }
-			    else if (Packet[7] == 0x4C)  // Triggers every 10 seconds... Maybe alive packet? Seems to be never changing...
-			    {
-			        #include "_inc/udp_0x4c.inc.cpp"
-			    }
-			    else
-			    {
-			        Console->Print("Unknown 0x1F subpacket: %2X", Packet[7]);
-			    }
-			}
-			else
-			{
-				//Console->Print("OTHER!");
-				//PrintPacket((u8*)Packet, PacketSize);
-			}
-
-			break;
-		}
-		/******************************///END NEW
-		case 0x0b:	// ping // added UDP_ID & SessionID to message data
-		{
-			//Console->Print("Inside: Ping");
-			u32 Time = *(u32*)&Packet[2];
-			//u32 LocalTime = clock();
-			u32 LocalTime = GameServer->GetGameTime();
-			u8 answer[15] = {0x13, 0x02, 0x00, 0x9f, 0x9c, 0x09, 0x0b, 0x00, 0x00, 0x00,
-					 0x00, 0x00, 0x00, 0x00, 0x00};
-			answer[0] = 0x13;
-		  *(u16*)&answer[1] = Client->GetUDP_ID();
-		  *(u16*)&answer[3] = Client->GetSessionID();
-		  answer[5] = 0x09;
-		  answer[6] = 0x0b;
-			*(u32*)&answer[7] = LocalTime;
-			*(u32*)&answer[11] = Time;
-			
-			Client->getUDPConn()->write(answer, sizeof(answer));
-      Client->getUDPConn()->flushSendBuffer();
-			break;
-		}
-
-		case 0x0c:
-		{
-			if (State->UDP.mState == PGameState::UDP::GUS_SYNC2)
-			{
-//Console->Print("Synced 2");
-//				Console->Print("Sending BaseLine");
-				SendBaseLine(Client, State);
-			}
-			break;
-		}
-
-		case 0x2a:
-		{
-			//Console->Print("Initialize: UDP_ID: %s", *(u16*)Client->GetUDP_ID()+1);
-			/* u8 packet0[] = { 0x13, 0x01, 0x00, 0x1e, 0x94,
-					 0x3d,
-					 0x03, 0x01, 0x00, 0x2c, 0x01, 0x01, 0x45, 0xbf, 0x30, 0x4f, 0x00, 0x00, 0x90, 0x43,
-					 0x33, 0xf3, 0x87, 0xc3, 0x00, 0x00, 0xac, 0xc3, 0x00, 0x00,
-					 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-					 0x02, 0x00, 0x07, 0x03, 0x06, 0xfa, 0xfa, 0xfa, 0xd2, 0xd2,
-					 0xd2, 0x00, 0x00, 0x00, 0x00, 0xb0, 0x00, 0x00, 0x00, 0x0f,
-					 0x01, 0x00, 0x40, 0x42, 0x0f, 0x00, 0x32
-				       } */
-			u8 packet0[] = {0x13, 0x01, 0x00, 0xc3, 0x87,  // from NeoX
-      		0x40,
-      		0x03, 0x01, 0x00, 0x2c, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 
-      		0x00, 0x80, 0xa4, 0x43, 0x66, 0xe6, 0x77, 0xc3, 0x00, 0x00,
-      		0x03, 0xc3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-      		0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x03, 0x07, 0x02, 0x00,
-      		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-      		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-      		0x00, 0x00, 0x00, 0x00};
-
-      PChar *nChar = Database->GetChar(Client->GetCharID());
-      
-			Client->IncreaseUDP_ID();
-			*(u16*)&packet0[1] = (u16)Client->GetUDP_ID();
-			*(u16*)&packet0[3] = (u16)Client->GetSessionID();
-			*(u16*)&packet0[7] = (u16)Client->GetUDP_ID();
-      *(f32*)&packet0[16] = (f32)((nChar->Coords).mY-32000);
-			*(f32*)&packet0[20] = (f32)((nChar->Coords).mZ-32000);
-			*(f32*)&packet0[24] = (f32)((nChar->Coords).mX-32000);			
-			
-			Client->getUDPConn()->write(packet0, sizeof(packet0));
-			Client->getUDPConn()->flushSendBuffer();
-			break;
-		}
-		/************************/
-		case 0x20:
-		case 0x32:
-		{
-            #include "_inc/player_movement.inc.cpp"
-		}
-        /************************/
-		default:
-		{
-//			Console->Print("inside :HandleUDPType13");
-//			PrintPacket((u8*)Packet,PacketSize);
-			break;
-		}
-		/*****************************///END NEW
-	}
-
-	return (true);
-}
-
-void PGameServer::SendUDPType13(PClient *Client, PGameState *State, u8 *Packet, int PacketSize)
-{
-	if (PacketSize > 229)
-		return;
-
-	ConnectionUDP *Socket = Client->getUDPConn();
-
-	u8 Header[] = {0x13,		// type
-		       0x00, 0x00,	// sequence end
-		       0x00, 0x00,	// packet
-		       0x00,		// size
-		      };
-
-	*(u16*)&Header[1] = Client->GetUDP_ID();//State->UDP.mSequence;
-	*(u16*)&Header[3] = Client->GetSessionID();
-	Header[5] = (u8)PacketSize;
-
-	//Client->IncreaseUDP_ID();
-	Client->SetUDP_ID(Client->GetUDP_ID()+1);
-	Socket->write(Header, sizeof(Header));
-	Socket->write(Packet, PacketSize);
-
-	Console->Print("Packet %04x, Seq %04x, Size %i", State->UDP.mServerPacketNum, State->UDP.mSequence, PacketSize);
-}
-
-void PGameServer::SendBaseLine(PClient *Client, PGameState *State)
-{
-    #include "_inc/baseline.inc.cpp"
-
-	State->UDP.mState = PGameState::UDP::GUS_SYNC3;
-  int nbSent;
-  nbSent = ClientManager->SendUDPZoneWelcomeToClient(Client);
-//Console->Print(GREEN, BLACK, " %d Welcome message were sent to client %d", nbSent, Client->GetIndex());
-
-  PMessage* HelloMsg = BuildCharHelloMsg(Client);   
-  nbSent = ClientManager->UDPBroadcast(HelloMsg, Client);
-//Console->Print(GREEN, BLACK, "Client %d: Hello message sent to %d chars", Client->GetIndex(), nbSent);
-
-}
-
 bool PGameServer::HandleGame(PClient *Client, PGameState *State)
 {
 	//PGameSocket *Socket = Client->GetGameSocket();
 	ConnectionUDP *UDPSocket = Client->getUDPConn();
 	//Console->Print("Clientadress %s", Client->GetAddress());
 
-	int Size = 0;
-	const u8 *Buf = UDPSocket->read(&Size);
+  //int Size = 0;
+  PMessage* NewMsg = UDPSocket->GetMessage();
+  if (NewMsg && NewMsg->GetSize())
+  {
 
-	if (Size != 0)
-	{
-	    //Console->Print("%s: %2X %2X %2X %2X %2X %2X %2X %2X %2X %2X", Client->GetAddress(), Buf[0], Buf[1], Buf[2], Buf[3], Buf[4], Buf[5], Buf[6], Buf[7], Buf[8], Buf[9]);
-		switch (Buf[0])
-		{
-			case 0x01:
-			{
-    		if (Size==10)
-    		{
-//Console->Print("Synced 0");
-    		  if (State->UDP.mState != PGameState::UDP::GUS_SYNC1) // Added from NeoX
-    		  {
-      			/*******************************///NEW || Der fehler des nicht funzenden multi-logins liegt hier!
-      			PChar *Char = Database->GetChar(Client->GetCharID());
-      			u32 loc = Char->GetLocation();
-      
-//Console->Print("inside HandleGame : Location: %d", loc);
-      
-      			SendZone(Client, loc);
-      
-      			// "aliverep" ?
-      			u8 up[] = {0x04, 0x01, 0x00, 0xe3, 0x6b, 0xe6, 0xee};
-      			*(u16*)&up[1] = Client->GetLocalID(); // Added from NeoX
-      			*(u16*)&up[5] = (u16)(UDPSocket->getAddr()).sin_port; // Added from NeoX
-      			UDPSocket->write(up, sizeof(up));
-      			//State->UDP.mSynced=true;
-      			State->UDP.mState = PGameState::UDP::GUS_SYNC1;//was GUS_SYNC1
-//Console->Print("Initialize: UDP_ID");
-      			Client->SetUDP_ID(0); // Added from NeoX
-      			/*******************************///END NEW
-    		  }
-    		}
-    		else
-    		{			  
-				  Console->Print("Other (non-sync0) Case 01");   //<- Annoying...
-				}
-				break;
-			}
-			case 0x13:
-			{
-				u16 LastPacket = *(u16*)&Buf[1];
-				u16 PID = *(u16*)&Buf[3];
+    MsgDecoder->Init(NewMsg, Client, State); // State used temporarily
+    do
+    {
+      if (MsgDecoder->Analyse())
+      {
+        if (MsgDecoder->IsTraceKnownMsg())
+          Console->Print("Client[%d] msg: %s", Client->GetID(), MsgDecoder->GetName().c_str());
 
-				State->UDP.mSequence = LastPacket;
-				State->UDP.mServerPacketNum = PID;
-
-				int Offset = 5;
-				while (Offset < Size)
-				{
-					u8 PSize = *(u8*)&Buf[Offset];
-					u8 PType = *(u8*)&Buf[Offset+1];
-					u16 PSeq = 0;
-					if (PType == 0x03)
-						PSeq = *(u16*)&Buf[Offset+2];
-
-					HandleUDPType13(Client, State, &Buf[Offset], PSize);
-					Offset += PSize+1;
-				}
-				break;
-			}
-
-			case 0x03:
-			{
-				//Console->Print("Case 3");  <- Annoying...
-				HandleUDPType03(State);
-				break;
-			}
-			default:
-			{
-				//Console->Print("Unknown: " + Buf[0]);
-				break;
-			}
-		}
-
-		/*std::strstream str;
-		for (int i = 0; i < Size; i++)
-		{
-			char hex[16];
-			sprintf(hex, "%02x", Buf[i]);
-			str << hex << " ";
-		}
-		str << '\0';
-		Console->Print("-- %s", str.str());*/
-	}
+        if (MsgDecoder->IsActionReady())
+        {
+          MsgDecoder->DoAction();
+        }
+      }
+      else if (MsgDecoder->IsError())
+      {
+        Console->Print(YELLOW, BLACK, "[Info] Client[%d] Decoding error: %s", Client->GetID(), MsgDecoder->GetError().c_str());
+      }
+      else if ((MsgDecoder->GetState() == DECODE_UNKNOWN) && MsgDecoder->IsTraceUnknownMsg())
+      {
+         Console->Print("%s Client[%d] Unknown msg: %s", Console->ColorText(YELLOW, BLACK, "[Info]"), Client->GetID(), MsgDecoder->GetName().c_str());
+      }
+      if (MsgDecoder->IsTraceDump())
+      {
+        MsgDecoder->DumpMsg();
+      }
+    } while(MsgDecoder->MoreSubMsg());
+  }
+  if (NewMsg)
+    delete NewMsg;
 
 	return (true);
 }
@@ -1254,235 +930,4 @@ void PGameServer::FinalizeClientDelayed(PClient *Client, PGameState *State)
 {
 	Console->Print("Gameserver: client %s is about to be disconnected", Client->GetAddress());
 	State->TCP.mWaitSend = true;
-}
-
-/********************************************************************************/
-/**** Packet building & sending function put here in wait for a better place ****/
-/********************************************************************************/
-
-PMessage* PGameServer::BuildCharHelloMsg(PClient* Client)
-{ 
-  PChar *nChar = Database->GetChar(Client->GetCharID());
-  u32 nSkin, nHead, nTorso, nLegs;
-    
-  nChar->GetCurrentLook(nSkin, nHead, nTorso, nLegs);
-    
-  PMessage* tmpMsg = new PMessage(80);
-  //tmpMsg->Fill(0);
-
-  //Client->IncreaseUDP_ID(); // This must be done outside
-    
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-	*tmpMsg << (u8)0x00; // size placeholder, set later in the function
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)0x0000; // Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u8)0x25;
-	*tmpMsg << (u16) Client->GetLocalID();
-	*tmpMsg << (u32) nChar->GetID();
-
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x06;
-	*tmpMsg << (u8)0x08;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x01;
-	*tmpMsg << (u8)0x01;
-	*tmpMsg << (u8)0x9a;
-	*tmpMsg << (u8)0x20;// Global Rank
-	*tmpMsg << (u8)0x60;// Aggr rank
-
-	*tmpMsg << (u8) nChar->GetFaction();
-
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x0f;
-
-	*tmpMsg << (u16) nSkin;
-	*tmpMsg << (u8) nHead;
-	*tmpMsg << (u8) nTorso;
-	*tmpMsg << (u8) nLegs;
-
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x4b;
-	*tmpMsg << (u8)0x4b;
-	*tmpMsg << (u8)0x4b;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-		//Name
-	*tmpMsg << (u8) ((nChar->GetName()).length()+1);
-	*tmpMsg << (nChar->GetName()).c_str();
-	*tmpMsg << (u8)0x06;
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u8)0x08;
-	*tmpMsg << (u8)0x01;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x00;	
-
-	(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-	
-	return tmpMsg;
-}
-
-
-PMessage* PGameServer::BuildCharClanInfoMsg (PClient* nClient, u16 nReqType, u32 nCharId)
-{
-	int len;
-  MYSQL_RES *result;
-  MYSQL_ROW row;
-  char query[255];
-  PMessage* tmpMsg;
-
-	switch (nReqType)
-	{
-	case 0: //Name Request
-//Console->Print("Client %d (char %d): Character Name Request for CharID %i", nClient->GetIndex(), nClient->GetCharID(), nCharId);
-		sprintf (query, "SELECT c_name FROM characters WHERE c_id = %i", nCharId);
-		break;
-	case 1: //Clan Long Name
-//Console->Print("Client %d : Clan Long Name Request for ClanID %i",nClient->GetLocalID(), nCharId);
-		sprintf (query, "SELECT cl_lname FROM clans WHERE cl_id = %i", nCharId);
-		break;
-	case 4: //Clan Short name
-//Console->Print("Client %d : Clan Short Name Request for ClanID %i",nClient->GetLocalID(), nCharId);
-		sprintf (query, "SELECT cl_sname FROM clans WHERE cl_id = %i", nCharId);
-		break;
-	case 5: //Clan Rank
-//Console->Print("Client %d : Clan Short Name Request for ClanID %i",nClient->GetLocalID(), nCharId);
-		//sprintf (query, "SELECT cl_sname FROM clans WHERE cl_id = %i", nCharId);
-		return NULL;
-		break;
-	default:
-		Console->Print(YELLOW, BLACK, "Client %d : Unhandled Info Request Type %i, Id %i",nClient->GetLocalID(), nReqType, nCharId);
-		return NULL;
-		break;
-	}
-
-  result = MySQL->GameResQuery(query);
-  if(!result)
-  {
-      Console->Print(RED, BLACK, "%s Cannot get do SQL query %s ; MySQL returned", Console->ColorText(RED, BLACK, "[Error]", query));
-      MySQL->ShowGameSQLError();
-      return NULL;
-  }
-
-  if(mysql_num_rows(result) == 0)
-  {
-      MySQL->FreeGameSQLResult(result);
-      return NULL;
-  }
-
-  row = mysql_fetch_row(result);
-	len = (int)(strlen(row[0])+1);
-	
-  tmpMsg = new PMessage(32);
-  nClient->IncreaseUDP_ID();
-
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)nClient->GetUDP_ID();
-	*tmpMsg << (u16)nClient->GetSessionID();
-	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)nClient->GetUDP_ID();
-	*tmpMsg << (u8)0x23;
-	*tmpMsg << (u8)0x06;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u16)nReqType; // wrong size here (u32) for buffer size u16 in NeoX
-	*tmpMsg << (u32)nCharId;
-	*tmpMsg << row[0];
-
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-  
-  MySQL->FreeGameSQLResult(result);
-  
-  return tmpMsg;
-}
-
-PMessage* PGameServer::BuildCharHealthUpdateMsg (PClient* nClient)
-{
-  PMessage* tmpMsg;
-
-  tmpMsg = new PMessage(14);
-
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x1f;
-	*tmpMsg << (u16)nClient->GetLocalID();
-	*tmpMsg << (u8)0x30;
-	*tmpMsg << (u8)0x64; //Head Heath (% ?)
-	*tmpMsg << (u8)0x64; //Body Heath 
-	*tmpMsg << (u8)0x64; //Feet Heath 
-	*tmpMsg << (u8)0x01;
-
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-  
-  return tmpMsg;
-}
-
-PMessage* PGameServer::BuildCharPosUpdateMsg (PClient* nClient)
-{
-  PMessage* tmpMsg;
-  PChar* nChar;
-  
-  tmpMsg = new PMessage(32);
-  nChar = Database->GetChar(nClient->GetCharID());
-  
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x1b;
-	*tmpMsg << (u16)nClient->GetLocalID();
-	*tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)((nChar->Coords).mY);
-	*tmpMsg << (u16)((nChar->Coords).mZ);
-	*tmpMsg << (u16)((nChar->Coords).mX);
-	*tmpMsg << (u16)(31910+(nChar->Coords).mUD-50);  // Up - Mid - Down  mUD=(d6 - 80 - 2a) NeoX original offset: 31910
-	*tmpMsg << (u16)(31820+(nChar->Coords).mLR*2-179); // Compass direction mLR=(S..E..N..W..S [0-45-90-135-179]) There still is a small buggy movement when slowly crossing the South axis from the right
-	*tmpMsg << (u8)((nChar->Coords).mAct);
-	*tmpMsg << (u8)0x00;
-	
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-  
-  return tmpMsg;
-}
-
-PMessage* PGameServer::BuildCharSittingMsg (PClient* nClient, u16 nData)
-{
-  PMessage* tmpMsg;
-  
-  tmpMsg = new PMessage(32);
-  
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x32;
-	*tmpMsg << (u16)nData; // ?
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u8)0xad; // ????
-	*tmpMsg << (u8)0x80;
-	*tmpMsg << (u8)0xf9;
-	*tmpMsg << (u8)0x85;
-	*tmpMsg << (u8)0x6a;
-	*tmpMsg << (u8)0x98;
-	*tmpMsg << (u8)0x7c;
-	*tmpMsg << (u8)0x3f;
-	*tmpMsg << (u8)0x8b;
-	*tmpMsg << (u8)0x14;
-	*tmpMsg << (u8)0x7e;
-  *tmpMsg << (u16)nClient->GetLocalID();
-  *tmpMsg << (u16)0x0000;
-  
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-  
-  return tmpMsg;
 }

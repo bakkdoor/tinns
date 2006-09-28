@@ -25,7 +25,9 @@
 	server.h
 
 	MODIFIED: 25 Dec 2005 Namikon
-	REASON: - Added GPL
+	REASON: - Added GPL	
+	MODIFIED: 27 Aug 2005 Hammag
+	REASON: - Added mMaxClient member	
 */
 
 #ifndef SERVER_H
@@ -38,6 +40,7 @@
 class PServer
 {
 	private :
+	  int mMaxClients;
 		int mNumClients;
 		std::vector<PClient*> mClients;
 	protected :

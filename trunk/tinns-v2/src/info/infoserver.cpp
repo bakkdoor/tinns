@@ -24,6 +24,10 @@
   MODIFIED: 01 Jul 2006 hammag
 	REASON: - added set timeout to 10 msec (for ReadSetTCP select) in Start()
 	          to avoid useless 100% CPU use
+  MODIFIED: 271 Aug 2006 hammag
+	REASON: - Removed INFO_PORT use as value is available from config
+	          
+	          
 	          
     ToDo:
     - Take main loop timeout setting from config file
@@ -69,8 +73,6 @@ PInfoServer::~PInfoServer()
 void PInfoServer::Start()
 {
 	u16 Port = Config->GetOptionInt("infoserver_port");
-	if(Port == 0)
-		Port = INFO_PORT;
 	Console->LPrint("Starting Infoserver on port %i...", Port);
 
 	if(ServerSock->open(Port))

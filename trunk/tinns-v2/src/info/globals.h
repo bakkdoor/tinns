@@ -29,6 +29,8 @@
 	REASON: - Added global ClientManager and Chat Interface
 	MODIFIED: 22 Dec 2005 Namikon
 	REASON: - Added GPL
+  MODIFIED: 27 Aug 2006 Hammag
+  REASON: - Added AdditionnalConfigChecks() local function
 
 */
 
@@ -51,6 +53,7 @@ extern class PAccounts* Accounts;
 
 bool Init();
 void Shutdown();
+bool AdditionnalConfigChecks();
 
 #endif
 

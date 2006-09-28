@@ -49,6 +49,13 @@
                     rather than through Info/GameResQuery()
                 - fixed InfoDBInuse and GameDBInuse updating
                 - inhibited Info/GameDBInuse warning message in Info/GameResQuery()
+        MODIFIED: 27 Sep 2006 Hammag                
+        REASON: - Added GetAptLocation() method
+                - Modified Apt & Item info methods as they should work, but it doesn't match the DB
+                  So commented out some changes
+                  DB shouln't be used anymore for that soon anyway
+        
+                
 */
 #include "main.h"
 
@@ -250,7 +257,18 @@ int PMySQL::GetWorldItemType(unsigned short ID, int Location)
     char query[2048];
     MYSQL_RES *result;
     MYSQL_ROW row;
-    sprintf(query, "SELECT wi_type FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", ID, Location);
+    
+    if (Location > 100000)
+    {
+      //int nAppLoc = GetAptLocation(Location);
+      int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
+      if (nAppLoc)
+        sprintf(query, "SELECT ai_type FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", ID, nAppLoc);
+      else
+        return 0;
+    }
+    else
+      sprintf(query, "SELECT wi_type FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", ID, Location);
 
     result = GameResQuery(query);
     if(!result)
@@ -297,7 +315,19 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
     {
         return -1;
     }
-    sprintf(query, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
+
+    if (Location > 100000)
+    {
+      //int nAppLoc = GetAptLocation(Location);
+      int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
+      if (nAppLoc)
+        sprintf(query, "SELECT ai_option%d FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", option, ID, nAppLoc);
+      else
+        return 0;
+    }
+    else
+      sprintf(query, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
+      
     result = GameResQuery(query);
     if(!result)
     {
@@ -341,9 +371,14 @@ int PMySQL::GetWorldDoorType(unsigned int ID, int Location)
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-    if(Location > 100000)
+    if (Location > 100000)
     {
-        sprintf(query, "SELECT ad_type FROM apt_doors, apartments WHERE apt_doors.ad_apt_map = apartments.apt_type AND apt_doors.ad_apt_id = %i AND apartments.apt_id = %i", ID, Location-100000);
+      //int nAppLoc = GetAptLocation(Location);
+      int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
+      if (nAppLoc)
+        sprintf(query, "SELECT ad_type FROM apt_doors, apartments WHERE apt_doors.ad_apt_map = apartments.apt_type AND apt_doors.ad_apt_id = %i AND apartments.apt_id = %i", ID, nAppLoc);
+      else
+        return 0;
     }
     else
     {
@@ -464,7 +499,7 @@ int PMySQL::GetAptOwner(int loc)
     result = GameResQuery(query);
     if(!result)
     {
-        Console->Print("%s Cannot get AppartmentType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+        Console->Print("%s Cannot get AppartmentOwner; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
         ShowGameSQLError();
         return 0;
     }
@@ -482,4 +517,36 @@ int PMySQL::GetAptOwner(int loc)
     }
 
     return owner;
+}
+
+int PMySQL::GetAptLocation(int loc)
+{
+    int Location;
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+    char query[255];
+
+    sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc - 100000);
+
+    result = GameResQuery(query);
+    if(!result)
+    {
+        Console->Print("%s Cannot get AppartmentLocation; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+        ShowGameSQLError();
+        return 0;
+    }
+
+    if(mysql_num_rows(result) == 0)
+    {
+        FreeGameSQLResult(result);
+        return 0;
+    }
+    else
+    {
+        row = mysql_fetch_row(result);
+        Location = std::atoi(row[0]);
+        FreeGameSQLResult(result);
+    }
+
+    return Location;
 }

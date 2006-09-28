@@ -49,6 +49,7 @@
 
 #include "main.h"
 
+#include "msgbuilder.h"
 
 PClientManager::PClientManager()
 {
@@ -142,34 +143,20 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
   PChar* nChar;
   PMessage* tmpMsg;
   PClient* itClient;
-  u16 DX, DY, Dapprox;
-  
-  nZ=nZ; // avaoid warning
-
-//float fDX, fDY, fDist; // for dist approx debug
+  u16 Dapprox;
 
   for(PClientMap::iterator it=mClientList.begin(); it != mClientList.end(); it++)
   {
       itClient = (PClient*)(it->second);
       if (itClient->getUDPConn())
       {
-        nChar = (Database->GetChar(itClient->GetCharID()));
+        nChar = itClient->GetChar();
         if (nChar->GetLocation() != nZoneID) // if limited to zone, do check
           continue;
 
         if (nMaxDist) // if limited to distance, do check
         {
-          DX = ((nChar->Coords).mX > nX) ? (nChar->Coords).mX - nX : nX - (nChar->Coords).mX;
-          DY = ((nChar->Coords).mY > nY) ? (nChar->Coords).mY - nY : nY - (nChar->Coords).mY;
-          // We use Dapprox = max(dx, dy) + K * min(dx, dy)
-          // Dapprox = (DX > DY) ? DX + (DY >> 1) : DY + (DX >> 1); // Fastest, but max error on dist is around 10% real dist
-          Dapprox = (u16)((DX > DY) ? DX + 0.33*DY : DY + 0.33*DX); // max error on dist is around 5%, which should be enough
-/*
-fDX=((nChar->Coords).mX - nX);
-fDY=((nChar->Coords).mY - nY);
-fDist=sqrt(fDX*fDX + fDY*fDY);
-if (fDist != 0) Console->Print("Dist: %f\tApprox: %d\tError: %d (%d%)", fDist, Dapprox, (int)(Dapprox-fDist), (int)(100*(Dapprox-fDist)/fDist));
-*/
+          Dapprox = DistanceApprox((nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nX, nY, nZ);
           if (Dapprox >  nMaxDist)
             continue;
         }
@@ -199,7 +186,7 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxD
 {
   PChar* nChar; 
 
-  if (nClient && (nChar = Database->GetChar(nClient->GetCharID())))
+  if (nClient && (nChar = nClient->GetChar()))
   {
     return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist);
   }
@@ -215,7 +202,7 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
   u32 nZoneID;
   PClient* itClient;
     
-  if (nClient && (nChar = Database->GetChar(nClient->GetCharID()))) // if nClient is set, always use its zone
+  if (nClient && (nChar = nClient->GetChar())) // if nClient is set, always use its zone
   {
     nZoneID = nChar->GetLocation();
   }
@@ -230,11 +217,11 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
     itClient = (PClient*)(it->second);
     if (itClient->getUDPConn())
     {
-      nChar = Database->GetChar(itClient->GetCharID());
+      nChar = itClient->GetChar();
       if (nChar->GetLocation() != nZoneID) // limit to zone
         continue;
         
-      tmpMsg = GameServer->BuildCharHelloMsg(itClient);
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(itClient);
        
       nClient->IncreaseUDP_ID();
       tmpMsg->U16Data(0x01) = nClient->GetUDP_ID();

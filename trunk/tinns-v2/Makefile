@@ -1,16 +1,5 @@
-all: patchserver infoserver gameserver
+.DEFAULT_GOAL := all
 
-patchserver: src/patch/Makefile
+all .DEFAULT :
+	$(MAKE) -C src $(MAKECMDGOALS)
 
-infoserver: src/info/Makefile
-
-gameserver: src/game/Makefile
-
-clean:
-	rm src/netcode/*.o
-	rm src/patch/*.o
-	rm src/info/*.o
-	rm src/game/*.o
-	rm patchserver
-	rm infoserver
-	rm gameserver

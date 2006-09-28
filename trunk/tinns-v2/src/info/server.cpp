@@ -19,28 +19,37 @@
 	02110-1301, USA.
 */
 
+/*
+
+	MODIFIED: 27 Aug 2005 Hammag
+	REASON: - Use mMaxClient member	instead of MAX_INFO_CLIENTS define
+
+*/
+
 #include "main.h"
 
 PServer::PServer()
 {
-	mClients.reserve(MAX_INFO_CLIENTS);
+  mMaxClients = Config->GetOptionInt("maxclients");
+  
+	mClients.reserve(mMaxClients);
 	mNumClients = 0;
-	for(int i=0; i<MAX_INFO_CLIENTS; i++)
+	for(int i=0; i<mMaxClients; i++)
 		mClients[i]=0;
 }
 
 PServer::~PServer()
 {
-	for(int i=0; i<MAX_INFO_CLIENTS; i++)
+	for(int i=0; i<mMaxClients; i++)
 		delete mClients[i];
 }
 
 int PServer::NewClient()
 {
-	if(mNumClients==MAX_INFO_CLIENTS)
+	if(mNumClients==mMaxClients)
 		return -1;
 
-	for(int i=0; i<MAX_INFO_CLIENTS; i++)
+	for(int i=0; i<mMaxClients; i++)
 	{
 		if(!mClients[i])
 		{
@@ -54,7 +63,7 @@ int PServer::NewClient()
 
 PClient *PServer::GetClient(int Client) const
 {
-	if(Client < 0 || Client >= MAX_INFO_CLIENTS)
+	if(Client < 0 || Client >= mMaxClients)
 		return 0;
 
 	return mClients[Client];
@@ -62,7 +71,7 @@ PClient *PServer::GetClient(int Client) const
 
 void PServer::Update()
 {
-	for(int i=0; i<MAX_INFO_CLIENTS; i++)
+	for(int i=0; i<mMaxClients; i++)
 	{
 		if(mClients[i])
 		{
@@ -82,7 +91,7 @@ void PServer::Shutdown()
 {
     Console->Print("======================");
 	Console->Print("Shutting down Infoserver...");
-	for(int i=0; i<MAX_INFO_CLIENTS; i++)
+	for(int i=0; i<mMaxClients; i++)
 	{
 		if(mClients[i])
 		{

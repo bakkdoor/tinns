@@ -89,7 +89,7 @@ bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
   
   if ( MySQL->GameQuery(query.c_str()) )
   {
-      Console->Print(RED, BLACK, "PInventoryEntry::SQLSave could add/update some inventory item in the database");
+      Console->Print(RED, BLACK, "PInventoryEntry::SQLSave could not add/update some inventory item in the database");
       Console->Print("Query was:");
       Console->Print("%s", query.c_str());
       MySQL->ShowGameSQLError();
@@ -115,7 +115,7 @@ bool PInventoryEntry::SQLDelete()
     
     if ( MySQL->GameQuery(query.c_str()) )
     {
-      Console->Print(RED, BLACK, "PInventoryEntry::SQLDelete could delete some inventory item from the database");
+      Console->Print(RED, BLACK, "PInventoryEntry::SQLDelete could not delete some inventory item from the database");
       Console->Print("Query was:");
       Console->Print("%s", query.c_str());
       MySQL->ShowGameSQLError();

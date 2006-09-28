@@ -1,0 +1,21 @@
+gameserver.o: gameserver.cpp main.h ../include/version.h \
+  ../include/external.h ../include/types.h ../include/netcode.h \
+  ../include/message.h ../include/connection-tcp.h \
+  ../include/connection-udp.h ../include/serversocket.h \
+  ../include/console.h /usr/include/mysql/mysql.h \
+  /usr/include/mysql/mysql_com.h /usr/include/mysql/mysql_time.h \
+  /usr/include/mysql/mysql_version.h /usr/include/mysql/typelib.h \
+  /usr/include/mysql/my_list.h /usr/include/mysql/my_alloc.h \
+  include/sql.h include/vehicle.h ../include/config.h \
+  ../include/filesystem.h include/defparser.h include/skill.h \
+  include/chars.h include/inventory.h include/buddylist.h \
+  include/genreplist.h include/accounts.h include/defs.h \
+  include/def_characters.h include/def_subskills.h include/def_skills.h \
+  include/def_charkinds.h include/def_worlds.h include/def_factions.h \
+  include/def_hack.h include/def_items.h include/def_worldmodels.h \
+  include/def_appplaces.h include/def_appartements.h \
+  include/def_respawn.h include/gamedefs.h include/database.h \
+  include/client.h include/server.h ../include/misc.h \
+  include/gameserver.h include/globals.h include/zoning.h include/item.h \
+  include/chat.h include/commands.h include/clientmanager.h \
+  include/msgdecoder.h include/msgbuilder.h

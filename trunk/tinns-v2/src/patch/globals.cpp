@@ -19,7 +19,19 @@
 	02110-1301, USA.
 */
 
+/*
+
+    MODIFIED: 27 Aug 2006 Hammag
+    REASON: - Implemented shared Config class use and config template to load conf.
+                Added gameserver configtemplate.h include,
+                Added new required parameters to Config->LoadOptions()
+    
+    TODO:   - Get logfile name from config file
+    
+*/
+      
 #include "main.h"
+#include "configtemplate.h"
 
 ServerSocket* ServerSock = 0;
 PConsole *Console = 0;
@@ -30,7 +42,7 @@ PPatchServer *PatchServer = 0;
 
 bool InitTinNS()
 {
-	Console = new PConsole();
+	Console = new PConsole("log/patchserver.log");  // Make that from config file !!!
 	Console->Print("Starting TinNS Patchserver...");
 	Console->Print(WHITE, BLUE, "/-------------------------------------------------------------------\\");
 	Console->Print(WHITE, BLUE, "|               TinNS (TinNS is not a Neocron Server)               |");
@@ -53,12 +65,13 @@ bool InitTinNS()
 	Console->LPrint("You are running TinNS Patchserver version");
 	Console->LPrint(GREEN, BLACK, " %s", svnrev);
 	Console->LClose();
-	ServerSock = new ServerSocket();
+	
 	Config = new PConfig();
-	Server = new PServer();
-	if(!Config->LoadOptions())
-	    Shutdown();
+	if(!Config->LoadOptions(PatchConfigTemplate ,"./conf/patchserver.conf"))
+    Shutdown();
 
+	ServerSock = new ServerSocket();
+	Server = new PServer();
 	PatchServer = new PPatchServer();
 
 	return true;

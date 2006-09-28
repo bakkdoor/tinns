@@ -54,7 +54,7 @@
 	REASON: - File rewritten. Now, only 1 packet is send, like the real servers (that one fixed subway)
             - Fixed several worldnames
 	MODIFIED: 26 Jul 2006 Hammag
-	REASON:   - Fixed world 1086 5area mc5) worldname (from NeoX source)
+	REASON:   - Fixed world 1086 (area mc5) worldname (from NeoX source)
 	
 	TODO: Get the worldnames from worlds.ini, take alternate worldfile from worldinfo.def into account
 */
@@ -75,7 +75,12 @@ void SendZone(PClient *Client, u32 loc)
 	if(loc > 100000)
 	{
 	    u32 i = MySQL->GetAptType(Char->GetLocation()); // changed from NeoX
-	    switch(i)
+	    const PDefAppartement* nDestApp = GameDefs->GetAppartementDef(i);
+	    if (nDestApp)
+	    {
+        worldName = nDestApp->GetWorldname();
+	    }
+	    /*switch(i)
 	    {
 	        // Plaza
 	        case 1:
@@ -282,7 +287,7 @@ void SendZone(PClient *Client, u32 loc)
                 worldName = "apps/mili_clan_1";
                 break;
 	        }
-	    }
+	    }*/
 	}
 	else
 	{

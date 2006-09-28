@@ -36,9 +36,19 @@
             - Added shiny and colored copyright box :D
     MODIFIED: 22 Jul 2006 Hammag
     REASON: - Added Server NOT NULL check to avoid segfault when shuting down during startup        
+    MODIFIED: 27 Aug 2006 Hammag
+    REASON: - Implemented shared Config class use and config template to load conf.
+                Added gameserver configtemplate.h include,
+                Added new required parameters to Config->LoadOptions()
+    
+    TODO:   - Get logfile name from config file
 */
 
 #include "main.h"
+#include "configtemplate.h"
+
+#include "msgbuilder.h"
+
 PVehicles *Vehicles = 0;
 PMySQL *MySQL = 0;
 PConsole *Console = 0;
@@ -49,6 +59,7 @@ PDatabase *Database = 0;
 PFileSystem *Filesystem = 0;
 PGameServer *GameServer = 0;
 ServerSocket *ServerSock = 0;
+PMsgBuilder *MsgBuilder = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -56,7 +67,7 @@ PChat *Chat = 0;
 
 bool InitTinNS()
 {
-	Console = new PConsole();
+	Console = new PConsole("log/gameserver.log"); // Make that from config file !!!
 	Console->Print("Starting TinNS Gameserver");
 	Console->Print(WHITE, BLUE, "/-------------------------------------------------------------------\\");
 	Console->Print(WHITE, BLUE, "|               TinNS (TinNS is not a Neocron Server)               |");
@@ -81,7 +92,7 @@ bool InitTinNS()
 	Console->LClose();
 
 	Config = new PConfig();
-	if(!Config->LoadOptions())
+	if(!Config->LoadOptions(GameConfigTemplate, "./conf/gameserver.conf"))
 	    Shutdown();
 
 	std::string MyName = Config->GetOption("server_name");
@@ -106,6 +117,7 @@ bool InitTinNS()
 	ServerSock = new ServerSocket();
 	Server = new PServer();
 	GameServer = new PGameServer();
+	MsgBuilder = new PMsgBuilder();
 
 	Vehicles = new PVehicles();
 

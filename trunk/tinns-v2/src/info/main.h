@@ -22,52 +22,26 @@
 
 /*
     MODIFIED: 6 Jul 2006 Hammag
-	  REASON: - moved include "types.h" before include "../netcode/main.h" to permit compile
+	  REASON: - moved include "types.h" before include "../netcode/main.h" to enable compile
+	  
+    MODIFIED: 27 Aug 2006 Hammag
+	  REASON: - replaced MAX_INFO_CLIENTS define by config setting
+	          - removed INFO_PORT define not used anymore
+	  
 */
 
 
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "../version.h"
-
-#define INFO_PORT 7000
-#define MAX_INFO_CLIENTS 50
+#include "version.h"
 
 //basic includes
-#include <cstdio>
-#include <ctime>
-#include <cstring>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <map>
-#include <list>
-#include <queue>
-#include <unistd.h>
-#include <iostream>
-#include <stdarg.h>
-#include <string.h>
-#include <zlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <csignal>
-#include <netdb.h>
-#include <fcntl.h>
-#include <sys/types.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
-//#include "../netcode/connection-tcp.h"
-//#include "../netcode/connection-udp.h"
-//#include "../netcode/serversocket.h"
+#include "external.h"
 
 //tinns includes
 #include "types.h"
-#include "../netcode/main.h"
+#include "netcode.h"
 
 // MySQL Support
 #include "mysql.h"

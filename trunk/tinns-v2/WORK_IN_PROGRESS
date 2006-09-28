@@ -1,11 +1,16 @@
 The purpose of this proposed file is to give a fairly up to date view
 on the work in progress, to avoid double work...
 
-Hammag; 08.07.2006 - updated 30.07.2006
+Hammag; 08.07.2006 - updated 21.09.2006
 -----
-The aim of the modifications I'm on is to have a full character login,
+The aim of current modifications are to change a bit of the general architecture of TinNS
+[DONE] Source tree, Makefiles, and includes will first be reorganised to permit more modularity and code sharing amongst the 3 servers,
+ and easy exclusion of unfinished code.
+ Some Makefile targets to facilitate common code individual compilation remains to be done
+
+The aim of some modifications I'll restart later will be to to finish the full character login,
 that is a char that displays as expected ingame (for himself at first),
-and has his stats and changes well kept in DB.
+and has his stats, equipment and changes well kept in DB.
 
 It involves modification of:
  - [DONE] full char creation with use of profession templates (for money and inventory)
@@ -22,3 +27,9 @@ It involves modification of:
  - minor modifications to autosave
     [DONE] but more improvements will have to be done when more efficiency needed
  - [DONE]full filling-in of the baseline for char visual aspects, stats and inventory
+
+Other current work:
+ - make use of worldinfo.def, appplaces.def, appartments.def, respawn.def to manage genreping and
+    appartment in/out rather than hardcoded info (e.g. zoning.cpp) and manually built database.
+ - make use of world .dat files and worldmodels.def to manage item use rather than
+    a manually built database.

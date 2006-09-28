@@ -60,7 +60,14 @@ PChar::PChar()
 	mHead = 0;  // "
 	mTorso = 0; // "
 	mLegs = 0;  // "
-		
+  mHeadColor = mTorsoColor = mLegsColor = 0; // "
+  mHeadDarkness = mTorsoDarkness = mLegsDarkness = 0; // "
+  	
+	mBodyEffect = 0;
+	mBodyEffectDensity = 0;
+	
+	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
+	
 	mLocation = 1;
 	mApt=0;
 	mCash = 0;
@@ -69,11 +76,17 @@ PChar::PChar()
   mDirtyFlag = false;
 
 	Skill = new PSkillHandler();
+	mBuddyList = NULL;
+	mGenrepList = NULL;
 }
 
 PChar::~PChar()
 {
   delete Skill;
+  if (mBuddyList)
+    delete mBuddyList;
+  if (mGenrepList)
+    delete mGenrepList;
 }
 
 void PChar::SetProfession(u32 Profession)
@@ -142,7 +155,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
     if ((iHead < 0) || (iTorso < 0) || (iLegs < 0))
     {
       // do something !
-      nHead = nTorso = nLegs = 0;
+      nHead = nTorso = nLegs = 0xff;
     }
     else
     {
@@ -178,6 +191,26 @@ void PChar::GetCurrentLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs)
   nHead = mHead;
   nTorso = mTorso;
   nLegs = mLegs;
+}
+
+void PChar::SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness, u8 nTorsoDarkness, u8 nLegsDarkness)
+{
+  mHeadColor = nHeadColor;
+  mTorsoColor = nTorsoColor;
+  mLegsColor = nLegsColor;
+  mHeadDarkness = nHeadDarkness;
+  mTorsoDarkness = nTorsoDarkness;
+  mLegsDarkness = nLegsDarkness; 
+}
+
+void PChar::GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness)
+{
+  nHeadColor = mHeadColor;
+  nTorsoColor = mTorsoColor;
+  nLegsColor = mLegsColor;
+  nHeadDarkness = mHeadDarkness;
+  nTorsoDarkness = mTorsoDarkness;
+  nLegsDarkness = mLegsDarkness; 
 }
 
 void PChar::SetBaseSkills()
@@ -393,6 +426,26 @@ bool PChar::SQLLoad(int CharID) {
         // ---------------------------------------------
         mInventory.SQLLoad(mID);
         // + Belt, Implants(&Armor), Gogo, GR list, Chats settings & friendlist
+        
+        // temp value forcing, not get/saved from DB atm
+        mSoullight = 10;
+        mCombatRank = (u8)(random() % 127); // bad result there on randomness
+        mSynaptic = 0;
+        mIsDead = false; 
+        
+        mDirectCharID = 0; // until saved/loaded with char
+        mBuddyList = new PBuddyList(mID);
+        if (!mBuddyList->SQLLoad())
+        {
+          Console->Print(RED, BLACK, "Char ID %d : Can't load buddy list", mID);
+        }
+        
+        mGenrepList = new PGenrepList(mID);
+        if (!mGenrepList->SQLLoad())
+        {
+          Console->Print(RED, BLACK, "Char ID %d : Can't load genrep list", mID);
+        }
+
     }
     MySQL->FreeGameSQLResult(result);
     return true;
@@ -882,6 +935,14 @@ void PChar::FillinCharDetails(u8 *Packet)
     Packet[221] = (u8)Skill->GetSKPCost(SK_WPW);
 }
 
+u8 PChar::GetMainRank() {
+   u16 total;
+   total  = Skill->GetMainSkill(MS_STR) + Skill->GetMainSkill(MS_DEX);
+   total += Skill->GetMainSkill(MS_CON) + Skill->GetMainSkill(MS_INT);
+   total += Skill->GetMainSkill(MS_PSI);
+   return ((u8)(total/5));
+}
+
 // ===================================
 
 PChars::PChars()
@@ -1165,3 +1226,5 @@ PChar *PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 
   }
   return NULL;
 }
+
+

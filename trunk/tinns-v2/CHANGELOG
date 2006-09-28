@@ -190,3 +190,153 @@ client.cpp :: GetAdress()
 [PATCH]
 client.cpp :: GetAdress()
   - updated implementation to use ConnectionTCP::GetRemoteAddress()
+  
+====================
+Hammag; 24.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - movement/positionning in multiuser is now fixed 
+ - implemented NC messages decoding new base classes. Not used yet
+
+<Source changes>
+[GAME]
+  - added PUdpMsgDecoder class, which objects manage UDP packets decoding
+  - added PUdpMsgAnalyser class, which is the base class that real packet analyser objects will be derived from
+      Analysis exemple is not yet implemented
+  - added PUdpMsgUnknown class, which is the most simple exemple of final packet analyser object (used for unkown packets)
+
+====================
+Hammag; 26.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - A modified source tree is now used. The corresponding changes have been applied to the whole source code,
+    resulting in some move to some common components directories, common includes and corresponding changes
+    in servers source
+ - A new Makefile system is now used. All makefiles have been remade accordingly.
+
+<Source changes>
+[ALL]
+Put version.h in include dir
+Created include/external.h
+Removed corresponding includes from all main.h, and replaced by external.h
+
+[CONSOLE]
+Moved console *.cpp files in common/console
+Moved console's *.h in include dir
+Added a main.h in common/console for specific private includes
+Made Console class generic, added output file as constructor parameter,
+  changed servers code accordingly
+Removed Console-> in Console->ColorText(...) in PConsole::~PConsole()
+
+[NETCODE]
+Moved netcode .cpp files in common/netcode
+Moved netcode's *.h in include dir, changed netcode's main.h to netcode.h
+Added a main.h in common/netcode for specific private includes
+
+====================
+Hammag; 27.08.2006 18:30 GMT+1
+----------
+<General changes>
+ - Changed config class as a common component
+ - Changed "misc" functions as a common components
+ - Removed some old code, some old defines, and changed some defines to config entry
+
+[CONFIG] 
+Moved config .cpp file in common/config
+Moved config *.h in include dir
+Added a main.h in common/config for specific private includes
+Made Config class generic, added option tempate and config file as LoadOptions parameter,
+  changed servers code accordingly, by making use of the shared class
+  and adding a templateconfig.h file included in the place where config loading is done
+
+[MISC]
+Merged all misc functions in a single misc.h and a single misc.cpp files
+Moved config *.h in include dir
+Move the misc.cpp in common/misc
+Added a main.h in common/misc for specific private includes
+
+[ALL SERVERS]
+Modified global.cpp and main.h to use shared PConfig class and shared misc functions
+Removed misc.* and config.* from servers sources
+
+====================
+Hammag; 10.09.2006 00:00 GMT+1
+----------
+<General changes>
+ - Changed filesystem class as a common component
+ - Added command @effect to play with skins effect (see commands.cpp for details)
+ - Added command @speed to play with speed (see commands.cpp for details)
+ - Removed some more #include directive from some main.h files to put them only
+    when needed in .cpp file. This eliminated some unnecessary dependencies and
+    makes recompile faster.
+ - Migrated message decoding to new system for all messages types except 0x13/0x1f (yes... stil lots to do)
+ 
+
+[ALL SERVERS]
+Moved filesystem.h to include dir, and filesystem.cpp to common/filesystem dir
+Removed filesystem.* from servers sources
+Changed patchserver and gameserver accordingly
+
+
+[GAME]
+Added game/include dir to put all .h file to highly facilitate includes.
+Added corresponding include directory path directive in game and game/* makefiles
+
+Put all .def related stuff in game/def subdir.
+*.h files are in game/include
+
+Put all message decoding related stuff in game/decoder subdir.
+msgdecoder.h file are in game/include.
+Other .h files which are not exposed to other gameserver componenets are in game/decoder subdir.
+
+Created a PMsgBuilder class to put message creating methods in it.
+A global PMsgBuilder* MsgBuilder instance is added to gameserver.
+Modified globals.*, gameserver.*, clientmanager.cpp, commands.cpp and various game/_inc accordingly
+
+Moved PGameState definition from gameserver.cpp to gameserver.h
+
+Added PChar* GetChar() method to PClient
+
+Added WorldMap request basic support in PMsgBuilder::BuildReqInfoAnswerMsg() (for futur use)
+Added BodyEffect and SpeedOverride members to PChar class, as well as methods to set and get these values
+Added support for BodyEffect and SpeedOverride in PMsgBuilder::BuildCharHelloMsg()
+
+Reorganised code related to UDP Sync in order to avoid duplicate code.
+Put most of corresponding message building functions in PMsgBuilder class.
+
+====================
+Hammag; 22.09.2006 00:00 GMT+1
+----------
+<General changes>
+ - Added Buddy list management (just the list though, buddy chat isn't working yet)
+    Added a new gameserver DB table ti save the buddy list: buddy_list 
+ - Added Direct chat management (just char selection though, direct chat isn't working yet, and selection isn't saved in DB yet)
+ - Added Genrep list management. List is now working and saved. Registration of GR doesn't register the right GR though (working on that)
+ - Added loading of worldmodel.def and appplace.def files for later (very soon) use.
+ - Migrated most of message handling to new decoder system.
+    Item use is migrated in "a compatibility mode" until item management is fully based on world .dat  and worldmodel.def files
+
+[GAME]
+Removed game/_inc directory
+Removed all UDP message analysis and handling from gameserver.cpp
+Created mode decoder classes in game/decoder
+Moved most UDP packet creation code from gameserver.cpp to msgbuilder.cpp, using PMessages
+Added PBuddyList class
+Added PGenrepList class
+Added loading/saving of Buddy List and Genrep List to char loading/saving in chars.cpp
+
+Added new members to PChar to store skin color and brightness (aka "darkness")  in chars.h and char.cpp (not saved in DB yet)
+Added new commands "@color" and "@brightness"
+
+====================
+Hammag; 27.09.2006 20:00 GMT+1
+----------
+<General changes>
+ - Added loading of appartements.def and respawn.def files for later (very soon) use.
+ - Corrected and modified dependencies management in make system.
+    No unwanted file date change should occure anymore
+
+[GAME]
+Zoning to appartment now make use of appartements.def data instead of hardcoded data (zoning.cpp)
+Added PMySQL::GetAptLocation() method in sql.cpp
+Prepared some modification for WorldItems and Appartments in sql.cpp (these methodes will later be put in specific classes)

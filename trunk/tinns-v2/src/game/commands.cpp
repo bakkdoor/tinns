@@ -55,7 +55,6 @@
                 - Added 4th commandline argument to handle option2 in worlditems
         MODIFIED: 02 Jan Namikon
         REASON: - Added command @debug to enable/disable debug output of world item IDs (DIRECT> System: ID: <id> LOC: <world>)
-
         MODIFIED: 29 Jul Hammag
         REASON: - Added command @skin to play with skins :-P
                   Usage:  @skin #<chardef idx>
@@ -66,13 +65,44 @@
                                   - means current skin
                                   incrementaly optional <head>, <torso> and <legs> are values 0-9
                       As a side effect, just doing @skin - will display you current skin infos (and change to the same ...)
-                                  
+
+        MODIFIED: 9 Sep Hammag
+        REASON: - Added command @effect to play with skins effect :-P
+                  Usage:  @effect <effect> [<density>]
+                              with <effect> = 0 to 17 and <density> = 0 (max density) to 255 (min density)
+                              <density> is meaningfull for some of the effects only
+                  Note: you won't see the effect on yourself. Only other chars will see it ...
+                  Effects found:
+                  0 = no effect
+                  1 = poison smoke
+                  2 = electricity
+                  3 = deflector (instant white flash)
+                  4 = heal bubbles
+                  5 = be a light in the darkness !!!
+                  6 = flames
+                  7 = stun particles
+                  8 = group heal
+                  9 = group deflector (?)
+                  10= damage boost
+                  11= group damage boost
+                  12= shelter (instant yellow flash)
+                  13= group deflector (?)
+                  14= stealth
+                  15= anti poison aura
+                  16= I don't remember this one: swarming yellow & blue bubbles
+                  17= true sight
+        REASON: - Added command @speed to play with speed
+                  Usage:  @speed <newspeed> | #
+                              with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
+                                                                                      
 	ToDo:
 	- Fix Subwaysyncy
 	- Fix Wastelandsyncy
 */
 
 #include "main.h"
+
+#include "msgbuilder.h"
 
 char output[2048];
 
@@ -506,7 +536,7 @@ Console->Print("SendChat");
   if(strcmp(Command, "skin") == 0)
   {
     
-    u32 SkinVal1, Skinval2, Skinval3, Skinval4;
+    u32 Skinval1, Skinval2, Skinval3, Skinval4;
     PChar *SkinChar = Database->GetChar(Client->GetCharID());
     std::stringstream SkinChat;
     char SkinStr[128];
@@ -519,24 +549,24 @@ Console->Print("SendChat");
     {
       if ((Arg1[0] == '#') && (Arg1[1] != '\0'))
       {
-        SkinVal1 = atoi(Arg1+1);
+        Skinval1 = atoi(Arg1+1);
         SkinChar->SetCurrentLookFromCharType(atoi(Arg1+1));
         SkinChat << "Skin set to the skin of char type ";
-        SkinChat << (int)SkinVal1;
+        SkinChat << (int)Skinval1;
       }
       else
       {
         if ((Arg1[0] == '#') && (Arg1[1] == '\0'))
         {
-          SkinChar->GetRealLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+          SkinChar->GetRealLook(Skinval1, Skinval2, Skinval3, Skinval4);
         }
         else if ((Arg1[0] == '-') && (Arg1[1] == '\0'))
         {
-          SkinChar->GetCurrentLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+          SkinChar->GetCurrentLook(Skinval1, Skinval2, Skinval3, Skinval4);
         }
         else
         {
-          SkinVal1 = atoi(Arg1);
+          Skinval1 = atoi(Arg1);
         }
         
         if(Arg2[0] != '\0')
@@ -564,23 +594,209 @@ Console->Print("SendChat");
           }
         }
         
-        SkinChar->SetCurrentLook(SkinVal1, Skinval2, Skinval3, Skinval4);
+        SkinChar->SetCurrentLook(Skinval1, Skinval2, Skinval3, Skinval4);
         
         SkinChat << "Skin set to model ";
-        SkinChat << (int)SkinVal1 << " with head " << (int)Skinval2 << ", torso " << (int)Skinval3 << ", legs " << (int)Skinval4;          
+        SkinChat << (int)Skinval1 << " with head " << (int)Skinval2 << ", torso " << (int)Skinval3 << ", legs " << (int)Skinval4;          
       }
 
       snprintf(SkinStr, 127, "%s", SkinChat.str().c_str());
       SkinStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", SkinStr);
-// Temp
-      PMessage* tmpMsg = GameServer->BuildCharHelloMsg(Client); 
-      int nbSent = ClientManager->UDPBroadcast(tmpMsg, Client);
-//Console->Print(GREEN, BLACK, "Client %d: (Skin) update message sent to %d chars", Client->GetIndex(), nbSent);
-nbSent = nbSent; // to avoid compliation warning
 
+      PMessage* tmpMsg = MsgBuilder->BuildCharHelloMsg(Client); 
+      ClientManager->UDPBroadcast(tmpMsg, Client);
     }
   }
+// -------------------------------------------------------
+// Body effect setting. See Changes at the begining of this file
+
+if(strcmp(Command, "effect") == 0)
+  {    
+    u8 val1, val2;
+    char effStr[128];
+    PMessage* tmpMsg;
+           
+    if(Arg1[0] != '\0')
+    {
+      val1 = (u8)(atoi(Arg1) & 0xff);
+      val2 = (u8)(atoi(Arg2) & 0xff);
+      Client->GetChar()->SetBodyEffect(val1, val2);
+
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      snprintf(effStr, 127, "Body effect set to value %d with density %d (but you can see it yourself)", val1, val2);
+      effStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", effStr);
+    }
+    else
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@effect <effect: 0=none, 1 .. 17> [<density: 0=max .. 255=min>]");
+    }
+  }
+  
+// -------------------------------------------------------
+// Speed override setting.
+// Usage: @speed <newspeed> | #
+//  with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
+
+if(strcmp(Command, "speed") == 0)
+  {    
+    u8 val1;
+    char effStr[128];
+    PMessage* tmpMsg;
+           
+    if(Arg1[0] != '\0')
+    {
+      val1 = ((Arg1[0] == '#') ? 255 : (u8)(atoi(Arg1) & 0xff));
+      Client->GetChar()->SetSpeedOverride(val1);
+
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      snprintf(effStr, 127, "Speed override set to value %d ", val1);
+      effStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", effStr);
+    }
+    else
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@speed <newspeed: 0 .. 254 > | 255 | #");
+    }
+  }
+  
+// Skin color setting.
+if(strcmp(Command, "color") == 0)
+  {    
+    u8 val1, val2, val3, val4, val5, val6;
+    char effStr[128];
+    PMessage* tmpMsg;
+           
+    if(Arg1[0] != '\0')
+    {
+      Client->GetChar()->GetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
+      if(Arg1[0] != '-')
+        val1 = (u8)(atoi(Arg1) & 0xff);
+      if((Arg2[0] != '-') && (Arg2[0] != '\0'))
+        val2 = (u8)(atoi(Arg2) & 0xff);
+      if((Arg3[0] != '-') && (Arg3[0] != '\0'))
+        val3 = (u8)(atoi(Arg3) & 0xff);
+      Client->GetChar()->SetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
+
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      snprintf(effStr, 127, "Body color set to values %d %d %d", val1, val2, val3);
+      effStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", effStr);
+    }
+    else
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@color -|<head color: 0..255> [-|<torso color>]  [-|<legs color>]");
+    }
+  }
+
+// Skin brightness setting.
+if(strcmp(Command, "brightness") == 0)
+  {    
+    u8 val1, val2, val3, val4, val5, val6;
+    char effStr[128];
+    PMessage* tmpMsg;
+           
+    if(Arg1[0] != '\0')
+    {
+      Client->GetChar()->GetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
+      if(Arg1[0] != '-')
+        val4 = (u8)(atoi(Arg1) & 0xff);
+      if((Arg2[0] != '-') && (Arg2[0] != '\0'))
+        val5 = (u8)(atoi(Arg2) & 0xff);
+      if((Arg3[0] != '-') && (Arg3[0] != '\0'))
+        val6 = (u8)(atoi(Arg3) & 0xff);
+      Client->GetChar()->SetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
+
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      snprintf(effStr, 127, "Body brightness set to values %d %d %d", val4, val5, val6);
+      effStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", effStr);
+    }
+    else
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]");
+    }
+  }
+
+/******* temp tests *******/
+if(strcmp(Command, "t") == 0) // testing apprence status
+  {
+    
+    u32 val1;
+    u8 val2;
+    char tmpStr[128];
+    static PMessage* tmpMsg = NULL;
+
+    if (!tmpMsg)
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+       
+    if(Arg1[0] != '\0' && Arg2[0] != '\0')
+    {
+        val1 = atoi(Arg1);
+        val2 = (u8)(atoi(Arg2) & 0xff);
+        tmpMsg->U8Data(16 + val1) = val2;
+        snprintf(tmpStr, 127, "Data #%d set to value 0x%02x", val1, val2);
+    }
+    else
+    {
+      if (tmpMsg)
+        delete tmpMsg;
+      tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
+      snprintf(tmpStr, 127, "Data reset to normal values");
+    }
+    
+    tmpStr[127] = '\0';
+    Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
+
+    PMessage* SendMsg = new PMessage(tmpMsg->GetMaxSize());
+    (*SendMsg) = (*tmpMsg);
+    ClientManager->UDPBroadcast(SendMsg, Client);
+  }
+
+if(strcmp(Command, "h") == 0) // testing apprence status
+  {
+    u8 val1, val2;
+    char tmpStr[128];
+
+    if(Arg1[0] != '\0')
+    {
+      val1 = (u8)(atoi(Arg1) & 0xff);
+      val2 = (u8)(atoi(Arg2) & 0xff);        
+    }
+    else
+    {
+      val1 = 0x30;
+      val2 = 0x01;
+    }
+
+  PMessage* tmpMsg = new PMessage(14);
+
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+	*tmpMsg << (u8)0x00; // Message length placeholder;
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)Client->GetLocalID();
+	*tmpMsg << (u8)0x30;
+	*tmpMsg << (u8)val1; //Head Heath (% ?)
+	*tmpMsg << (u8)val1; //Body Heath 
+	*tmpMsg << (u8)val1; //Feet Heath 
+	*tmpMsg << (u8)0x01;
+
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+   ClientManager->UDPBroadcast(tmpMsg, Client);
+    
+  snprintf(tmpStr, 127, "Data set to values 0x%02x 0x%02x", val1, val2);
+  tmpStr[127] = '\0';
+  Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
+  }
+/******* end temp *******/    
+
 // -------------------------------------------------------   
 }
 

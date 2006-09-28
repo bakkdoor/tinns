@@ -28,44 +28,17 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "../version.h"
+#include "version.h"
 
 #define PATCH_PORT 7000
 #define MAX_PATCH_CLIENTS 50
 
-#include <cstdio>
-#include <ctime>
-#include <cstring>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <map>
-#include <list>
-#include <queue>
-#include <unistd.h>
-#include <iostream>
-#include <stdarg.h>
-#include <string.h>
-#include <zlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <csignal>
-#include <netdb.h>
-#include <fcntl.h>
-#include <sys/types.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
-//#include "../netcode/connection-tcp.h"
-//#include "../netcode/connection-udp.h"
-//#include "../netcode/serversocket.h"
+//basic includes
+#include "external.h"
 
 //tinns includes
 #include "types.h"
-#include "../netcode/main.h"
+#include "netcode.h"
 
 #include "console.h"
 #include "config.h"

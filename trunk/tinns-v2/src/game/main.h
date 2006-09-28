@@ -22,7 +22,7 @@
 
 
 /*
-	tinns.h - main include file, contains all needed includes and important definitions
+	main.h - main include file, contains all needed includes and important definitions
 
 	MODIFIED: 31 Aug 2005 Akiko
 	REASON: - updating def file definitions to match the changes in gamedefs.cpp
@@ -55,13 +55,15 @@
     MODIFIED: 10 Jul 2006 Hammag
 	  REASON: - added inventory.h
 	  REASON: - added item.h
+    MODIFIED: 26 Jul 2006 Hammag
+	  REASON: - removed	#define GAME_PORT which is not used anymore (now in config file)
 	  
 */
 
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "../version.h"
+#include "version.h"
 
 #define DEF_CHARACTERS "characters.def"
 #define DEF_SKILLS "skills.def"
@@ -72,42 +74,13 @@
 #define DEF_HACK "hack.def"
 #define DEF_ITEMS "items.def"
 
-#define GAME_PORT 12000
 
 //basic includes
-#include <cstdio>
-#include <ctime>
-#include <cstring>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <map>
-#include <list>
-#include <queue>
-#include <unistd.h>
-#include <iostream>
-#include <stdarg.h>
-#include <string.h>
-#include <zlib.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <csignal>
-#include <netdb.h>
-#include <fcntl.h>
-#include <sys/types.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
-//#include <arpa/inet.h>
-//#include "../netcode/connection-tcp.h"
-//#include "../netcode/connection-udp.h"
-//#include "../netcode/serversocket.h"
+#include "external.h"
 
 //tinns includes
 #include "types.h"
-#include "../netcode/main.h"
+#include "netcode.h"
 /*
 #include "../gamemonkey/gmMachine.h"
 #include "../gamemonkey/gmCall.h"
@@ -123,18 +96,9 @@
 #include "defparser.h"
 
 #include "skill.h"
-
 #include "chars.h"
 #include "accounts.h"
-#include "def_characters.h"
-#include "def_subskills.h"
-#include "def_skills.h"
-#include "def_charkinds.h"
-#include "def_worlds.h"
-#include "def_factions.h"
-#include "def_hack.h"
-#include "def_items.h"
-#include "gamedefs.h"
+#include "defs.h"
 #include "database.h"
 #include "client.h"
 #include "server.h"
@@ -148,6 +112,7 @@
 #include "chat.h"
 #include "commands.h"
 #include "clientmanager.h"
+
 
 using namespace std;
 

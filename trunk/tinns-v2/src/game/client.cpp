@@ -76,7 +76,7 @@ PClient::~PClient()
     mSessionID = 0; // is 65533 the higher valid value ???
   }
 }*/
-
+	
 void PClient::GameDisconnect()
 {
 	mAccount = 0;
@@ -162,3 +162,7 @@ void PClient::Update()
     }
 }
 
+PChar* PClient::GetChar() const 
+{
+  return Database->GetChar(mCharID);
+}
