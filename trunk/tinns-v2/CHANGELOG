@@ -340,3 +340,12 @@ Hammag; 27.09.2006 20:00 GMT+1
 Zoning to appartment now make use of appartements.def data instead of hardcoded data (zoning.cpp)
 Added PMySQL::GetAptLocation() method in sql.cpp
 Prepared some modification for WorldItems and Appartments in sql.cpp (these methodes will later be put in specific classes)
+
+====================
+Hammag; 28.09.2006 17:30 GMT+1
+----------
+<General changes>
+ - Updated the gamserver DB install file to version 5 (database/GameDB5.zip) needed
+    by the current TinNS version.
+ - Added a SQL file to update existing gamserver DB from version 4 to version 5
+    (database/GameDB4_to_GameDB5.sql)
