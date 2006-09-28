@@ -190,7 +190,7 @@ char DoorLocked[] = {
     }
 //Console->Print("Usage of non-door worlditem ID %d, SubClassID %d", Packet[9], Packet[10]);
     char ErrorMsg[256];
-    int itemID = *(unsigned short*)&Packet[9];
+    int itemID = *(unsigned short*)&Packet[9]; // NeoX says : u32 @offset 8 !!!
     //int subClass = *(unsigned short*)&Packet[10];
     int Location = Char->GetLocation();
     //int worlditemtype = MySQL->GetWorldItemType(*(unsigned short*)&Packet[9], *(unsigned short*)&Packet[10], Char->GetLocation());
@@ -217,8 +217,14 @@ char DoorLocked[] = {
         *(unsigned short*)&GenRepUse[3] = Client->GetSessionID();
         *(unsigned short*)&GenRepUse[14] = Client->GetUDP_ID();
 
-        *(unsigned short*)&GenRepUse[8] = *(unsigned short*)&Packet[9];
+        //*(unsigned short*)&GenRepUse[8] = *(unsigned short*)&Packet[9];
+        
+        int Option1 = MySQL->GetWorldItemOption(mItemID/256, Location, 1); // from NeoX
 
+				*(u32*)&GenRepUse[7] = (u32)mItemID; // good itemID
+				*(u32*)&GenRepUse[20] = (u32)Location; // from NeoX
+				*(u16*)&GenRepUse[24] = (u16)Option1; // from NeoX
+				
         *(u16*)&GenRepUse[17] = (u16)Client->GetLocalID(); // from NeoX
         
         Client->getUDPConn()->write(GenRepUse, sizeof(GenRepUse));

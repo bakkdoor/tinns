@@ -176,8 +176,10 @@ dep: fastdep
 #
 # include dependency files if they exist
 #
-ifneq ($(wildcard $DEPDIR)),)
--include $(patsubst %.o,$(DEPDIR)/%.dep,$(obj-y))
+ifneq ($(wildcard $(DEPDIR)),)
+   ifneq ($(wildcard $(obj-y)),)
+      -include $(patsubst %.o,$(DEPDIR)/%.dep,$(obj-y))
+   endif
 endif
 
 ifneq ($(wildcard $(TOPDIR)/.hdepend),)

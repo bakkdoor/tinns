@@ -36,18 +36,21 @@
 	MODIFIED: 21 Sep 2005 Hammag
 	REASON: - Added PDefWorldModel related stuff
 	        - Added PDefAppPlace related stuff
-	        - completed PGameDefs destructor
-  
+	        - completed PGameDefs destructor  
   MODIFIED: 22 Sep 2005 Hammag
 	REASON: - Added PDefAppartement related stuff
 	        - Added PDefRespawn related stuff
 	
+  MODIFIED: 28 Sep 2005 Hammag
+	REASON: - Added PDefWorldFile related stuff	
 	
+			
+	--------------------------------------------------------------------
 	WARNING:
 	When adding new .def support, don't forget to add required stuff in
 	  PGameDefs::~PGameDefs() and PGameDefs::Init()
 	  (compiler won't complain if you don't add that)
-	        
+	--------------------------------------------------------------------        
 	        	
 	NOTA: as PGameDefs uses the PDefParser class, which uses the PFileSystem and PFile classes,
 	  files are searched in the same way as the NC client does:
@@ -90,7 +93,9 @@ PGameDefs::~PGameDefs()
 	for (PDefAppartementMap::iterator i=mAppartementDefs.begin(); i!=mAppartementDefs.end(); i++)
 		delete i->second;
   for (PDefRespawnMap::iterator i=mRespawnDefs.begin(); i!=mRespawnDefs.end(); i++)
-		delete i->second;	
+		delete i->second;
+	for (PDefWorldFileMap::iterator i=mWorldFileDefs.begin(); i!=mWorldFileDefs.end(); i++)
+		delete i->second;
 }
 
 void PGameDefs::Init()
@@ -108,6 +113,7 @@ void PGameDefs::Init()
 	LoadAppPlaceDefs();
 	LoadAppartementDefs();
 	LoadRespawnDefs();
+	LoadWorldFileDefs();
 }
 
 /****** Loading methods ******/
@@ -646,6 +652,52 @@ bool PGameDefs::LoadRespawnDefs()
 	return (true);
 }
 
+bool PGameDefs::LoadWorldFileDefs()
+{
+	PDefParser parser;
+	int nDefs = 0, nErrors = 0;
+	const string DEF_FILE = Config->GetOption("worlds_path") + "/" + WRLD_WORLDFILE;
+
+	if (parser.Parse(DEF_FILE.c_str()))
+	{
+		const PDefTokenList &t = parser.GetTokens();
+
+  		for (PDefTokenList::const_iterator i=t.begin(); i!=t.end(); i++)
+  		{
+  			PDefWorldFile *it = new PDefWorldFile();
+  			bool loadfail = !it->LoadFromDef(*i), insertfail=false;
+  
+  			if (!loadfail)
+  				insertfail = !mWorldFileDefs.insert(std::make_pair(it->GetIndex(), it)).second;
+  			if (loadfail || insertfail)
+  			{
+  				if (insertfail)
+  					Console->Print("WorldFile ini error (new duplicate id %i discarded)", it->GetIndex(), it->GetName().c_str());
+  				else
+  				{
+  					Console->Print("WorldFile ini load error @ %i", nDefs+nErrors);
+  				  ++nErrors;
+  				}
+  				delete it;
+  			}
+  			else
+  				++nDefs;
+  		}
+	}
+	else
+	{
+   	    Console->Print("%s Error loading worldfile ini defs", Console->ColorText(RED, BLACK, "[ERROR]"));
+
+		return (false);
+	}
+    if(nErrors > 0)
+        Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(RED, BLACK, "[ERROR]"), nDefs, nErrors);
+    else
+        Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(GREEN, BLACK, "[Success]"), nDefs, nErrors);
+
+	return (true);
+}
+
 /****** Get methods ******/
 
 const PDefCharacter *PGameDefs::GetCharDef(int Index) const
@@ -767,6 +819,16 @@ const PDefRespawn *PGameDefs::GetRespawnDef(int Index) const
   PDefRespawn *Result = 0;
 	PDefRespawnMap::const_iterator i = mRespawnDefs.find(Index);
 	if (i!=mRespawnDefs.end())
+		Result = i->second;
+
+	return (Result);
+}
+
+const PDefWorldFile *PGameDefs::GetWorldFileDef(int Index) const
+{
+  PDefWorldFile *Result = 0;
+	PDefWorldFileMap::const_iterator i = mWorldFileDefs.find(Index);
+	if (i!=mWorldFileDefs.end())
 		Result = i->second;
 
 	return (Result);

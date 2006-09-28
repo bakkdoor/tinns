@@ -22,6 +22,12 @@
     Configuration template for gameserver
     Used to set available/optional/required options when loading config
       with a PConfig object.
+
+	MODIFIED: 28 Sep 2006 Hammag
+	REASON: - added worlds_path entry	 	  
+  
+  TODO: put a single data_directory entry as the root directory for all NC data
+    
 */
 
 const char* GameConfigTemplate[][2] = {
@@ -48,6 +54,7 @@ const char* GameConfigTemplate[][2] = {
   {"maxclients", "128"},
   {"gm_slots", "10"},
   {"defs_path", "./defs"},
+  {"worlds_path", "./worlds"},
   {"isc_method", "0"},
   {"isc_update_intervall", "10"},
   {"isc_infoserverip", "127.0.0.1"},

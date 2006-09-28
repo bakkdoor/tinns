@@ -22,34 +22,35 @@
 
 
 /*
-	defs.h - include file for all def_* files related stuff used by all modules
-  
-	MODIFIED: 21 Sep 2006 Hammag
-	REASON: - created
-	
+	def_worldfile.h (infos from worlds/worlds.ini)
+
+	MODIFIED: 28 Sep 2007 Hammag
+	REASON: - Creation
 */
 
-#ifndef DEFS_H
-#define DEFS_H
+#ifndef DEF_WORLDFILE_H
+#define DEF_WORLDFILE_H
 
-#include "defparser.h"
+#ifdef _MSC_VER
+	#pragma once
+#endif
 
-#include "def_characters.h"
-#include "def_subskills.h"
-#include "def_skills.h"
-#include "def_charkinds.h"
-#include "def_worlds.h"
-#include "def_factions.h"
-#include "def_hack.h"
-#include "def_items.h"
-#include "def_worldmodels.h"
-#include "def_appplaces.h"
-#include "def_appartements.h"
-#include "def_respawn.h"
-#include "def_worldfile.h"
-#include "gamedefs.h"
+class PDefWorldFile
+{
+	private :
+		int mIndex;
+		std::string mName; // filename with ending extension and starting ./ or ./worlds/ REMOVED
+		bool mInWorldsDir; // TRUE if file in ./worlds
+	public :
+		PDefWorldFile();
+		~PDefWorldFile();
 
-using namespace std;
+		bool LoadFromDef(PTokenList *Tokens);
+
+		inline int GetIndex() const { return mIndex; }
+		inline const std::string &GetName() const { return mName; }
+		inline const bool IsInWorldsDir() const { return mInWorldsDir; }
+};
 
 #endif
 

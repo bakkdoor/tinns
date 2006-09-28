@@ -29,7 +29,7 @@ It involves modification of:
  - [DONE]full filling-in of the baseline for char visual aspects, stats and inventory
 
 Other current work:
- - make use of worldinfo.def, appplaces.def, appartments.def, respawn.def to manage genreping and
+ - [DONE] make use of worldinfo.def, appplaces.def, appartments.def, respawn.def to manage genreping and
     appartment in/out rather than hardcoded info (e.g. zoning.cpp) and manually built database.
  - make use of world .dat files and worldmodels.def to manage item use rather than
     a manually built database.

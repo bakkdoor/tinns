@@ -195,11 +195,14 @@ PUdpMsgAnalyser* PUdpAddGenrepToList::Analyse()
 
 bool PUdpAddGenrepToList::DoAction()
 {
-// TODO: make addition session & inter-session persistant
-  PMessage* tmpMsg = MsgBuilder->BuildGenrepAddToListMsg(mDecodeData->mClient, mLocation, mEntity);
-  mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
-//Console->Print("Client[%d]: Adding Genrep (location %d - entity %d)", mDecodeData->mClient->GetID(), mLocation, mEntity);
-//mDecodeData->mMessage->Dump();
+  PClient* nClient = mDecodeData->mClient;
+  
+//Console->Print("Client[%d]: Adding Genrep (location %d - entity %d)", nClient->GetID(), mLocation, mEntity);
+
+  nClient->GetChar()->AddGenrep(mLocation, mEntity);
+  PMessage* tmpMsg = MsgBuilder->BuildGenrepAddToListMsg(nClient, mLocation, mEntity);
+  nClient->getUDPConn()->SendMessage(tmpMsg);
+
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

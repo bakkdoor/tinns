@@ -28,11 +28,13 @@
 	REASON: - Added GPL	
 	MODIFIED: 21 Sep 2005 Hammag
 	REASON: - Added PDefWorldModel related stuff
-	        - Added PDefAppPlace related stuff
-  
+	        - Added PDefAppPlace related stuff  
   MODIFIED: 22 Sep 2005 Hammag
 	REASON: - Added PDefAppartement related stuff
 	        - Added PDefRespawn related stuff
+
+  MODIFIED: 28 Sep 2005 Hammag
+	REASON: - Added PDefWorldFile related stuff
 	
 */
 
@@ -55,7 +57,8 @@ typedef std::map<int, PDefWorldModel*> PDefWorldModelMap;
 typedef std::map<int, PDefAppPlace*> PDefAppPlaceMap;
 typedef std::map<int, PDefAppartement*> PDefAppartementMap; 
 typedef std::map<int, PDefRespawn*> PDefRespawnMap;
-   
+typedef std::map<int, PDefWorldFile*> PDefWorldFileMap;
+    
 class PGameDefs
 {
 	private :
@@ -71,6 +74,7 @@ class PGameDefs
 		PDefAppPlaceMap mAppPlaceDefs;
     PDefAppartementMap mAppartementDefs;
     PDefRespawnMap mRespawnDefs;
+    PDefWorldFileMap mWorldFileDefs;
         
 		bool LoadCharDefs();
 		bool LoadSkillDefs();
@@ -84,6 +88,7 @@ class PGameDefs
 		bool LoadAppPlaceDefs();
 		bool LoadAppartementDefs();
 		bool LoadRespawnDefs();
+		bool LoadWorldFileDefs();
 		
 	public :
 		PGameDefs();
@@ -124,6 +129,9 @@ class PGameDefs
 		
 		inline int GetNumRespawnDefs() const { return mRespawnDefs.size(); }
 		const PDefRespawn *GetRespawnDef(int Index) const;
+		
+		inline int GetNumWorldFileDefs() const { return mWorldFileDefs.size(); }
+		const PDefWorldFile *GetWorldFileDef(int Index) const;
 };
 
 #endif

@@ -55,8 +55,14 @@
             - Fixed several worldnames
 	MODIFIED: 26 Jul 2006 Hammag
 	REASON:   - Fixed world 1086 (area mc5) worldname (from NeoX source)
-	
-	TODO: Get the worldnames from worlds.ini, take alternate worldfile from worldinfo.def into account
+
+	MODIFIED: 28 Sep 2006 Hammag
+	REASON:   - Zone filename in now taken from appartments.def (for app zoning) or from worlds.ini (general case)
+	            rather than hardcoded.
+		
+	TODO: Put get the fallback world from config
+	      Check for file existence before sending info to client to avoid client crash and bad location in char info
+	      
 */
 
 #include "main.h"
@@ -291,8 +297,14 @@ void SendZone(PClient *Client, u32 loc)
 	}
 	else
 	{
-        switch(loc)
-        {
+    const PDefWorldFile* nWorldFile = GameDefs->GetWorldFileDef(loc);
+    if (nWorldFile)
+    {
+      worldName = nWorldFile->GetName();
+    }
+	    
+        /*switch(loc)
+        {	    
             //Subway - this seems to change your location, but then goes wrong?
             case 1000:
             {
@@ -2737,7 +2749,7 @@ void SendZone(PClient *Client, u32 loc)
                 worldName = "bop/underground_lab";
                 break;
             }
-
+    */
             /*
             All maps listed after this are NOT listed in the pak_worldinfo.def
             file when patched to 200
@@ -2894,7 +2906,7 @@ void SendZone(PClient *Client, u32 loc)
                 break;
             }
     */
-
+    /*
             //default
             default://by default all players go to plaza sect 1
             {
@@ -2902,8 +2914,13 @@ void SendZone(PClient *Client, u32 loc)
                 break;
             }
         }//close switch
+    */
 	}
 
+  // Fallback:
+  if (worldName.empty())
+    worldName = "plaza/plaza_p1"; // Should be a config entry
+    
 /* minor changes */
   u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   *(u16*) &packet1[1] = (u16) (worldName.size() + 11);

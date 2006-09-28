@@ -326,6 +326,7 @@ Added PGenrepList class
 Added loading/saving of Buddy List and Genrep List to char loading/saving in chars.cpp
 
 Added new members to PChar to store skin color and brightness (aka "darkness")  in chars.h and char.cpp (not saved in DB yet)
+  and corresponding support in PMsgBuilder::BuildCharHelloMsg()
 Added new commands "@color" and "@brightness"
 
 ====================
@@ -349,3 +350,11 @@ Hammag; 28.09.2006 17:30 GMT+1
     by the current TinNS version.
  - Added a SQL file to update existing gamserver DB from version 4 to version 5
     (database/GameDB4_to_GameDB5.sql)
+ - Zoning is now fully based on NC files rather than hardcoded.
+  
+[GAME]
+Filename in now taken from appartments.def (for app zoning) or from worlds.ini (general case)
+Zoning out of appartment (Lift exit) is based on appplaces.def (was in the 27.09.2006 version already)
+Corrected GR use. Now GR gets it true name, and this good name can be registred in the char GR list
+ and seved in DB.
+Changlog in command.cpp updated from last additions (22.09.2006)

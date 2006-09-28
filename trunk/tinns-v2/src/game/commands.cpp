@@ -94,7 +94,15 @@
         REASON: - Added command @speed to play with speed
                   Usage:  @speed <newspeed> | #
                               with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
-                                                                                      
+
+        MODIFIED: 22 Sep Hammag
+        REASON: - Added command @color to set skin color
+                  Usage: @color -|<head color: 0..255> [-|<torso color>]  [-|<legs color>]
+                            with - meaning "no change"
+                - Added command @brightness to set skin color brightness
+                  Usage: @brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]
+                            with 0 for max brightness, 255 for max darkness, and - meaning "no change"                                                                         
+
 	ToDo:
 	- Fix Subwaysyncy
 	- Fix Wastelandsyncy

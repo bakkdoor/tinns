@@ -27,7 +27,14 @@
 	MODIFIED: 30 Aug 2006 Hammag
 	REASON: - created       
 	MODIFIED: 21 Sep 2006 Hammag
-	REASON: - added def_worldmodels related stuff   	  
+	REASON: - added def_worldmodels related stuff   
+  MODIFIED: 22 Sep 2006 Hammag
+	REASON: - added def_appartements related stuff
+	        - added def_appplaces related stuff
+	        - added def_respawn related stuff
+	MODIFIED: 28 Sep 2006 Hammag
+	REASON: - added def_worldfile (worlds.ini) related stuff	 	  
+ 	  
 */
 
 #ifndef MAIN_H
@@ -63,6 +70,8 @@
 #define DEF_APPPLACES "appplaces.def"
 #define DEF_APPARTEMENTS "appartements.def"
 #define DEF_RESPAWN "respawn.def"
+
+#define WRLD_WORLDFILE "worlds.ini"
 
 using namespace std;
 
