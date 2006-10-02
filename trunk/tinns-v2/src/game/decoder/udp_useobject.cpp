@@ -58,12 +58,15 @@ bool PUdpUseObject::DoAction()
     PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
     mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
 
+if (gDevDebug)
+{
 PChar* Char = mDecodeData->mClient->GetChar();
 Console->Print("Char at y=%f (0x%04x) z=%f (0x%04x) x=%f (0x%04x)", (f32)(Char->Coords.mY - 32000), Char->Coords.mY, (f32)(Char->Coords.mZ - 32000), Char->Coords.mZ, (f32)(Char->Coords.mX - 32000), Char->Coords.mX);
 if (mItemID & 1023)
 Console->Print("using item %d (0x%08x)", mItemID, mItemID);    
 else
 Console->Print("using item %d (0x%08x) [%d (0x%08x)]", mItemID, mItemID, mItemID/1024 -1, mItemID/1024 -1);
+}
 
     OldHandler(); // Temp
     
@@ -228,8 +231,7 @@ char DoorLocked[] = {
         *(u16*)&GenRepUse[17] = (u16)Client->GetLocalID(); // from NeoX
         
         Client->getUDPConn()->write(GenRepUse, sizeof(GenRepUse));
-        Console->Print("Genrep");
-        //                        Network_SendUDP (GenRepUse, sizeof(GenRepUse), ClientNum);
+if (gDevDebug) Console->Print("Genrep");
     }
     else if (worlditemtype == 2) // Appartment Station // Lift Access IF
     {
@@ -245,8 +247,7 @@ char DoorLocked[] = {
         *(u16*)&AptItemUse[17] = (u16)Client->GetLocalID(); // from NeoX
         
         Client->getUDPConn()->write(AptItemUse, sizeof(AptItemUse));
-        Console->Print("Appartmentstation");
-        //                        Network_SendUDP (AptItemUse, sizeof(AptItemUse), ClientNum);
+if (gDevDebug) Console->Print("Appartmentstation");
     }
     else if (worlditemtype == 3) // GoGuardian
     {
@@ -259,15 +260,14 @@ char DoorLocked[] = {
         *(u16*)&GogoUse[10] = (u16)Client->GetLocalID(); // from NeoX
         
         Client->getUDPConn()->write(GogoUse, sizeof(GogoUse));
-        Console->Print("Gogo");
-        //                        Network_SendUDP (GogoUse, sizeof(GogoUse), ClientNum);
+if (gDevDebug) Console->Print("Gogo");
     }
     else if (worlditemtype == 4) // Zoning Doors
     {
         int option1 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 1);
         int option2 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 2);
         int option3 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 3);
-        Console->Print("o1: %d  o2: %d  o3: %d  src: %d", option1, option2, option3, Char->GetLocation());
+if (gDevDebug) Console->Print("o1: %d  o2: %d  o3: %d  src: %d", option1, option2, option3, Char->GetLocation());
 
         if(option1 == -1 || option2 == -1)
         {
@@ -288,7 +288,7 @@ char DoorLocked[] = {
         *(u8*)&DungeonUse[21] = option3;
         *(unsigned int*)&DungeonUse[22] = option1;
         *(unsigned short*)&DungeonUse[26] = option2;
-        //Console->Print("Warping player from %d to %d entry %d", Char->GetLocation(), option1, option2);
+if (gDevDebug) Console->Print("Warping player from %d to %d entry %d", Char->GetLocation(), option1, option2);
 
         *(u16*)&DungeonUse[17] = (u16)Client->GetLocalID(); // from NeoX
 
@@ -312,14 +312,13 @@ char DoorLocked[] = {
         *(u16*)&ChairUse[23] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(ChairUse, sizeof(ChairUse));
-        Console->Print("Chair");
-        //                        Network_SendUDP (WorldItemUse, sizeof(WorldItemUse), ClientNum);
+if (gDevDebug) Console->Print("Chair");
     }
     else if (worlditemtype == 6) // Condition Locks
     {
         int option1 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 1);
         int option2 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 2);
-        Console->Print("Condition lock");
+if (gDevDebug) Console->Print("Condition lock");
         switch (option1)
         {
             default:
@@ -335,7 +334,7 @@ char DoorLocked[] = {
             *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
             
             Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-            Console->Print("default lock");
+if (gDevDebug) Console->Print("default lock");
             break;
 
             case 2: // Appartment and Locked
@@ -352,7 +351,7 @@ char DoorLocked[] = {
 
                 *(unsigned short*)&AptDoorUse[8] = *(unsigned short*)&Packet[9];
                 *(unsigned short*)&AptDoorUse[17] = *(unsigned short*)&option2;
-                Console->Print("Case2 lock");
+if (gDevDebug) Console->Print("Case2 lock");
 
                 switch(option2)
                 {
@@ -379,7 +378,7 @@ char DoorLocked[] = {
             }
             else // Not owner? Buzz!
             {
-                Console->Print("Buzzing door");
+if (gDevDebug) Console->Print("Buzzing door");
 
                 //Client->IncreaseUDP_ID();
                 Client->SetUDP_ID(Client->GetUDP_ID()+1);
@@ -410,7 +409,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Venture");
+if (gDevDebug) Console->Print("Venture");
     }
     else if (worlditemtype == 8) // Vehicle Depot
     {
@@ -426,7 +425,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("VehicDepot");
+if (gDevDebug) Console->Print("VehicDepot");
     }
     else if (worlditemtype == 9) // Holo Exit
     {
@@ -442,7 +441,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
         
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Holoexit");
+if (gDevDebug) Console->Print("Holoexit");
     }
     else if (worlditemtype == 10) // Holo Weapon
     {
@@ -458,7 +457,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Holo weapon");
+if (gDevDebug) Console->Print("Holo weapon");
     }
     else if (worlditemtype == 11) // Holo Heal
     {
@@ -474,7 +473,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Holoheal");
+if (gDevDebug) Console->Print("Holoheal");
     }
     else if (worlditemtype == 12) // CityCom
     {
@@ -490,7 +489,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Citycom");
+if (gDevDebug) Console->Print("Citycom");
     }
     else if (worlditemtype == 13) // OutFitters
     {
@@ -506,7 +505,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Outfitter");
+if (gDevDebug) Console->Print("Outfitter");
     }
     else if (worlditemtype == 14) // Cabs
     {
@@ -522,7 +521,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Cab");
+if (gDevDebug) Console->Print("Cab");
     }
     else if (worlditemtype == 15) // Containers
     {
@@ -538,7 +537,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Container");
+if (gDevDebug) Console->Print("Container");
     }
     else if (worlditemtype == 16) // Street Signs
     {
@@ -555,7 +554,7 @@ char DoorLocked[] = {
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse)); // but no real action on client side, except sound
         
-        Console->Print("Street sign");
+if (gDevDebug) Console->Print("Street sign");
     }
     else if (worlditemtype == 17) // Street Signs
     {
@@ -569,7 +568,7 @@ char DoorLocked[] = {
         *(unsigned short*)&WorldItemUse[21] = *(unsigned short*)&Packet[9];
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Street sign 2");
+if (gDevDebug) Console->Print("Street sign 2");
     }
     else if (worlditemtype == 18) // Recreation Units
     {
@@ -585,7 +584,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Recreation unit");
+if (gDevDebug) Console->Print("Recreation unit");
     }
     else if (worlditemtype == 19) // Outpost hack
     {
@@ -601,7 +600,7 @@ char DoorLocked[] = {
         *(u16*)&WorldItemUse[17] = (u16)Client->GetLocalID(); // From NeoX
 
         Client->getUDPConn()->write(WorldItemUse, sizeof(WorldItemUse));
-        Console->Print("Outpost hack");
+if (gDevDebug) Console->Print("Outpost hack");
     }
     //*********************************************************************************************************
     else
@@ -653,7 +652,7 @@ char DoorLocked[] = {
         *(unsigned int *)&SingleDoorPacket[10] = *(unsigned int *)&Packet[8];
         *(unsigned int *)&SingleDoorPacket[26] = *(unsigned int *)&Packet[8];
 
-        //Console->Print("Opening Singledoor id %d", Packet[8]);
+//if (gDevDebug) Console->Print("Opening Singledoor id %d", Packet[8]);
         Client->getUDPConn()->write(SingleDoorPacket, sizeof(SingleDoorPacket));
     }
     else if(i == 2) // Double door
@@ -669,7 +668,7 @@ char DoorLocked[] = {
         *(unsigned int *)&DoubleDoorPacket[10] = *(unsigned int *)&Packet[8];
         *(unsigned int *)&DoubleDoorPacket[26] = *(unsigned int *)&Packet[8];
 
-        //Console->Print("Opening Doubledoor id %d", Packet[8]);
+//if (gDevDebug) Console->Print("Opening Doubledoor id %d", Packet[8]);
         Client->getUDPConn()->write(DoubleDoorPacket, sizeof(DoubleDoorPacket));
     }
     else if (i == 3) //Locked Door (Opens by other means, usually access panel)
@@ -683,7 +682,7 @@ char DoorLocked[] = {
         *(unsigned int *)&DoorLocked[14] = *(unsigned int *)&Packet[8];
 
         Client->getUDPConn()->write(DoorLocked, sizeof(DoorLocked));
-        Console->Print("locked door");
+if (gDevDebug) Console->Print("locked door");
     }
     else if (*(unsigned int *)&Packet[8] > 1000)
     {
@@ -700,7 +699,7 @@ char DoorLocked[] = {
         VehicleUse[21] = Vehic.Type;
 
         Client->getUDPConn()->write(VehicleUse, sizeof(VehicleUse));
-        Console->Print("Vehicleuse");
+if (gDevDebug) Console->Print("Vehicleuse");
     }
     else // Wrong answer should never happen...
     {

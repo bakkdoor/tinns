@@ -358,3 +358,15 @@ Zoning out of appartment (Lift exit) is based on appplaces.def (was in the 27.09
 Corrected GR use. Now GR gets it true name, and this good name can be registred in the char GR list
  and seved in DB.
 Changlog in command.cpp updated from last additions (22.09.2006)
+
+====================
+Hammag; 02.10.2006 23:30 GMT+1
+----------
+<General changes>
+ - Started implementation of .dat worldfile parser
+ - added a gameserver config option dev_debug to control development debug outputs
+ 
+[GAME]
+Added PWorldDatParser class, with files include/world_datparser.h and def/world_datparser.cpp
+  (this classes might change/be replaced by a PWorldTemplate class very soon)
+

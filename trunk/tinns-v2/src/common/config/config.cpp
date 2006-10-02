@@ -150,7 +150,7 @@ bool PConfig::LoadOptions(const char* nConfigTemplate[][2], const char* nConfigF
       }
       else
       {
-        Console->Print("[Info] using default value %s for option %s", nConfigTemplate[i][1], nConfigTemplate[i][0]);
+        Console->Print("%s using default value %s for option %s", Console->ColorText(GREEN, BLACK, "[Info]"), nConfigTemplate[i][1], nConfigTemplate[i][0]);
         mOptions.insert(std::make_pair(nConfigTemplate[i][0], nConfigTemplate[i][1]));
       }
     }

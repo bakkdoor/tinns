@@ -40,6 +40,8 @@
     REASON: - Implemented shared Config class use and config template to load conf.
                 Added gameserver configtemplate.h include,
                 Added new required parameters to Config->LoadOptions()
+    MODIFIED: 02 Oct 2006 Hammag
+    REASON: - Added gDevDebug global flag to control development debug outputs (flagged messaged, dump-flagged messes, dev console->print)
     
     TODO:   - Get logfile name from config file
 */
@@ -64,6 +66,9 @@ PMsgBuilder *MsgBuilder = 0;
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
 PChat *Chat = 0;
+
+// Development debug output control (set by config option dev_debug)
+bool gDevDebug = false;
 
 bool InitTinNS()
 {
@@ -95,6 +100,7 @@ bool InitTinNS()
 	if(!Config->LoadOptions(GameConfigTemplate, "./conf/gameserver.conf"))
 	    Shutdown();
 
+  gDevDebug = Config->GetOptionInt("dev_debug");
 	std::string MyName = Config->GetOption("server_name");
 	std::string IP = Config->GetOption("server_ip");
 	char myCname[100], myCip[100];

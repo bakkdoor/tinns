@@ -49,6 +49,10 @@
 
 	MODIFIED: 31 August 2005 Akiko
 	REASON: - modified the path handling of the open function
+	
+	MODIFIED: 29 Sep 2006 Hammag
+	REASON: - added a safety check on read size in PFile::Read
+	
 */
 
 PFile::PFile()
@@ -87,6 +91,8 @@ bool PFile::ReadUnpakData(std::FILE *F, u32 Size, u32 UncSize)
 int PFile::Read(void *Dest, u32 DestSize)
 {
 	int m = min(mDataSize-mDataOffs, DestSize);
+	if (m <= 0)
+	  return 0;
 	memcpy(Dest, &mBuffer[mDataOffs], m);
 	mDataOffs+=m;
 	return m;

@@ -437,7 +437,7 @@ void PMessage::Dump()
     sAsciiDump = "";
     for (j = 0; (j < 16) && ((i+j) < mUsedSize); j++)
     {
-      sprintf(tmpStr, " %02hhx",tmpBuff[i+j]);
+      sprintf(tmpStr, " %02hx",(u8)tmpBuff[i+j]);
       sDump += tmpStr;
       sAsciiDump += ((tmpBuff[i+j]>'\x19') && (tmpBuff[i+j]<'\x7F')) ? tmpBuff[i+j] : '.';
     }
@@ -453,8 +453,8 @@ void PMessage::DumpHead(char* nComment)
 
   char* tmpBuff = GetMessageData();
   
-  Console->Print("%s T:%02hhx UID:%04hx UHID:%04hx Fnct:%02hhx Seq:%04hx Cmd:%02hhx Cmd2:%02hhx Cmd3:%02hhx",
-      nComment, tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], tmpBuff[6], *(u16*)&tmpBuff[7], tmpBuff[9], tmpBuff[10], tmpBuff[12] );
+  Console->Print("%s T:%02hx UID:%04hx UHID:%04hx Fnct:%02hx Seq:%04hx Cmd:%02hx Cmd2:%02hx Cmd3:%02hx",
+      nComment, (u8)tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], (u8)tmpBuff[6], *(u16*)&tmpBuff[7], (u8)tmpBuff[9], (u8)tmpBuff[10], (u8)tmpBuff[12] );
 
 }
 

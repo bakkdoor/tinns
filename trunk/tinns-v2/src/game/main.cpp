@@ -45,6 +45,8 @@
 
 #include "main.h"
 
+#include "world_datparser.h" // tmp test
+
 // for handling strg-c signal to shutdown in correct way
 void signal_handler(int signal)
 {
@@ -74,6 +76,13 @@ int main()
 	//RemoteConsole->Start();
 	GameServer->Start();
 	//GameServer->SetGameTime(0);
+
+/******** Test *******/
+//  PWorldDatParser TestWDat;
+//  TestWDat.LoadDatFile("./worlds/apps/plaza_app_1.dat");
+  //TestWDat.LoadDatFile("./worlds/plaza/plaza_p1.dat");
+  //TestWDat.LoadDatFile("./worlds/military/military_pstairs.dat");
+/********  **  *******/
 	
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 

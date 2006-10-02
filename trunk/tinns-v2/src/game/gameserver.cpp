@@ -792,7 +792,7 @@ bool PGameServer::HandleGame(PClient *Client, PGameState *State)
     {
       if (MsgDecoder->Analyse())
       {
-        if (MsgDecoder->IsTraceKnownMsg())
+        if (gDevDebug && MsgDecoder->IsTraceKnownMsg())
           Console->Print("Client[%d] msg: %s", Client->GetID(), MsgDecoder->GetName().c_str());
 
         if (MsgDecoder->IsActionReady())
@@ -804,14 +804,16 @@ bool PGameServer::HandleGame(PClient *Client, PGameState *State)
       {
         Console->Print(YELLOW, BLACK, "[Info] Client[%d] Decoding error: %s", Client->GetID(), MsgDecoder->GetError().c_str());
       }
-      else if ((MsgDecoder->GetState() == DECODE_UNKNOWN) && MsgDecoder->IsTraceUnknownMsg())
+      else if (gDevDebug && (MsgDecoder->GetState() == DECODE_UNKNOWN) && MsgDecoder->IsTraceUnknownMsg())
       {
          Console->Print("%s Client[%d] Unknown msg: %s", Console->ColorText(YELLOW, BLACK, "[Info]"), Client->GetID(), MsgDecoder->GetName().c_str());
       }
-      if (MsgDecoder->IsTraceDump())
+      
+      if (gDevDebug && MsgDecoder->IsTraceDump())
       {
         MsgDecoder->DumpMsg();
       }
+      
     } while(MsgDecoder->MoreSubMsg());
   }
   if (NewMsg)

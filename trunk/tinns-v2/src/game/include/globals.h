@@ -51,6 +51,9 @@ extern class PMsgBuilder *MsgBuilder;
 extern class PClientManager *ClientManager;
 extern class PChat *Chat;
 
+// Development debug output control
+extern bool gDevDebug;
+
 //MySQL-Support
 extern class PMySQL* MySQL;
 

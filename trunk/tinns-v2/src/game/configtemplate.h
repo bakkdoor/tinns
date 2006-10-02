@@ -25,7 +25,9 @@
 
 	MODIFIED: 28 Sep 2006 Hammag
 	REASON: - added worlds_path entry	 	  
-  
+  MODIFIED: 02 Oct 2006 Hammag
+	REASON: - added dev_debug entry	
+	
   TODO: put a single data_directory entry as the root directory for all NC data
     
 */
@@ -60,6 +62,7 @@ const char* GameConfigTemplate[][2] = {
   {"isc_infoserverip", "127.0.0.1"},
   {"isc_infoserverport", "9991"},
   {"isc_connect_pw", "change_me"}, // make default value empty when isc ready
+  {"dev_debug", "0"}, // set to non-zero to activate development outputs
   
 // For futur use:
 //  {"max_chars_per_account", "4"},
