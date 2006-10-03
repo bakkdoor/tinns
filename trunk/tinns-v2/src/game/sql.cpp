@@ -90,13 +90,13 @@ void PMySQL::CheckResCount()
  
   if (InfoDBInuse > MaxInfoDBCount)
   {
-    Console->Print("%s Max In-use InfoDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Warning]"), InfoDBInuse, InfoDBInuse-MaxInfoDBCount);
+    Console->Print("%s Max In-use InfoDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InfoDBInuse, InfoDBInuse-MaxInfoDBCount);
     MaxInfoDBCount = InfoDBInuse;
   }
   
   if (GameDBInuse > MaxGameDBCount)
   {
-    Console->Print("%s Max In-use GameDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Warning]"), GameDBInuse, GameDBInuse-MaxGameDBCount);
+    Console->Print("%s Max In-use GameDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), GameDBInuse, GameDBInuse-MaxGameDBCount);
     MaxGameDBCount = GameDBInuse;
   }
 }

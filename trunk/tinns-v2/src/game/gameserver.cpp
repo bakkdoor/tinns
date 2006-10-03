@@ -69,11 +69,13 @@
 	REASON: - Fixed	BuildCharPosUpdateMsg() to send correct characters orientation to other characters
   MODIFIED: 26 Aug 2006 hammag
 	REASON: - removed use of GAME_PORT define as this info is available in Config object with a default value
-
   MODIFIED: 17 Sep 2006 hammag
 	REASON: - Moved all UDP message management code to decoder classes
-	        - REmoved corresponding code from gameserver.cpp & .h
-			          
+	        - Removed corresponding code from gameserver.cpp & .h
+
+  MODIFIED: 03 Oct 2006 hammag
+	REASON: - Added some more DB cleanup when a char is deleted (still incomplete and will later be done in PChar::SQLDelete() )
+
     TODO:
     - Deny login if char is already online (More information about the login procedure is necessary to do that)
     - Take main loop timeout setting from config file
@@ -600,7 +602,22 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 						if(MySQL->GameQuery(query))
 							Console->Print("Char %d not removed!", CharID);
 						else
-							Console->Print("Char %d removed!", CharID);
+						{
+						  Console->Print("Char %d removed!", CharID);
+						  
+						  sprintf(query, "DELETE FROM buddy_list WHERE bud_charid = %d", CharID);
+							if(MySQL->GameQuery(query))
+							  Console->Print("Char %d's buddy list not removed!", CharID);
+							  
+						  sprintf(query, "DELETE FROM genrep WHERE g_charid = %d", CharID);
+							if(MySQL->GameQuery(query))
+							  Console->Print("Char %d's genrep list not removed!", CharID);
+
+						  sprintf(query, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
+							if(MySQL->GameQuery(query))
+							  Console->Print("Char %d's inventory not removed!", CharID);
+							  							  							  
+					  }
 					}
 				}
 				return (true);

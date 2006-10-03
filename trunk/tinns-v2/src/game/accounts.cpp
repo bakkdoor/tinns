@@ -32,7 +32,9 @@
 	REASON: - Changed FmtTxt() to sprintf(). It does... uhm, the same :D
 	MODIFIED: 06 Jan 2006 Namikon
 	REASON: - Removed the old XML loading functions, and changed the SQL ones to work with the Global Neopolis/TinNS Database
-            - Added SetBannedStatus(<unix timestamp>) to ban/unban an account (use SetBannedStatus(0) to unban a player)
+          - Added SetBannedStatus(<unix timestamp>) to ban/unban an account (use SetBannedStatus(0) to unban a player)
+	MODIFIED: 03 Oct 2006 Hammag
+	REASON: - Fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
 
 */
 
@@ -71,7 +73,7 @@ bool PAccount::AddChar(u32 CharID)
 		if(mChars[i]==0)
 		{
 			mChars[i]=CharID;
-			Console->Print("Added char %d to in-mem account %d", CharID, mID);
+if (gDevDebug) Console->Print("Added char %d to in-mem account %d", CharID, mID);
 			return true;
 		}
 	}
@@ -196,19 +198,23 @@ void PAccount::SQLSave()
 
 void PAccount::SetBannedStatus(int banneduntil)
 {
-    int status = 0;
+  int status;
+  char query[255];
+  
+  if(banneduntil == 0)
+  {
+    status = 0;
+  }
+  else
+  {
+    status = 2;
+  }
 
-    if(banneduntil == 0)
-        status = 0;
-    else
-        status = 2;
-
-    char query[255];
-    sprintf(query, "UPDATE accounts SET a_status = %d, a_bandate = %d WHERE a_id = %d", status, banneduntil, mID);
-    if(MySQL->InfoQuery(query));
-    {
-        Console->Print(RED, BLACK, "Error, cant update banned status for Account %d", mID);
-    }
+  sprintf(query, "UPDATE accounts SET a_status = %d, a_bandate = %d WHERE a_id = %d", status, banneduntil, mID);
+  if(MySQL->InfoQuery(query))
+  {
+      Console->Print(RED, BLACK, "Error, cant update banned status for Account %d", mID);
+  }
 }
 
 // ===========================================================================

@@ -206,6 +206,6 @@ bool PUdpCharJump::DoAction()
     ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);*/
         
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-Console->Print("Char %d juming. Need server's broadcast answer format !!!", mDecodeData->mClient->GetID()); 
+if (gDevDebug) Console->Print("Char %d juming. Need server's broadcast answer format !!!", mDecodeData->mClient->GetID()); 
     return true;
 }

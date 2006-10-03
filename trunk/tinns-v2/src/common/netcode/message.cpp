@@ -48,7 +48,7 @@ void PMessage::CheckMsgCount()
  
   if (smMsgCount > MaxMsgCount)
   {
-    Console->Print("%s Max In-use messages number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Warning]"), smMsgCount, smMsgCount-MaxMsgCount);
+    Console->Print("%s Max In-use messages number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), smMsgCount, smMsgCount-MaxMsgCount);
     MaxMsgCount = smMsgCount;
   }
 }
@@ -457,15 +457,3 @@ void PMessage::DumpHead(char* nComment)
       nComment, (u8)tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], (u8)tmpBuff[6], *(u16*)&tmpBuff[7], (u8)tmpBuff[9], (u8)tmpBuff[10], (u8)tmpBuff[12] );
 
 }
-
-/* unsure ...
-0x00 : Type
-0x01-0x02 : UDP_ID
-0x03-0x04 : HIGH_UDP_ID (??? = server acked paquet ?)
-0x05 : Data Size ?
-0x06 : Packet Fonction. Packets of fonction 0x03 are tracked
-0x07-0x08 : if Tracked packet, Seq Num to track, else ???
-0x09 : Command
-0x10 : SubCommand 1
-0x12 : SubCommand 2
-*/

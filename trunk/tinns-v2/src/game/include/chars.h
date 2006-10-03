@@ -37,6 +37,13 @@
 	REASON:   - Added Health/MaxHealth, idem for Mana & Stamin
   TODO:     - fix real current Health vs MaxHealth, also in char load/save
 
+  MODIFIED: 03 Oct 2006 Hammag
+	REASON:   - PChar::CreateNewChar() and moved effective char creation from PChars to PChar
+	          - added PChar::SQLDelete()
+	            This method is put here because we want the char to be loaded when deleted from DB to avoid
+	            any player to use it at the same time.
+	          - added use of auto_save_period config option in PChars::update()
+
 */
 
 #ifndef CHARS_H
@@ -218,11 +225,13 @@ class PChar
     void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
 	  void SetBaseInventory();
 
+    void FillinCharDetails(u8 *Packet);
+    bool SQLCreate();
+    
 	public :
 		PChar();
 		~PChar();
 	
-    //Skill = new PSkillHandler;
     PSkillHandler *Skill;
     PCharCoordinates Coords;
     
@@ -282,14 +291,14 @@ class PChar
     inline bool IsOnline() { return mIsOnline; }
     void SetOnlineStatus(bool IsOnline);
 
-		//bool Load(TiXmlElement *Node);
+		bool CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+      u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 		bool SQLLoad(int CharID);
-		void FillinCharDetails(u8 *Packet);
-
-    bool SQLCreate();
 		bool SQLSave();
-		inline void SetLocation(u32 Location) { mLocation = Location; }//WAS PROTECTED
-		inline void SetDirtyFlag(bool Dirty = true) { mDirtyFlag = Dirty; }//WAS PROTECTED
+		bool SQLDelete(); // not implemented yet
+		
+		inline void SetLocation(u32 Location) { mLocation = Location; }
+		inline void SetDirtyFlag(bool Dirty = true) { mDirtyFlag = Dirty; }
 };
 
 class PChars
@@ -298,7 +307,8 @@ class PChars
 		typedef std::map<u32, PChar*> CharMap;
 		CharMap mChars;
 		u32 mLastID;
-		//std::time_t mLastSave;
+		
+		std::time_t mAutoSavePeriod;
 		std::time_t mLastSave;
 		
 
@@ -312,7 +322,6 @@ class PChars
 
 		PChar *GetChar(u32 CharID) const;
 		PChar *GetChar(const std::string &Name) const;
-		//PChar *CreateChar(u32 Account, const std::string &Name, u32 Type, u32 Model);
 		PChar *CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
       u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 
@@ -320,4 +329,3 @@ class PChars
 };
 
 #endif
-

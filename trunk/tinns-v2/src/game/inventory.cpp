@@ -99,7 +99,7 @@ bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
   {
     if (!mInvID)
       mInvID = MySQL->GetLastGameInsertId();
-    Console->Print(GREEN, BLACK, "New item %d added to inventory DB", mInvID);
+if (gDevDebug) Console->Print(GREEN, BLACK, "New item %d added to inventory DB", mInvID);
     mDirtyFlag = false;
     return true;
   }
@@ -123,7 +123,7 @@ bool PInventoryEntry::SQLDelete()
     }
     else
     {
-      Console->Print(GREEN, BLACK, "Item %d deleted from inventory DB", mInvID);
+if (gDevDebug) Console->Print(GREEN, BLACK, "Item %d deleted from inventory DB", mInvID);
       mInvID = 0;
       mDirtyFlag = false;
       return true;

@@ -35,10 +35,15 @@
             - Removed XM Load() and Save() functions
             - Rewrote parts of SQLLoad to work with the global NeoPolis / TinNS database
             - Added FillinCharDetails to fill the baseline up with the char details
-
-    ToDo:
-    - Remove ALL parts of the old XML way and replace it with SQL
-    - Add missing values for char, like sex and model details (head, torso, body)
+  MODIFIED: 03 Oct 2006 Hammag
+	REASON:   - PChar::CreateNewChar() and moved effective char creation from PChars to PChar
+	          - added PChar::SQLDelete()
+	            This method is put here because we want the char to be loaded when deleted from DB to avoid
+	            any player to use it at the same time.
+	          - added use of auto_save_period config option in PChars::update()
+	          - removed old XML-storage related code
+  
+  TODO:     - implement PChar::SQLDelete()
 */
 
 #include "main.h"
@@ -269,7 +274,7 @@ void PChar::SetBaseInventory()
   {
     BaseItemID = def->GetStartInventory(i);
     if (BaseItemID) {
-      Console->Print(GREEN, BLACK, "Adding item %d to base inventory", BaseItemID);
+if (gDevDebug) Console->Print(GREEN, BLACK, "Adding item %d to base inventory", BaseItemID);
       PItem* NewItem = new PItem(BaseItemID);
       if (NewItem->GetItemID())
         mInventory.PutItem(NewItem);
@@ -278,7 +283,7 @@ void PChar::SetBaseInventory()
     }
   }
 
-  Console->Print(YELLOW, BLACK, "Warning: Inventory are saved to DB at creation but not reloaded nor transfered ingame (for now)");
+Console->Print(YELLOW, BLACK, "Warning: Inventory are saved to DB at creation but not reloaded nor transfered ingame (for now)");
 }
 
 bool PChar::SQLLoad(int CharID) {
@@ -451,93 +456,6 @@ bool PChar::SQLLoad(int CharID) {
     return true;
 }
 
-/*bool PChar::Load(TiXmlElement *Node)
-{
-	if(!Node)
-		return false;
-
-	const char *name = Node->Attribute("name");
-	const char *id = Node->Attribute("id");
-
-	if(name && id)
-	{
-		SetID(std::atoi(id));
-		SetName(name);
-
-		std::stringstream fname;
-		fname << "./database/playerchars/" << GetID() << ".xml" << '\0';
-
-		bool Error=false;
-		TiXmlDocument doc(fname.str().c_str());
-		if(doc.LoadFile())
-		{
-			TiXmlElement *Root = doc.RootElement();
-			if(Root)
-			{
-				TiXmlElement *profession = Root->FirstChildElement("profession");
-				TiXmlElement *faction = Root->FirstChildElement("faction");
-				TiXmlElement *model = Root->FirstChildElement("model");
-				TiXmlElement *type = Root->FirstChildElement("type");
-				TiXmlElement *location = Root->FirstChildElement("location");
-
-				if(profession)
-				{
-					int profvalue = 0;
-					profession->Attribute("value", &profvalue);
-					if(GameDefs->GetCharDef(profvalue))
-						mProfession = static_cast<u32>(profvalue);
-					else
-						mProfession = 1;
-				}
-
-				if(faction)
-				{
-					int facvalue = 0;
-					faction->Attribute("value", &facvalue);
-					if(GameDefs->GetFactionDef(facvalue))
-						mFaction = static_cast<u32>(facvalue);
-					else
-						mFaction = 1;
-				}
-
-				if(model)
-				{
-					int modvalue = 0;
-					model->Attribute("value", &modvalue);
-					mModel = static_cast<u32>(modvalue);
-				}
-
-				if(type)
-				{
-					int typevalue = 0;
-					type->Attribute("value", &typevalue);
-					mType = static_cast<u32>(typevalue);
-				}
-
-				if(location)
-				{
-					int locvalue = 1;
-					location->Attribute("value", &locvalue);//NEW corrected
-					mLocation = static_cast<u32>(locvalue);
-				}
-
-			} else
-				Error=true;
-		} else
-			Error = true;
-
-		if(Error)
-		{
-			Console->Print("PChar: could not load char %s (%d)", mName.c_str(), mID);
-			return false;
-		}
-		return true;
-	}
-
-	return false;
-}
-*/
-
 bool PChar::SQLCreate() // Specific method for creation in order to avoid existence check with each save
 {
     std::string query, queryv;
@@ -586,10 +504,54 @@ bool PChar::SQLCreate() // Specific method for creation in order to avoid existe
     else
     {
         mID = MySQL->GetLastGameInsertId();
-        //Console->Print(GREEN, BLACK, "New char %s got ID %d", mName.c_str(), mID);
+//Console->Print(GREEN, BLACK, "New char %s got ID %d", mName.c_str(), mID);
         mDirtyFlag = true;
         return true;
     }
+}
+
+bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
+{
+	SetName(Name);
+	SetGender(Gender);
+	SetProfession(Profession);
+	SetFaction(Faction);
+	SetRealLook(Head, Torso, Legs);
+	SetBaseSkills();
+	SetBaseSubskills(NZSNb, NonZeroSubskills);
+	SetBaseInventory();
+	SetAccount(Account);
+	SetCharSlot(Slot);
+	
+	// This part will have to be rewritten with proper methods
+  mSoullight = 10;
+  mCombatRank = (u8)(random() % 127); // bad result there on randomness
+  mSynaptic = 0;
+  mIsDead = false; 
+  
+  mDirectCharID = 0; // until saved/loaded with char
+        	
+	SetDirtyFlag();
+	
+	if (SQLCreate()) // mID isn't defined before that
+	{
+    mBuddyList = new PBuddyList(mID);
+    mGenrepList = new PGenrepList(mID);
+  
+	  if (SQLSave())
+	  {
+      return true;
+    }
+    else
+    {
+      if (mID)
+      {
+        SQLDelete();
+      }
+    }
+  }
+  return false;
 }
 
 bool PChar::SQLSave()
@@ -708,60 +670,16 @@ bool PChar::SQLSave()
       return false;
       
     // + Belt, Implants(&Armor), Gogo, GRs,
-    // Chats settings (?), directs & buddies,
+    // Chats settings (?), directs & buddies, GR list
     
     mDirtyFlag = false;
     return true;
 }
-/*
-	std::stringstream fname;
-	fname << "./database/playerchars/" << GetID() << ".xml" << '\0';
-	std::stringstream tempname;
-	tempname << "./database/playerchars/" << GetID() << ".tmp" << '\0';
 
-	std::stringstream bakname;
-	bakname << "./database/playerchars/" << GetID() << ".bak" << '\0';
-
-	std::remove(tempname.str().c_str());
-
-	TiXmlDocument doc;
-	TiXmlElement Root("playerchar");
-	Root.SetAttribute("id", GetID());
-	Root.SetAttribute("name", mName.c_str());
-
-	TiXmlElement type("type");
-	type.SetAttribute("value", mType);
-	Root.InsertEndChild(type);
-
-	TiXmlElement prof("profession");
-	prof.SetAttribute("value", mProfession);
-	Root.InsertEndChild(prof);
-
-	TiXmlElement fac("faction");
-	fac.SetAttribute("value", mFaction);
-	Root.InsertEndChild(fac);
-
-	TiXmlElement model("model");
-	model.SetAttribute("value", mModel);
-	Root.InsertEndChild(model);
-
-	TiXmlElement loc("location");
-	loc.SetAttribute("value", mLocation);
-	Root.InsertEndChild(loc);
-
-	doc.InsertEndChild(Root);
-	if(doc.SaveFile(tempname.str().c_str()))
-	{
-		std::remove(bakname.str().c_str());
-		std::rename(fname.str().c_str(), bakname.str().c_str());
-		std::rename(tempname.str().c_str(), fname.str().c_str());
-	} else
-	{
-		Console->Print("PChar: could not save char %s (%u)", mName.c_str(), mID);
-	}
-
-	mDirtyFlag = false;
-*/
+bool PChar::SQLDelete()
+{
+  return true; 
+}
 
 void PChar::SetOnlineStatus(bool IsOnline)
 {
@@ -949,6 +867,28 @@ PChars::PChars()
 {
 	mLastID = 0;
 	mLastSave = std::time(NULL);
+	  
+	mAutoSavePeriod = Config->GetOptionInt("auto_save_period");
+	if (mAutoSavePeriod < 0)
+	{
+	  Console->Print("%s auto_save_period (%d) must be strict positive.", Console->ColorText(RED, BLACK, "[Error]"), mAutoSavePeriod);
+	  mAutoSavePeriod = 0;
+	}
+	else if (mAutoSavePeriod > 3600)
+	{ 
+	  Console->Print("%s auto_save_period (%d) too high. Forced to 3600 sec.", Console->ColorText(YELLOW, BLACK, "[Warning]"), mAutoSavePeriod);
+	  mAutoSavePeriod = 0;
+	}
+
+	if (mAutoSavePeriod == 0)
+	{
+	  Console->Print("%s Auto-save disabled.", Console->ColorText(YELLOW, BLACK, "[Info]"));
+	}
+	else if (mAutoSavePeriod < 60)
+	{ 
+	  Console->Print("%s auto_save_period (%d) is low and might lead to high server load.", Console->ColorText(YELLOW, BLACK, "[Warning]"), mAutoSavePeriod);
+	}
+	
 }
 
 PChars::~PChars()
@@ -1016,66 +956,6 @@ void PChars::SQLLoad()
 	  mLastSave = std::time(NULL);
 }
 
-/*void PChars::Load()
-{
-	Console->Print("Loading player chars...");
-	int nChars=0;
-	TiXmlDocument doc("./database/chars.xml");
-	if(doc.LoadFile())
-	{
-		TiXmlElement *Root = doc.RootElement();
-		if(Root)
-		{
-			TiXmlElement *List = Root->FirstChildElement("charlist");
-			while(List)
-			{
-				int AccId = 0;
-				List->Attribute("account", &AccId);
-				if(AccId != 0)
-				{
-					PAccount *Account = Database->GetAccount(AccId);
-					if(Account)
-					{
-						TiXmlElement *Ch = List->FirstChildElement("char");
-						while(Ch)
-						{
-							PChar *info = new PChar();
-							if(info->Load(Ch))
-							{
-								info->SetAccount(Account->GetID());
-								mLastID = max(mLastID, info->GetID());
-								if(!mChars.insert(std::make_pair(info->GetID(), info)).second)
-								{
-									Console->Print("Duplicate char id found: %s (%i)", info->GetName().c_str(), info->GetID());
-									delete info;
-								} else
-								{
-									if(!Account->AddChar(info->GetID()))
-										Console->Print("Could not add char '%s' to account '%s'", info->GetName().c_str(), Account->GetName().c_str());
-									++nChars;
-								}
-							} else
-							{
-								Console->Print("Invalid char entry found in database. Ignored.");
-								delete info;
-							}
-
-
-							Ch=Ch->NextSiblingElement("char");
-						}
-					} else
-						Console->Print("Ignoring chars of inexistant account %i", AccId);
-				}
-
-				List = List->NextSiblingElement("charlist");
-			}
-		}
-	}
-
-	Console->Print("Loaded %i player chars", nChars);
-	mLastSave = std::time(NULL);
-}
-*/
 void PChars::SQLSave()
 {
   // saves all dirty-flagged chars
@@ -1089,56 +969,9 @@ void PChars::SQLSave()
     			  ++nChars;
     		}
 		}
-		Console->Print("%i characters saved", nChars);
+Console->Print("%i characters saved", nChars);
     return;
 }
-/*	// saves all dirty-flagged chars and maintains global character list
-	int nChars = 0;
-	typedef std::map<u32, std::list<PChar*>*> AccCharList;
-	AccCharList CharList;
-	for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
-	{
-		PChar *Char = i->second;
-		AccCharList::iterator Acc = CharList.find(Char->GetAccount());
-		if(Acc==CharList.end())
-		{
-			std::list<PChar*> *List = new std::list<PChar*>();
-			List->push_back(Char);
-			CharList.insert(std::make_pair(Char->GetAccount(), List));
-		} else
-		{
-			Acc->second->push_back(Char);
-		}
-		if(Char->IsDirty())
-		{
-			Char->Save();
-			++nChars;
-		}
-	}
-
-	TiXmlDocument CList("./database/chars.xml");
-	TiXmlElement Root("chars");
-	for(AccCharList::const_iterator i = CharList.begin(); i!= CharList.end(); i++)
-	{
-		TiXmlElement AccList("charlist");
-		AccList.SetAttribute("account", i->first);
-		for(std::list<PChar*>::const_iterator j=i->second->begin(); j!=i->second->end(); j++)
-		{
-			TiXmlElement CharElement("char");
-			CharElement.SetAttribute("name", (*j)->GetName().c_str());
-			CharElement.SetAttribute("id", (*j)->GetID());
-			AccList.InsertEndChild(CharElement);
-		}
-		delete i->second;
-		Root.InsertEndChild(AccList);
-	}
-	CList.InsertEndChild(Root);
-	if(!CList.SaveFile())
-	{
-		Console->Print("ERROR: could not save char list");
-	}
-	Console->Print("%i characters saved", nChars);
-*/
 
 PChar *PChars::GetChar(u32 CharID) const
 {
@@ -1166,14 +999,9 @@ PChar *PChars::GetChar(const std::string &Name) const
 
 void PChars::Update()
 {
-	//std::time_t t = std::time(NULL);
-	std::time_t t = std::time(NULL); // change to time() to have real time instead of cpu used time
+	std::time_t t = std::time(NULL); // changed to time() to have real time instead of cpu used time
 
-	// autosave characters every 10 minutes
-	//NEW CHANGED TO 5 min
-	//Console->Print("T: %d Last: %d", t, mLastSave); // Doesn't work !!!
-	//if((t-mLastSave)/CLOCKS_PER_SEC >= 600)
-	if((t-mLastSave) >= 60) // tmp changed to 1 for testing
+	if(mAutoSavePeriod && ((t-mLastSave) >= mAutoSavePeriod))
 	{
 		bool NeedSave = false;
 		for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
@@ -1187,9 +1015,9 @@ void PChars::Update()
 
 		if(NeedSave)
 		{
-			Console->Print("Some characters need autosaving...");
+if (gDevDebug) Console->Print("Some characters need autosaving...");
 			SQLSave();
-			Console->Print("Autosave done.");
+if (gDevDebug) Console->Print("Autosave done.");
 		}
 		mLastSave = t;
 	}
@@ -1198,33 +1026,17 @@ void PChars::Update()
 PChar *PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
   u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
 {
-	PChar *Char = new PChar();
-	Char->SetName(Name);
-	//Char->SetModel(Model);
-	Char->SetGender(Gender);
-	Char->SetProfession(Profession);
-	Char->SetFaction(Faction);
-	Char->SetRealLook(Head, Torso, Legs);
-	Char->SetBaseSkills();
-	Char->SetBaseSubskills(NZSNb, NonZeroSubskills);
-	Char->SetBaseInventory();
-	Char->SetAccount(Account);
-	Char->SetCharSlot(Slot);
-	
-	//mChars.insert(std::make_pair(++mLastID, Char));
-	//Char->SetID(mLastID); mID is now set in PChar::SQLCreate() from database c_id auto_increment value
-	Char->SetDirtyFlag();
-	if (Char->SQLCreate())
-	{
-	  if (Char->SQLSave())
-	  {
-	    mChars.insert(std::make_pair(Char->GetID(), Char));
-	    if (mLastID < Char->GetID())
-	      mLastID = Char->GetID(); // just in case it is needed somewhere. To be removed later with all LastID.
-      return Char;
-    }
+	PChar* nChar = new PChar();
+	if (nChar->CreateNewChar(Account, Name, Gender, Profession, Faction, Head, Torso, Legs, NZSNb, NonZeroSubskills, Slot))
+  {
+    mChars.insert(std::make_pair(nChar->GetID(), nChar));
+    if (mLastID < nChar->GetID())
+      mLastID = nChar->GetID(); // just in case it is needed somewhere. To be removed later with all LastID.
+    return nChar;
   }
-  return NULL;
+  else
+  {
+    delete nChar;
+    return NULL;
+  }
 }
-
-

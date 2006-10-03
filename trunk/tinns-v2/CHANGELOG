@@ -370,3 +370,23 @@ Hammag; 02.10.2006 23:30 GMT+1
 Added PWorldDatParser class, with files include/world_datparser.h and def/world_datparser.cpp
   (this classes might change/be replaced by a PWorldTemplate class very soon)
 
+====================
+Hammag; 03.10.2006 16:30 GMT+1
+----------
+<General changes>
+ - Fix a big bug in gameserver causing server crash when using new character
+    after its creation without server restart inbetween
+ - added a gameserver config option auto_save_period to control character autosave period (in sec)
+ 
+[GAME]
+chars.cpp/.h :
+  added PChar::CreateNewChar() and moved effective char creation from PChars to PChar
+  added PChar::SQLDelete() (but not implemented yet)
+  added use of auto_save_period config option in PChars::update()
+  removed old XML-storage related code
+accounts.cpp : 
+  fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
+gameserver.cpp :
+  added some more DB cleanup when a char is deleted. Still incomplete and will later be done in PChar::SQLDelete()
+various .cpp files:
+  put more log output under control of dev_debug config option
