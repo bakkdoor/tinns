@@ -390,3 +390,10 @@ gameserver.cpp :
   added some more DB cleanup when a char is deleted. Still incomplete and will later be done in PChar::SQLDelete()
 various .cpp files:
   put more log output under control of dev_debug config option
+
+====================
+Hammag; 04.10.2006 12:00 GMT+1
+----------
+<General changes>
+ - Minor fixes to avoid some warnings
+ - def directory removed from repository
