@@ -59,7 +59,7 @@ bool PDefAppartement::LoadFromDef(PTokenList *Tokens)
 				mName = *i; break;
 
 			case 3: // world name
-				mWorldname = *i; break;
+				mWorldName = *i; break;
 				
 			case 4: // value
 				mValue = std::atoi(i->c_str()); break;
@@ -82,6 +82,6 @@ bool PDefAppartement::LoadFromDef(PTokenList *Tokens)
 		}
 	}
 //Console->Print("%04d:%s file:%s val:%d places:%d pl1:%d pl2:%d pl8:%d faction:%d",
-//      mIndex, mName.c_str(), mWorldname.c_str(), mValue, mPlaceCount, mPlace[0], mPlace[1], mPlace[7], mFaction);
+//      mIndex, mName.c_str(), mWorldName.c_str(), mValue, mPlaceCount, mPlace[0], mPlace[1], mPlace[7], mFaction);
 	return true;
 }

@@ -62,12 +62,11 @@ struct PSec2ElemType3 //static object ?
   f32 mRotY;
   f32 mRotZ;
   f32 mRotX;
-  u32 mUnknown1; //00 00 80 3F ?
+  f32 mScale; //00 00 80 3F ? = float(1.000000) !!! => scale factor ?????
   u32 mUnknown2; //01 00 00 00 ?
   u16 mModelID; // points to models.ini
   u32 mUnknown3; //00 00 00 00 ?
-  u16 mUnknown4; //00 00
-  u16 mUnknown4bis;
+  u32 mUnknown4; //00 00 00 00 ?
   u16 mWorldmodelID; // points to worldmodel.def
   u16 mUnknown5; //12 00 ?
   u32 mObjectID;
@@ -83,18 +82,18 @@ struct PSec2ElemType5Start //door
 {
   u16 mUnknown1; //18 00
   u16 mUnknown1bis; //00 00 ? varies
-  u32 mUnknown2; //float ?
-  u32 mUnknown3; //float ?
-  u32 mUnknown4; //00 80 FB 43 ? varies
+  u32 mUnknown2; //f32 mPosY ?
+  u32 mUnknown3; //f32 mPosZ ?
+  u32 mUnknown4; //00 80 FB 43 ? f32 mPosX ?
   u8 mActorSize; //string size with ending 0
   u8 mParamSize; //string size with ending 0
   u16 mUnknown5; //00 00 ? second byte varies
   u16 mDoorID; // but what is the link with ObjectID sent in Use message (can't find the base offset .. or 0x80 for doors ???)
-  u16 mDoorType; //door type from worldmodel.def
+  u16 mWorldmodelID; //door type from worldmodel.def
 };
   //Actor As String //null terminated string
   //Params As String //null terminated string - for DDOOR, 2nd param is the ID of the other (half)door (*)
-                   //param1 = 2 => simple move ?, 3 => door horizontal move (as at Typherra memorial) ?
+                   //param1 = 2 => simple lateral move ?, 3 => door frontal+lateral move (as at Typherra memorial) ?
                    //last param = 0/1 for lateral move direction ? no ...
                    //(*) here is the bug(?) that makes open only one half of a double door
 
@@ -128,11 +127,11 @@ struct PSec2ElemType6End
 //  Name As String //non-zero terminated string
 struct PSec2ElemType15End //area definition/sound ?
 {
-  u32 mUnknown1; //float ?
-  u32 mUnknown2; //float ?
-  u32 mUnknown3; //float ?
-  u32 mUnknown4; //float ?
-  u32 mUnknown5; //float ?
+  f32 mUnknown1;
+  f32 mUnknown2;
+  f32 mUnknown3;
+  f32 mUnknown4;
+  f32 mUnknown5;
 };
 
 #endif

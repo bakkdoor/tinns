@@ -84,7 +84,7 @@ void SendZone(PClient *Client, u32 loc)
 	    const PDefAppartement* nDestApp = GameDefs->GetAppartementDef(i);
 	    if (nDestApp)
 	    {
-        worldName = nDestApp->GetWorldname();
+        worldName = nDestApp->GetWorldName();
 	    }
 	    /*switch(i)
 	    {
@@ -295,14 +295,24 @@ void SendZone(PClient *Client, u32 loc)
 	        }
 	    }*/
 	}
+	else if ((loc >= 90001) && (loc <= 90016))
+	{
+	  char Num[19];
+	  int MatchID = loc - 90000;
+	  if (MatchID > 8) // to care for Neofrag 1 & 2
+	    MatchID -= 8;
+	  if (MatchID > 6)
+	    MatchID = 6; // holomatch 7 and 8 are same as 6
+	  snprintf(Num, 19, "holomatch/neofrag%d", MatchID);
+	  worldName = Num;
+	}
 	else
 	{
     const PDefWorldFile* nWorldFile = GameDefs->GetWorldFileDef(loc);
     if (nWorldFile)
     {
       worldName = nWorldFile->GetName();
-    }
-	    
+    }   
         /*switch(loc)
         {	    
             //Subway - this seems to change your location, but then goes wrong?

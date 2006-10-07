@@ -1,7 +1,6 @@
 /*
 	TinNS (TinNS is not a Neocron Server)
 	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -20,38 +19,29 @@
 */
 
 
-
 /*
-	world_datparser.h
-	Class to parse .dat world files
+  furnituretemplate.cpp - world furniture template class
 
-	MODIFIED: 29 Sep 2006 Hammag
-	REASON: - Creation
+	MODIFIED: 04 Oct 2006 Hammag
+	REASON: - creation
+	
 */
 
-#ifndef WORLD_DATPARSER_H
-#define WORLD_DATPARSER_H
 
-class PFile;
-class PWorldDataTemplate;
+#include "main.h"
+#include "furnituretemplate.h"
 
-class PWorldDatParser
+PFurnitureItemTemplate::PFurnitureItemTemplate()
 {
-	private :
-	  PFile* f;
-	  
-	  PWorldDataTemplate* mWorld;
-	  bool mDiscardPassiveObjects;
-	  
-    bool ProcessSec2ElemType3(u32 nSize);
-    
-	public :
-		PWorldDatParser();
-		~PWorldDatParser();
+    mObjectID = 0;
+    mModelID = 0;
+    mWorldmodelID = 0;
+    mUseFlags = 0;
+    mFunctionType = 0;
+    mFunctionValue = 0;
+}
 
-		int LoadDatFile(std::string& nFilename, PWorldDataTemplate* nWorld, bool nDiscardPassiveObjects = true, bool nTestAccesOnly = false);
-		
-};
-
-#endif
-
+PFurnitureItemTemplate::~PFurnitureItemTemplate()
+{
+  
+}

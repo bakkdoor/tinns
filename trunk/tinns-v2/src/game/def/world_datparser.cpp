@@ -30,10 +30,15 @@
 */
 
 #include "main.h"
+
 #include "world_datparser.h"
 #include "world_datstruct.h"
 
- 
+#include "worlddatatemplate.h"
+#include "furnituretemplate.h"
+
+const u16 nonDiscardUseFlags = ufTouchable|ufUsable|ufChair|ufToolTarget ; // furniture always to kept even if function type = 0
+
 PWorldDatParser::PWorldDatParser()
 {
   f = NULL;
@@ -44,7 +49,7 @@ PWorldDatParser::~PWorldDatParser()
   
 }
 
-bool PWorldDatParser::LoadDatFile(char* nFilename)
+int PWorldDatParser::LoadDatFile(std::string& nFilename, PWorldDataTemplate* nWorld, bool nDiscardPassiveObjects, bool nTestAccesOnly)
 {
   PWorldFileHeader FileHeader;
   PSectionHeader SectionHeader;
@@ -53,28 +58,34 @@ bool PWorldDatParser::LoadDatFile(char* nFilename)
   u32 FileLen;
   u32 NextSectionOffset = 0;
   u32 NextElementOffset;
+  bool ProcessOK;
   
-Console->Print("Reading file %s", nFilename);  
-	f = Filesystem->Open("", nFilename);
+  mWorld = nWorld;
+  mDiscardPassiveObjects = nDiscardPassiveObjects;
+  
+if (gDevDebug) Console->Print("Reading file %s", nFilename.c_str());  
+	f = Filesystem->Open("", nFilename.c_str());
 
+  if (nTestAccesOnly)
+  {
+    ProcessOK = (bool)f;
+    Filesystem->Close(f);
+    return (ProcessOK ? 0 : -1);
+  }
+    
 	if (f)
 	{
     FileLen = f->GetSize();
 
     // Section 1    
-Console->Print("Reading file header (section 1) ... ");
+if (gDevDebug) Console->Print("Reading file header (section 1) ... ");
     f->Read(&FileHeader, sizeof(PWorldFileHeader));
-    if ((FileHeader.mHeaderSize == 0x00000008)
-        && (FileHeader.mHeaderSig == 0x000fcfcf)
-        && (FileHeader.mSection == 0x00000001))
+    if ((FileHeader.mHeaderSize != 0x00000008)
+        || (FileHeader.mHeaderSig != 0x000fcfcf)
+        || (FileHeader.mSection != 0x00000001))
     {
-//Console->Print(GREEN, BLACK, "[OK]");
-    }
-    else
-    {
-      Console->Print(RED, BLACK, "Bad data [ERROR]");
       Filesystem->Close(f);
-      return false;
+      return -2;
     }
     NextSectionOffset += FileHeader.mHeaderSize + 4;
     
@@ -83,39 +94,33 @@ Console->Print("Reading file header (section 1) ... ");
     while(! f->Eof())
     {
       f->Seek(NextSectionOffset); // Make sure we are at the computed offset
-Console->Print("Reading next section header ... ");
+if (gDevDebug) Console->Print("Reading next section header ... ");
       if ((u32)(f->Read(&SectionHeader, sizeof(PSectionHeader))) < sizeof(PSectionHeader))
       {
-        Console->Print(RED, BLACK, "Unexpected end of file [ERROR]");
         Filesystem->Close(f);
-        return false;
+        return -3;
       }
       
-      if ((SectionHeader.mHeaderSize == 0x0000000c) && (SectionHeader.mHeaderSig == 0x0000ffcf))
+      if ((SectionHeader.mHeaderSize != 0x0000000c) || (SectionHeader.mHeaderSig != 0x0000ffcf))
       {
-//Console->LPrint(GREEN, BLACK, "[OK]");
-      }
-      else
-      {
-        Console->Print(RED, BLACK, "Bad data [ERROR]");
         Filesystem->Close(f);
-        return false;
+        return -2;
       }
       
       if (SectionHeader.mSection == 0)
       {
-Console->Print("Ending section reached");
+if (gDevDebug) Console->Print("Ending section reached");
         break;
       }
     
       NextElementOffset = NextSectionOffset + SectionHeader.mHeaderSize + 4;
       NextSectionOffset = NextElementOffset + SectionHeader.mDataSize;
-Console->Print("Processing section %d (size %d)", SectionHeader.mSection, SectionHeader.mDataSize);
+if (gDevDebug) Console->Print("Processing section %d (size %d)", SectionHeader.mSection, SectionHeader.mDataSize);
       
       if (SectionHeader.mSection == 2)
       {
-//int cnt=0;
-Console->Print("Element Type 3 size: %d", sizeof(PSec2ElemType3));
+int cnt=0;
+if (gDevDebug) Console->Print("Element Type 3 size: %d", sizeof(PSec2ElemType3));
         while (NextElementOffset < NextSectionOffset)
         {
           f->Seek(NextElementOffset); // Make sure we are at the computed offset
@@ -123,35 +128,37 @@ Console->Print("Element Type 3 size: %d", sizeof(PSec2ElemType3));
 //Console->Print("Reading next element header ... ");
           if ((u32)(f->Read(&Sec2ElemHeader, sizeof(PSec2ElemHeader))) < sizeof(PSec2ElemHeader))
           {
-            Console->Print(RED, BLACK, "Unexpected end of file [ERROR]");
             Filesystem->Close(f);
-            return false;
+            return -3;
           }
-          if ((Sec2ElemHeader.mHeaderSize == 0x0000000c) && (Sec2ElemHeader.mHeaderSig == 0x0ffefef1))
+          if ((Sec2ElemHeader.mHeaderSize != 0x0000000c) || (Sec2ElemHeader.mHeaderSig != 0x0ffefef1))
           {
-//Console->Print(GREEN, BLACK, "[OK]");
-          }
-          else
-          {
-            Console->Print(RED, BLACK, "Bad data [ERROR]");
             Filesystem->Close(f);
-            return false;
+            return -2;
           }  
           NextElementOffset += (Sec2ElemHeader.mHeaderSize + 4 + Sec2ElemHeader.mDataSize);
-//Console->Print("Found element %d of type %d, size %d", ++cnt, Sec2ElemHeader.mElementType, Sec2ElemHeader.mDataSize);
+if (gDevDebug) Console->Print("Found element %d of type %d, size %d", ++cnt, Sec2ElemHeader.mElementType, Sec2ElemHeader.mDataSize);
           switch(Sec2ElemHeader.mElementType)
           {
             case 1000003:
             {
-              ProcessSec2ElemType3(Sec2ElemHeader.mDataSize);
+              ProcessOK = ProcessSec2ElemType3(Sec2ElemHeader.mDataSize);
+              break;
+            }
+            default:
+            {
+              ProcessOK = true;
               break;
             }
           }
+          
+          if (!ProcessOK)
+            return -4;
         }
       }
       else
       {
-Console->Print("Section %d ignored", SectionHeader.mSection);
+if (gDevDebug) Console->Print("Section %d ignored", SectionHeader.mSection);
         continue;       
       }
       
@@ -160,60 +167,93 @@ Console->Print("Section %d ignored", SectionHeader.mSection);
     Filesystem->Close(f);
   }
   else
-    Console->Print("%s Can't read file %s", Console->ColorText(RED, BLACK, "[Error]"), nFilename);
-	return true;
+  {
+    return -1;
+  }
+  
+	return 0;
 }
 
 bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize)
 {
   PSec2ElemType3 Data;
   const PDefWorldModel* nWorldModel;
-  
+  std::string nName;
+
+  if (nSize != sizeof(PSec2ElemType3))
+  {
+    Console->Print(RED, BLACK, "[ERROR] Wrong size for Sec2ElemType3 (%d read vs %d needed", nSize, sizeof(PSec2ElemType3));
+    return false;
+  }   
   if ((u32)(f->Read(&Data, sizeof(PSec2ElemType3))) < sizeof(PSec2ElemType3))
   {
     Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType3");
     return false;
   }
   
-  if (Data.mWorldmodelID > 0)
+  if (Data.mWorldmodelID)
   {
-    nWorldModel = GameDefs->GetWorldModelDef(Data.mWorldmodelID);
-    std::string nName;
+    nWorldModel = GameDefs->GetWorldModelDef(Data.mWorldmodelID);    
     if(nWorldModel)
       nName = nWorldModel->GetName();
     else
       nName = "UNKNOWN";
-    
-    Console->Print("y:%f z:%f x:%f model %d %s (%d)", Data.mPosY , Data.mPosZ, Data.mPosX, Data.mModelID, nName.c_str(), Data.mWorldmodelID);
+  }
+  else
+  {
+    nName = "PASSIVE";
+    nWorldModel = NULL;
+  }
+
+if (gDevDebug) {   
+Console->Print("-------------------------------------------------------");
+Console->Print("%s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mObjectID);
+if (!nWorldModel) Console->Print("y:%f z:%f x:%f model %d", Data.mPosY , Data.mPosZ, Data.mPosX, Data.mModelID);
+Console->Print("Scale:%f Uk2:0x%08x Uk3:0x%08x", Data.mScale, Data.mUnknown2, Data.mUnknown3);
+Console->Print("Uk4:0x%08x Uk5:0x%04x", Data.mUnknown4, Data.mUnknown5);
+//Console->Print("Ly:%f Lz:%f Lx:%f", Data.mBoxLowerY, Data.mBoxLowerZ, Data.mBoxLowerX);
+//Console->Print("Uy:%f Uz:%f Ux:%f", Data.mBoxUpperY, Data.mBoxUpperZ, Data.mBoxUpperX);
+}
+  
+  if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
+  {
+if (gDevDebug) Console->Print("Discarded");
+    return true; 
   }
   
-  nSize=0; // just to avoid warning
+  PFurnitureItemTemplate* nItem = new PFurnitureItemTemplate;
+  nItem->mObjectID = Data.mObjectID;
+
+  // The commented out values are not loaded from dat file atm because they are not used yet.
+//  nItem->mPosY = 32000 + Data.mPosY;
+//  nItem->mPosZ = 32000 + Data.mPosZ;
+//  nItem->mPosX = 32000 + Data.mPosX;
+//  nItem->mRotY = Data.mRotY;
+//  nItem->mRotZ = Data.mRotZ;
+//  nItem->mRotX = Data.mRotX;
+//  nItem->mScale = Data.mScale;
+//  nItem->mUnknown2 = Data.mUnknown2;
+  nItem->mModelID = Data.mModelID;
+//  nItem->mUnknown3 = Data.mUnknown3;
+//  nItem->mUnknown4 = Data.mUnknown4;
+  nItem->mWorldmodelID = Data.mWorldmodelID;
+//  nItem->mUnknown5 = Data.mUnknown5;
+
+//  nItem->mBoxLowerY = Data.mBoxLowerY;
+//  nItem->mBoxLowerZ = Data.mBoxLowerZ;
+//  nItem->mBoxLowerX = Data.mBoxLowerX;
+//  nItem->mBoxUpperY = Data.mBoxUpperY;
+//  nItem->mBoxUpperZ = Data.mBoxUpperZ;
+//  nItem->mBoxUpperX = Data.mBoxUpperX;
+    
+  if(nWorldModel)
+  {
+    nItem->mUseFlags = nWorldModel->GetUseFlags();
+    nItem->mFunctionType = nWorldModel->GetFunctionType();
+    nItem->mFunctionValue = nWorldModel->GetFunctionValue();
+  }
+  
+  mWorld->AddFurnitureItem(nItem);
+  
   return true;
 }
-
-/*
-struct PSec2ElemType3 //static object ?
-{
-  s16 mPosY; //= u16 PosY - 32000
-  s16 mPosZ;
-  s16 mPosX;
-  s16 mRotY;
-  s16 mRotZ;
-  s16 mRotX;
-  u32 mUnknown1; //00 00 80 3F ?
-  u32 mUnknown2; //01 00 00 00 ?
-  u16 mModelID; // points to models.ini
-  u32 mUnknown3; //00 00 00 00 ?
-  u32 mUnknown4; //00 00 00 00 ?
-  u16 mUnknown4bis; //00 00 ?
-  u16 mWorldmodelID; // points to worldmodel.def
-  u16 mUnknown5; //12 00 ?
-  u32 mObjectID;
-  s16 mBoxLowerY; //Bounding box, for useflag "64 - selfconstructing colisionbox"
-  s16 mBoxLowerZ; // s16 or u16 ?
-  s16 mBoxLowerX;
-  s16 mBoxUpperY;
-  s16 mBoxUpperZ;
-  s16 mBoxUpperX;
-};
-*/

@@ -22,18 +22,28 @@
 
 
 /*
-        filesystem.cpp
-
-        Authors:
-        - Akiko
-        - Namikon
-        - someone else?
-
-        MODIFIED: Unknown date / Unknown author
-        REASON: - initial release by unknown
-
-        MODIFIED: 25 Dec 2005 Namikon
-        REASON: - Added GPL
+  filesystem.cpp
+  
+  Authors:
+  - Akiko
+  - Namikon
+  - someone else?
+  
+  MODIFIED: Unknown date / Unknown author
+  REASON: - initial release by unknown
+  MODIFIED: 25 Dec 2005 Namikon
+  REASON: - Added GPL
+  MODIFIED: 31 August 2005 Akiko
+  REASON: - modified the path handling of the open function
+  MODIFIED: 29 Sep 2006 Hammag
+  REASON: - added a safety check on read size in PFile::Read
+        
+  MODIFIED: 07 Oct 2006 Hammag
+  REASON: - Fixed package reading to enable access to "subdirectories" in archive,
+              as well as translation from unix to dos path separator for in-archive search       
+          - Removed the "file not found" message the PFileSystem::Open() was issuing in the corresponding case.
+              A NULL returned for PFile* is sufficient for the calling proc to manage the situation.
+          - Changed file search in archives to case-insensitive
 */
 
 #include "main.h"
@@ -45,15 +55,11 @@
 	how neocron files are accessed:
 	- if path/filename.ext exists, the file is opened
 	- (else) if path/pak_filename.ext exists, the file is opened
-	- (else) if an archive named path.pak exists, filename.ext is opened from the archive
-
-	MODIFIED: 31 August 2005 Akiko
-	REASON: - modified the path handling of the open function
-	
-	MODIFIED: 29 Sep 2006 Hammag
-	REASON: - added a safety check on read size in PFile::Read
+	- (else) if an archive named path_head.pak exists, path_tail\filename.ext is opened from the archive
+	      here path is split in path_head\path_tail
 	
 */
+const s8 DELIM = '/';
 
 PFile::PFile()
 {
@@ -178,7 +184,6 @@ PFileSystem::PPakFileList* PFileSystem::CachePak(const std::string &Pak, std::FI
 
 void splitpath(const string &file, string &path, string &name, string &ext)
 {
-	const s8 DELIM = '/';
 	unsigned long pos = file.rfind(DELIM);
 
 	if (pos == string::npos)
@@ -206,17 +211,40 @@ void splitpath(const string &file, string &path, string &name, string &ext)
 
 PFile *PFileSystem::Open(const std::string &Package, const char *File)
 {
-	std::string name = "";
+	      std::string name = "";
         std::string ext = "";
         std::string path = "";
         splitpath(File, path, name, ext);
 
+        std::string pak2;
+        std::string name2;
+          
         std::string pak = Package;
         if(pak=="")
-                pak=path;
+        {
+           pak=path;
+           unsigned long pos = path.find(DELIM);
+          	if (pos == string::npos)
+          	{
+          		pak2 = path;
+          		name2 = name;
+          	}
+          	else
+          	{
+          		pak2 = path.substr(0, pos);
+          		name2 = path.substr(pos + 1) + '\\' + name;
+          		pos = name2.find(DELIM);
+          		while (pos != string::npos)
+          		{
+          		  name2[pos] = '\\';
+          		  pos = name2.find(DELIM);
+          		}
+          	}
+        }          
 
         std::stringstream package;
-        package << pak << ".pak" << '\0';
+        //package << pak << ".pak" << '\0';
+        package << pak2 << ".pak" << '\0';
         std::stringstream fname;
         fname << pak << '/' << name << "." << ext << '\0';
         std::stringstream pakname;
@@ -251,15 +279,16 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
         f = std::fopen(package.str().c_str(), "rb");
         if(f)
         {
-                std::string filename = name;
-		filename.append(ext);
+                //std::string filename = name;
+                std::string filename = name2 + "." + ext;
+		            //filename.append(ext);
 
                 PPakFileHeader *file = 0;
                 PPakFileList *list = CachePak(std::string(package.str()), f);
                 for(PPakFileList::iterator i=list->begin(); i!=list->end(); i++)
                 {
                         PPakFileHeader *h = i->second;
-                        if(i->first == filename)
+                        if(!strcasecmp(i->first.c_str(), filename.c_str()))
                         {
                                 file = h;
                                 break;
@@ -271,13 +300,16 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                         Result = new PFile();
                         std::fseek(f, file->mOffset, SEEK_SET);
                         Result->ReadUnpakData(f, file->mCompressedSize, file->mUncompressedSize);
-                } else
+                }
+                else
                 {
                         if(!list)
-                                Console->Print("%s, %s: pak error", Package.c_str(), File);
-                        else
-                        if(!file)
-                                Console->Print("%s, %s: file not found", Package.c_str(), File);
+                                //Console->Print("%s, %s: pak error", Package.c_str(), File);
+                                Console->Print("%s, %s: pak error", package.str().c_str(), File);
+                        //else
+                        //if(!file)
+                                //Console->Print("%s, %s: file not found", Package.c_str(), File);
+                                //Console->Print("%s, %s: file not found", package.str().c_str(), filename.c_str());
                 }
 
                 std::fclose(f);

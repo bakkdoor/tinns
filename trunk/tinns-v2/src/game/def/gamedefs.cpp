@@ -39,12 +39,13 @@
 	        - completed PGameDefs destructor  
   MODIFIED: 22 Sep 2005 Hammag
 	REASON: - Added PDefAppartement related stuff
-	        - Added PDefRespawn related stuff
-	
+	        - Added PDefRespawn related stuff	
   MODIFIED: 28 Sep 2005 Hammag
-	REASON: - Added PDefWorldFile related stuff	
+	REASON: - Added PDefWorldFile related stuff
+
+  MODIFIED: 07 Oct 2005 Hammag
+	REASON: - Added (inline) methods to get const iterators on Appartment and WorldFile maps
 	
-			
 	--------------------------------------------------------------------
 	WARNING:
 	When adding new .def support, don't forget to add required stuff in
@@ -655,46 +656,52 @@ bool PGameDefs::LoadRespawnDefs()
 bool PGameDefs::LoadWorldFileDefs()
 {
 	PDefParser parser;
-	int nDefs = 0, nErrors = 0;
+	int nDefs = 0, nErrors = 0, nDup = 0;
 	const string DEF_FILE = Config->GetOption("worlds_path") + "/" + WRLD_WORLDFILE;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
 		const PDefTokenList &t = parser.GetTokens();
 
-  		for (PDefTokenList::const_iterator i=t.begin(); i!=t.end(); i++)
-  		{
-  			PDefWorldFile *it = new PDefWorldFile();
-  			bool loadfail = !it->LoadFromDef(*i), insertfail=false;
-  
-  			if (!loadfail)
-  				insertfail = !mWorldFileDefs.insert(std::make_pair(it->GetIndex(), it)).second;
-  			if (loadfail || insertfail)
-  			{
-  				if (insertfail)
-  					Console->Print("WorldFile ini error (new duplicate id %i discarded)", it->GetIndex(), it->GetName().c_str());
-  				else
-  				{
-  					Console->Print("WorldFile ini load error @ %i", nDefs+nErrors);
-  				  ++nErrors;
-  				}
-  				delete it;
-  			}
-  			else
-  				++nDefs;
-  		}
+		for (PDefTokenList::const_iterator i=t.begin(); i!=t.end(); i++)
+		{
+			PDefWorldFile *it = new PDefWorldFile();
+			bool loadfail = !it->LoadFromDef(*i), insertfail=false;
+
+			if (!loadfail)
+				insertfail = !mWorldFileDefs.insert(std::make_pair(it->GetIndex(), it)).second;
+			if (loadfail || insertfail)
+			{
+				if (insertfail)
+				{
+				  ++nDup;
+if (gDevDebug) Console->Print("WorldFile ini error (new duplicate id %i discarded)", it->GetIndex(), it->GetName().c_str());
+        }
+				else
+				{
+					Console->Print("WorldFile ini load error @ %i", nDefs+nErrors);
+				  ++nErrors;
+				}
+				delete it;
+			}
+			else
+				++nDefs;
+		}
 	}
 	else
 	{
-   	    Console->Print("%s Error loading worldfile ini defs", Console->ColorText(RED, BLACK, "[ERROR]"));
-
+   	Console->Print("%s Error loading worldfile ini defs", Console->ColorText(RED, BLACK, "[ERROR]"));
 		return (false);
 	}
-    if(nErrors > 0)
-        Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(RED, BLACK, "[ERROR]"), nDefs, nErrors);
-    else
-        Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(GREEN, BLACK, "[Success]"), nDefs, nErrors);
+	
+  if(nErrors > 0)
+    Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(RED, BLACK, "[ERROR]"), nDefs, nErrors);
+  else
+    Console->Print("%s Loaded %i worldfile ini defs, %i error(s).", Console->ColorText(GREEN, BLACK, "[Success]"), nDefs, nErrors);
 
+  if(nDup)
+    Console->Print("%s %d duplicate entries ignored in worldfile ini defs.", Console->ColorText(YELLOW, BLACK, "[Notice]"), nDup);
+	
 	return (true);
 }
 

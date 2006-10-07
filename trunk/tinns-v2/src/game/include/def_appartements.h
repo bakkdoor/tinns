@@ -37,7 +37,7 @@ class PDefAppartement
 	private :
 		int mIndex;
 		std::string mName;
-		std::string mWorldname;
+		std::string mWorldName;
 		int mValue;
 		int mPlaceCount;
 		int mPlace[8];
@@ -51,7 +51,7 @@ class PDefAppartement
 
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
-		inline const std::string &GetWorldname() const { return mWorldname; }
+		inline const std::string &GetWorldName() const { return mWorldName; }
 		inline int GetValue() const { return mValue; }
 		inline int GetPlaceCount() const { return mPlaceCount; }
 		inline int GetPlace(int nIdx) const { return ( (nIdx < mPlaceCount) ? mPlace[nIdx] : 0 ); }

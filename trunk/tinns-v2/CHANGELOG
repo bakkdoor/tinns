@@ -397,3 +397,39 @@ Hammag; 04.10.2006 12:00 GMT+1
 <General changes>
  - Minor fixes to avoid some warnings
  - def directory removed from repository
+ 
+====================
+Hammag; 08.10.2006 01:25 GMT+1
+----------
+[rev. 20]
+
+<General changes> 
+ - fixed .pak archive deep file reading
+ - implemented world furniture loading from world dat file (static furniture only atm)
+ - implemented loading of worlds templates from .dat files (just for test now, will be used very soon)
+
+WARNING: more NC files & dirs will be needed for the gameserver from now on:
+./def/* (as already used by previous revisions)
+./worlds.pak
+./worlds/*
+./terrain.pak
+./terrain/*
+
+with . being the gameserver's starting dir (a config option will be added soon to set this dir to something else if wanted)
+
+[COMMON]
+filesystem.cpp :
+  Fixed package reading to enable access to "subdirectories" in archive,
+    as well as translation from unix to dos path separator for in-archive search             
+  Removed the "file not found" message the PFileSystem::Open() was issuing in the corresponding case.
+    A NULL returned for PFile* is sufficient for the calling proc to manage the situation.
+  Changed file search in archives to case-insensitive.
+  
+[GAME]
+def_worlds.cpp :
+  added quotes and spaces trim to mName and mDatFile.
+def/gamedefs.cpp :
+  minor changes in PGameDefs::LoadWorldFileDefs() to make it more silent
+added furnituretemplate.cpp/.h (PFurnitureItemTemplate class)
+added worlddatatemplate.cpp/.h (PWorldDataTemplate class)
+added worlds.cpp/.h (PWorld and PWorlds classes)

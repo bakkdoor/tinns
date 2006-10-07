@@ -32,9 +32,11 @@
   MODIFIED: 22 Sep 2005 Hammag
 	REASON: - Added PDefAppartement related stuff
 	        - Added PDefRespawn related stuff
-
   MODIFIED: 28 Sep 2005 Hammag
 	REASON: - Added PDefWorldFile related stuff
+
+  MODIFIED: 07 Oct 2005 Hammag
+	REASON: - Added methods to get const iterators on Appartment and WorldFile maps
 	
 */
 
@@ -126,12 +128,16 @@ class PGameDefs
 
 		inline int GetNumAppartementDefs() const { return mAppartementDefs.size(); }
 		const PDefAppartement *GetAppartementDef(int Index) const;
+	  inline PDefAppartementMap::const_iterator GetAppartementDefsConstIteratorBegin() {return mAppartementDefs.begin(); }
+	  inline PDefAppartementMap::const_iterator GetAppartementDefsConstIteratorEnd() {return mAppartementDefs.end(); }
 		
 		inline int GetNumRespawnDefs() const { return mRespawnDefs.size(); }
 		const PDefRespawn *GetRespawnDef(int Index) const;
 		
 		inline int GetNumWorldFileDefs() const { return mWorldFileDefs.size(); }
 		const PDefWorldFile *GetWorldFileDef(int Index) const;
+	  inline PDefWorldFileMap::const_iterator GetWorldFileDefsConstIteratorBegin() {return mWorldFileDefs.begin(); }
+	  inline PDefWorldFileMap::const_iterator GetWorldFileConstIteratorEnd() {return mWorldFileDefs.end(); }
 };
 
 #endif

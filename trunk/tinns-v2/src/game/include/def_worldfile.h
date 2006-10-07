@@ -39,8 +39,9 @@ class PDefWorldFile
 {
 	private :
 		int mIndex;
-		std::string mName; // filename with ending extension and starting ./ or ./worlds/ REMOVED
-		bool mInWorldsDir; // TRUE if file in ./worlds
+		std::string mName; // dat filename with ending extension and starting ./ or ./worlds/ REMOVED
+		bool mFileInWorldsDir; // TRUE if worlds/ must be appendend before mName to get real file name (dat file at least)
+		
 	public :
 		PDefWorldFile();
 		~PDefWorldFile();
@@ -49,7 +50,7 @@ class PDefWorldFile
 
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
-		inline const bool IsInWorldsDir() const { return mInWorldsDir; }
+		inline const std::string GetBasicFileName() const { return (mFileInWorldsDir ? (std::string("worlds/") + mName) : mName); };
 };
 
 #endif

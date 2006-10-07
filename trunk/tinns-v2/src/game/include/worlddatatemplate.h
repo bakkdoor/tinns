@@ -1,7 +1,6 @@
 /*
 	TinNS (TinNS is not a Neocron Server)
 	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -20,38 +19,37 @@
 */
 
 
-
 /*
-	world_datparser.h
-	Class to parse .dat world files
+  worlddatatemplate.cpp - world data template (from worlds .dat files) class
 
-	MODIFIED: 29 Sep 2006 Hammag
-	REASON: - Creation
+	MODIFIED: 04 Oct 2006 Hammag
+	REASON: - creation
+	
 */
 
-#ifndef WORLD_DATPARSER_H
-#define WORLD_DATPARSER_H
 
-class PFile;
-class PWorldDataTemplate;
+#ifndef WORLDDATATEMPLATE_H
+#define WORLDDATATEMPLATE_H
 
-class PWorldDatParser
+class PFurnitureItemTemplate;
+typedef std::map<u32, PFurnitureItemTemplate*> PFurnitureItemsMap;
+
+class PWorldDataTemplate
 {
-	private :
-	  PFile* f;
-	  
-	  PWorldDataTemplate* mWorld;
-	  bool mDiscardPassiveObjects;
-	  
-    bool ProcessSec2ElemType3(u32 nSize);
+  private:
+    std::string mName; // relative path+filename without leading ./ or ./worlds/ nor .dat extension
+    PFurnitureItemsMap mFurnitureItems;
+  
+    void DatFileDataCleanup();
     
-	public :
-		PWorldDatParser();
-		~PWorldDatParser();
-
-		int LoadDatFile(std::string& nFilename, PWorldDataTemplate* nWorld, bool nDiscardPassiveObjects = true, bool nTestAccesOnly = false);
-		
+  public:
+    PWorldDataTemplate();
+    ~PWorldDataTemplate();
+    
+    bool LoadDatFile(std::string& nFilename, bool nTestAccesOnly = false);
+    inline const std::string& GetName() { return mName; }
+    u32 AddFurnitureItem(PFurnitureItemTemplate* nItem);
+    
 };
 
 #endif
-

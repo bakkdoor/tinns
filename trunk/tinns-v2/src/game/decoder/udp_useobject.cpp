@@ -350,7 +350,7 @@ if (gDevDebug) Console->Print("default lock");
                 *(unsigned short*)&AptDoorUse[3] = Client->GetSessionID();
 
                 *(unsigned short*)&AptDoorUse[8] = *(unsigned short*)&Packet[9];
-                *(unsigned short*)&AptDoorUse[17] = *(unsigned short*)&option2;
+                *(unsigned short*)&AptDoorUse[17] = (unsigned short)option2;
 if (gDevDebug) Console->Print("Case2 lock");
 
                 switch(option2)

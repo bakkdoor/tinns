@@ -39,7 +39,7 @@
 PDefWorldFile::PDefWorldFile()
 {
 	mIndex = 0;
-	mInWorldsDir = false;
+	mFileInWorldsDir = false;
 }
 
 PDefWorldFile::~PDefWorldFile()
@@ -77,7 +77,7 @@ bool PDefWorldFile::LoadFromDef(PTokenList *Tokens)
         
 			  if ( (*i).substr(StartPos,9) == "./worlds/" )
 			  {
-			    mInWorldsDir = true;
+			    mFileInWorldsDir = true;
 			    StartPos += 9;
 			  }
 			  else if ( (*i).substr(StartPos,2) == "./" )
