@@ -36,7 +36,7 @@
 
 PWorldDataTemplate::PWorldDataTemplate()
 {
-  
+  mUseCount = 0;
 }
 
 PWorldDataTemplate::~PWorldDataTemplate()
@@ -50,7 +50,7 @@ void PWorldDataTemplate::DatFileDataCleanup()
     delete i->second;
 }
 
-bool PWorldDataTemplate::LoadDatFile(std::string& nFilename, bool nTestAccesOnly)
+bool PWorldDataTemplate::LoadDatFile(const std::string& nFilename, const bool nTestAccesOnly)
 {
   PWorldDatParser WDatLoader;
   int LoadResult;

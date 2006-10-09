@@ -26,6 +26,10 @@
 
 	MODIFIED: 25 Dec 2005 Namikon
 	REASON: - Added GPL
+
+  MODIFIED: 08 Oct 2006 Hammag
+  REASON: - added ClearCache() methode to clear pak cache when .pak access is not used anymore
+
 */
 
 #ifndef FILESYSTEM_H
@@ -81,6 +85,7 @@ class PFileSystem
 		~PFileSystem();
 		PFile *Open(const std::string &Package, const char *File);
 		bool Close(PFile *File);
+		void ClearCache();
 };
 
 #endif

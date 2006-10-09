@@ -94,7 +94,6 @@
         REASON: - Added command @speed to play with speed
                   Usage:  @speed <newspeed> | #
                               with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
-
         MODIFIED: 22 Sep Hammag
         REASON: - Added command @color to set skin color
                   Usage: @color -|<head color: 0..255> [-|<torso color>]  [-|<legs color>]
@@ -103,6 +102,9 @@
                   Usage: @brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]
                             with 0 for max brightness, 255 for max darkness, and - meaning "no change"                                                                         
 
+        MODIFIED: 09 Oct Hammag
+        REASON: - Modified and extended @debug command
+
 	ToDo:
 	- Fix Subwaysyncy
 	- Fix Wastelandsyncy
@@ -110,6 +112,7 @@
 
 #include "main.h"
 
+#include "client.h"
 #include "msgbuilder.h"
 
 char output[2048];
@@ -174,19 +177,54 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
 
 // -------------------------------------------------------
    if(strcmp(Command, "debug") == 0) {
-       PAccount *Account = Client->GetAccount();
-
-
-       if(Account->IsAdminDebug() == true)
-       {
-           Account->SetAdminDebug(false);
-           Chat->send(Client, CHAT_DIRECT, "System", "Debug mode is now DISABLED");
-       }
-       else
-       {
-           Account->SetAdminDebug(true);
-           Chat->send(Client, CHAT_DIRECT, "System", "Debug mode is now ENABLED");
-       }
+      PDebugMode nWhat = DBG_ALL;
+      int nHow = -1;
+      char* DbgTarget = "all";
+      char DbgMessage[80];
+      
+      if(Arg1[0] == '0')
+      {
+        nHow = 0;
+      }
+      else if(Arg1[0] == '1')
+      {
+        nHow = 1;
+      }
+      else if(strncmp(Arg1, "loc", 3) == 0) {
+        nWhat = DBG_LOCATION;
+        DbgTarget = "location";
+      }
+      else if(strncmp(Arg1, "it", 2) == 0) {
+        nWhat = DBG_ITEMID;
+        DbgTarget = "itemid";
+      }
+      
+      if (nWhat != DBG_ALL)
+      {
+        if(Arg2[0] == '\0')
+        {
+          nHow = (Client->GetDebugMode(nWhat) ? 0 : 1); // toggle if no arg
+        } 
+        else if(Arg2[0] == '0')
+        {
+          nHow = 0;
+        }
+        else if(Arg2[0] == '1')
+        {
+          nHow = 1;
+        }
+      }
+      
+      if (nHow != -1)
+      {
+        Client->SetDebugMode(nWhat, nHow);
+        snprintf(DbgMessage, 80, "Debug %s is now %s", DbgTarget, (nHow ? "ENABLED" : "DISABLED"));
+        Chat->send(Client, CHAT_DIRECT, "System", DbgMessage);
+      }
+      else
+      {
+        Chat->send(Client, CHAT_GM, "Usage", "@debug [loc[ation] | it[emid]] [0|1]");
+      }
    }
 // -------------------------------------------------------
    if(strcmp(Command, "settime") == 0) {

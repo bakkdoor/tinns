@@ -39,15 +39,20 @@ class PWorldDataTemplate
   private:
     std::string mName; // relative path+filename without leading ./ or ./worlds/ nor .dat extension
     PFurnitureItemsMap mFurnitureItems;
-  
+    int mUseCount;
     void DatFileDataCleanup();
     
   public:
     PWorldDataTemplate();
     ~PWorldDataTemplate();
     
-    bool LoadDatFile(std::string& nFilename, bool nTestAccesOnly = false);
+    bool LoadDatFile(const std::string& nFilename, const bool nTestAccesOnly = false);
     inline const std::string& GetName() { return mName; }
+    
+    inline void IncreaseUseCount() { ++mUseCount; }
+    inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
+    inline int GetUseCount() { return mUseCount; }
+    
     u32 AddFurnitureItem(PFurnitureItemTemplate* nItem);
     
 };

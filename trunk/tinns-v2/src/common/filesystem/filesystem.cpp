@@ -36,14 +36,17 @@
   MODIFIED: 31 August 2005 Akiko
   REASON: - modified the path handling of the open function
   MODIFIED: 29 Sep 2006 Hammag
-  REASON: - added a safety check on read size in PFile::Read
-        
+  REASON: - added a safety check on read size in PFile::Read       
   MODIFIED: 07 Oct 2006 Hammag
   REASON: - Fixed package reading to enable access to "subdirectories" in archive,
               as well as translation from unix to dos path separator for in-archive search       
           - Removed the "file not found" message the PFileSystem::Open() was issuing in the corresponding case.
               A NULL returned for PFile* is sufficient for the calling proc to manage the situation.
           - Changed file search in archives to case-insensitive
+   
+  MODIFIED: 08 Oct 2006 Hammag
+  REASON: - added ClearCache() methode to clear pak cache when .pak access is not used anymore
+
 */
 
 #include "main.h"
@@ -173,13 +176,35 @@ PFileSystem::PPakFileList* PFileSystem::CachePak(const std::string &Pak, std::FI
 			Result->insert(std::make_pair(h->mFilename, h));
 		}
 		mPaks.insert(std::make_pair(Pak, Result));
-		Console->Print("%s: %i files registered", Pak.c_str(), header.mNumFiles);
+//Console->Print("%s: %i files registered", Pak.c_str(), header.mNumFiles);
 	} else
 	{
 		Console->Print("%s: invalid pakfile", Pak.c_str());
 	}
 	std::fseek(F, off, SEEK_SET);
 	return Result;
+}
+
+void PFileSystem::ClearCache()
+{
+  PFileSystem::PPakFiles::iterator nPak;
+  PFileSystem::PPakFileList::iterator nFList;
+  PPakFileHeader* FHeader;
+  PFileSystem::PPakFileList* FList;
+  
+  for( nPak = mPaks.begin(); nPak != mPaks.end(); nPak++)
+  {
+    FList = nPak->second;
+    for( nFList = FList->begin(); nFList != FList->end(); nFList++)
+    {
+      FHeader = nFList->second;
+      FList->erase(nFList);
+      delete[] FHeader->mFilename;
+      delete FHeader;
+    }
+    mPaks.erase(nPak);
+    delete FList;
+  }
 }
 
 void splitpath(const string &file, string &path, string &name, string &ext)

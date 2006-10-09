@@ -49,7 +49,7 @@ class PWorldDatParser
 		PWorldDatParser();
 		~PWorldDatParser();
 
-		int LoadDatFile(std::string& nFilename, PWorldDataTemplate* nWorld, bool nDiscardPassiveObjects = true, bool nTestAccesOnly = false);
+		int LoadDatFile(const std::string& nFilename, PWorldDataTemplate* nWorld, const bool nDiscardPassiveObjects = true, const bool nTestAccesOnly = false);
 		
 };
 

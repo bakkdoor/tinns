@@ -48,6 +48,9 @@ PClient::PClient(int Index)
 	mRemotePort = 0;
 	m_TCPConnection = NULL;
 	m_UDPConnection = NULL;
+	
+	for (int i = 0; i < DEBUG_MODES ; i++)
+      mDebugMode[i] = false;
 }
 
 PClient::~PClient()
@@ -76,7 +79,18 @@ PClient::~PClient()
     mSessionID = 0; // is 65533 the higher valid value ???
   }
 }*/
-	
+
+void PClient::SetDebugMode(PDebugMode nDebugID, bool nVal)
+{
+  if (nDebugID == DBG_ALL)
+  {
+    for (int i = 0; i < DEBUG_MODES ; i++)
+      mDebugMode[i] = nVal;
+  }
+  else
+    mDebugMode[nDebugID] = nVal;
+}
+
 void PClient::GameDisconnect()
 {
 	mAccount = 0;

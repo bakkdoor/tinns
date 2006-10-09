@@ -52,15 +52,16 @@ PUdpMsgAnalyser* PUdpUseObject::Analyse()
 
 bool PUdpUseObject::DoAction()
 {
-    /*PMessage* cMsg = mDecodeData->mMessage;
-    u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
-    
-    PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
+  PClient* nClient = mDecodeData->mClient;
+  /*PMessage* cMsg = mDecodeData->mMessage;
+  u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
+  
+  PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
+  mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
 
 if (gDevDebug)
 {
-PChar* Char = mDecodeData->mClient->GetChar();
+PChar* Char = nClient->GetChar();
 Console->Print("Char at y=%f (0x%04x) z=%f (0x%04x) x=%f (0x%04x)", (f32)(Char->Coords.mY - 32000), Char->Coords.mY, (f32)(Char->Coords.mZ - 32000), Char->Coords.mZ, (f32)(Char->Coords.mX - 32000), Char->Coords.mX);
 if (mItemID & 1023)
 Console->Print("using item %d (0x%08x)", mItemID, mItemID);    
@@ -68,10 +69,20 @@ else
 Console->Print("using item %d (0x%08x) [%d (0x%08x)]", mItemID, mItemID, mItemID/1024 -1, mItemID/1024 -1);
 }
 
-    OldHandler(); // Temp
-    
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+  if(nClient->GetDebugMode(DBG_ITEMID))
+  {
+    char DbgMessage[128];
+    if (mItemID & 1023)
+      snprintf(DbgMessage, 128, "using item [raw: %d (0x%08x)]", mItemID, mItemID);    
+    else
+      snprintf(DbgMessage, 128, "using item %d (0x%08x) [raw: %d (0x%08x)]", mItemID/1024 -1, mItemID/1024 -1, mItemID, mItemID);
+    Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
+  }
+  
+  OldHandler(); // Temp
+  
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
 
 void PUdpUseObject::OldHandler()
@@ -184,13 +195,13 @@ u8 DoorLocked[] = {
 
   if(Packet[8] == 0x00)  // 0x00 means Isnt a door
   {
-    PAccount *Account = Client->GetAccount();
+    /*PAccount *Account = Client->GetAccount();
     if(Account->IsAdminDebug() == true)
     {
         char debugmsg[100];
         sprintf(debugmsg, "ID: %d LOC: %d", *(unsigned short*)&Packet[9], Char->GetLocation());
         Chat->send(Client, CHAT_DIRECT, "System", debugmsg);
-    }
+    }*/
 //Console->Print("Usage of non-door worlditem ID %d, SubClassID %d", Packet[9], Packet[10]);
     char ErrorMsg[256];
     int itemID = *(unsigned short*)&Packet[9]; // NeoX says : u32 @offset 8 !!!
@@ -613,13 +624,13 @@ if (gDevDebug) Console->Print("Outpost hack");
   else
   {
 //Console->Print("Usage of door worlditem");
-    PAccount *Account = Client->GetAccount();
+    /*PAccount *Account = Client->GetAccount();
     if(Account->IsAdminDebug() == true)
     {
         char debugmsg[100];
         sprintf(debugmsg, "ID: %d LOC: %d", *(unsigned short*)&Packet[8], Char->GetLocation());
         Chat->send(Client, CHAT_DIRECT, "System", debugmsg);
-    }
+    }*/
     char ErrorMsg[1024];
     int i = MySQL->GetWorldDoorType(*(unsigned int*)&Packet[8], Char->GetLocation());
     if(i == -2)

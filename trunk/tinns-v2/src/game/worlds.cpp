@@ -36,6 +36,8 @@
 #include "gamedefs.h"
 #include "def_worlds.h"
 
+#include <set>
+
 /**** PWorld ****/
 
 PWorld::PWorld()
@@ -73,65 +75,132 @@ PWorlds::~PWorlds()
     if (i->second) delete i->second;   
 }
 
-bool CheckFileAccess(std::string nFileName)
+bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase)
 {
-  bool AccessOK;
+  PWorldDataTemplate* tWorldDataTemplate;
   
-  PFile *f = Filesystem->Open("", nFileName.c_str());
-  AccessOK = (bool)f;
-  Filesystem->Close(f);
-  return AccessOK;
+  PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+	if(it == mWorldDataTemplatesMap.end()) // template unkown yet
+	{
+	  if (nPreloadPhase) // if in preload phase, we try to load it or make it known
+	  {
+	    tWorldDataTemplate = new PWorldDataTemplate;
+	    if (tWorldDataTemplate->LoadDatFile(nFileName, !mPreloadWorldsTemplates))
+	    {
+        if (mPreloadWorldsTemplates)
+        {
+          mWorldDataTemplatesMap.insert(std::make_pair(nWorldName, tWorldDataTemplate));
+          tWorldDataTemplate->IncreaseUseCount();
+        }
+        else
+        {
+          mWorldDataTemplatesMap.insert(std::make_pair(nWorldName, (PWorldDataTemplate*)NULL)); // NULL means file access OK but not preloaded yet
+          delete tWorldDataTemplate;
+        }	      
+	      //return true;
+	    }
+	    else
+	    {
+	      delete tWorldDataTemplate;
+	      return false;
+	    }
+	  }
+	  else
+	  {
+	    return false;
+	  }
+	}
+	else // template already known
+	{
+	  if (!it->second  &&  !nPreloadPhase) // is template not already loaded and we are not in preload ?
+	  {
+	    tWorldDataTemplate = new PWorldDataTemplate;
+	    if (tWorldDataTemplate->LoadDatFile(nFileName))
+	    {
+	      it->second = tWorldDataTemplate;
+	    }
+	    else
+	    {
+	      Console->Print("%s Invalid world data template file %s", Console->ColorText(RED, BLACK, "[ERROR]"), nFileName.c_str());
+	      mWorldDataTemplatesMap.erase(it);
+	      delete tWorldDataTemplate;
+	      return false;
+	    }
+	  }
+
+	  if (!nPreloadPhase)
+	    it->second->IncreaseUseCount();
+	 
+	  //return true;
+	}
+  
+  return true;
 }
-  
-bool PWorlds::LoadWorlds()
+
+void ReleaseWorldDataTemplate(const std::string& nWorldName)
 {
+  string t = nWorldName; t = t; // tmp
+}
+
+bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registred in mWorldDataTemplatesMap
+{                          //   will be cobnsidered as valid
   std::string tFileName;
-  PWorldDataTemplate* tWorldDataTemplate = new PWorldDataTemplate;
   const PDefWorld* tDefWorld;
   bool tCheckOK;
-  int InvalidCount = 0;
-  int AppTmplCount;
+  int ValidCount = 0, InvalidCount = 0, DblInvCount = 0;
+  int DatTmplCount, BadDatTmplCount;
+  std::set<std::string> InvalideFiles;
   
   // Appartment templates checking or preloading
   PDefAppartementMap::const_iterator itAptStart = GameDefs->GetAppartementDefsConstIteratorBegin();
 	PDefAppartementMap::const_iterator itAptEnd = GameDefs->GetAppartementDefsConstIteratorEnd();
   for (PDefAppartementMap::const_iterator i=itAptStart; i!=itAptEnd; i++)
   {
+    tCheckOK = false;
     tFileName = std::string("worlds/") + i->second->GetWorldName() + ".dat";
-    tCheckOK = tWorldDataTemplate->LoadDatFile(tFileName, !mPreloadWorldsTemplates);
+    if (!InvalideFiles.count(tFileName))
+    {
+      tCheckOK = LeaseWorldDataTemplate(i->second->GetWorldName(), tFileName, true);
+      if (!tCheckOK)
+      {
+        InvalideFiles.insert(tFileName);
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+      }
+    }
     if (!tCheckOK) // in case full path was given without omiting worlds/ or in another dir/archive ...
     {
       tFileName = i->second->GetWorldName() + ".dat";
-      tCheckOK = tWorldDataTemplate->LoadDatFile(tFileName, !mPreloadWorldsTemplates);
+      if(!InvalideFiles.count(tFileName))
+      {
+        tCheckOK = LeaseWorldDataTemplate(i->second->GetWorldName(), tFileName, true);
+        if (!tCheckOK)
+        {
+          InvalideFiles.insert(tFileName);
+          ++DblInvCount;
+        }
+      }
     }
     
     if (tCheckOK)
     {
-      if (mPreloadWorldsTemplates)
-      {
-        mWorldDataTemplatesMap.insert(std::make_pair(i->second->GetWorldName(), tWorldDataTemplate));
-        tWorldDataTemplate = new PWorldDataTemplate;
-      }
-      else
-      {
-        mWorldDataTemplatesMap.insert(std::make_pair(i->second->GetWorldName(), (PWorldDataTemplate*)NULL)); // NULL means file access OK but not preloaded yet
-      }
-if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for appartment %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+      ++ValidCount;
+//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for appartment %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
     }
     else
     {
       ++InvalidCount;
-if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for appartment %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for appartment %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
     }
   }
 
-  AppTmplCount = mWorldDataTemplatesMap.size();
-  Console->Print("%s %d valid appartement templates checked", Console->ColorText(GREEN, BLACK, "[Success]"), AppTmplCount);
+  DatTmplCount = mWorldDataTemplatesMap.size();
+  BadDatTmplCount = InvalideFiles.size();
+  Console->Print("%s %d valid appartement templates checked (%d dat files)", Console->ColorText(GREEN, BLACK, "[Success]"), ValidCount, DatTmplCount);
   if (InvalidCount)
-    Console->Print("%s %d invalid appartement templates rejected", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount);
+    Console->Print("%s %d invalid appartement templates rejected (%d dat files)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount, BadDatTmplCount - DblInvCount);
   
   // Static worlds & static worlds templates checking or preloading
-  InvalidCount = 0;
+  ValidCount = InvalidCount = 0;
   const PDefWorldFile* tDefWorldFile;
   PDefWorldFileMap::const_iterator itFilStart = GameDefs->GetWorldFileDefsConstIteratorBegin();
 	PDefWorldFileMap::const_iterator itFilEnd = GameDefs->GetWorldFileConstIteratorEnd();
@@ -147,39 +216,39 @@ if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for appartment %d (%
       else
         tFileName = i->second->GetBasicFileName() + ".dat";
     
-      tCheckOK = tWorldDataTemplate->LoadDatFile(tFileName, !mPreloadWorldsTemplates);
+      tCheckOK = false;
+      if (!InvalideFiles.count(tFileName))
+      {
+        tCheckOK = LeaseWorldDataTemplate(i->second->GetName(), tFileName, true);
+        if (!tCheckOK)
+        {
+          InvalideFiles.insert(tFileName);
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+        }
+      }
+            
       if (tCheckOK)
       {
-        if (mPreloadWorldsTemplates || mPreloadStaticWorlds)
+        ++ValidCount;
+        if (mPreloadStaticWorlds)
         {
-          mWorldDataTemplatesMap.insert(std::make_pair(i->second->GetName(), tWorldDataTemplate));
-          tWorldDataTemplate = new PWorldDataTemplate;
-          if (mPreloadStaticWorlds)
-          {
-            LeaseWorld(tDefWorldFile->GetIndex()); // This will make the world ready and kept in mem (use count always >0 )
-          }
+          LeaseWorld(tDefWorldFile->GetIndex()); // This will make the world ready and kept in mem (use count always >0 )
         }
-        else
-        {
-          mWorldDataTemplatesMap.insert(std::make_pair(i->second->GetName(), (PWorldDataTemplate*)NULL)); // NULL means file access OK but not preloaded yet
-        }
-if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
       }
       else
       {
         ++InvalidCount;
-if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
       }
     }
   }
 
-  Console->Print("%s %d valid world templates checked", Console->ColorText(GREEN, BLACK, "[Success]"), mWorldDataTemplatesMap.size() - AppTmplCount);
+  Console->Print("%s %d valid world templates checked (%d dat files)", Console->ColorText(GREEN, BLACK, "[Success]"), ValidCount, mWorldDataTemplatesMap.size() - DatTmplCount);
   if (InvalidCount)
-    Console->Print("%s %d invalid world templates rejected", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount);
+    Console->Print("%s %d invalid world templates rejected (%d dat files)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount, InvalideFiles.size() - BadDatTmplCount - DblInvCount);
 
-  /**** neofrag zones must be manually added oO ****/
-  
-  delete tWorldDataTemplate;    
+  /**** neofrag zones must be manually added oO ****/ 
   
   return true;
 }

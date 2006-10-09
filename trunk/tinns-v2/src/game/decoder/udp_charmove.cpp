@@ -62,6 +62,7 @@ bool PUdpCharPosUpdate::DoAction()
 { 
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
+  bool IsRealMove = false;
 
   if ((nChar->Coords.mY != mNewY) || (nChar->Coords.mZ != mNewZ) || (nChar->Coords.mX != mNewX) || (nChar->Coords.mLR != mNewLR))
   {
@@ -70,6 +71,7 @@ bool PUdpCharPosUpdate::DoAction()
     nChar->Coords.mX = mNewX;
     nChar->Coords.mLR = mNewLR;
     nChar->SetDirtyFlag();
+    IsRealMove = true;
   }
   nChar->Coords.mUD = mNewUD;
   nChar->Coords.mAct = mNewAct;
@@ -91,6 +93,19 @@ bool PUdpCharPosUpdate::DoAction()
   tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
   ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
 
+  if(IsRealMove && nClient->GetDebugMode(DBG_LOCATION))
+  {
+    char DbgMessage[128];
+    f32 f[3];
+    u32 h[3];
+    f[0] = nChar->Coords.mY - 32000;
+    f[1] = nChar->Coords.mZ - 32000;
+    f[2] = nChar->Coords.mX - 32000;
+    memcpy(h, f, 3 * sizeof(u32));
+    snprintf(DbgMessage, 128, "position y:%0.1f (0x%08x) z:%0.1f (0x%08x) x:%0.1f (0x%08x)", f[0], h[0], f[1], h[1], f[2], h[2]);
+    Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
+  }
+  
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

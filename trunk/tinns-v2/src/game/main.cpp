@@ -73,10 +73,6 @@ int main()
 	if(!InitTinNS())
 		while(1)
 			sleep(1);
-  
-	//RemoteConsole->Start();
-	GameServer->Start();
-	//GameServer->SetGameTime(0);
 	
 	/*** Test ***/
 	PWorldDataTemplate tmpWorld;
@@ -89,7 +85,12 @@ int main()
   
   PWorlds tWorlds;
   tWorlds.LoadWorlds();
-  
+  //Filesystem->ClearCache(); // release memory if World templates preload activated, this cache that won't be used anymore
+	
+	//RemoteConsole->Start();
+	GameServer->Start();
+	//GameServer->SetGameTime(0);
+	  
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
 	while(1)

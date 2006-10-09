@@ -120,8 +120,8 @@ class PAccount
 		inline bool IsConsoleAllowed() const { return mConsoleAllowed; }
 		inline bool IsDirty() const { return mDirty; }
 
-		inline bool IsAdminDebug() const { return mAdminDebug; }
-		inline void SetAdminDebug( bool ShowDebugMessages ) { mAdminDebug = ShowDebugMessages; }
+		//inline bool IsAdminDebug() const { return mAdminDebug; }
+		//inline void SetAdminDebug( bool ShowDebugMessages ) { mAdminDebug = ShowDebugMessages; }
 
 		void SetBannedStatus(int banneduntil);
 

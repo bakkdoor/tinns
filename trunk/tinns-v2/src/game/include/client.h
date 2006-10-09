@@ -32,22 +32,22 @@
 
 	MODIFIED: 30 Nov 2005 Akiko
 	REASON: - added GPL
-		- added stuff from Namikon
+		      - added stuff from Namikon
+  MODIFIED: 13 Dec 2005 bakkdoor
+  REASON: - added multiuser chat
+  MODIFIED: 27 Jul 2006 Hammag
+  REASON: - added mTransactionID member
+          - re-added IncreaseUDP_ID() // but I don't understand well what SetUDP_ID() does ...
+  MODIFIED: 05 Aug 2006 Hammag
+  REASON: - changed TMP_UDP_PORT/SetTMPUDPPort()/GetTMPUDPPort() to mRemotePort/SetRemoteUDPPort()/GetRemoteUDPPort()
+              which corresponds to the real purpose of these members
+          - added GetID() as an alias os GetIndex() for better coherency with other classes
+  MODIFIED: 09 Oct 2006 Hammag
+  REASON: - added GetDebugMode() and SetDebugMode() methods
 
-    MODIFIED: 13 Dec 2005 bakkdoor
-    REASON: - added multiuser chat
-    
-    MODIFIED: 27 Jul 2006 Hammag
-    REASON: - added mTransactionID member
-            - re-added IncreaseUDP_ID() // but I don't understand well what SetUDP_ID() does ...
-
-    MODIFIED: 05 Aug 2006 Hammag
-    REASON: - changed TMP_UDP_PORT/SetTMPUDPPort()/GetTMPUDPPort() to mRemotePort/SetRemoteUDPPort()/GetRemoteUDPPort()
-                which corresponds to the real purpose of these members
-            - added GetID() as an alias os GetIndex() for better coherency with other classes
-    
-    TODO:   - check that SetUDP_ID, and the mSessionID(UDP_ID_HIGH) real use,
-                and if UDP_ID and mSessionID must be synced (like in NeoX) or not
+  
+  TODO:   - check that SetUDP_ID, and the mSessionID(UDP_ID_HIGH) real use,
+              and if UDP_ID and mSessionID must be synced (like in NeoX) or not
 
 */
 
@@ -70,6 +70,15 @@ enum PClientLevel
 	PCL_ADMIN = 100
 };
 
+#define DEBUG_MODES 2
+enum PDebugMode
+{
+  DBG_LOCATION = 0,
+  DBG_ITEMID = 1,
+  DBG_ALL = DEBUG_MODES // must always be last, with DEBUG_MODES updated as needed
+};
+
+
 class PClient
 {
 	private :
@@ -85,9 +94,10 @@ class PClient
 		PClientLevel mLevel;
 		int mConnection;
 		int mRemotePort;
-
+    
+    bool mDebugMode[DEBUG_MODES];
 		// new multiuser-chat implementation //
-        int m_ZoneID;
+    int m_ZoneID;
 		//int[4] m_IP;
 
 	protected :
@@ -95,6 +105,9 @@ class PClient
 		PClient(int Index);
 		~PClient();
 
+    inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
+    void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+    
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
 		inline int GetLocalID() const { return mIndex + 1; }

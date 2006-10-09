@@ -433,3 +433,29 @@ def/gamedefs.cpp :
 added furnituretemplate.cpp/.h (PFurnitureItemTemplate class)
 added worlddatatemplate.cpp/.h (PWorldDataTemplate class)
 added worlds.cpp/.h (PWorld and PWorlds classes)
+
+====================
+Hammag; 08.10.2006 01:25 GMT+1
+----------
+[rev. 21]
+
+<General changes>
+ - changed ingame debug management for a more generic @debug command:
+    @debug 0|1  : disable|enable all debug outputs
+    @debug loc[ation] 0|1 : disable|enable location output on move
+    @debug it[emid] 0|1 : disable|enable item ID output on item use
+   in the last two forms, omiting 0 or 1 just toggles the debug output
+ - some additions on worlds data checking/loading
+
+[GAME]
+accounts.h :
+  removed IsAdminDebug() and SetAdminDebug() methods
+client.cpp/.h : 
+  added GetDebugMode() and SetDebugMode() methods, along with mDebugMode[] private member.
+commands.cpp :
+  implemented new version of @debug command
+decoder/udp_charmove.cpp :
+  implemented ingame location debug output on move
+decoder/udp_charmove.cpp :
+  implemented ingame item use debug output
+ 

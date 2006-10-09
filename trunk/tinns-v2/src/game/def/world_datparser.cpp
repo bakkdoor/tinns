@@ -49,7 +49,7 @@ PWorldDatParser::~PWorldDatParser()
   
 }
 
-int PWorldDatParser::LoadDatFile(std::string& nFilename, PWorldDataTemplate* nWorld, bool nDiscardPassiveObjects, bool nTestAccesOnly)
+int PWorldDatParser::LoadDatFile(const std::string& nFilename, PWorldDataTemplate* nWorld, const bool nDiscardPassiveObjects, const bool nTestAccesOnly)
 {
   PWorldFileHeader FileHeader;
   PSectionHeader SectionHeader;

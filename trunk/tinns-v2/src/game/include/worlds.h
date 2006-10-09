@@ -59,6 +59,9 @@ class PWorlds
     PWorldsMap mOnDemandWorldsMap; // mostly appartments. Could be used for instance dungeons too, but instance dungeons are crap :p
     PWorldDataTemplatesMap mWorldDataTemplatesMap;
 
+    bool LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase = false);
+    void ReleaseWorldDataTemplate(const std::string& nWorldName);
+    
   public:
     PWorlds();
     ~PWorlds();
