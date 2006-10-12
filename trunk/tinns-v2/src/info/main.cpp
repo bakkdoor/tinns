@@ -52,6 +52,7 @@ int main()
 	  ServerSock->update();
 	  Server->Update();
 		InfoServer->Update();
+		MySQL->Update(); // MySQL keepalive
 		Console->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);

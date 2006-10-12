@@ -74,6 +74,18 @@ PMySQL::PMySQL()
     strcpy(game_userName, Config->GetOption("game_sql_username").c_str());
     strcpy(game_password, Config->GetOption("game_sql_password").c_str());
     strcpy(game_database, Config->GetOption("game_sql_database").c_str());
+    
+    mKeepaliveDelay = (std::time_t) (Config->GetOptionInt("mysql_wait_timeout") * 0.9) ; // we take 90% of the wait_timeout to trigger keepalive
+    if (mKeepaliveDelay == 0)
+    {
+      Console->Print("%s MySQL keepalive disabled by config", Console->ColorText(GREEN, BLACK, "[Info]"));
+    }
+    else if (mKeepaliveDelay < 60)
+    {
+      Console->Print("%s Configuration option 'mysql_wait_timeout' is too low (%d sec). Reset to 60 sec.", Console->ColorText(YELLOW, BLACK, "[Notice]"), mKeepaliveDelay);
+      mKeepaliveDelay = 60;
+    }
+    mLastKeepaliveSent = 0;
 }
 
 PMySQL::~PMySQL()
@@ -81,6 +93,43 @@ PMySQL::~PMySQL()
     Console->Print("Closing MySQL connection...");
     mysql_close(info_dbHandle);
     mysql_close(game_dbHandle);
+}
+
+void PMySQL::Update()
+{
+    CheckResCount(); // Check for MYSQL_RES mem leak
+    
+    // MySQL keepalive
+    std::time_t t = std::time(NULL);
+    if ((mKeepaliveDelay > 0) && ((t - mLastKeepaliveSent) > mKeepaliveDelay))
+    {
+      MYSQL_RES *result;
+      char query[24];
+      sprintf (query, "SELECT NOW()");
+
+      result = GameResQuery(query);
+      if(!result)
+      {
+          Console->Print("%s Can't send GameDB keepalive; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+          ShowGameSQLError();
+          return;
+      }
+      else
+        FreeGameSQLResult(result);
+  
+      result = InfoResQuery(query);
+      if(!result)
+      {
+          Console->Print("%s Can't send InfoDB keepalive; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+          ShowInfoSQLError();
+          return;
+      }
+      else
+        FreeInfoSQLResult(result);      
+    
+      mLastKeepaliveSent = std::time(NULL);
+      if (gDevDebug) Console->Print("%s MySQL keepalive sent", Console->ColorText(GREEN, BLACK, "[Debug]"));
+    }
 }
 
 void PMySQL::CheckResCount()
@@ -241,6 +290,7 @@ void PMySQL::ShowGameSQLError()
 {
     Console->Print(RED, BLACK, "MySQL Error: %s", mysql_error(game_dbHandle));
 }
+
 void PMySQL::FreeGameSQLResult(MYSQL_RES *res)
 {
     if(GameDBInuse > 0)

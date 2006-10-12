@@ -19,6 +19,19 @@
 	02110-1301, USA.
 */
 
+/*
+    isc.cpp
+
+    MODIFIED: Unknown date / Namikon
+    REASON: - initial release by Namikon
+
+*/
+
+#include "main.h"
+
+#include "isc.h"
+
+
 void PISC::Start()
 {
     isc_method = Config->GetOptionInt("isc_method");

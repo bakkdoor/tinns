@@ -457,6 +457,7 @@ void PAccounts::SQLUpdate()
     result = MySQL->InfoResQuery("SELECT * FROM accounts");
     if(result == NULL) {
         Console->Print(RED, BLACK, "Failed to update AccountData from SQL");
+        MySQL->ShowGameSQLError();
         return;
     }
 

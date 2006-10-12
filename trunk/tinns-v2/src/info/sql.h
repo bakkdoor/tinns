@@ -31,20 +31,24 @@ class PMySQL
     private:
         int port;
         char host[100];
-    	char userName[100];
+    	  char userName[100];
         char password[100];
         char database[100];
         MYSQL *dbHandle;
+        std::time_t mKeepaliveDelay;
+        std::time_t mLastKeepaliveSent;
 
     public:
         PMySQL();
         ~PMySQL();
 
+        void Update();
         inline MYSQL *GetHandle() { return dbHandle; };
 
         bool Connect();
         int Query(const char *query);
         MYSQL_RES *ResQuery(const char *query);
         void ShowSQLError();
+        void FreeSQLResult(MYSQL_RES *res);
 };
 #endif

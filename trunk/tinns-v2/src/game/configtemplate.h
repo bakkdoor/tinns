@@ -47,6 +47,7 @@ const char* GameConfigTemplate[][2] = {
   {"game_sql_username", ""},
   {"game_sql_password", ""},
   {"game_sql_database", "gameserver"},
+  {"mysql_wait_timeout", "28800"}, // value of the wait_timout system variable from the MySQL server (same for game & info DB atm). 0 to disable keepalive.
   {"server_name", "TinNS"},
   {"server_ip", "127.0.0.1"}, //IP address used with clients reached without NAT (see localnet)
   {"no_nat_net", "0"}, // 0 is for "don't bother with NAT", else format is like 192.168.1. (with trailing dot)

@@ -32,6 +32,7 @@ const char* InfoConfigTemplate[][2] = {
   {"sql_username", ""}, // should be renanmed to info_sql_username
   {"sql_password", ""}, // should be renanmed to info_sql_password
   {"global_sql_database", "infoserver"}, // should be renanmed to info_sql_database
+  {"mysql_wait_timeout", "28800"}, // value of the wait_timout system variable from the MySQL server (same for game & info DB atm). 0 to disable keepalive.
   {"auto_accounts", "0"},
   {"infoserver_port", "7000"},
   {"gameserver_livecheck", "60"},

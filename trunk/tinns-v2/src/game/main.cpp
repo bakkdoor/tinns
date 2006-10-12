@@ -100,7 +100,7 @@ int main()
 		Database->Update();
 		GameServer->Update();
 		PMessage::CheckMsgCount(); // Memory leak check
-		MySQL->CheckResCount(); // Memory leak check		
+		MySQL->Update(); // Memory leak check	and MySQL keepalive	
 		Console->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);

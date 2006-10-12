@@ -28,12 +28,49 @@ PMySQL::PMySQL()
     strcpy(userName, Config->GetOption("sql_username").c_str());
     strcpy(password, Config->GetOption("sql_password").c_str());
     strcpy(database, Config->GetOption("global_sql_database").c_str());
+
+    mKeepaliveDelay = (std::time_t) (Config->GetOptionInt("mysql_wait_timeout") * 0.9) ; // we take 90% of the wait_timeout to trigger keepalive
+    if (mKeepaliveDelay == 0)
+    {
+      Console->Print("%s MySQL keepalive disabled by config", Console->ColorText(GREEN, BLACK, "[Info]"));
+    }
+    else if (mKeepaliveDelay < 60)
+    {
+      Console->Print("%s Configuration option 'mysql_wait_timeout' is too low (%d sec). Reset to 60 sec.", Console->ColorText(YELLOW, BLACK, "[Notice]"), mKeepaliveDelay);
+      mKeepaliveDelay = 60;
+    }
+    mLastKeepaliveSent = 0;
 }
 
 PMySQL::~PMySQL()
 {
     Console->Print("Closing MySQL connection...");
     mysql_close(dbHandle);
+}
+
+void PMySQL::Update()
+{    
+    // MySQL keepalive
+    std::time_t t = std::time(NULL);
+    if ((mKeepaliveDelay > 0) && ((t - mLastKeepaliveSent) > mKeepaliveDelay))
+    {
+      MYSQL_RES *result;
+      char query[24];
+      sprintf (query, "SELECT NOW()");
+
+      result = ResQuery(query);
+      if(!result)
+      {
+          Console->Print("%s Can't send InfoDB keepalive; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
+          ShowSQLError();
+          return;
+      }
+      else
+        FreeSQLResult(result);      
+    
+      mLastKeepaliveSent = std::time(NULL);
+//Console->Print("%s MySQL keepalive sent", Console->ColorText(GREEN, BLACK, "[Debug]"));
+    }
 }
 
 bool PMySQL::Connect()
@@ -99,4 +136,9 @@ int PMySQL::Query(const char *query)
 void PMySQL::ShowSQLError()
 {
     Console->Print(RED, BLACK, "MySQL Error: %s", mysql_error(dbHandle));
+}
+
+void PMySQL::FreeSQLResult(MYSQL_RES *res)
+{
+  mysql_free_result(res);
 }

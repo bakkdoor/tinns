@@ -47,7 +47,10 @@
                 - inhibited Info/GameDBInuse warning message in Info/GameResQuery()
         MODIFIED: 27 Sep 2006 Hammag                
         REASON: - Added GetAptLocation() method
-        
+        MODIFIED: 12 Oct 2006 Hammag                
+        REASON: - Added Update() method
+                - added mKeepaliveDelay and mLastKeepaliveSent members
+                
         TODO: take all non-pure SQL DB access stuff out of this class        
 */
 
@@ -59,10 +62,12 @@ class PMySQL
     private:
         int info_port;
         char info_host[100];
-    	char info_userName[100];
+    	  char info_userName[100];
         char info_password[100];
         char info_database[100];
         MYSQL *info_dbHandle;
+        std::time_t mKeepaliveDelay;
+        std::time_t mLastKeepaliveSent;
 
         int game_port;
         char game_host[100];
@@ -78,8 +83,9 @@ class PMySQL
         PMySQL();
         ~PMySQL();
 
+        void Update();
         void CheckResCount();
-          
+        
         inline MYSQL *GetInfoHandle() { return info_dbHandle; };
         inline MYSQL *GetGameHandle() { return game_dbHandle; };
 

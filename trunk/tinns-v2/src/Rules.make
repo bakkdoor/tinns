@@ -84,7 +84,7 @@ all_targets: $(ALL_TARGETS)
 #
 ifdef B_REALTARGET
 
-FULLEXT_LINKFLAGS := $(EXTRA_LINKFLAGS) $(patsubst %,-l%,$(LINK_TINNSLIBS))
+FULLEXT_LINKFLAGS := $(patsubst %,-l%,$(LINK_TINNSLIBS)) $(EXTRA_LINKFLAGS)
 LIBDEP := $(patsubst %,$(LIBS)/lib%.a,$(LINK_TINNSLIBS))
 
 $(B_REALTARGET): $(obj-y) $(LIBDEP)

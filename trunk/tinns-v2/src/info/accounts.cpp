@@ -34,6 +34,7 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
     char query[1024];
     MYSQL_RES *result;
     MYSQL_ROW row;
+    int RetVal = -12;
     // ReturnValue values:
     // 0: No error
     // -1: Wrong/Unknown username
@@ -65,85 +66,91 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
 				Pass[i] = (char)(Password[i]-Key[0]);
 			Pass[PassLen]=0;
 		}
-        sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s'", User);
-        result = MySQL->ResQuery(query);
-        if(result == NULL) // SQL Error
+		
+    sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s'", User);
+    result = MySQL->ResQuery(query);
+    if(result == NULL) // SQL Error
+    {
+        Console->Print("MySQL Error, unable to execute Query %s", query);
+        MySQL->ShowSQLError();
+        return -4;
+    }
+    if(mysql_num_rows(result) == 0) // No Account found. Autoaccount or Donothing
+    {
+        if(Config->GetOptionInt("auto_accounts")) // Autoaccount
         {
-            Console->Print("MySQL Error, unable to execute Query %s", query);
-            MySQL->ShowSQLError();
-            return -4;
-        }
-        if(mysql_num_rows(result) == 0) // No Account found. Autoaccount or Donothing
-        {
-            if(Config->GetOptionInt("auto_accounts")) // Autoaccount
+            if(std::strlen(User) < 3 && std::strlen(Pass) < 4)
             {
-                if(std::strlen(User) < 3 && std::strlen(Pass) < 4)
-                {
-                    return -8;
-                }
-                if(std::strlen(User) < 3)
-                {
-                    return -7;
-                }
-                if(std::strlen(Pass) < 4)
-                {
-                    return -6;
-                }
-                sprintf(query, "INSERT INTO accounts (a_username, a_password, a_priv, a_status) VALUES ('%s', '%s', %d, %d)", User, Pass, 0, 0);
-                if(MySQL->Query(query))
-                {
-                    Console->Print("MySQL Error, unable to execute Query %s", query);
-                    MySQL->ShowSQLError();
-                    return -4;
-                }
-                else
-                {
-                    return -5;
-                }
+                RetVal = -8;
+            }
+            else if(std::strlen(User) < 3)
+            {
+                RetVal = -7;
+            }
+            else if(std::strlen(Pass) < 4)
+            {
+                RetVal = -6;
             }
             else
             {
-                return -1;
+              sprintf(query, "INSERT INTO accounts (a_username, a_password, a_priv, a_status) VALUES ('%s', '%s', %d, %d)", User, Pass, 0, 0);
+              if(MySQL->Query(query))
+              {
+                  Console->Print("MySQL Error, unable to execute Query %s", query);
+                  MySQL->ShowSQLError();
+                  RetVal = -4;
+              }
+              else
+              {
+                  RetVal = -5;
+              }
             }
         }
-        else if(mysql_num_rows(result) > 1) // Duplicate userentry error
+        else
         {
-            return -9;
+            RetVal = -1;
         }
-        else if(mysql_num_rows(result) == 1) // Found account
+    }
+    else if(mysql_num_rows(result) > 1) // Duplicate userentry error
+    {
+        RetVal = -9;
+    }
+    else if(mysql_num_rows(result) == 1) // Found account
+    {
+        row = mysql_fetch_row(result);
+        if(strcmp(row[a_password], Pass) != 0) // Username correct, password wrong
         {
-            row = mysql_fetch_row(result);
-            if(strcmp(row[a_password], Pass) != 0) // Username correct, password wrong
+            RetVal = -2;
+        }
+        else // Username & Password correct
+        {
+            if(atoi(row[a_status]) == 2)
             {
-                return -2;
+                RetVal = -10;
             }
-            else // Username & Password correct
+            else
             {
-                if(atoi(row[a_status]) == 2)
+                if(Config->GetOptionInt("minlevel") > atoi(row[a_priv])) // insufficient access rights
                 {
-                    return -10;
+                    RetVal = -11;
                 }
                 else
                 {
-                    if(Config->GetOptionInt("minlevel") > atoi(row[a_priv])) // insufficient access rights
-                    {
-                        return -11;
-                    }
-                    else
-                    {
-                        *accID = atoi(row[a_id]);
-                        return 0;
-                    }
+                    *accID = atoi(row[a_id]);
+                    RetVal = 0;
                 }
             }
         }
+    }
+    MySQL->FreeSQLResult(result);
 	}
 	else
 	{
 		Console->Print("Accounts: malformed auth data");
-        return -3;
+        RetVal = -3;
 	}
-	return -12;
+	
+	return RetVal;
 }
 
 int PAccounts::GetAccesslevel(int AccountID)
@@ -158,6 +165,7 @@ int PAccounts::GetAccesslevel(int AccountID)
         return -100;
 
     row = mysql_fetch_row(result);
+    MySQL->FreeSQLResult(result);
     return atoi(row[0]);
 }
 
@@ -178,6 +186,8 @@ std::string PAccounts::GetBannedTime(const char *username)
         return "DBERROR";
     }
     banneduntil = atol(row[0]);
+    MySQL->FreeSQLResult(result);
+    
     if(banneduntil < time(NULL))
     {
         return "0 more seconds. Please relog";

@@ -112,3 +112,5 @@ void PServer::Shutdown()
 		}
 	}
 }
+
+//SELECT `s_name` , NOW( ) , `s_lastupdate` , NOW( ) - `s_lastupdate` FROM `server_list` 

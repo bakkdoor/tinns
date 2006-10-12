@@ -41,7 +41,8 @@ EXTRA_CXXFLAGS := -I/usr/include/mysql -Iinclude
 LINK_TINNSLIBS := tinns
 
 # local dir Linker Flags (for final executable linking)
-EXTRA_LINKFLAGS := -lrt -lpthread -lz -lm -lcrypt -L"/usr/lib/mysql" -lmysqlclient
+#EXTRA_LINKFLAGS := -lpthread -lm -lcrypt -lrt -L"/usr/lib/mysql" -lmysqlclient -lz
+EXTRA_LINKFLAGS := -lrt -L"/usr/lib/mysql" -lmysqlclient -lz
 
 
 #####################################################

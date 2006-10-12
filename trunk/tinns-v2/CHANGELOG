@@ -458,4 +458,55 @@ decoder/udp_charmove.cpp :
   implemented ingame location debug output on move
 decoder/udp_charmove.cpp :
   implemented ingame item use debug output
- 
+
+====================
+Hammag; 11.10.2006 01:25 GMT+1
+----------
+[rev. 22]
+
+<General changes>
+ - added MySQL keepalive function to avoid connection loss on long server inactivity periods
+ - fixed unreleased MYSQL_RES after all DB Res queries in infoserver leading to memory leak
+ - reintroduced Namikon's ISC 
+
+[Make]
+Rules.make:
+  fixed libs order in linker args to avoid lib not found on some systems
+patch/Makefile :
+  commented out some unused libs in linker args
+info/Makefile :
+  fixed libs order in linker args to avoid lib not found on some systems
+  commented out some unused libs in linker args
+game/Makefile :
+  fixed libs order in linker args to avoid lib not found on some systems
+  commented out some unused libs in linker args
+
+[GAME]
+configtemplate.h, gameserver.conf :
+  added 'mysql_wait_timeout' config option, to be set to value of the
+    wait_timout system variable from the MySQL server (default 28800 sec).
+    It triggers the MySQL keepalive for both gameDB and infoDB connections.
+    Value 0 disables this keepalive function.
+sql.cpp/.h :
+  added Update() method, which now include MySQL keepalive management and CheckResCount()
+  added mKeepaliveDelay and mLastKeepaliveSent members
+main.cpp :
+  updated main loop to call MySQL->Update() instead of MySQL->CheckResCount()
+global.cpp :
+  added Hammag to the coders list
+isc.cpp/.h : reintroduced Namikon's ISC for implementation of serverlist update
+  through MySQL in the coming days.
+  
+[INFO]
+configtemplate.h, infoserver.conf :
+  added 'mysql_wait_timeout' config option (see [GAME])
+sql.cpp/.h :
+  added Update() method, which now include MySQL keepalive management
+  added mKeepaliveDelay and mLastKeepaliveSent members
+  added FreeSQLResult() method to perform mysql_free_result()
+main.cpp :
+  added call to MySQL->Update() in the main loop
+accounts.cpp, infoserver.cpp :
+  added call to FreeSQLResult() where required
+global.cpp :
+  added Hammag to the coders list

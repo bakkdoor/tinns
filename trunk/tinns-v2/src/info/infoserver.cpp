@@ -133,13 +133,14 @@ void PInfoServer::GSLiveCheck()
     result = MySQL->ResQuery("SELECT * FROM server_list");
     if(result == NULL)
     {
-        Console->Print("Livecheck: %s unable to update server list!", Console->ColorText(YELLOW, BLACK, "Warning"));
+        Console->Print("Livecheck: %s unable to read server list!", Console->ColorText(RED, BLACK, "[Warning]"));
         MySQL->ShowSQLError();
         return;
     }
     if(mysql_num_rows(result) == 0)
     {
-        Console->Print("Livecheck: %s no gameserver found!", Console->ColorText(YELLOW, BLACK, "Warning"));
+        Console->Print("Livecheck: %s no gameserver found!", Console->ColorText(RED, BLACK, "[Warning]"));
+        MySQL->FreeSQLResult(result);
         return;
     }
 
@@ -191,7 +192,8 @@ void PInfoServer::GSLiveCheck()
             Serverlist.insert(std::make_pair(atoi(row[s_id]), tmpServer));
         }
     }
-
+    MySQL->FreeSQLResult(result);
+    
 	for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
     {
         if(it->second.mUpdated == false)

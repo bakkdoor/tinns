@@ -19,6 +19,15 @@
 	02110-1301, USA.
 */
 
+
+/*
+    isc.h
+
+    MODIFIED: Unknown date / Namikon
+    REASON: - initial release by Namikon
+
+*/
+
 #ifndef ISC_H
 #define ISC_H
 
