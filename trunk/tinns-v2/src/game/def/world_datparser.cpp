@@ -63,8 +63,15 @@ int PWorldDatParser::LoadDatFile(const std::string& nFilename, PWorldDataTemplat
   mWorld = nWorld;
   mDiscardPassiveObjects = nDiscardPassiveObjects;
   
-if (gDevDebug) Console->Print("Reading file %s", nFilename.c_str());  
-	f = Filesystem->Open("", nFilename.c_str());
+  if (mNCDataPath == "")
+  {
+    mNCDataPath =Config->GetOption("nc_data_path");
+    if (mNCDataPath[mNCDataPath.length()-1] != '/')
+      mNCDataPath += '/';
+  }
+  
+if (gDevDebug) Console->Print("Reading file %s", (mNCDataPath + nFilename).c_str());  
+	f = Filesystem->Open("", (mNCDataPath + nFilename).c_str());
 
   if (nTestAccesOnly)
   {
@@ -72,7 +79,7 @@ if (gDevDebug) Console->Print("Reading file %s", nFilename.c_str());
     Filesystem->Close(f);
     return (ProcessOK ? 0 : -1);
   }
-    
+
 	if (f)
 	{
     FileLen = f->GetSize();
@@ -167,10 +174,10 @@ if (gDevDebug) Console->Print("Section %d ignored", SectionHeader.mSection);
     Filesystem->Close(f);
   }
   else
-  {
+  { 
     return -1;
   }
-  
+
 	return 0;
 }
 

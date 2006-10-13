@@ -24,10 +24,10 @@
   MODIFIED: 01 Jul 2006 hammag
 	REASON: - added set timeout to 10 msec (for ReadSetTCP select) in Start()
 	          to avoid useless 100% CPU use
-  MODIFIED: 271 Aug 2006 hammag
+  MODIFIED: 27 Aug 2006 hammag
 	REASON: - Removed INFO_PORT use as value is available from config
-	          
-	          
+  MODIFIED: 27 Aug 2006 hammag
+	REASON: - Modified GSLiveCheck() to be independant of gameserver time (no time sync needed between servers)
 	          
     ToDo:
     - Take main loop timeout setting from config file
@@ -129,8 +129,10 @@ void PInfoServer::GSLiveCheck()
 {
     MYSQL_ROW row;
     MYSQL_RES *result;
+    char query[256];
+    snprintf (query, 256, "SELECT *, (NOW()< (`s_lastupdate` + INTERVAL %d SECOND)) FROM `server_list`", mLivecheckInterval); 
 
-    result = MySQL->ResQuery("SELECT * FROM server_list");
+    result = MySQL->ResQuery(query);
     if(result == NULL)
     {
         Console->Print("Livecheck: %s unable to read server list!", Console->ColorText(RED, BLACK, "[Warning]"));
@@ -150,7 +152,7 @@ void PInfoServer::GSLiveCheck()
         it = Serverlist.find(atoi(row[s_id]));
         if(it != Serverlist.end())
         {
-            strcpy(it->second.mName, row[s_name]);
+            strncpy(it->second.mName, row[s_name], MAX_SERVER_NAME_LENGTH);
             it->second.mIp = IPStringToDWord(row[s_addr]);
             it->second.mPort = atoi(row[s_port]);
             it->second.mPlayers = atoi(row[s_players]);
@@ -161,23 +163,24 @@ void PInfoServer::GSLiveCheck()
             // ToDo: If statement correct? Maybe GSLiveCheck() has
             // to be called every mLinvecheckInterval seconds.... We'll
             // see when Gameserver has been rewritten
-            if(atol(row[s_lastupdate]) - it->second.mLasttimestamp > mLivecheckInterval)
-            {
-                it->second.mOnline = false;
-            }
-            else
+
+            if(row[s_timecheck] && (atoi(row[s_timecheck]) == 1))
             {
                 it->second.mLasttimestamp = atol(row[s_lastupdate]);
                 it->second.mOnline = true;
             }
-
+            else
+            {
+                it->second.mOnline = false;
+            }
+            
             it->second.mUpdated = true;
         }
         else
         {
             GameServers tmpServer;
 
-            strcpy(tmpServer.mName, row[s_name]);
+            strncpy(tmpServer.mName, row[s_name], MAX_SERVER_NAME_LENGTH);
             tmpServer.mIp = IPStringToDWord(row[s_addr]);
             tmpServer.mLasttimestamp = atol(row[s_lastupdate]);
             tmpServer.mPlayers = atoi(row[s_players]);

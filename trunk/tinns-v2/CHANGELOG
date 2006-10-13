@@ -510,3 +510,36 @@ accounts.cpp, infoserver.cpp :
   added call to FreeSQLResult() where required
 global.cpp :
   added Hammag to the coders list
+
+====================
+Hammag; 13.10.2006 20:00 GMT+1
+----------
+[rev. 23]
+
+<General changes>
+ - activated modified ISC component. Server list and user count displayed by the infoserver
+   are now updated by the gameserver using the "MySQL" method (same as Neopolis X)
+ - added 'nc_data_path' option to gameserver.conf. It must be set to the root path of the nc data,
+    either the NC1 directory or a copy.  ./ means reative to gameserver start dir
+ - 'defs_path' and 'worlds_path' are not used anymore in gameserver.conf
+ 
+[GAME]
+isc.cpp/isc.h :
+  implemented MySQL mode
+  some other generic addition to the PISC class
+configtemplate.h :
+  set 'isc_method' default to 1 (i.e. MySQL mode only)
+  set 'isc_update_intervall' default to 60 sec
+def/main.h :  
+  values of DEF_* defines for def filenames now include patgh relative to nc_data_path
+gamedefs.cpp :
+  modified to take into account main.h modifs and nc_data_path
+
+[INFO]
+infoserver.cpp :
+  modified PInfoSrver::GSLiveCheck() to be independant of gameserver time.
+    No time sync is needed between servers anymore.
+
+[COMMON]
+filesystem.cpp :
+  fixed a bug when handling some files .pak archives with path starting with ./

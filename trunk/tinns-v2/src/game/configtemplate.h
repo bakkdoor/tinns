@@ -56,10 +56,12 @@ const char* GameConfigTemplate[][2] = {
   {"server_version", ""},
   {"maxclients", "128"},
   {"gm_slots", "10"},
-  {"defs_path", "./defs"},
-  {"worlds_path", "./worlds"},
-  {"isc_method", "0"},
-  {"isc_update_intervall", "10"},
+  //{"defs_path", "./defs"},
+  //{"worlds_path", "./worlds"},
+  {"nc_data_path", "."},
+  {"isc_method", "1"},
+  {"isc_update_intervall", "60"},
+  {"isc_delayed_update_intervall", "6"}, // the purpose of this option is to avoid multiple infoDB update when client just disconnects/reconnects during login phases
   {"isc_infoserverip", "127.0.0.1"},
   {"isc_infoserverport", "9991"},
   {"isc_connect_pw", "change_me"}, // make default value empty when isc ready

@@ -48,6 +48,7 @@
 
 #include "main.h"
 #include "configtemplate.h"
+#include "isc.h"
 
 #include "msgbuilder.h"
 
@@ -66,6 +67,8 @@ PMsgBuilder *MsgBuilder = 0;
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
 PChat *Chat = 0;
+
+PISC *ISC = 0;
 
 // Development debug output control (set by config option dev_debug)
 bool gDevDebug = false;
@@ -131,11 +134,18 @@ bool InitTinNS()
 	ClientManager = new PClientManager();
 	Chat = new PChat();
 
+  ISC = new PISC();
+  
 	return true;
 }
 
 void Shutdown()
 {
+  if(ISC)
+  {
+    ISC->Shutdown();
+    delete ISC;
+  }
 	if(Server) Server->Shutdown();
 	if(GameServer) delete GameServer;
 	if(Chat) delete Chat;

@@ -39,6 +39,7 @@ class PWorldDatParser
 {
 	private :
 	  PFile* f;
+	  std::string mNCDataPath;
 	  
 	  PWorldDataTemplate* mWorld;
 	  bool mDiscardPassiveObjects;

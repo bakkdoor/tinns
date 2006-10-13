@@ -48,6 +48,8 @@
 #include "worlddatatemplate.h" // temp
 #include "worlds.h" // temp
 
+#include "isc.h"
+
 // for handling strg-c signal to shutdown in correct way
 void signal_handler(int signal)
 {
@@ -90,7 +92,8 @@ int main()
 	//RemoteConsole->Start();
 	GameServer->Start();
 	//GameServer->SetGameTime(0);
-	  
+	ISC->Start();
+	
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
 	while(1)
@@ -100,7 +103,8 @@ int main()
 		Database->Update();
 		GameServer->Update();
 		PMessage::CheckMsgCount(); // Memory leak check
-		MySQL->Update(); // Memory leak check	and MySQL keepalive	
+		MySQL->Update(); // Memory leak check	and MySQL keepalive
+		ISC->Update();
 		Console->Update();
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);

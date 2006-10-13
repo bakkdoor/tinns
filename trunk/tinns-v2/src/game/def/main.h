@@ -58,20 +58,20 @@
 #include "defparser.h"
 #include "defs.h"
 
-#define DEF_CHARACTERS "characters.def"
-#define DEF_SKILLS "skills.def"
-#define DEF_SUBSKILLS "subskill.def"
-#define DEF_CHARKINDS "charkinds.def"
-#define DEF_WORLDINFO "worldinfo.def"
-#define DEF_FRACTIONS "fractions.def"
-#define DEF_HACK "hack.def"
-#define DEF_ITEMS "items.def"
-#define DEF_WORLDMODEL "worldmodel.def"
-#define DEF_APPPLACES "appplaces.def"
-#define DEF_APPARTEMENTS "appartements.def"
-#define DEF_RESPAWN "respawn.def"
+#define DEF_CHARACTERS "defs/characters.def"
+#define DEF_SKILLS "defs/skills.def"
+#define DEF_SUBSKILLS "defs/subskill.def"
+#define DEF_CHARKINDS "defs/charkinds.def"
+#define DEF_WORLDINFO "defs/worldinfo.def"
+#define DEF_FRACTIONS "defs/fractions.def"
+#define DEF_HACK "defs/hack.def"
+#define DEF_ITEMS "defs/items.def"
+#define DEF_WORLDMODEL "defs/worldmodel.def"
+#define DEF_APPPLACES "defs/appplaces.def"
+#define DEF_APPARTEMENTS "defs/appartements.def"
+#define DEF_RESPAWN "defs/respawn.def"
 
-#define WRLD_WORLDFILE "worlds.ini"
+#define WRLD_WORLDFILE "worlds/worlds.ini"
 
 using namespace std;
 

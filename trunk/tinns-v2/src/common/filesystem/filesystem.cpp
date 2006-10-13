@@ -248,6 +248,10 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
         if(pak=="")
         {
            pak=path;
+           if (path.substr(0, 2) == "./")
+           {
+              path = path.substr(2, path.length() -2);
+           }
            unsigned long pos = path.find(DELIM);
           	if (pos == string::npos)
           	{
@@ -301,6 +305,7 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                 return Result;
         }
 
+//Console->Print("Serching package %s, file %s.%s", package.str().c_str(), name2.c_str(), ext.c_str());
         f = std::fopen(package.str().c_str(), "rb");
         if(f)
         {
@@ -325,6 +330,7 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                         Result = new PFile();
                         std::fseek(f, file->mOffset, SEEK_SET);
                         Result->ReadUnpakData(f, file->mCompressedSize, file->mUncompressedSize);
+                        //Console->Print("%s, %s: file found", package.str().c_str(), filename.c_str());
                 }
                 else
                 {

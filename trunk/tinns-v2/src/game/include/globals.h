@@ -60,6 +60,9 @@ extern class PMySQL* MySQL;
 //Vehicles
 extern class PVehicles *Vehicles;
 
+//Infoserver update
+extern class PISC *ISC;
+
 bool InitTinNS();
 void Shutdown();
 

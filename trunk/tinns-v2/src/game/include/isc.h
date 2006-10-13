@@ -21,10 +21,12 @@
 
 
 /*
-    isc.h
+  isc.h
 
-    MODIFIED: Unknown date / Namikon
-    REASON: - initial release by Namikon
+  MODIFIED: Unknown date / Namikon
+  REASON: - initial release by Namikon
+	MODIFIED: 13 Oct 2006 Hammag
+	REASON: - Implemented MySQL isc method
 
 */
 
@@ -33,18 +35,35 @@
 
 class PISC
 {
-	private :
-        bool use_isc;
+	private:
         int isc_method;
-        int intervall;
+        
+        bool use_isc;
         char isc_pwd;
-
-	public :
+        
+        bool use_mysql;
+        std::time_t mysql_update_intervall;
+        std::time_t mysql_delayed_update_intervall; 
+        std::time_t mysql_last_update_time;
+        int mysql_last_client_count;
+        std::time_t mysql_last_count_decrease_time;
+        
+        void Start_isc();
+        void Update_isc();
+        void Shutdown_isc();
+              
+        void Start_mysql();
+        void Update_mysql();
+        bool do_mysql_db_update(int players, bool shutdown = false);
+        void Shutdown_mysql();
+        
+	public:
 		PISC();
 		~PISC();
 
 		void Start();
 		void Update();
+		void Shutdown();
 };
 
 #endif

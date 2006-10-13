@@ -137,7 +137,7 @@ class PGameDefs
 		inline int GetNumWorldFileDefs() const { return mWorldFileDefs.size(); }
 		const PDefWorldFile *GetWorldFileDef(int Index) const;
 	  inline PDefWorldFileMap::const_iterator GetWorldFileDefsConstIteratorBegin() {return mWorldFileDefs.begin(); }
-	  inline PDefWorldFileMap::const_iterator GetWorldFileConstIteratorEnd() {return mWorldFileDefs.end(); }
+	  inline PDefWorldFileMap::const_iterator GetWorldFileDefsConstIteratorEnd() {return mWorldFileDefs.end(); }
 };
 
 #endif

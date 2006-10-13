@@ -61,6 +61,7 @@ class PWorlds
 
     bool LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase = false);
     void ReleaseWorldDataTemplate(const std::string& nWorldName);
+    void UnloadWorldDataTemplate(const std::string& nWorldName);
     
   public:
     PWorlds();

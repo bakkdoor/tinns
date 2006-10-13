@@ -26,9 +26,10 @@
 	#pragma once
 #endif
 
+#define MAX_SERVER_NAME_LENGTH 45
 struct GameServers
 {
-    char            mName[45];
+  char            mName[MAX_SERVER_NAME_LENGTH];
 	unsigned int    mIp;
 	short           mPort;
 	int             mPlayers;
@@ -50,7 +51,8 @@ class PInfoServer
             s_addr,
             s_port,
             s_players,
-            s_lastupdate
+            s_lastupdate,
+            s_timecheck // computed field, not in table !
         };
 		int mNumClients;
 		typedef std::map<PClient*, struct PInfoState*> InfoStateMap;

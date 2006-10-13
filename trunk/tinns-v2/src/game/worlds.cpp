@@ -112,7 +112,7 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
 	}
 	else // template already known
 	{
-	  if (!it->second  &&  !nPreloadPhase) // is template not already loaded and we are not in preload ?
+	  if (!it->second  &&  !nPreloadPhase) // template known but not already loaded and not in preload ?
 	  {
 	    tWorldDataTemplate = new PWorldDataTemplate;
 	    if (tWorldDataTemplate->LoadDatFile(nFileName))
@@ -137,13 +137,39 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
   return true;
 }
 
-void ReleaseWorldDataTemplate(const std::string& nWorldName)
-{
-  string t = nWorldName; t = t; // tmp
+void PWorlds::ReleaseWorldDataTemplate(const std::string& nWorldName)
+{  
+  PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+	if((it != mWorldDataTemplatesMap.end()) && it->second)
+	{
+	   it->second->DecreaseUseCount();
+	}
+	else
+	  Console->Print("%s PWorlds::ReleaseWorldDataTemplate : try to relese not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
+}
+
+void PWorlds::UnloadWorldDataTemplate(const std::string& nWorldName)
+{  
+  PWorldDataTemplate* tWorldDataTemplate;
+  
+  PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+	if((it != mWorldDataTemplatesMap.end()) && it->second)
+	{
+    tWorldDataTemplate = it->second;
+    if (mPreloadWorldsTemplates ||(tWorldDataTemplate->GetUseCount() > 0))
+	    Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to unload template %s when use count not null ou preload set", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
+	  else
+	  {
+	    it->second = (PWorldDataTemplate*)NULL;
+	    delete tWorldDataTemplate;
+	  }
+	}
+	else
+	  Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to release not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
 }
 
 bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registred in mWorldDataTemplatesMap
-{                          //   will be cobnsidered as valid
+{                          //   will be considered as valid
   std::string tFileName;
   const PDefWorld* tDefWorld;
   bool tCheckOK;
@@ -203,7 +229,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
   ValidCount = InvalidCount = 0;
   const PDefWorldFile* tDefWorldFile;
   PDefWorldFileMap::const_iterator itFilStart = GameDefs->GetWorldFileDefsConstIteratorBegin();
-	PDefWorldFileMap::const_iterator itFilEnd = GameDefs->GetWorldFileConstIteratorEnd();
+	PDefWorldFileMap::const_iterator itFilEnd = GameDefs->GetWorldFileDefsConstIteratorEnd();
   for (PDefWorldFileMap::const_iterator i=itFilStart; i!=itFilEnd; i++)
   {
     tDefWorldFile = i->second;
@@ -244,11 +270,60 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     }
   }
 
+  // Manually add neofrag worlds ... oO ... and neofrag4.dat can't be found :-/
+  for (int i = 1; i <= 16; i++)
+	{
+	  char worldName[19];
+	  int MatchID = i;
+	  if (MatchID > 8) // to care for Neofrag 1 & 2
+	    MatchID -= 8;
+	  if (MatchID > 6)
+	    MatchID = 6; // holomatch 7 and 8 are same as 6
+	  snprintf(worldName, 19, "holomatch/neofrag%d", MatchID);
+	  
+    tDefWorld = GameDefs->GetWorldDef(90000 + i);
+    if (tDefWorld) // we only care for worlds that are present in worldinfo.def too
+    {
+      if(!(tDefWorld->GetDatFile().empty()))
+        tFileName = tDefWorld->GetDatFile();
+      else
+      {
+        tFileName = "worlds/";
+        tFileName += worldName;
+        tFileName += ".dat";
+      }
+    
+      tCheckOK = false;
+      if (!InvalideFiles.count(tFileName))
+      {
+        tCheckOK = LeaseWorldDataTemplate(std::string(worldName), tFileName, true);
+        if (!tCheckOK)
+        {
+          InvalideFiles.insert(tFileName);
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+        }
+      }
+            
+      if (tCheckOK)
+      {
+        ++ValidCount;
+        if (mPreloadStaticWorlds)
+        {
+          LeaseWorld(90000 + i); // This will make the world ready and kept in mem (use count always >0 )
+        }
+if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
+      }
+      else
+      {
+        ++InvalidCount;
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), 90000+i, worldName);
+      }
+	  }
+	}
+    
   Console->Print("%s %d valid world templates checked (%d dat files)", Console->ColorText(GREEN, BLACK, "[Success]"), ValidCount, mWorldDataTemplatesMap.size() - DatTmplCount);
   if (InvalidCount)
     Console->Print("%s %d invalid world templates rejected (%d dat files)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount, InvalideFiles.size() - BadDatTmplCount - DblInvCount);
-
-  /**** neofrag zones must be manually added oO ****/ 
   
   return true;
 }

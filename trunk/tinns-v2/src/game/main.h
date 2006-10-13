@@ -65,16 +65,6 @@
 
 #include "version.h"
 
-#define DEF_CHARACTERS "characters.def"
-#define DEF_SKILLS "skills.def"
-#define DEF_SUBSKILLS "subskill.def"
-#define DEF_CHARKINDS "charkinds.def"
-#define DEF_WORLDINFO "worldinfo.def"
-#define DEF_FRACTIONS "fractions.def"
-#define DEF_HACK "hack.def"
-#define DEF_ITEMS "items.def"
-
-
 //basic includes
 #include "external.h"
 
@@ -112,7 +102,6 @@
 #include "chat.h"
 #include "commands.h"
 #include "clientmanager.h"
-
 
 using namespace std;
 
