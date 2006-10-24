@@ -42,7 +42,8 @@
 
 PWorld::PWorld()
 {
-  
+	mID = 0;
+	mUseCount = 0;
 }
 
 PWorld::~PWorld()
@@ -50,9 +51,9 @@ PWorld::~PWorld()
 
 }
 
-bool PWorld::Create(u32 nWorldID)
+bool PWorld::Load(u32 nWorldID)
 {
-  nWorldID = nWorldID;
+  mID = nWorldID;
   return true; 
 } 
  
@@ -260,6 +261,10 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         {
           LeaseWorld(tDefWorldFile->GetIndex()); // This will make the world ready and kept in mem (use count always >0 )
         }
+        else
+        {
+          mStaticWorldsMap.insert(std::make_pair(tDefWorldFile->GetIndex(), (PWorld*)NULL));
+        }
 //if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
       }
       else
@@ -311,6 +316,10 @@ if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.
         {
           LeaseWorld(90000 + i); // This will make the world ready and kept in mem (use count always >0 )
         }
+        else
+        {
+          mStaticWorldsMap.insert(std::make_pair(90000 + i, (PWorld*)NULL));
+        }
 if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
       }
       else
@@ -328,10 +337,26 @@ if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) no
   return true;
 }
 
-bool PWorlds::LeaseWorld(u32 nWorldID)
+bool PWorlds::IsValidWorld(u32 nWorldID)
+{
+  if (nWorldID >= APT_BASE_WORLD_ID)
+	{
+    if (mStaticWorldsMap.count(nWorldID))
+      return true;
+    else
+      return true; //do a check using the PAppartements class object
+	}
+	else
+	{
+		return (mStaticWorldsMap.count(nWorldID));
+	}
+  return true; // temp
+}
+
+PWorld* PWorlds::LeaseWorld(u32 nWorldID)
 {
   nWorldID = nWorldID; // temp
-  return true; // temp
+  return NULL; // temp
 }
 
 PWorld* PWorlds::GetWorld(u32 nWorldID)
@@ -349,4 +374,5 @@ bool PWorlds::IsAppartment(u32 nWorldID)
 {
   nWorldID = nWorldID; // temp
   return true;  // temp
-} 
+}
+

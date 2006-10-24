@@ -31,16 +31,20 @@
 #ifndef WORLDS_H
 #define WORLDS_H
 
+#define APT_BASE_WORLD_ID 100000
+
 class PWorld
 {
   private:
+    u32 mID;
     bool mIsAppartment;
+    int mUseCount;
     
   public:
     PWorld();
     ~PWorld();
     
-    bool Create(u32 nWorldID);
+    bool Load(u32 nWorldID);
     inline bool IsAppartment() { return mIsAppartment; }
 };
 
@@ -68,7 +72,8 @@ class PWorlds
     ~PWorlds();
     
     bool LoadWorlds();
-    bool LeaseWorld(u32 nWorldID);
+    bool IsValidWorld(u32 nWorldID);
+    PWorld* LeaseWorld(u32 nWorldID);
     PWorld* GetWorld(u32 nWorldID);
     void ReleaseWorld(u32 nWorldID);
     bool IsAppartment(u32 nWorldID);
