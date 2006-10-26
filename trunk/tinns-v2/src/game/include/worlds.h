@@ -33,16 +33,23 @@
 
 #define APT_BASE_WORLD_ID 100000
 
+class PWorldDataTemplate;
+
 class PWorld
 {
   private:
     u32 mID;
     bool mIsAppartment;
     int mUseCount;
+    PWorldDataTemplate* mWorldDataTemplate;
     
   public:
     PWorld();
     ~PWorld();
+    
+    inline void IncreaseUseCount() { ++mUseCount; }
+    inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
+    inline int GetUseCount() { return mUseCount; }
     
     bool Load(u32 nWorldID);
     inline bool IsAppartment() { return mIsAppartment; }
@@ -50,11 +57,11 @@ class PWorld
 
 
 typedef std::map<u32, PWorld*> PWorldsMap;
-class PWorldDataTemplate;
 typedef std::map<std::string, PWorldDataTemplate*> PWorldDataTemplatesMap;
 
 class PWorlds
 {
+  friend class PWorld;
   private:
     bool mPreloadWorldsTemplates;
     bool mPreloadStaticWorlds;
@@ -66,17 +73,22 @@ class PWorlds
     bool LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase = false);
     void ReleaseWorldDataTemplate(const std::string& nWorldName);
     void UnloadWorldDataTemplate(const std::string& nWorldName);
-    
+    PWorldDataTemplate* GetWorldDataTemplate(const std::string& nWorldName);
+    PWorld* LeaseWorld(u32 nWorldID, const bool nPreloadPhase);
+
   public:
     PWorlds();
     ~PWorlds();
     
     bool LoadWorlds();
     bool IsValidWorld(u32 nWorldID);
-    PWorld* LeaseWorld(u32 nWorldID);
+    inline PWorld* LeaseWorld(u32 nWorldID) { return LeaseWorld(nWorldID, false); }
     PWorld* GetWorld(u32 nWorldID);
     void ReleaseWorld(u32 nWorldID);
     bool IsAppartment(u32 nWorldID);
+    
+    void Update();
+    void Shutdown();
     
 };
 

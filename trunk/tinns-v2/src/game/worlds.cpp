@@ -44,6 +44,7 @@ PWorld::PWorld()
 {
 	mID = 0;
 	mUseCount = 0;
+	mWorldDataTemplate = NULL;
 }
 
 PWorld::~PWorld()
@@ -53,17 +54,72 @@ PWorld::~PWorld()
 
 bool PWorld::Load(u32 nWorldID)
 {
+  std::string WorldTemplateName;
+  std::string tFileName;
+  bool tCheckOK;
+    
+  if (nWorldID > APT_BASE_WORLD_ID)
+  {
+    int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+    if (!AptTmplID)
+      return false;
+    const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
+    if (!nAppDef)
+      return false;
+    WorldTemplateName = nAppDef->GetWorldName();
+    
+    tFileName = std::string("worlds/") + WorldTemplateName + ".dat";
+    tCheckOK = Worlds->LeaseWorldDataTemplate(WorldTemplateName, tFileName);
+    if (!tCheckOK)
+    {
+      tFileName = WorldTemplateName + ".dat";
+      tCheckOK = Worlds->LeaseWorldDataTemplate(WorldTemplateName, tFileName);
+    }
+    if (!tCheckOK)
+      return false;
+  }
+  else
+  {
+    const PDefWorldFile* nWorldFileDef = GameDefs->GetWorldFileDef(nWorldID);
+    if (!nWorldFileDef)
+      return false;
+    WorldTemplateName = nWorldFileDef->GetName();
+    
+    const PDefWorld* tWorldDef = GameDefs->GetWorldDef(nWorldID);
+    if (tWorldDef) // should always be true here
+    {
+      if(!(tWorldDef->GetDatFile().empty()))
+        tFileName = tWorldDef->GetDatFile();
+      else
+        tFileName = nWorldFileDef->GetBasicFileName() + ".dat";
+    }
+    else
+      return false; // should'nt happen here
+      
+    if (!Worlds->LeaseWorldDataTemplate(WorldTemplateName, tFileName))
+      return false;    
+  }
+  
+  mWorldDataTemplate = Worlds->GetWorldDataTemplate(WorldTemplateName);
+  if(!mWorldDataTemplate)
+  {
+    Console->Print("%s PWorld::Load : Unexpected world %d not found error", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
+    return false;
+  }
+  
   mID = nWorldID;
+   // furniture & other world stuff loading here
+Console->Print("%s Loaded world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
   return true; 
 } 
- 
+
 
 /**** PWorlds ****/
 
 PWorlds::PWorlds()
 {
     mPreloadWorldsTemplates = false; // to be put as config option
-    mPreloadStaticWorlds = true; // to be put as config option
+    mPreloadStaticWorlds = false; // to be put as config option
 }
 
 PWorlds::~PWorlds()
@@ -169,6 +225,15 @@ void PWorlds::UnloadWorldDataTemplate(const std::string& nWorldName)
 	  Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to release not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
 }
 
+PWorldDataTemplate* PWorlds::GetWorldDataTemplate(const std::string& nWorldName)
+{
+  PWorldDataTemplatesMap::const_iterator it = mWorldDataTemplatesMap.find(nWorldName);
+  if(it != mWorldDataTemplatesMap.end())
+    return it->second;
+  else
+    return NULL;
+}
+
 bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registred in mWorldDataTemplatesMap
 {                          //   will be considered as valid
   std::string tFileName;
@@ -259,7 +324,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         ++ValidCount;
         if (mPreloadStaticWorlds)
         {
-          LeaseWorld(tDefWorldFile->GetIndex()); // This will make the world ready and kept in mem (use count always >0 )
+          LeaseWorld(tDefWorldFile->GetIndex(), true); // This will make the world ready and kept in mem (use count always >0 )
         }
         else
         {
@@ -275,7 +340,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     }
   }
 
-  // Manually add neofrag worlds ... oO ... and neofrag4.dat can't be found :-/
+  // Hardcoded neofrag worlds ... oO ... and neofrag4.dat can't be found :-/
   for (int i = 1; i <= 16; i++)
 	{
 	  char worldName[19];
@@ -305,7 +370,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         if (!tCheckOK)
         {
           InvalideFiles.insert(tFileName);
-if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
         }
       }
             
@@ -314,18 +379,18 @@ if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.
         ++ValidCount;
         if (mPreloadStaticWorlds)
         {
-          LeaseWorld(90000 + i); // This will make the world ready and kept in mem (use count always >0 )
+          LeaseWorld(90000 + i, true); // This will make the world ready and kept in mem (use count always >0 )
         }
         else
         {
           mStaticWorldsMap.insert(std::make_pair(90000 + i, (PWorld*)NULL));
         }
-if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
+//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
       }
       else
       {
         ++InvalidCount;
-if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), 90000+i, worldName);
+//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), 90000+i, worldName);
       }
 	  }
 	}
@@ -333,46 +398,138 @@ if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) no
   Console->Print("%s %d valid world templates checked (%d dat files)", Console->ColorText(GREEN, BLACK, "[Success]"), ValidCount, mWorldDataTemplatesMap.size() - DatTmplCount);
   if (InvalidCount)
     Console->Print("%s %d invalid world templates rejected (%d dat files)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InvalidCount, InvalideFiles.size() - BadDatTmplCount - DblInvCount);
+  Console->Print("%s %d static worlds prepared", Console->ColorText(GREEN, BLACK, "[Success]"), mStaticWorldsMap.size());
+  
+  // release memory if World templates preload activated, this cache that won't be used anymore
+  // if (mPreloadWorldsTemplates) Filesystem->ClearCache();
   
   return true;
 }
 
 bool PWorlds::IsValidWorld(u32 nWorldID)
 {
-  if (nWorldID >= APT_BASE_WORLD_ID)
+  if (nWorldID > APT_BASE_WORLD_ID)
 	{
-    if (mStaticWorldsMap.count(nWorldID))
+    if (mOnDemandWorldsMap.count(nWorldID)) // Check if already loaded
       return true;
     else
-      return true; //do a check using the PAppartements class object
+      return true; //do a check using the PAppartements class object to get the world template
 	}
 	else
 	{
+if (gDevDebug) Console->Print("%s Checking validity for world %d : %s ", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID, mStaticWorldsMap.count(nWorldID) ? "OK" : "BAD");
 		return (mStaticWorldsMap.count(nWorldID));
 	}
-  return true; // temp
 }
 
-PWorld* PWorlds::LeaseWorld(u32 nWorldID)
+PWorld* PWorlds::LeaseWorld(u32 nWorldID, const bool nPreloadPhase)
 {
-  nWorldID = nWorldID; // temp
-  return NULL; // temp
+  PWorldsMap::iterator it;
+    
+  if (nWorldID > APT_BASE_WORLD_ID)
+	{
+    it = mOnDemandWorldsMap.find(nWorldID); // Check if already loaded
+    if((it != mOnDemandWorldsMap.end()) && it->second) // Dynamic world shall not have a NULL it->second 
+    { // if loaded
+      it->second->IncreaseUseCount();
+      return it->second;
+    }
+    else // not loaded yet or invalid
+    {
+      PWorld* nWorld = new PWorld;
+      if (! nWorld->Load(nWorldID)) // Error when loading (shouldn't happen)
+      {
+        delete nWorld;
+        return NULL; 
+      }
+      else
+      {
+        mOnDemandWorldsMap.insert(std::make_pair(nWorldID, nWorld));
+        nWorld->IncreaseUseCount();
+        return nWorld;
+      }
+    }
+	}
+	else
+	{
+    it = mStaticWorldsMap.find(nWorldID); // Check if already loaded
+    if((it == mStaticWorldsMap.end()) && nPreloadPhase)
+    {
+      mStaticWorldsMap.insert(std::make_pair(nWorldID, (PWorld*)NULL));
+      it = mStaticWorldsMap.find(nWorldID);
+    }
+    if(it != mStaticWorldsMap.end())
+    { // if valid
+      if (! it->second) // if not loaded yet
+      {
+        it->second = new PWorld;
+        if (! it->second->Load(nWorldID)) // Error when loading (shouldn't happen)
+        {
+          delete it->second;
+          mStaticWorldsMap.erase(it); // remove from valid worlds map
+          return NULL; 
+        }
+      }
+      it->second->IncreaseUseCount();
+if (gDevDebug) Console->Print("%s Leased world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
+      return it->second;
+    }
+    else // invalid worldID
+    {
+      return NULL;
+    }	  
+	}
 }
 
 PWorld* PWorlds::GetWorld(u32 nWorldID)
 {
-  nWorldID = nWorldID; // temp
-  return NULL;  // temp
+  PWorldsMap* tMap;
+  PWorldsMap::iterator it;
+    
+  tMap = ((nWorldID > APT_BASE_WORLD_ID) ? &mOnDemandWorldsMap : &mStaticWorldsMap);
+	
+  it = tMap->find(nWorldID);
+  if((it != tMap->end()) && it->second)
+  {
+    return it->second;
+  }
+  else
+  {
+    Console->Print("%s PWorlds::GetWorld : Trying to get world %d without lease !", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
+    return NULL;
+  }
 }
 
-void ReleaseWorld(u32 nWorldID)
+void PWorlds::ReleaseWorld(u32 nWorldID) // no dynamic unload is performed atm
 {
-  nWorldID = nWorldID; // temp
+  PWorld* tWorld = GetWorld(nWorldID);
+  if (tWorld)
+  {
+    if (tWorld->GetUseCount()) // this check is for dev time only
+    {
+      tWorld->DecreaseUseCount();
+if (gDevDebug) Console->Print("%s Released world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
+    }
+    else
+    {
+      Console->Print("%s PWorlds::ReleaseWorld : Trying to release world %d with use count 0 !", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
+    }
+  }
+  else
+  {
+    Console->Print("%s PWorlds::ReleaseWorld : Generated the invalid get world %d", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
+  }
 }
 
 bool PWorlds::IsAppartment(u32 nWorldID)
 {
-  nWorldID = nWorldID; // temp
-  return true;  // temp
+  return ((nWorldID > APT_BASE_WORLD_ID) && IsValidWorld(nWorldID));
 }
 
+void PWorlds::Update()
+{
+}
+
+void PWorlds::Shutdown()
+{
+}

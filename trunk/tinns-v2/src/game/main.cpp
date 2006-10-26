@@ -85,9 +85,6 @@ int main()
 	tmpWorld.LoadDatFile(tWorldName);
 	/*** End Test ***/
   
-  PWorlds tWorlds;
-  tWorlds.LoadWorlds();
-  //Filesystem->ClearCache(); // release memory if World templates preload activated, this cache that won't be used anymore
 	
 	//RemoteConsole->Start();
 	GameServer->Start();

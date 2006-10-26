@@ -55,7 +55,7 @@ bool PUdpZoning1::DoAction()
   PMessage* cMsg = mDecodeData->mMessage;
   
   u32 newLocation = cMsg->U32Data(mDecodeData->Sub0x13Start+11);
-  mDecodeData->mClient->GetChar()->SetLocation(newLocation);
+  mDecodeData->mClient->ChangeCharLocation(newLocation);
   
 //Console->Print("Zoning Stage 1: New location: %d", newLocation);
   
@@ -124,7 +124,7 @@ bool PUdpGenrepZoning::DoAction()
   nClient->getUDPConn()->SendMessage(tmpMsg);
 	
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  nClient->GetChar()->SetLocation(newLocation);
+  nClient->ChangeCharLocation(newLocation);
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
@@ -161,7 +161,7 @@ bool PUdpAptGRZoning::DoAction()
   nClient->getUDPConn()->SendMessage(tmpMsg);
 	
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  nClient->GetChar()->SetLocation(100000 + nClient->GetChar()->GetBaseApartment());
+  nClient->ChangeCharLocation(100000 + nClient->GetChar()->GetBaseApartment());
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
@@ -262,7 +262,7 @@ Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->G
     if (Location > 0)
     {
       tmpMsg = MsgBuilder->BuildAptLiftUseMsg(nClient, Location, 1);
-      nChar->SetLocation(Location);
+      nClient->ChangeCharLocation(Location);
     }
     else
     {

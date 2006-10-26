@@ -54,7 +54,7 @@ struct PSec2ElemHeader
     u32 mDataSize;
 };
 
-struct PSec2ElemType3 //static object ?
+struct PSec2ElemType3a //static object ?
 {
   f32 mPosY; //= u16 PosY - 32000
   f32 mPosZ;
@@ -70,6 +70,9 @@ struct PSec2ElemType3 //static object ?
   u16 mWorldmodelID; // points to worldmodel.def
   u16 mUnknown5; //12 00 ?
   u32 mObjectID;
+};
+struct PSec2ElemType3b //this part is optional
+{
   f32 mBoxLowerY; //Bounding box, for useflag "64 - selfconstructing colisionbox"
   f32 mBoxLowerZ; // s32 or u32 ?
   f32 mBoxLowerX;

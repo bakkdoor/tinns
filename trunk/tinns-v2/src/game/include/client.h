@@ -113,6 +113,8 @@ class PClient
 		inline int GetLocalID() const { return mIndex + 1; }
 		inline u32 GetCharID() const { return mCharID; }
 		PChar* GetChar() const;
+		bool ChangeCharLocation(u32 nLocation);
+		
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
 		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
 		inline u16 GetTransactionID() {return mTransactionID; }

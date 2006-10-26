@@ -543,3 +543,26 @@ infoserver.cpp :
 [COMMON]
 filesystem.cpp :
   fixed a bug when handling some files .pak archives with path starting with ./
+
+====================
+Hammag; 24.10.2006 17:00 GMT+1
+----------
+[rev. 24]
+<General changes>
+Internal changes only
+
+====================
+Hammag; 26.10.2006 02:15 GMT+1
+----------
+[rev. 25]
+
+<General changes>
+ - finished world data on-demand loading
+ - fixed an issue in world "furniture" data loading
+ 
+[GAME]
+added a Worlds global object (class PWorlds)
+modified PChar and PClient classes to Lease/Release world when char changes location,
+  which shall now be done using the new PClient::ChangeCharLocation method
+modified decoder/udp_zoning accordingly
+modified def/world_datstruct.h and def/world_datparser.cpp to fix world data loading

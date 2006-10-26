@@ -126,8 +126,8 @@ if (gDevDebug) Console->Print("Processing section %d (size %d)", SectionHeader.m
       
       if (SectionHeader.mSection == 2)
       {
-int cnt=0;
-if (gDevDebug) Console->Print("Element Type 3 size: %d", sizeof(PSec2ElemType3));
+//int cnt=0;
+if (gDevDebug) Console->Print("Element Type 3 size: %d or %d", sizeof(PSec2ElemType3a), sizeof(PSec2ElemType3a)+sizeof(PSec2ElemType3b));
         while (NextElementOffset < NextSectionOffset)
         {
           f->Seek(NextElementOffset); // Make sure we are at the computed offset
@@ -144,7 +144,7 @@ if (gDevDebug) Console->Print("Element Type 3 size: %d", sizeof(PSec2ElemType3))
             return -2;
           }  
           NextElementOffset += (Sec2ElemHeader.mHeaderSize + 4 + Sec2ElemHeader.mDataSize);
-if (gDevDebug) Console->Print("Found element %d of type %d, size %d", ++cnt, Sec2ElemHeader.mElementType, Sec2ElemHeader.mDataSize);
+//if (gDevDebug) Console->Print("Found element %d of type %d, size %d", ++cnt, Sec2ElemHeader.mElementType, Sec2ElemHeader.mDataSize);
           switch(Sec2ElemHeader.mElementType)
           {
             case 1000003:
@@ -183,24 +183,40 @@ if (gDevDebug) Console->Print("Section %d ignored", SectionHeader.mSection);
 
 bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize)
 {
-  PSec2ElemType3 Data;
+  PSec2ElemType3a DataA;
+  PSec2ElemType3b DataB;
   const PDefWorldModel* nWorldModel;
   std::string nName;
+  const u32 sza = sizeof(PSec2ElemType3a);
+  const u32 szb = sizeof(PSec2ElemType3a)+sizeof(PSec2ElemType3b);
 
-  if (nSize != sizeof(PSec2ElemType3))
+  if ((nSize != szb) && (nSize != sza))
   {
-    Console->Print(RED, BLACK, "[ERROR] Wrong size for Sec2ElemType3 (%d read vs %d needed", nSize, sizeof(PSec2ElemType3));
+    Console->Print(RED, BLACK, "[ERROR] Wrong size for Sec2ElemType3 (%d read vs %d or %d needed", nSize, sza, szb);
     return false;
   }   
-  if ((u32)(f->Read(&Data, sizeof(PSec2ElemType3))) < sizeof(PSec2ElemType3))
+  if ((u32)(f->Read(&DataA, sza)) < sza)
   {
-    Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType3");
+    Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType3a");
     return false;
   }
-  
-  if (Data.mWorldmodelID)
+  if (nSize == szb)
   {
-    nWorldModel = GameDefs->GetWorldModelDef(Data.mWorldmodelID);    
+    if((u32)(f->Read(&DataB, sizeof(PSec2ElemType3b))) < sizeof(PSec2ElemType3b))
+    {
+      Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType3b");
+      return false;
+    }
+  }
+  else
+  {
+    DataB.mBoxLowerY = DataB.mBoxLowerZ = DataB.mBoxLowerX = 0;
+    DataB.mBoxUpperY = DataB.mBoxUpperZ = DataB.mBoxUpperX = 0;
+  }
+  
+  if (DataA.mWorldmodelID)
+  {
+    nWorldModel = GameDefs->GetWorldModelDef(DataA.mWorldmodelID);    
     if(nWorldModel)
       nName = nWorldModel->GetName();
     else
@@ -212,15 +228,15 @@ bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize)
     nWorldModel = NULL;
   }
 
-if (gDevDebug) {   
+/* if (gDevDebug) {   
 Console->Print("-------------------------------------------------------");
-Console->Print("%s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mObjectID);
-if (!nWorldModel) Console->Print("y:%f z:%f x:%f model %d", Data.mPosY , Data.mPosZ, Data.mPosX, Data.mModelID);
-Console->Print("Scale:%f Uk2:0x%08x Uk3:0x%08x", Data.mScale, Data.mUnknown2, Data.mUnknown3);
-Console->Print("Uk4:0x%08x Uk5:0x%04x", Data.mUnknown4, Data.mUnknown5);
-//Console->Print("Ly:%f Lz:%f Lx:%f", Data.mBoxLowerY, Data.mBoxLowerZ, Data.mBoxLowerX);
-//Console->Print("Uy:%f Uz:%f Ux:%f", Data.mBoxUpperY, Data.mBoxUpperZ, Data.mBoxUpperX);
-}
+Console->Print("%s (%d) : ID %d", nName.c_str(), DataA.mWorldmodelID, DataA.mObjectID);
+if (!nWorldModel) Console->Print("y:%f z:%f x:%f model %d", DataA.mPosY , DataA.mPosZ, DataA.mPosX, DataA.mModelID);
+Console->Print("Scale:%f Uk2:0x%08x Uk3:0x%08x", DataA.mScale, DataA.mUnknown2, DataA.mUnknown3);
+Console->Print("Uk4:0x%08x Uk5:0x%04x", DataA.mUnknown4, DataA.mUnknown5);
+//Console->Print("Ly:%f Lz:%f Lx:%f", DataB.mBoxLowerY, DataB.mBoxLowerZ, DataB.mBoxLowerX);
+//Console->Print("Uy:%f Uz:%f Ux:%f", DataB.mBoxUpperY, DataB.mBoxUpperZ, DataB.mBoxUpperX);
+}*/
   
   if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
   {
@@ -229,29 +245,29 @@ if (gDevDebug) Console->Print("Discarded");
   }
   
   PFurnitureItemTemplate* nItem = new PFurnitureItemTemplate;
-  nItem->mObjectID = Data.mObjectID;
+  nItem->mObjectID = DataA.mObjectID;
 
   // The commented out values are not loaded from dat file atm because they are not used yet.
-//  nItem->mPosY = 32000 + Data.mPosY;
-//  nItem->mPosZ = 32000 + Data.mPosZ;
-//  nItem->mPosX = 32000 + Data.mPosX;
-//  nItem->mRotY = Data.mRotY;
-//  nItem->mRotZ = Data.mRotZ;
-//  nItem->mRotX = Data.mRotX;
-//  nItem->mScale = Data.mScale;
-//  nItem->mUnknown2 = Data.mUnknown2;
-  nItem->mModelID = Data.mModelID;
-//  nItem->mUnknown3 = Data.mUnknown3;
-//  nItem->mUnknown4 = Data.mUnknown4;
-  nItem->mWorldmodelID = Data.mWorldmodelID;
-//  nItem->mUnknown5 = Data.mUnknown5;
+//  nItem->mPosY = 32000 + DataA.mPosY;
+//  nItem->mPosZ = 32000 + DataA.mPosZ;
+//  nItem->mPosX = 32000 + DataA.mPosX;
+//  nItem->mRotY = DataA.mRotY;
+//  nItem->mRotZ = DataA.mRotZ;
+//  nItem->mRotX = DataA.mRotX;
+//  nItem->mScale = DataA.mScale;
+//  nItem->mUnknown2 = DataA.mUnknown2;
+  nItem->mModelID = DataA.mModelID;
+//  nItem->mUnknown3 = DataA.mUnknown3;
+//  nItem->mUnknown4 = DataA.mUnknown4;
+  nItem->mWorldmodelID = DataA.mWorldmodelID;
+//  nItem->mUnknown5 = DataA.mUnknown5;
 
-//  nItem->mBoxLowerY = Data.mBoxLowerY;
-//  nItem->mBoxLowerZ = Data.mBoxLowerZ;
-//  nItem->mBoxLowerX = Data.mBoxLowerX;
-//  nItem->mBoxUpperY = Data.mBoxUpperY;
-//  nItem->mBoxUpperZ = Data.mBoxUpperZ;
-//  nItem->mBoxUpperX = Data.mBoxUpperX;
+//  nItem->mBoxLowerY = DataB.mBoxLowerY;
+//  nItem->mBoxLowerZ = DataB.mBoxLowerZ;
+//  nItem->mBoxLowerX = DataB.mBoxLowerX;
+//  nItem->mBoxUpperY = DataB.mBoxUpperY;
+//  nItem->mBoxUpperZ = DataB.mBoxUpperZ;
+//  nItem->mBoxUpperX = DataB.mBoxUpperX;
     
   if(nWorldModel)
   {

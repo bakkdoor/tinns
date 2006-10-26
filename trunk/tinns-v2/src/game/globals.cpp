@@ -51,6 +51,7 @@
 #include "isc.h"
 
 #include "msgbuilder.h"
+#include "worlds.h"
 
 PVehicles *Vehicles = 0;
 PMySQL *MySQL = 0;
@@ -63,6 +64,7 @@ PFileSystem *Filesystem = 0;
 PGameServer *GameServer = 0;
 ServerSocket *ServerSock = 0;
 PMsgBuilder *MsgBuilder = 0;
+PWorlds *Worlds = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -121,6 +123,9 @@ bool InitTinNS()
 	GameDefs = new PGameDefs();
 	GameDefs->Init();
 
+  Worlds = new PWorlds();
+  Worlds->LoadWorlds();
+  
 	Database = new PDatabase();
 	Database->Init();
 
@@ -128,7 +133,7 @@ bool InitTinNS()
 	Server = new PServer();
 	GameServer = new PGameServer();
 	MsgBuilder = new PMsgBuilder();
-
+  
 	Vehicles = new PVehicles();
 
 	ClientManager = new PClientManager();
@@ -152,6 +157,11 @@ void Shutdown()
 	if(Server) delete Server;
 	if(Filesystem) delete Filesystem;
 	if(GameDefs) delete GameDefs;
+	if(Worlds)
+	{
+	  Worlds->Shutdown();
+	  delete Worlds;
+	}
 	if(Database) delete Database;
 	if(MySQL) delete MySQL;
 	if(Config) delete Config;

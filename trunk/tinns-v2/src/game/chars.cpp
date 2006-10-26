@@ -47,6 +47,7 @@
 */
 
 #include "main.h"
+#include "worlds.h"
 
 PChar::PChar()
 {
@@ -73,7 +74,7 @@ PChar::PChar()
 	
 	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
 	
-	mLocation = 1;
+	mLocation = 0;
 	mApt=0;
 	mCash = 0;
 
@@ -453,6 +454,14 @@ bool PChar::SQLLoad(int CharID) {
 
     }
     MySQL->FreeGameSQLResult(result);
+    
+    if(!Worlds->IsValidWorld(mLocation) || !Worlds->LeaseWorld(mLocation))
+    {
+      mLocation = 1;
+      if(!Worlds->IsValidWorld(mLocation) || !Worlds->LeaseWorld(mLocation))
+        return false;
+    }
+      
     return true;
 }
 

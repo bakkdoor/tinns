@@ -271,7 +271,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
            return;
        }
 
-       PChar *Char = Database->GetChar(Client->GetCharID());
+       //PChar *Char = Database->GetChar(Client->GetCharID());
 
 	   /* u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8,
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
@@ -294,7 +294,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        // ZonePacket[1] = (char)Test; // from NeoX
        Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, def->GetName().c_str());
 
-       Char->SetLocation(zoneID);
+       Client->ChangeCharLocation(zoneID);
        Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));	
    }
 // -------------------------------------------------------

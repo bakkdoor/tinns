@@ -36,6 +36,8 @@
 
 #include "main.h"
 
+#include "worlds.h"
+
 PClient::PClient(int Index)
 {
 	mAccount = 0;
@@ -91,6 +93,25 @@ void PClient::SetDebugMode(PDebugMode nDebugID, bool nVal)
     mDebugMode[nDebugID] = nVal;
 }
 
+bool PClient::ChangeCharLocation(u32 nLocation)
+{
+  if(Worlds->IsValidWorld(nLocation))
+  {
+    PChar* tChar = GetChar();
+    if (tChar->GetLocation() == nLocation)
+      return true;
+    if (Worlds->LeaseWorld(nLocation))
+    {
+      if(tChar->GetLocation())
+        Worlds->ReleaseWorld(tChar->GetLocation());
+      tChar->SetLocation(nLocation);
+      return true;
+    }
+  }
+  
+  return false;
+}
+
 void PClient::GameDisconnect()
 {
 	mAccount = 0;
@@ -124,6 +145,12 @@ void PClient::GameDisconnect()
       Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) no save needed.", tChar->GetID(), mIndex);
       if (!tChar->IsOnline())
         Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex);
+    }
+    
+    if(tChar->GetLocation())
+    {
+      Worlds->ReleaseWorld(tChar->GetLocation());
+      tChar->SetLocation(0);
     }
   }
   else
