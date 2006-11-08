@@ -155,6 +155,7 @@ class PChar
   	u8 mLegsDarkness;  // "
 		            // Skin scale factor setting remain to discover, provided they are somewhere for player chars ...
 		
+		bool mLocationLeased; // temp until char on-demand load/unload
 		u32 mLocation;
 		u32 mCash;
 		u32 mApt;
@@ -299,6 +300,10 @@ class PChar
 		
 		inline void SetLocation(u32 Location) { mLocation = Location; }
 		inline void SetDirtyFlag(bool Dirty = true) { mDirtyFlag = Dirty; }
+		
+		// temp until char on-demand load/unload
+		inline void SetLocationLeased(bool nState = true) { mLocationLeased = nState; }
+		inline bool GetLocationLeased() { return mLocationLeased; }
 };
 
 class PChars

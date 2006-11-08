@@ -42,6 +42,7 @@ class PISC
         char isc_pwd;
         
         bool use_mysql;
+        int m_server_id;
         std::time_t mysql_update_intervall;
         std::time_t mysql_delayed_update_intervall; 
         std::time_t mysql_last_update_time;

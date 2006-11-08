@@ -33,12 +33,10 @@
 
 PFurnitureItemTemplate::PFurnitureItemTemplate()
 {
-    mObjectID = 0;
-    mModelID = 0;
-    mWorldmodelID = 0;
-    mUseFlags = 0;
-    mFunctionType = 0;
-    mFunctionValue = 0;
+  mObjectID = 0;
+  mModelID = 0;
+  mWorldmodelID = 0;
+  mDefWorldModel = NULL;
 }
 
 PFurnitureItemTemplate::~PFurnitureItemTemplate()

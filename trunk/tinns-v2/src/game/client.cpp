@@ -102,9 +102,10 @@ bool PClient::ChangeCharLocation(u32 nLocation)
       return true;
     if (Worlds->LeaseWorld(nLocation))
     {
-      if(tChar->GetLocation())
+      if(tChar->GetLocationLeased())
         Worlds->ReleaseWorld(tChar->GetLocation());
       tChar->SetLocation(nLocation);
+      tChar->SetLocationLeased();
       return true;
     }
   }
@@ -147,11 +148,21 @@ void PClient::GameDisconnect()
         Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex);
     }
     
+    /* Disabled until dynamic char load/unload
     if(tChar->GetLocation())
     {
       Worlds->ReleaseWorld(tChar->GetLocation());
       tChar->SetLocation(0);
     }
+    */
+    
+    // temp
+    if(tChar->GetLocationLeased())
+    {
+      Worlds->ReleaseWorld(tChar->GetLocation());
+      tChar->SetLocationLeased(false);
+    }
+    
   }
   else
   {

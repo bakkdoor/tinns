@@ -34,11 +34,15 @@
 class PFurnitureItemTemplate;
 typedef std::map<u32, PFurnitureItemTemplate*> PFurnitureItemsMap;
 
+class PDoorTemplate;
+typedef std::map<u32, PDoorTemplate*> PDoorsMap;
+
 class PWorldDataTemplate
 {
   private:
     std::string mName; // relative path+filename without leading ./ or ./worlds/ nor .dat extension
     PFurnitureItemsMap mFurnitureItems;
+    PDoorsMap mDoors;
     int mUseCount;
     void DatFileDataCleanup();
     
@@ -46,7 +50,7 @@ class PWorldDataTemplate
     PWorldDataTemplate();
     ~PWorldDataTemplate();
     
-    bool LoadDatFile(const std::string& nFilename, const bool nTestAccesOnly = false);
+    bool LoadDatFile(const std::string& nWorldName, const std::string& nFilename, const bool nTestAccesOnly = false);
     inline const std::string& GetName() { return mName; }
     
     inline void IncreaseUseCount() { ++mUseCount; }
@@ -54,7 +58,11 @@ class PWorldDataTemplate
     inline int GetUseCount() { return mUseCount; }
     
     u32 AddFurnitureItem(PFurnitureItemTemplate* nItem);
+    const PFurnitureItemTemplate* GetFurnitureItem(u32 ItemID);
     
+    u32 AddDoor(PDoorTemplate* nDoor);
+    const PDoorTemplate* GetDoor(u32 DoorID);
+
 };
 
 #endif

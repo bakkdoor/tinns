@@ -105,7 +105,10 @@ bool PUdpCharPosUpdate::DoAction()
     snprintf(DbgMessage, 128, "position y:%0.1f (0x%08x) z:%0.1f (0x%08x) x:%0.1f (0x%08x)", f[0], h[0], f[1], h[1], f[2], h[2]);
     Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
   }
-  
+
+//if(IsRealMove)
+//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
+
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -162,19 +165,15 @@ PUdpMsgAnalyser* PUdpCharSitting::Analyse()
 
 bool PUdpCharSitting::DoAction() // this message is repeated x times/sec ... is answer usefull ? each time ?
 {
-  if (true /* check if chair is free if not already checked elsewhere !!! */)
-  {
 //Console->Print("Sitting on chair %d (%x)", mChairItemID, mChairItemID);
 //PChar* nChar = mDecodeData->mClient->GetChar();
 //Console->Print("Char %d position : X(0x%x) Y(0x%x) Z(0x%x) U/D(0x%x) L/R(0x%x) Action(0x%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
+//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
 //mDecodeData->mTraceDump = true;
     PMessage* tmpMsg = MsgBuilder->BuildCharSittingMsg(mDecodeData->mClient, mChairItemID);
     ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);    
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
-  }
-  /* else
-    return false; */ // Find answer msg when chair isn't free
 }
 
 /**** PUdpCharExitChair ****/

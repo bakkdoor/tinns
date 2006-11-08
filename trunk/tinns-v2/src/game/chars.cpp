@@ -74,6 +74,7 @@ PChar::PChar()
 	
 	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
 	
+	mLocationLeased = false; // temp until char on-demand load/unload
 	mLocation = 0;
 	mApt=0;
 	mCash = 0;
@@ -461,7 +462,8 @@ bool PChar::SQLLoad(int CharID) {
       if(!Worlds->IsValidWorld(mLocation) || !Worlds->LeaseWorld(mLocation))
         return false;
     }
-      
+    SetLocationLeased(true); // temp
+    
     return true;
 }
 

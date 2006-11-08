@@ -101,9 +101,10 @@
                 - Added command @brightness to set skin color brightness
                   Usage: @brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]
                             with 0 for max brightness, 255 for max darkness, and - meaning "no change"                                                                         
-
         MODIFIED: 09 Oct Hammag
         REASON: - Modified and extended @debug command
+        MODIFIED: 08 Nov Hammag
+        REASON: - Modified @warp zone check so that we can warp to any really valid zone (even apartment) and only to valid zones        
 
 	ToDo:
 	- Fix Subwaysyncy
@@ -114,6 +115,7 @@
 
 #include "client.h"
 #include "msgbuilder.h"
+#include "worlds.h"
 
 char output[2048];
 
@@ -264,8 +266,9 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
            return;
        }
 
-       const PDefWorld *def = GameDefs->GetWorldDef(zoneID);
-       if(!def)
+       //const PDefWorld *def = GameDefs->GetWorldDef(zoneID);
+       //if(!def)
+       if (!Worlds->IsValidWorld(zoneID))
        {
            Chat->send(Client, CHAT_DIRECT, "System", "Invalid zoneID");
            return;
@@ -277,7 +280,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
         0xcf, 0x03, 0x00, 0x01, 0x00, 0x15, 0x1b, 0x22, 0x01, 0x00, 0x00,
         0x1f, 0x49, 0x82, 0x81, 0x81, 0xe5, 0x6b, 0x04, 0xd5, 0x76, 0x01,
-        0x00, 0x00, 0x00, 0x11, 0x11}; */
+        0x00, 0x00, 0x00, 0x11, 0x11}; 
      u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8, // shortened version from NeoX
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
         0xcf, 0x03, 0x00, 0x01, 0x00};
@@ -291,11 +294,13 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
 
        *(u16*)&ZonePacket[10] = Client->GetLocalID(); // from NeoX
        *(u16*)&ZonePacket[19] = SpawnPointID; // from NeoX
-       // ZonePacket[1] = (char)Test; // from NeoX
-       Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, def->GetName().c_str());
-
+       // ZonePacket[1] = (char)Test; // from NeoX */
+      
        Client->ChangeCharLocation(zoneID);
-       Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));	
+Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
+       //Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));
+        PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (Client, zoneID, SpawnPointID);
+        Client->getUDPConn()->SendMessage(tmpMsg);
    }
 // -------------------------------------------------------
 #define DISABLE_RAWF

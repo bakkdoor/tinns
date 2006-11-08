@@ -31,10 +31,13 @@
 #include "main.h"
 
 #include "filesystem.h"
-#include "worlds.h"
-#include "worlddatatemplate.h"
-#include "gamedefs.h"
 #include "def_worlds.h"
+#include "gamedefs.h"
+#include "furnituretemplate.h"
+#include "worlddatatemplate.h"
+#include "worlds.h"
+
+
 
 #include <set>
 
@@ -60,12 +63,19 @@ bool PWorld::Load(u32 nWorldID)
     
   if (nWorldID > APT_BASE_WORLD_ID)
   {
-    int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+    //int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+    int AptTmplID = MySQL->GetAptType(nWorldID);
     if (!AptTmplID)
+{
+Console->Print("PWorld::Load - invalid apt %d", nWorldID - APT_BASE_WORLD_ID);
       return false;
+}
     const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
     if (!nAppDef)
+{
+Console->Print("PWorld::Load - invalid apt type %d", AptTmplID);
       return false;
+}
     WorldTemplateName = nAppDef->GetWorldName();
     
     tFileName = std::string("worlds/") + WorldTemplateName + ".dat";
@@ -76,7 +86,10 @@ bool PWorld::Load(u32 nWorldID)
       tCheckOK = Worlds->LeaseWorldDataTemplate(WorldTemplateName, tFileName);
     }
     if (!tCheckOK)
+{
+Console->Print("PWorld::Load - unable to lease apt world %s (%s)", WorldTemplateName.c_str(), tFileName.c_str());
       return false;
+}
   }
   else
   {
@@ -113,6 +126,18 @@ Console->Print("%s Loaded world %d", Console->ColorText(GREEN, BLACK, "[Debug]")
   return true; 
 } 
 
+const PDefWorldModel* PWorld::GetFurnitureItemModel(u32 nItemID)
+{
+  if (mWorldDataTemplate)
+  {
+    const PFurnitureItemTemplate* tFurniture = mWorldDataTemplate->GetFurnitureItem(nItemID);
+    if (tFurniture)
+      return tFurniture->GetDefWorldModel();
+  }
+  
+  return NULL;
+}
+
 
 /**** PWorlds ****/
 
@@ -142,7 +167,7 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
 	  if (nPreloadPhase) // if in preload phase, we try to load it or make it known
 	  {
 	    tWorldDataTemplate = new PWorldDataTemplate;
-	    if (tWorldDataTemplate->LoadDatFile(nFileName, !mPreloadWorldsTemplates))
+	    if (tWorldDataTemplate->LoadDatFile(nWorldName, nFileName, !mPreloadWorldsTemplates))
 	    {
         if (mPreloadWorldsTemplates)
         {
@@ -172,7 +197,7 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
 	  if (!it->second  &&  !nPreloadPhase) // template known but not already loaded and not in preload ?
 	  {
 	    tWorldDataTemplate = new PWorldDataTemplate;
-	    if (tWorldDataTemplate->LoadDatFile(nFileName))
+	    if (tWorldDataTemplate->LoadDatFile(nWorldName, nFileName))
 	    {
 	      it->second = tWorldDataTemplate;
 	    }
@@ -412,12 +437,26 @@ bool PWorlds::IsValidWorld(u32 nWorldID)
 	{
     if (mOnDemandWorldsMap.count(nWorldID)) // Check if already loaded
       return true;
-    else
-      return true; //do a check using the PAppartements class object to get the world template
+    else //should better do a check using a PAppartements class object to get the world template
+    {
+      //int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+      int AptTmplID = MySQL->GetAptType(nWorldID);
+      if (!AptTmplID)
+        return false;
+  
+      const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
+      if (!nAppDef)
+        return false;
+  
+      std::string WorldTemplateName = nAppDef->GetWorldName();
+
+      PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(WorldTemplateName);
+      return (it != mWorldDataTemplatesMap.end());
+    }
 	}
 	else
 	{
-if (gDevDebug) Console->Print("%s Checking validity for world %d : %s ", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID, mStaticWorldsMap.count(nWorldID) ? "OK" : "BAD");
+if (gDevDebug) Console->Print("%s Checking validity for world %d : %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID, mStaticWorldsMap.count(nWorldID) ? "OK" : "BAD");
 		return (mStaticWorldsMap.count(nWorldID));
 	}
 }

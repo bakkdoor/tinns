@@ -144,6 +144,7 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
   PMessage* tmpMsg;
   PClient* itClient;
   u16 Dapprox;
+  u16 CurrPos;
 
   for(PClientMap::iterator it=mClientList.begin(); it != mClientList.end(); it++)
   {
@@ -164,10 +165,15 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
         tmpMsg = new PMessage(nMessage->GetMaxSize());
         (*tmpMsg) = (*nMessage);
          
-        if ((tmpMsg->GetSize() > 9) && (tmpMsg->U8Data(0x00) == 0x13) && (tmpMsg->U8Data(0x06) == 0x03))
+        if ((tmpMsg->GetSize() > 9) && (tmpMsg->U8Data(0x00) == 0x13))
         {
-          itClient->IncreaseUDP_ID();
-          tmpMsg->U16Data(0x07) = itClient->GetUDP_ID();
+          CurrPos = 5;
+          while ((CurrPos < tmpMsg->GetSize()) && (tmpMsg->U8Data(CurrPos + 1) == 0x03))
+          {
+            itClient->IncreaseUDP_ID();
+            tmpMsg->U16Data(CurrPos + 2) = itClient->GetUDP_ID();
+            CurrPos = CurrPos + tmpMsg->U8Data(CurrPos) + 1;
+          }
         }
         tmpMsg->U16Data(0x01) = itClient->GetUDP_ID();
         tmpMsg->U16Data(0x03) = itClient->GetSessionID();

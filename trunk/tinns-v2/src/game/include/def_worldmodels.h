@@ -49,6 +49,7 @@ class PDefWorldModel
 		bool LoadFromDef(PTokenList *Tokens);
 
 		inline int GetIndex() const { return mIndex; }
+		inline int GetID() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetUseFlags() const { return mUseFlags; }
 		inline int GetFunctionType() const { return mFunctionType; }

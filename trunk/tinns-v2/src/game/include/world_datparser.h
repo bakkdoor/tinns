@@ -45,6 +45,7 @@ class PWorldDatParser
 	  bool mDiscardPassiveObjects;
 	  
     bool ProcessSec2ElemType3(u32 nSize);
+    bool ProcessSec2ElemType5(u32 nSize);
     
 	public :
 		PWorldDatParser();

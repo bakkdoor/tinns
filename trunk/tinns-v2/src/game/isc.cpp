@@ -128,6 +128,7 @@ void PISC::Shutdown_isc()
 
 void PISC::Start_mysql()
 {
+  m_server_id = Config->GetOptionInt("isc_server_id");
   mysql_update_intervall = Config->GetOptionInt("isc_update_intervall");
   if (mysql_update_intervall < 10)
   {
@@ -197,9 +198,8 @@ void PISC::Shutdown_mysql()
 
 bool PISC::do_mysql_db_update(int players, bool shutdown)
 {
-  int server_id = 2; // temp
   char query[256];
-  snprintf (query, 256, "UPDATE `server_list` SET `s_players` = '%d', `s_lastupdate` = %s WHERE `s_id` = %d LIMIT 1;", players, (shutdown ? "'0'" : "NOW()"), server_id);
+  snprintf (query, 256, "UPDATE `server_list` SET `s_players` = '%d', `s_lastupdate` = %s WHERE `s_id` = %d LIMIT 1;", players, (shutdown ? "'0'" : "NOW()"), m_server_id);
 
 //if(gDevDebug) Console->Print("%s Updating Infoserver over MySQL.", Console->ColorText(GREEN, BLACK, "[Debug]"));
   if(MySQL->InfoQuery(query))

@@ -55,13 +55,13 @@ bool PDefAppPlace::LoadFromDef(PTokenList *Tokens)
 			case 2: // name
 				mName = *i; break;
 
-			case 3: // use flag
+			case 3: // Exit World
 				mExitWorldID = std::atoi(i->c_str()); break;
 				
-			case 4: // function type
+			case 4: // Exit World entity
 				mExitWorldEntity = std::atoi(i->c_str()); break;
 
-			case 5: // function value
+			case 5: // Sewer level
 				mSewerLevel = std::atoi(i->c_str()); break;
 		}
 	}

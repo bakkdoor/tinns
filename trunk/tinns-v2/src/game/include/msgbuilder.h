@@ -54,7 +54,9 @@ class PMsgBuilder
   PMessage* BuildCharExitChairMsg (PClient* nClient);
   PMessage* BuildCharJumpingMsg (PClient* nClient);
   PMessage* BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat);
-  
+  PMessage* BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor = false);
+  PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID);
+    
   // Following methods for unicast messages DO include UDP_ID increment and
   // UDP_ID / SessionID setting when needed (at least for now)
   PMessage* BuildReqInfoAnswerMsg (PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength);
@@ -73,10 +75,11 @@ class PMsgBuilder
   
   PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity);
   PMessage* BuildAptLiftFailedMsg (PClient* nClient);
-  PMessage* BuildAptLiftExitMsg (PClient* nClient, u32 nLocation, u16 nEntity);
+  PMessage* BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel = 0, u32 nRawItemID = 0);
   
   PMessage* BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints);
   PMessage* BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 nMode); // mode = 1 for Direct, 2 for Buddy
+  
 };
 
 #endif

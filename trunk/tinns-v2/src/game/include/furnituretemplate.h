@@ -31,6 +31,8 @@
 #ifndef FURNITURETEMPLATE_H
 #define FURNITURETEMPLATE_H
 
+#include "def_worldmodels.h"
+
 enum // Furniture Use flags (cumlative)
 {
   ufTouchable = 1,
@@ -72,20 +74,19 @@ class PFurnitureItemTemplate
     //f32 mBoxUpperZ;
     //f32 mBoxUpperX;
     
-    // Set from PDefWorldModel
-    u16 mUseFlags;
-    u16 mFunctionType;
-    int mFunctionValue;
+    const PDefWorldModel* mDefWorldModel;
+
     
   public:
     PFurnitureItemTemplate();
     ~PFurnitureItemTemplate();
 
     inline const u32 GetID() { return mObjectID; }
-    inline const u16 GetUseFlags() { return mUseFlags; }
-    inline const u16 GetFunctionType() { return mFunctionType; }
-    inline const int GetFunctionValue() { return mFunctionValue; }
-    
+    inline const u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
+    inline const u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
+    inline const int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
+    inline const std::string& GetName() { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
+    inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
 };
 
 #endif

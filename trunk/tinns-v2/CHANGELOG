@@ -566,3 +566,19 @@ modified PChar and PClient classes to Lease/Release world when char changes loca
   which shall now be done using the new PClient::ChangeCharLocation method
 modified decoder/udp_zoning accordingly
 modified def/world_datstruct.h and def/world_datparser.cpp to fix world data loading
+
+====================
+Hammag; 08.11.2006 22:00 GMT+1
+----------
+[rev. 26]
+
+<General changes>
+ - added isc_server_id in gameserver.conf, to be set to s_id value from infoserver DB.
+    server status should then be kept up to date in the server selection window of NC client
+ - fixed a bug leading to char location being reset to bad zone when login in under some circumstances
+ - sitting on chairs now works again and is seen by others chars. Some more thing are to be added to this though.
+ - all dungeon/sewers/UG entries should work. But spawning place are not always right, as it seems that info in
+    appplaces.def is not allways the right one (about the "entity")
+ - all doors should open and be seen opening by other chars. Locked doors will open like any others
+    as I haven't found the link bewteen button and door
+ - other internal changes

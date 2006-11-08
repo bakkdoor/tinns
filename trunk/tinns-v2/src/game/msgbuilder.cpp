@@ -225,6 +225,37 @@ PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
   return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID)
+{
+  //PMessage* tmpMsg = new PMessage(31);
+  PMessage* tmpMsg = new PMessage(18);
+  //PChar* nChar = nClient->GetChar();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
+	*tmpMsg << (u16)0x0000; // nClient->GetSessionID()placeholder
+	
+	*tmpMsg << (u8)0x0c; // Sub message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; // ++ nClient->GetUDP_ID() placeholder
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x21;
+	*tmpMsg << (u32)nRawChairID;
+	*tmpMsg << (u8)0x00;
+/*
+	*tmpMsg << (u8)0x0c; // Sub message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; // ++ nClient->GetUDP_ID() placeholder
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x21;
+	*tmpMsg << (u32)nRawChairID;
+	*tmpMsg << (u8)0x00;
+*/  
+  return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildCharExitChairMsg (PClient* nClient)
 {
   PMessage* tmpMsg = new PMessage(22);
@@ -239,9 +270,9 @@ PMessage* PMsgBuilder::BuildCharExitChairMsg (PClient* nClient)
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
 	*tmpMsg << (u8)0x22;
-	*tmpMsg << (u16)(nChar->Coords).mY; // TODO: set the wakeup position in front of
-	*tmpMsg << (u16)(nChar->Coords).mZ; // the chair instead of last char pos.
-	*tmpMsg << (u16)(nChar->Coords).mX;
+	*tmpMsg << (u16)((nChar->Coords).mY + 768) ; // TODO: set the wakeup position in front of
+	*tmpMsg << (u16)((nChar->Coords).mZ + 768) ; // the chair instead of last char pos.
+	*tmpMsg << (u16)((nChar->Coords).mX + 768) ;
 	*tmpMsg << (u8)(nChar->Coords).mUD;
 	*tmpMsg << (u8)(nChar->Coords).mLR;
 	*tmpMsg << (u8)(nChar->Coords).mAct;
@@ -740,7 +771,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   SectionMsg << (u8)nTorso;
   SectionMsg << (u8)nLegs;
   SectionMsg << (u8)0x00; // Rank
-  SectionMsg << (u32)(4 + 100000); // (nChar->GetBaseApartment() + 100000); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
+  SectionMsg << (u32)(nChar->GetBaseApartment() + 100000); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
   SectionMsg << (u8)0x01; // ?
   SectionMsg << (u8)0x00; // ?
   SectionMsg << (u8)0x00; // ?
@@ -1029,7 +1060,7 @@ PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 
 	*tmpMsg << (u16)nClient->GetLocalID();
   *tmpMsg << (u8)0x38;
   *tmpMsg << (u8)0x04; // Accepted (?)
-  *tmpMsg << (u8)0x00; // ?
+  *tmpMsg << (u8)0x00; // Sewer Level
 	*tmpMsg << (u32)nLocation;
 	*tmpMsg << (u16)nEntity;
 
@@ -1068,9 +1099,9 @@ PMessage* PMsgBuilder::BuildAptLiftFailedMsg (PClient* nClient)
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildAptLiftExitMsg (PClient* nClient, u32 nLocation, u16 nEntity)
+PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel, u32 nRawItemID)
 {
-  PMessage* tmpMsg = new PMessage(21);
+  PMessage* tmpMsg = new PMessage(28);
     
   nClient->IncreaseUDP_ID();
   
@@ -1078,19 +1109,34 @@ PMessage* PMsgBuilder::BuildAptLiftExitMsg (PClient* nClient, u32 nLocation, u16
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u16)nClient->GetSessionID();
 	
-	*tmpMsg << (u8)0x0f; // Message length placeholder;
+	if (nRawItemID)
+	{
+	  *tmpMsg << (u8)0x06; // Sub message length;
+    *tmpMsg << (u8)0x2d; // Item use response;
+    *tmpMsg << (u32)nRawItemID;
+    *tmpMsg << (u8)0x0a; // Use allowed
+	}
+	
+	*tmpMsg << (u8)0x0f; // Sub message length;
 	*tmpMsg << (u8)0x03;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
   *tmpMsg << (u8)0x38;
   *tmpMsg << (u8)0x04; // Accepted (?)
-  *tmpMsg << (u8)0x00; // ?
+  *tmpMsg << (u8)nLevel;
 	*tmpMsg << (u32)nLocation;
 	*tmpMsg << (u16)nEntity;
 
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-  
+  nClient->IncreaseUDP_ID();
+
+	/*if (nRawItemID)
+	{  
+  	nClient->IncreaseUDP_ID();
+  	tmpMsg->U16Data(1) = (u16)nClient->GetUDP_ID();
+  	tmpMsg->U16Data(3) = (u16)nClient->GetSessionID();
+  }*/
+
   return tmpMsg;  
 }
 
@@ -1157,4 +1203,54 @@ PMessage* PMsgBuilder::BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 n
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
   
   return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor)
+{
+  //PMessage* tmpMsg = new PMessage(37);
+  PMessage* tmpMsg = new PMessage(21);
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+	
+	*tmpMsg << (u8)0x0f; // Sub-message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; //++Client->GetUDP_ID(); // just placeholder, must be set outside
+	*tmpMsg << (u8)0x1b;
+	*tmpMsg << (u32)nRawItemID;
+	*tmpMsg << (u8)0x20; //?
+	if (nDoubleDoor)
+	{
+  	*tmpMsg << (u16)0x0005; //? 
+  	*tmpMsg << (u16)0x0000; //?
+  	*tmpMsg << (u16)0x1500; //?	  
+	}
+	else
+	{
+  	*tmpMsg << (u16)0x0000; //? 
+  	*tmpMsg << (u16)0x00c8; //?
+  	*tmpMsg << (u16)0x10ff; //?
+  }
+
+/*	*tmpMsg << (u8)0x0f; // Sub-message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; //++Client->GetUDP_ID(); // just placeholder, must be set outside
+	*tmpMsg << (u8)0x1b;
+	*tmpMsg << (u32)nRawItemID;
+	*tmpMsg << (u8)0x20; //?
+	if (nDoubleDoor)
+	{
+  	*tmpMsg << (u16)0x0005; //? 
+  	*tmpMsg << (u16)0x0000; //?
+  	*tmpMsg << (u16)0x1500; //?	  
+	}
+	else
+	{
+  	*tmpMsg << (u16)0x0000; //? 
+  	*tmpMsg << (u16)0x00c8; //?
+  	*tmpMsg << (u16)0x10ff; //?
+  }*/
+  
+  return tmpMsg;
 }

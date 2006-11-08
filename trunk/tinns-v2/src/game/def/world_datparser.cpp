@@ -36,6 +36,7 @@
 
 #include "worlddatatemplate.h"
 #include "furnituretemplate.h"
+#include "doortemplate.h"
 
 const u16 nonDiscardUseFlags = ufTouchable|ufUsable|ufChair|ufToolTarget ; // furniture always to kept even if function type = 0
 
@@ -150,6 +151,11 @@ if (gDevDebug) Console->Print("Element Type 3 size: %d or %d", sizeof(PSec2ElemT
             case 1000003:
             {
               ProcessOK = ProcessSec2ElemType3(Sec2ElemHeader.mDataSize);
+              break;
+            }
+            case 1000005:
+            {
+              ProcessOK = ProcessSec2ElemType5(Sec2ElemHeader.mDataSize);
               break;
             }
             default:
@@ -269,14 +275,111 @@ if (gDevDebug) Console->Print("Discarded");
 //  nItem->mBoxUpperZ = DataB.mBoxUpperZ;
 //  nItem->mBoxUpperX = DataB.mBoxUpperX;
     
-  if(nWorldModel)
-  {
-    nItem->mUseFlags = nWorldModel->GetUseFlags();
-    nItem->mFunctionType = nWorldModel->GetFunctionType();
-    nItem->mFunctionValue = nWorldModel->GetFunctionValue();
-  }
+  nItem->mDefWorldModel = nWorldModel;
   
   mWorld->AddFurnitureItem(nItem);
+  
+  return true;
+}
+
+bool PWorldDatParser::ProcessSec2ElemType5(u32 nSize)
+{
+  PSec2ElemType5Start Data;
+  char StringData[64];
+  
+  const PDefWorldModel* nWorldModel;
+  std::string nName;
+  char* ActorString;
+  char* ParamString;
+    
+  const u32 sza = sizeof(PSec2ElemType5Start);
+
+  if ((nSize < sza))
+  {
+    Console->Print(RED, BLACK, "[ERROR] Wrong size for Sec2ElemType5 (%d read vs %d needed", nSize, sza);
+    return false;
+  }   
+  if ((u32)(f->Read(&Data, sza)) < sza)
+  {
+    Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType5start");
+    return false;
+  }
+  u32 szb = Data.mActorStringSize  + Data.mParamStringSize;
+  
+  if (nSize != (sza + szb))
+  {
+    Console->Print(RED, BLACK, "[ERROR] Wrong size for Sec2ElemType5 (%d read vs %d needed", nSize, sza + szb);
+    return false;
+  }
+  else
+  {
+    if (szb > 64)
+    {
+      Console->Print(RED, BLACK, "[Warning] String data too long in Sec2ElemType5 End String. End will be ignored");
+      szb = 64;
+    }
+    if((u32)(f->Read(StringData, szb)) < szb)
+    {
+      Console->Print(RED, BLACK, "[ERROR] Unexpected end of file in Sec2ElemType5 End Strings");
+      return false;
+    }
+  }
+ 
+  if (Data.mWorldmodelID)
+  {
+    nWorldModel = GameDefs->GetWorldModelDef(Data.mWorldmodelID);    
+    if(nWorldModel)
+      nName = nWorldModel->GetName();
+    else
+      nName = "UNKNOWN";
+  }
+  else
+  {
+    nName = "PASSIVE";
+    nWorldModel = NULL;
+  }
+
+  StringData[Data.mActorStringSize - 1] = 0;
+  ActorString = StringData;
+  StringData[szb - 1] = 0;
+  ParamString = StringData + Data.mActorStringSize;
+  
+if (gDevDebug) {   
+Console->Print("-------------------------------------------------------");
+Console->Print("Door %s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mDoorID);
+Console->Print("y:%f z:%f x:%f", Data.mPosY , Data.mPosZ, Data.mPosX);
+Console->Print("Uk1:0x%04x Uk1bis:0x%04x Uk5:0x%04x", Data.mUnknown1, Data.mUnknown1bis, Data.mUnknown5);
+Console->Print("Type=%s Param=%s", ActorString, ParamString);
+}
+
+
+  if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
+  {
+if (gDevDebug) Console->Print("Discarded");
+if (gDevDebug) 
+{
+Console->Print("Door %s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mDoorID);
+Console->Print("Type=%s Param=%s", ActorString, ParamString);
+}
+    return true;
+  }
+  
+  PDoorTemplate* nDoor = new PDoorTemplate;
+  nDoor->mDoorID = Data.mDoorID;
+
+  //nDoor->mUnknown1 = Data.mUnknown1; //18 00
+  //nDoor->mUnknown1bis = Data.mUnknown1bis; //00 00 ? varies
+  //nDoor->mPosY = Data.mPosY;
+  //nDoor->mPosZ = Data.mPosZ;
+  //nDoor->mPosX = Data.mPosX;
+  //nDoor->mUnknown5 = Data.mUnknown5; //00 00 ? second byte varies
+  nDoor->mWorldmodelID = Data.mWorldmodelID; //door type from worldmodel.def
+  nDoor->mDefWorldModel = nWorldModel;
+  
+  nDoor->SetDoorTypeName(ActorString);
+  nDoor->SetDoorParameters(ParamString);
+
+  mWorld->AddDoor(nDoor);
   
   return true;
 }

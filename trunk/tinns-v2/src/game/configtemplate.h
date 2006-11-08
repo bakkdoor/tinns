@@ -60,6 +60,7 @@ const char* GameConfigTemplate[][2] = {
   //{"worlds_path", "./worlds"},
   {"nc_data_path", "."},
   {"isc_method", "1"},
+  {"isc_server_id", ""},
   {"isc_update_intervall", "60"},
   {"isc_delayed_update_intervall", "6"}, // the purpose of this option is to avoid multiple infoDB update when client just disconnects/reconnects during login phases
   {"isc_infoserverip", "127.0.0.1"},

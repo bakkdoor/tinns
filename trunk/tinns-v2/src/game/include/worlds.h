@@ -33,26 +33,31 @@
 
 #define APT_BASE_WORLD_ID 100000
 
-class PWorldDataTemplate;
+#include "worlddatatemplate.h"
 
 class PWorld
 {
+  friend class PWorlds;
   private:
     u32 mID;
     bool mIsAppartment;
     int mUseCount;
     PWorldDataTemplate* mWorldDataTemplate;
+
+
+    inline void IncreaseUseCount() { ++mUseCount; }
+    inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
+    inline int GetUseCount() { return mUseCount; } 
+    bool Load(u32 nWorldID);
     
   public:
     PWorld();
     ~PWorld();
     
-    inline void IncreaseUseCount() { ++mUseCount; }
-    inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
-    inline int GetUseCount() { return mUseCount; }
-    
-    bool Load(u32 nWorldID);
+    inline std::string GetName() { return (mWorldDataTemplate ? mWorldDataTemplate->GetName() : EmptyString ); }
     inline bool IsAppartment() { return mIsAppartment; }
+    const PDefWorldModel* GetFurnitureItemModel(u32 nItemID);
+    inline const PDoorTemplate* GetDoor(u32 nDoorID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetDoor(nDoorID) : NULL ); }
 };
 
 

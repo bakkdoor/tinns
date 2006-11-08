@@ -32,6 +32,9 @@
 
 #include "main.h"
 #include "udp_useobject.h"
+#include "worlds.h"
+#include "furnituretemplate.h"
+#include "doortemplate.h"
 
 /**** PUdpVhcMove ****/
 
@@ -44,15 +47,19 @@ PUdpMsgAnalyser* PUdpUseObject::Analyse()
 {
   mDecodeData->mName << "=Object use";
   
-  mItemID = mDecodeData->mMessage->U32Data(mDecodeData->Sub0x13Start+8);
+  mRawItemID = mDecodeData->mMessage->U32Data(mDecodeData->Sub0x13Start+8);
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   
   return this;
 }
-
+    
 bool PUdpUseObject::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
+  PChar* tChar = nClient->GetChar();
+  u32 ItemID;
+  char DbgMessage[128];
+  
   /*PMessage* cMsg = mDecodeData->mMessage;
   u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
   
@@ -61,25 +68,108 @@ bool PUdpUseObject::DoAction()
 
 if (gDevDebug)
 {
-PChar* Char = nClient->GetChar();
-Console->Print("Char at y=%f (0x%04x) z=%f (0x%04x) x=%f (0x%04x)", (f32)(Char->Coords.mY - 32000), Char->Coords.mY, (f32)(Char->Coords.mZ - 32000), Char->Coords.mZ, (f32)(Char->Coords.mX - 32000), Char->Coords.mX);
-if (mItemID & 1023)
-Console->Print("using item %d (0x%08x)", mItemID, mItemID);    
+Console->Print("Char at y=%f (0x%04x) z=%f (0x%04x) x=%f (0x%04x)", (f32)(tChar->Coords.mY - 32000), tChar->Coords.mY, (f32)(tChar->Coords.mZ - 32000), tChar->Coords.mZ, (f32)(tChar->Coords.mX - 32000), tChar->Coords.mX);
+if (mRawItemID & 1023)
+Console->Print("using item %d (0x%08x)", mRawItemID, mRawItemID);    
 else
-Console->Print("using item %d (0x%08x) [%d (0x%08x)]", mItemID, mItemID, mItemID/1024 -1, mItemID/1024 -1);
+Console->Print("using item %d (0x%08x) [%d (0x%08x)]", mRawItemID, mRawItemID, mRawItemID/1024 -1, mRawItemID/1024 -1);
 }
 
   if(nClient->GetDebugMode(DBG_ITEMID))
   {
-    char DbgMessage[128];
-    if (mItemID & 1023)
-      snprintf(DbgMessage, 128, "using item [raw: %d (0x%08x)]", mItemID, mItemID);    
+    if (mRawItemID & 1023)
+      snprintf(DbgMessage, 128, "using item [raw: %d (0x%08x)]", mRawItemID, mRawItemID);    
     else
-      snprintf(DbgMessage, 128, "using item %d (0x%08x) [raw: %d (0x%08x)]", mItemID/1024 -1, mItemID/1024 -1, mItemID, mItemID);
+      snprintf(DbgMessage, 128, "using item %d (0x%08x) [raw: %d (0x%08x)]", mRawItemID/1024 -1, mRawItemID/1024 -1, mRawItemID, mRawItemID);
     Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
   }
   
-  OldHandler(); // Temp
+  PWorld* CurrentWorld = Worlds->GetWorld(tChar->GetLocation());
+  
+  if (mRawItemID & 1023) // non-furniture objects
+  {
+    if (mRawItemID > 0x80) // maybe door
+    {
+      if(nClient->GetDebugMode(DBG_ITEMID))
+      {
+        snprintf(DbgMessage, 128, "Door : %d", mRawItemID - 0x80);    
+        Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
+      }      
+      const PDoorTemplate* tDoor = CurrentWorld->GetDoor(mRawItemID - 0x80);
+      if (tDoor)
+      {
+if (gDevDebug) Console->Print("Opening %s door %d", (tDoor->IsDoubleDoor()?"double":"simple"), mRawItemID - 0x80);
+        PMessage* tmpMsg = MsgBuilder->BuildDoorOpenMsg(mRawItemID, tDoor->IsDoubleDoor());
+        ClientManager->UDPBroadcast(tmpMsg, nClient);
+        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+      }
+    }
+    if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
+    {
+      
+    }
+  }
+  else // furniture objects
+  {
+    ItemID = mRawItemID/1024 -1;
+    
+    const PDefWorldModel* tFurnitureModel = CurrentWorld->GetFurnitureItemModel(ItemID);
+    if (tFurnitureModel) // valid active furniture (else invalid or passive furniture)
+    {
+      if(nClient->GetDebugMode(DBG_ITEMID))
+      {
+        snprintf(DbgMessage, 128, "Item : %s", tFurnitureModel->GetName().c_str());    
+        Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
+      }      
+      
+      if(tFurnitureModel->GetUseFlags() & ufChair) // Chair. More to do: check if chair not in use + reserve chair + mem in char
+      {
+        PMessage* tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
+        ClientManager->UDPBroadcast(tmpMsg, nClient);
+        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+      }
+      else
+      {
+if (gDevDebug) Console->Print("Item function type: %d value: %d", tFurnitureModel->GetFunctionType(), tFurnitureModel->GetFunctionValue());
+        switch(tFurnitureModel->GetFunctionType())
+        {
+          case 18: // "WORLDCHANGEACTOR"
+          case 20: // "DATFILE WORLDCHANGE ACTOR"
+          {
+            const PDefAppPlace* nAppPlace = GameDefs->GetAppPlaceDef(tFurnitureModel->GetFunctionValue());
+            if(nAppPlace)
+            {
+              u32 Location = nAppPlace->GetExitWorldID();
+              u16 Entity = nAppPlace->GetExitWorldEntity();
+              u8 SewerLevel = 0;
+              //SewerLevel = nAppPlace->GetSewerLevel();
+              
+              PMessage* tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, 0); //mRawItemID
+              nClient->getUDPConn()->SendMessage(tmpMsg);
+if (gDevDebug) Console->Print("%s Client[%d] Char[%s] moving to zone %d, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
+if (gDevDebug) Console->Print("%s Location=%d Entity=%d Level=%d", Console->ColorText(GREEN, BLACK, "[Debug]"), Location, Entity, SewerLevel);
+            }
+            else
+            {
+              Console->Print("%s Client[%d] Char[%s] invalid destination %d (appplaces.def)", Console->ColorText(RED, BLACK, "[Warning]"), nClient->GetID(), tChar->GetName().c_str(), tFurnitureModel->GetFunctionValue());
+              // send a "refused" msg ?
+            }
+            mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+            //nextAnalyser = new PUdpCharJump(mDecodeData);
+            break;
+          }
+      
+        }
+      }
+    }
+    else
+    {
+/*if (gDevDebug)*/ Console->Print("Item not known from world template (maybe seen as PASSIVE ?)"); 
+    }
+  }
+  
+  if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // Temp
+    OldHandler(); // Temp
   
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
@@ -233,9 +323,9 @@ u8 DoorLocked[] = {
 
         //*(unsigned short*)&GenRepUse[8] = *(unsigned short*)&Packet[9];
         
-        int Option1 = MySQL->GetWorldItemOption(mItemID/256, Location, 1); // from NeoX
+        int Option1 = MySQL->GetWorldItemOption(mRawItemID/256, Location, 1); // from NeoX
 
-				*(u32*)&GenRepUse[7] = (u32)mItemID; // good itemID
+				*(u32*)&GenRepUse[7] = (u32)mRawItemID; // good itemID
 				*(u32*)&GenRepUse[20] = (u32)Location; // from NeoX
 				*(u16*)&GenRepUse[24] = (u16)Option1; // from NeoX
 				

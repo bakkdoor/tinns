@@ -72,6 +72,8 @@ PChat *Chat = 0;
 
 PISC *ISC = 0;
 
+const std::string EmptyString;
+  
 // Development debug output control (set by config option dev_debug)
 bool gDevDebug = false;
 

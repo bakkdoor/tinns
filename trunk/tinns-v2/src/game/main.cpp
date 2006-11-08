@@ -75,17 +75,7 @@ int main()
 	if(!InitTinNS())
 		while(1)
 			sleep(1);
-	
-	/*** Test ***/
-	PWorldDataTemplate tmpWorld;
-	std::string tWorldName = "terrain/j_12.dat";
-  //std::string tWorldName = "./worlds/apps/plaza_app_1.dat";
-  //std::string tWorldName = "./worlds/plaza/plaza_p1.dat";
-  //std::string tWorldName = "./worlds/military/military_pstairs.dat";
-	tmpWorld.LoadDatFile(tWorldName);
-	/*** End Test ***/
-  
-	
+
 	//RemoteConsole->Start();
 	GameServer->Start();
 	//GameServer->SetGameTime(0);

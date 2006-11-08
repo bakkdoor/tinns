@@ -85,11 +85,11 @@ struct PSec2ElemType5Start //door
 {
   u16 mUnknown1; //18 00
   u16 mUnknown1bis; //00 00 ? varies
-  u32 mUnknown2; //f32 mPosY ?
-  u32 mUnknown3; //f32 mPosZ ?
-  u32 mUnknown4; //00 80 FB 43 ? f32 mPosX ?
-  u8 mActorSize; //string size with ending 0
-  u8 mParamSize; //string size with ending 0
+  f32 mPosY;
+  f32 mPosZ;
+  f32 mPosX;
+  u8 mActorStringSize; //string size with ending 0
+  u8 mParamStringSize; //string size with ending 0
   u16 mUnknown5; //00 00 ? second byte varies
   u16 mDoorID; // but what is the link with ObjectID sent in Use message (can't find the base offset .. or 0x80 for doors ???)
   u16 mWorldmodelID; //door type from worldmodel.def
@@ -109,8 +109,8 @@ struct PSec2ElemType6Start //npc
   f32 mPosZ;
   f32 mPosX;
   u32 mNPCTypeID; //npc type in npc.def
-  u8 mActorSize; //string size with ending 0
-  u8 mParamSize; //string size with ending 0
+  u8 mActorStringSize; //string size with ending 0
+  u8 mParamStringSize; //string size with ending 0
   u16 mNpcID; // kind of ?
   u32 mUnknown3; //01 00 00 00 ?
   u16 mUnknown4; //00 00 ?

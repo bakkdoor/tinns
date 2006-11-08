@@ -36,7 +36,8 @@
 class PUdpUseObject : public PUdpMsgAnalyser
 {
   private:
-    u32 mItemID;
+    u32 mRawItemID;
+
     void OldHandler(); // Temp during migration only
     
   public:

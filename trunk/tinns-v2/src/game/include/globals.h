@@ -64,6 +64,9 @@ extern class PVehicles *Vehicles;
 //Infoserver update
 extern class PISC *ISC;
 
+//Empty string
+extern const std::string EmptyString;
+  
 bool InitTinNS();
 void Shutdown();
 

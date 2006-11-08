@@ -117,7 +117,8 @@ bool PUdpGenrepZoning::DoAction()
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
   
-  u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not 32 ???
+  //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not 32 ???
+  u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
   
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
@@ -154,14 +155,16 @@ bool PUdpAptGRZoning::DoAction()
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
   
-  u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not u32 ???
+  //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not u32 ???
+  u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
   
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 	
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  nClient->ChangeCharLocation(100000 + nClient->GetChar()->GetBaseApartment());
+  if (! nClient->ChangeCharLocation(100000 + nClient->GetChar()->GetBaseApartment()))
+    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), 100000 + nClient->GetChar()->GetBaseApartment(), newLocation);
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
@@ -240,7 +243,6 @@ bool PUdpAppartmentAccess::DoAction()
 Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);  
   if ((Location > 100000) && (!strcmp ("Exit", mPassword)))
   {
-    /*Client_GetAptExit (Client_Sockets[ClientNum].CharInfo.Location, &Location, &Entity)*/;
     AppLoc = MySQL->GetAptLocation(Location);
     const PDefAppPlace* nAppPlace = (AppLoc ? GameDefs->GetAppPlaceDef(AppLoc) : 0);
     if(nAppPlace)
@@ -250,11 +252,10 @@ Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->G
     }
     else
     {
-      Console->Print("%s Client[%d] Char[%s] invalid location %d before App exit", Console->ColorText(RED, BLACK, "[Warning]"), nClient->GetID(), nChar->GetName().c_str(),Location);
       Location = 1; //PLAZA 1
       Entity = 100; //TYPHERRA MEMORIAL GR 1
     }
-    tmpMsg = MsgBuilder->BuildAptLiftExitMsg(nClient, Location, Entity);
+    tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity);
   }
   else
   {
