@@ -846,6 +846,38 @@ if(strcmp(Command, "h") == 0) // testing apprence status
   tmpStr[127] = '\0';
   Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
   }
+  
+ if(strcmp(Command, "v") == 0) // testing actions
+  {
+    char tmpStr[128];
+    int testmode = 0; // change here only for u8/u16/u32 testvalue use
+    
+    if(Arg1[0] != '\0')
+    {
+      switch(testmode)
+      {
+        case 0: Client->testval8 = (u8)(atoi(Arg1) & 0xff); break;
+        case 1: Client->testval16 = (u16)(atoi(Arg1) & 0xffff); break;
+        case 2: Client->testval32 = (u32)(atoi(Arg1) & 0xffffffff); break;
+      }
+    }
+    else
+    {
+      Client->testval8 = 0;
+      Client->testval16 = 0;
+      Client->testval32 = 0;
+    }
+    
+    switch(testmode)
+    {
+      case 0: snprintf(tmpStr, 127, "Test value u8 set to 0x%02x (%d)", Client->testval8, Client->testval8); break;
+      case 1: snprintf(tmpStr, 127, "Test value u16 set to 0x%04x (%d)", Client->testval16, Client->testval16); break;
+      case 2: snprintf(tmpStr, 127, "Test value u32 set to 0x%08x (%d)", Client->testval32, Client->testval32); break;
+      default: tmpStr[0] = '\0';
+    }
+    tmpStr[127] = '\0';
+    Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
+  }
 /******* end temp *******/    
 
 // -------------------------------------------------------   

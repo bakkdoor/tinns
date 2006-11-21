@@ -80,6 +80,7 @@ class PMsgBuilder
   PMessage* BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints);
   PMessage* BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 nMode); // mode = 1 for Direct, 2 for Buddy
   
+  
 };
 
 #endif

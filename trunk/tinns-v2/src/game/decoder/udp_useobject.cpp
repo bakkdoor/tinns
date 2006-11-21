@@ -106,13 +106,15 @@ if (gDevDebug) Console->Print("Opening %s door %d", (tDoor->IsDoubleDoor()?"doub
     }
     if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
     {
-      
+if (gDevDebug) Console->Print("Clicing on char, npc or vhc %d", mRawItemID);
+      mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;    
     }
   }
   else // furniture objects
   {
     ItemID = mRawItemID/1024 -1;
     
+    const PFurnitureItemTemplate* tFurnitureTemplate = CurrentWorld->GetFurnitureItemTemplate(ItemID);
     const PDefWorldModel* tFurnitureModel = CurrentWorld->GetFurnitureItemModel(ItemID);
     if (tFurnitureModel) // valid active furniture (else invalid or passive furniture)
     {
@@ -122,10 +124,25 @@ if (gDevDebug) Console->Print("Opening %s door %d", (tDoor->IsDoubleDoor()?"doub
         Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
       }      
       
-      if(tFurnitureModel->GetUseFlags() & ufChair) // Chair. More to do: check if chair not in use + reserve chair + mem in char
+      if(tFurnitureModel->GetUseFlags() & ufChair)
       {
-        PMessage* tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
-        ClientManager->UDPBroadcast(tmpMsg, nClient);
+        if (CurrentWorld->CharUseChair(nClient->GetLocalID(), ItemID))
+        {
+          u32 ChairInUse = tChar->GetChairInUse();
+if (gDevDebug) Console->Print("Localchar %d was previously using chair %d.", nClient->GetLocalID(), ChairInUse);
+          if((ChairInUse) && (ChairInUse != ItemID))
+          {
+            CurrentWorld->CharLeaveChair(nClient->GetLocalID(), ChairInUse);
+          }
+          tChar->SetChairInUse(ItemID);
+
+          tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
+          (tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
+          
+          PMessage* tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
+          ClientManager->UDPBroadcast(tmpMsg, nClient);         
+        }
+
         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
       }
       else
@@ -143,6 +160,7 @@ if (gDevDebug) Console->Print("Item function type: %d value: %d", tFurnitureMode
               u16 Entity = nAppPlace->GetExitWorldEntity();
               u8 SewerLevel = 0;
               //SewerLevel = nAppPlace->GetSewerLevel();
+              //SewerLevel = (tFurnitureModel->GetFunctionType() == 18 ? 0 : 1);
               
               PMessage* tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, 0); //mRawItemID
               nClient->getUDPConn()->SendMessage(tmpMsg);
@@ -158,7 +176,37 @@ if (gDevDebug) Console->Print("%s Location=%d Entity=%d Level=%d", Console->Colo
             //nextAnalyser = new PUdpCharJump(mDecodeData);
             break;
           }
-      
+          case 1: //Itemcontainer	
+          case 2: //Terminal	
+          case 3: //Outfitter	
+          case 4: //Trader	
+          case 5: //Mineral	
+          case 6: //Respawn Station	
+          case 7: //GoGuardian	
+          case 8: //Hackterminal	
+          case 9: //Appartement Eingang	
+          case 10: //Appartement Ein/Ausgang	
+          case 11: //Appartement Klingel/Öffner	
+          case 12: //Standard Button	
+          case 13: //Hack Button	
+          case 14: //HOLOMATCH ENTRANCE	
+          case 15: //HOLOMATCH EXIT	
+          case 16: //HOLOMATCH REFRESH	
+          case 17: //HOLOMATCH HEAL
+          case 19: //CLANTERMINAL
+          case 21: //LOCATION FOR 20	
+          case 22: // 	
+          case 23: //EINTRITTSGELD BUTTON	
+          case 24: //TUTORIALEXIT	
+          case 25: //EXPLOSIVE	
+          case 26: //Outpost Switch	
+          case 27: //Old goguardian	
+          case 28: //Fahrzeug Depot Interface	
+          case 29: //Underground Exit	
+          case 30: //Static FX (Value=Type. 1=Fire 2=Smoke 3=Steam 4=Sparkle)	
+          case 31: //Venture Warp Station
+          default:
+            break;   
         }
       }
     }
@@ -182,7 +230,7 @@ void PUdpUseObject::OldHandler()
   const u8* Packet = (const u8*)(mDecodeData->mMessage->GetMessageData()) + mDecodeData->Sub0x13Start;
   
 /** --------------------- Packet defs --------------------- **/
-u8 DoubleDoorPacket[] = {
+/*u8 DoubleDoorPacket[] = {
     0x13, 0x05, 0x00, 0x22, 0x94,
     0x0f,
     0x03, 0x27, 0x00, 0x1b, 0x82, 0x00, 0x00, 0x00, 0x20, 0x05,
@@ -198,7 +246,7 @@ u8 SingleDoorPacket[] = {
     0x00, 0xc8, 0x00, 0xff, 0x10,
     0x0f,
     0x03, 0x28, 0x00, 0x1b, 0x82, 0x00, 0x00, 0x00, 0x20, 0x00,
-    0x00, 0xc8, 0x00, 0xff, 0x10};  // 37
+    0x00, 0xc8, 0x00, 0xff, 0x10};  // 37*/
 
 u8 GenRepUse[] = {
     0x13, 0x1a, 0x00, 0x61, 0xb1,
@@ -249,14 +297,14 @@ u8 AptItemUse[] = {
     0x00, 0x00, 0xf3, 0x00, 0x00, 0x00, 0x00};
 //          |Apt Place|
 
-u8 ChairUse[] = {
+/*u8 ChairUse[] = {
     0x13, 0x47, 0x00, 0x1a, 0xd6,
     0x0c,
     0x03, 0x46, 0x00, 0x1f, 0x01, 0x00, 0x21, 0x00, 0x68, 0x01,
     0x00, 0x00, //         |Item ID |
     0x0c,
     0x03, 0x47, 0x00, 0x1f, 0x01, 0x00, 0x21, 0x00, 0x68, 0x01,
-    0x00, 0x00};//         |Item ID |
+    0x00, 0x00};//         |Item ID |*/
 
 u8 VehicleUse[] = {
     0x13, 0x52, 0x00, 0x94, 0xae,
@@ -395,7 +443,7 @@ if (gDevDebug) Console->Print("Warping player from %d to %d entry %d", Char->Get
 
         Client->getUDPConn()->write(DungeonUse, sizeof(DungeonUse));
     }
-    else if (worlditemtype == 5) // Chairs
+    /*else if (worlditemtype == 5) // Chairs
     {
         //Client->IncreaseUDP_ID();
         Client->SetUDP_ID(Client->GetUDP_ID()+1);
@@ -414,7 +462,7 @@ if (gDevDebug) Console->Print("Warping player from %d to %d entry %d", Char->Get
 
         Client->getUDPConn()->write(ChairUse, sizeof(ChairUse));
 if (gDevDebug) Console->Print("Chair");
-    }
+    }*/
     else if (worlditemtype == 6) // Condition Locks
     {
         int option1 = MySQL->GetWorldItemOption(itemID, Char->GetLocation(), 1);
@@ -741,7 +789,7 @@ if (gDevDebug) Console->Print("Outpost hack");
 
         Chat->send(Client, CHAT_DIRECT, "System", ErrorMsg);
     }
-    else if(i == 1)  // Single door
+    /*else if(i == 1)  // Single door
     {
         //Client->IncreaseUDP_ID();
         Client->SetUDP_ID(Client->GetUDP_ID()+1);
@@ -771,7 +819,7 @@ if (gDevDebug) Console->Print("Outpost hack");
 
 //if (gDevDebug) Console->Print("Opening Doubledoor id %d", Packet[8]);
         Client->getUDPConn()->write(DoubleDoorPacket, sizeof(DoubleDoorPacket));
-    }
+    }*/
     else if (i == 3) //Locked Door (Opens by other means, usually access panel)
     {
         //Client->IncreaseUDP_ID();

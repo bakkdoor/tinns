@@ -38,6 +38,8 @@
 #include "furnituretemplate.h"
 #include "doortemplate.h"
 
+#include <math.h>
+
 const u16 nonDiscardUseFlags = ufTouchable|ufUsable|ufChair|ufToolTarget ; // furniture always to kept even if function type = 0
 
 PWorldDatParser::PWorldDatParser()
@@ -258,7 +260,7 @@ if (gDevDebug) Console->Print("Discarded");
 //  nItem->mPosZ = 32000 + DataA.mPosZ;
 //  nItem->mPosX = 32000 + DataA.mPosX;
 //  nItem->mRotY = DataA.mRotY;
-//  nItem->mRotZ = DataA.mRotZ;
+  nItem->mRotZ = DataA.mRotZ;
 //  nItem->mRotX = DataA.mRotX;
 //  nItem->mScale = DataA.mScale;
 //  nItem->mUnknown2 = DataA.mUnknown2;
@@ -277,6 +279,20 @@ if (gDevDebug) Console->Print("Discarded");
     
   nItem->mDefWorldModel = nWorldModel;
   
+  float Angle = (180 +DataA.mRotZ) * 3.14159/180;
+  float Radius = abs((int)((DataB.mBoxUpperX - DataB.mBoxLowerX)/2));
+  if (Radius == 0)
+  {
+    Radius = 10;
+  }
+  Radius *= DataA.mScale;
+  Radius +=5;
+   
+  nItem->mFrontPosY = (u16)(32000 + DataA.mPosY + Radius * sinf(Angle));
+  nItem->mFrontPosZ = (u16)(32000 + DataA.mPosZ);
+  nItem->mFrontPosX = (u16)(32000 + DataA.mPosX + Radius * cosf(Angle));
+  nItem->mFrontLR = (u8)(0.5 * (DataA.mRotZ + (DataA.mRotZ<0 ? 360 : 0)));
+      
   mWorld->AddFurnitureItem(nItem);
   
   return true;

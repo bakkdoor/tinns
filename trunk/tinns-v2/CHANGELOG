@@ -582,3 +582,17 @@ Hammag; 08.11.2006 22:00 GMT+1
  - all doors should open and be seen opening by other chars. Locked doors will open like any others
     as I haven't found the link bewteen button and door
  - other internal changes
+
+====================
+Hammag; 21.11.2006 02:00 GMT+1
+----------
+[rev. 27]
+
+<General changes>
+ - fixed teleport-to-nowhere-when-leaving-chair issue
+ - implemented free chair check
+ - implemented nice position when leaving chair (orientation still not fixed ...)
+ => problem of char disapearing for others when sitting for some time still not fixed*
+ - added "new_char_location" option in gameserver.conf, with default to mc5 starting zone
+ - added starting apartment creation
+ 

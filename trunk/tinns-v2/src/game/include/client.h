@@ -113,7 +113,7 @@ class PClient
 		inline int GetLocalID() const { return mIndex + 1; }
 		inline u32 GetCharID() const { return mCharID; }
 		PChar* GetChar() const;
-		bool ChangeCharLocation(u32 nLocation);
+		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
 		
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
 		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
@@ -147,6 +147,11 @@ class PClient
 		// new multiuser-chat implementation //
 		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
 		//inline int*	getIP() const { return (int*) m_IP; }
+		
+		// used for dynamic ingame testing
+		u8 testval8;
+		u16 testval16;
+		u32 testval32;
 };
 
 #endif

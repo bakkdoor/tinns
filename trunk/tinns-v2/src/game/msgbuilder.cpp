@@ -270,8 +270,8 @@ PMessage* PMsgBuilder::BuildCharExitChairMsg (PClient* nClient)
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
 	*tmpMsg << (u8)0x22;
-	*tmpMsg << (u16)((nChar->Coords).mY + 768) ; // TODO: set the wakeup position in front of
-	*tmpMsg << (u16)((nChar->Coords).mZ + 768) ; // the chair instead of last char pos.
+	*tmpMsg << (u16)((nChar->Coords).mY + 768) ;
+	*tmpMsg << (u16)((nChar->Coords).mZ + 768) ;
 	*tmpMsg << (u16)((nChar->Coords).mX + 768) ;
 	*tmpMsg << (u8)(nChar->Coords).mUD;
 	*tmpMsg << (u8)(nChar->Coords).mLR;

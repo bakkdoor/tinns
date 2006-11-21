@@ -57,7 +57,7 @@ class PFurnitureItemTemplate
     //f32 mPosZ;
     //f32 mPosX;
     //f32 mRotY;
-    //f32 mRotZ;
+    f32 mRotZ;
     //f32 mRotX;
     //u32 mScale; //00 00 80 3F ?  = float(1.0000) scale factor ? // mostly used by holoscreens (passiv object)
     //u32 mUnknown2; //01 00 00 00 ?
@@ -74,6 +74,11 @@ class PFurnitureItemTemplate
     //f32 mBoxUpperZ;
     //f32 mBoxUpperX;
     
+    u16 mFrontPosY;
+    u16 mFrontPosZ;
+    u16 mFrontPosX;
+    u8 mFrontLR;
+    
     const PDefWorldModel* mDefWorldModel;
 
     
@@ -87,6 +92,8 @@ class PFurnitureItemTemplate
     inline const int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
     inline const std::string& GetName() { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
     inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
+    inline const u8 GetFrontLR() const { return mFrontLR; }
+    inline void GetFrontPos(u16* nFrontPosX, u16* nFrontPosY, u16* nFrontPosZ) const { *nFrontPosY = mFrontPosY; *nFrontPosZ = mFrontPosZ; *nFrontPosX = mFrontPosX;}
 };
 
 #endif

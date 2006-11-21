@@ -52,6 +52,7 @@
 
 #include "msgbuilder.h"
 #include "worlds.h"
+#include "appartements.h"
 
 PVehicles *Vehicles = 0;
 PMySQL *MySQL = 0;
@@ -65,6 +66,7 @@ PGameServer *GameServer = 0;
 ServerSocket *ServerSock = 0;
 PMsgBuilder *MsgBuilder = 0;
 PWorlds *Worlds = 0;
+PAppartements* Appartements = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -127,6 +129,8 @@ bool InitTinNS()
 
   Worlds = new PWorlds();
   Worlds->LoadWorlds();
+  
+  Appartements = new PAppartements;
   
 	Database = new PDatabase();
 	Database->Init();

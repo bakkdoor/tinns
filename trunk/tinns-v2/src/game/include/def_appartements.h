@@ -49,7 +49,8 @@ class PDefAppartement
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
+		inline int GetIndex() const { return mIndex; } // to be removed
+		inline int GetID() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline const std::string &GetWorldName() const { return mWorldName; }
 		inline int GetValue() const { return mValue; }

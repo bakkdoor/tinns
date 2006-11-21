@@ -48,6 +48,7 @@
 
 #include "main.h"
 #include "worlds.h"
+#include "appartements.h"
 
 PChar::PChar()
 {
@@ -76,8 +77,10 @@ PChar::PChar()
 	
 	mLocationLeased = false; // temp until char on-demand load/unload
 	mLocation = 0;
-	mApt=0;
+	mStartApt=0;
+	mPrimaryApt=0;
 	mCash = 0;
+	mChairInUse = 0;
 
   mIsOnline = false;
   mDirtyFlag = false;
@@ -367,7 +370,8 @@ bool PChar::SQLLoad(int CharID) {
         Coords.mLR = static_cast<u8>(posvalue);        
         
         int primapt = std::atoi(row[c_apt]);
-        mApt  = static_cast<u32>(primapt);
+        mPrimaryApt = static_cast<u32>(primapt);
+        mStartApt = mPrimaryApt;
         
         // Cash
         f32 cashvalue = std::atof(row[c_cash]);
@@ -456,14 +460,6 @@ bool PChar::SQLLoad(int CharID) {
     }
     MySQL->FreeGameSQLResult(result);
     
-    if(!Worlds->IsValidWorld(mLocation) || !Worlds->LeaseWorld(mLocation))
-    {
-      mLocation = 1;
-      if(!Worlds->IsValidWorld(mLocation) || !Worlds->LeaseWorld(mLocation))
-        return false;
-    }
-    SetLocationLeased(true); // temp
-    
     return true;
 }
 
@@ -534,6 +530,7 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
 	SetBaseInventory();
 	SetAccount(Account);
 	SetCharSlot(Slot);
+	mLocation = Config->GetOptionInt("new_char_location");
 	
 	// This part will have to be rewritten with proper methods
   mSoullight = 10;
@@ -549,8 +546,9 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
 	{
     mBuddyList = new PBuddyList(mID);
     mGenrepList = new PGenrepList(mID);
-  
-	  if (SQLSave())
+    mStartApt = mPrimaryApt = Appartements->CreateBaseAppartement(mID, mName, mFaction);
+    
+	  if (mStartApt && SQLSave())
 	  {
       return true;
     }
@@ -559,6 +557,10 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
       if (mID)
       {
         SQLDelete();
+        if (mStartApt)
+        {
+          Appartements->DeleteCharAppartements(mID);
+        }
       }
     }
   }
@@ -591,7 +593,7 @@ bool PChar::SQLSave()
     query += Ssprintf(",c_angle_ud='%u'", Coords.mUD);
     query += Ssprintf(",c_angle_lr='%u'", Coords.mLR);
     query += Ssprintf(",c_cash='%u'", mCash);
-    query += Ssprintf(",c_apt='%u'", mApt);
+    query += Ssprintf(",c_apt='%u'", mPrimaryApt);
     
     query += Ssprintf(",c_head='%u'", mRealHead);
     query += Ssprintf(",c_torso='%u'", mRealTorso);

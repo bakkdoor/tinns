@@ -168,10 +168,13 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
         if ((tmpMsg->GetSize() > 9) && (tmpMsg->U8Data(0x00) == 0x13))
         {
           CurrPos = 5;
-          while ((CurrPos < tmpMsg->GetSize()) && (tmpMsg->U8Data(CurrPos + 1) == 0x03))
+          while (CurrPos < tmpMsg->GetSize()) // do UDP_ID mgt for each 0x03 subtype subpacket
           {
-            itClient->IncreaseUDP_ID();
-            tmpMsg->U16Data(CurrPos + 2) = itClient->GetUDP_ID();
+            if (tmpMsg->U8Data(CurrPos + 1) == 0x03)
+            {
+              itClient->IncreaseUDP_ID();
+              tmpMsg->U16Data(CurrPos + 2) = itClient->GetUDP_ID();
+            }
             CurrPos = CurrPos + tmpMsg->U8Data(CurrPos) + 1;
           }
         }

@@ -35,6 +35,8 @@
 
 #include "worlddatatemplate.h"
 
+typedef std::map<u32, int> PChairsInUseMap;
+  
 class PWorld
 {
   friend class PWorlds;
@@ -43,7 +45,7 @@ class PWorld
     bool mIsAppartment;
     int mUseCount;
     PWorldDataTemplate* mWorldDataTemplate;
-
+    PChairsInUseMap mChairsInUseMap;
 
     inline void IncreaseUseCount() { ++mUseCount; }
     inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
@@ -56,8 +58,12 @@ class PWorld
     
     inline std::string GetName() { return (mWorldDataTemplate ? mWorldDataTemplate->GetName() : EmptyString ); }
     inline bool IsAppartment() { return mIsAppartment; }
+    inline const PFurnitureItemTemplate* GetFurnitureItemTemplate(u32 nItemID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetFurnitureItem(nItemID) : NULL) ; }
     const PDefWorldModel* GetFurnitureItemModel(u32 nItemID);
     inline const PDoorTemplate* GetDoor(u32 nDoorID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetDoor(nDoorID) : NULL ); }
+    
+    bool CharUseChair(int CharLocalID, u32 nItemID);
+    void CharLeaveChair(int CharLocalID, u32 nItemID);
 };
 
 

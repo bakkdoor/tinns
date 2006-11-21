@@ -158,8 +158,10 @@ class PChar
 		bool mLocationLeased; // temp until char on-demand load/unload
 		u32 mLocation;
 		u32 mCash;
-		u32 mApt;
-
+		u32 mStartApt; // set same as PrimaryApt atm
+		u32 mPrimaryApt;
+    u32 mChairInUse; // not saved in DB atm
+    
 		u16 mHealth;
 		u16 mMana;
 		u16 mStamina;
@@ -267,7 +269,7 @@ class PChar
 		inline u32 GetFaction() const { return mFaction; }
 		inline u32 GetLocation() const { return mLocation; }
 		inline u32 GetCash() const { return mCash; }
-		inline u32 GetBaseApartment() const { return mApt; }
+		inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();
@@ -304,6 +306,9 @@ class PChar
 		// temp until char on-demand load/unload
 		inline void SetLocationLeased(bool nState = true) { mLocationLeased = nState; }
 		inline bool GetLocationLeased() { return mLocationLeased; }
+		
+		inline u32 GetChairInUse() { return mChairInUse; }
+		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
 };
 
 class PChars

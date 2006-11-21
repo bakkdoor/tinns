@@ -68,6 +68,7 @@ const char* GameConfigTemplate[][2] = {
   {"isc_connect_pw", "change_me"}, // make default value empty when isc ready
   {"dev_debug", "0"}, // set to non-zero to activate development outputs
   {"auto_save_period", "300"},
+  {"new_char_location", "1085"},
   
 // For futur use:
 //  {"max_chars_per_account", "4"},

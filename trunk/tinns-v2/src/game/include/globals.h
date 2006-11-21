@@ -46,6 +46,7 @@ extern class PServer *Server;
 extern class PGameServer *GameServer;
 extern class PMsgBuilder *MsgBuilder;
 extern class PWorlds *Worlds;
+extern class PAppartements* Appartements;
 //extern class gmMachine machine;   // Virtual Machine instance
 
 //multiuser chat

@@ -89,7 +89,7 @@ bool PBuddyList::RemoveChar(u32 nBuddyCharID)
     snprintf(query, 256, "DELETE FROM buddy_list WHERE ((bud_charid='%u') AND (bud_buddyid='%u')) LIMIT 1;", mOwnerCharID, nBuddyCharID);
     if ( MySQL->GameQuery(query) )
     {
-        Console->Print(RED, BLACK, "PBuddyList::AddChar could not add some buddylist entry in the database");
+        Console->Print(RED, BLACK, "PBuddyList::AddChar could not delete some buddylist entry from the database");
         Console->Print("Query was:");
         Console->Print("%s", query);
         MySQL->ShowGameSQLError();

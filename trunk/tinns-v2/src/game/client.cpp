@@ -93,21 +93,34 @@ void PClient::SetDebugMode(PDebugMode nDebugID, bool nVal)
     mDebugMode[nDebugID] = nVal;
 }
 
-bool PClient::ChangeCharLocation(u32 nLocation)
+bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
 {
   if(Worlds->IsValidWorld(nLocation))
   {
     PChar* tChar = GetChar();
-    if (tChar->GetLocation() == nLocation)
+    u32 CurrentLocation = tChar->GetLocation();
+    if ((CurrentLocation == nLocation) && !DoForce)
       return true;
     if (Worlds->LeaseWorld(nLocation))
     {
       if(tChar->GetLocationLeased())
-        Worlds->ReleaseWorld(tChar->GetLocation());
+      {
+        if(tChar->GetChairInUse())
+        {
+          Worlds->GetWorld(CurrentLocation)->CharLeaveChair(GetLocalID(), tChar->GetChairInUse());
+          tChar->SetChairInUse(0);
+        }
+        Worlds->ReleaseWorld(CurrentLocation);
+      }
       tChar->SetLocation(nLocation);
       tChar->SetLocationLeased();
+      
       return true;
     }
+  }
+  else if (nLocation != 1) // try to fall back if bad location
+  {
+    return ChangeCharLocation(1, DoForce);
   }
   
   return false;
@@ -130,7 +143,7 @@ void PClient::GameDisconnect()
 	}
 	
   /**** Will be better to put that char-saving-at-disconnect in Char destructor, when only used Chars will be loaded ****/
-  PChar *tChar = Database->GetChar(mCharID);
+  PChar *tChar = GetChar();
   if (tChar)
   {
     if (tChar->IsDirty())
@@ -159,10 +172,14 @@ void PClient::GameDisconnect()
     // temp
     if(tChar->GetLocationLeased())
     {
+      if(tChar->GetChairInUse())
+      {
+        Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(GetLocalID(), tChar->GetChairInUse());
+        tChar->SetChairInUse(0);
+      }
       Worlds->ReleaseWorld(tChar->GetLocation());
       tChar->SetLocationLeased(false);
     }
-    
   }
   else
   {

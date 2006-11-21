@@ -134,8 +134,43 @@ const PDefWorldModel* PWorld::GetFurnitureItemModel(u32 nItemID)
     if (tFurniture)
       return tFurniture->GetDefWorldModel();
   }
-  
   return NULL;
+}
+
+bool PWorld::CharUseChair(int CharLocalID, u32 nItemID)
+{
+  PChairsInUseMap::iterator it = mChairsInUseMap.find(nItemID);
+	if(it == mChairsInUseMap.end()) // chair is free
+	{
+if (gDevDebug) Console->Print("Localchar %d now using free chair %d.", CharLocalID, nItemID);
+	  mChairsInUseMap.insert(std::make_pair(nItemID, CharLocalID));
+	  return true;
+	}
+	else // chair is already in use
+	{
+if (gDevDebug)
+{
+  if (it->second == CharLocalID)
+  {
+    Console->Print("Localchar %d already using chair %d.", CharLocalID, nItemID);
+  }
+  else
+  {
+    Console->Print("Localchar %d can't sit on chair %d used by localchar %d", CharLocalID, nItemID, it->second);
+  }  
+}
+	  return (it->second == CharLocalID);
+	}
+}
+
+void PWorld::CharLeaveChair(int CharLocalID, u32 nItemID)
+{
+  PChairsInUseMap::iterator it = mChairsInUseMap.find(nItemID);
+	if((it != mChairsInUseMap.end()) && (it->second == CharLocalID)) // chair is in use by this char
+	{
+if (gDevDebug) Console->Print("Localchar %d leaving chair %d.", CharLocalID, nItemID);
+	  mChairsInUseMap.erase(it);
+	}
 }
 
 
@@ -471,6 +506,7 @@ PWorld* PWorlds::LeaseWorld(u32 nWorldID, const bool nPreloadPhase)
     if((it != mOnDemandWorldsMap.end()) && it->second) // Dynamic world shall not have a NULL it->second 
     { // if loaded
       it->second->IncreaseUseCount();
+if (gDevDebug) Console->Print("%s Leased world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
       return it->second;
     }
     else // not loaded yet or invalid
@@ -485,6 +521,7 @@ PWorld* PWorlds::LeaseWorld(u32 nWorldID, const bool nPreloadPhase)
       {
         mOnDemandWorldsMap.insert(std::make_pair(nWorldID, nWorld));
         nWorld->IncreaseUseCount();
+if (gDevDebug) Console->Print("%s Leased world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
         return nWorld;
       }
     }

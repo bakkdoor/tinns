@@ -90,12 +90,13 @@
 
 #include "msgdecoder.h"
 #include "msgbuilder.h"
+#include "appartements.h"
 
-// ------------------------------------
 
 PGameServer::PGameServer()
 {  
   mNumClients = 0;
+  mInternalRand = 1;
   MsgDecoder = new PUdpMsgDecoder();
 }
 
@@ -128,6 +129,7 @@ void PGameServer::Start()
 	if (!clock_gettime(CLOCK_REALTIME, &tmpTime))
 	{
 	  srandom((u32)tmpTime.tv_sec);
+	  mInternalRand = tmpTime.tv_sec;
 //Console->Print("Initializing random generator. First value is %d", random());
 	}  
 	
@@ -164,6 +166,18 @@ u32 PGameServer::GetGameTime()
 	}
 	else
 	  return 0;
+}
+
+u16 PGameServer::GetRandom(u16 MaxVal, u16 MinVal)
+{
+  mInternalRand = mInternalRand * 1103515245 + 12345; //from rand() manpage
+  return (u16)(MinVal + ((mInternalRand>>16) % 32768 % (MaxVal-MinVal+1)));
+}
+
+f32 PGameServer::GetRandomFloat()
+{
+  mInternalRand = mInternalRand * 1103515245 + 12345; //from rand() manpage
+  return ((f32)((mInternalRand>>16) % 32768)/(f32)32768);  
 }
 
 void PGameServer::Update()
@@ -616,7 +630,8 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 						  sprintf(query, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print("Char %d's inventory not removed!", CharID);
-							  							  							  
+							
+							Appartements->DeleteCharAppartements(CharID);  							  							  
 					  }
 					}
 				}
@@ -773,9 +788,10 @@ IP = IPStringToDWord(IPServerString.c_str());
 		Client->ResetTransactionID();
 		  
     // Mark char as Online
-    PChar *Char = Database->GetChar(Client->GetCharID());
+    PChar *Char = Client->GetChar();
     Char->SetOnlineStatus(true); //Also using this info to check if Char may have to be saved at client disconnect
-
+    Client->ChangeCharLocation(Char->GetLocation(), true);
+    
     // hello-message from server..
     std::string serverName = Config->GetOption("server_name");
     std::string helloMessage = "Welcome on " + serverName + " - A TinNS Neocron Server.";
