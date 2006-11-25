@@ -58,7 +58,8 @@ u32 PAppartements::CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 
         AppType = i->second->GetID();
         if ((AppType < 220) || (AppType >= 250))
         {
-          CandidateApts.push_back(std::make_pair(AppType,i->second->GetPlace(j)));
+if (gDevDebug) Console->Print("Added potential Apt of type %d in place %d", AppType, i->second->GetPlace(j));
+          CandidateApts.push_back(std::make_pair(AppType, i->second->GetPlace(j)));
         }
       }
     }
@@ -66,11 +67,13 @@ u32 PAppartements::CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 
   
   if(CandidateApts.size())
   {
-    j = GameServer->GetRandom(CandidateApts.size(),1);
-Console->Print("Apt n° %d chosen in %d for faction %d", j, CandidateApts.size(), nFactionID);
-    
+    j = GameServer->GetRandom(CandidateApts.size()-1);
+if (gDevDebug) Console->Print("Apt n° %d chosen in %d for faction %d", j+1, CandidateApts.size(), nFactionID);
+
+if (gDevDebug) Console->Print("Choosed Apt of type %d in place %d", CandidateApts[j].first, CandidateApts[j].second);    
+
     char query[256];
-    snprintf(query, 256, "INSERT INTO apartments (apt_id,apt_location,apt_type,apt_password, apt_owner) VALUES (NULL,'%d','%d','%s','%u');", CandidateApts[j].second, CandidateApts[j].first, nPassword.c_str(), nCharID);
+    snprintf(query, 256, "INSERT INTO apartments (apt_id,apt_location,apt_type,apt_password, apt_owner) VALUES (NULL,'%d','%d','%s','%d');", CandidateApts[j].second, CandidateApts[j].first, nPassword.c_str(), nCharID);
     if ( MySQL->GameQuery(query) )
     {
         Console->Print(RED, BLACK, "PAppartements::CreateBaseAppartement could not add some appartement entry in the database");
@@ -98,4 +101,12 @@ void PAppartements::DeleteCharAppartements(u32 nCharID)
     }
     else
 if (gDevDebug) Console->Print(YELLOW, BLACK, "PAppartements::DeleteCharAppartements does not delete appartements content yet");      
+}
+
+bool PAppartements::CanFreelyEnter(PChar* nChar, u32 nLocation)
+{
+  u32 OwnerID = MySQL->GetAptOwner(nLocation);
+  return (OwnerID == nChar->GetID());
+  
+  // here we could manage Clan appartements access too.
 }

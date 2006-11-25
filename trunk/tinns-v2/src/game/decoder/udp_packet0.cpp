@@ -38,6 +38,7 @@
 PUdpPacket0::PUdpPacket0(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x2a";
+//nDecodeData->mTraceDump=true;
 } 
 
 PUdpMsgAnalyser* PUdpPacket0::Analyse()

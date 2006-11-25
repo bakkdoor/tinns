@@ -45,56 +45,57 @@
 	MODIFIED: 19 Sep 2006 Hammag
 	REASON: - Added destructor for struct PSkills in order to free allocated memory
 	            and avoid memory leak.
+	MODIFIED: 25 Nov 2006 Hammag
+	REASON: - Changed from enums (MAIN_SKILLS & SUB_SKILLS) to define, because there is no
+	          simple way to call methods with enum-type params when using arbitrary data (from the client in the present case).
+	          Values should even be taken from def_skills & def_subskills, with global constants
 
 */
 
 #ifndef SKILL_H
 #define SKILL_H
 
-enum SUB_SKILLS
-{
-    SK_MC = 1,
-    SK_HC = 2,
-    SK_TRA = 3,
-    SK_FOR = 22,
-    SK_PC = 10,
-    SK_RC = 11,
-    SK_TC = 12,
-    SK_VHC = 13,
-    SK_AGL = 14,
-    SK_REP = 15,
-    SK_REC = 16,
-    SK_RCL = 17,
-    SK_ATL = 20,
-    SK_END = 21,
-    SK_FIR = 23,
-    SK_ENR = 24,
-    SK_XRR = 25,
-    SK_POR = 26,
-    SK_HLT = 27,
-    SK_HCK = 30,
-    SK_BRT = 31,
-    SK_PSU = 32,
-    SK_WEP = 33,
-    SK_CST = 34,
-    SK_RES = 35,
-    SK_IMP = 36,
-    SK_PPU = 40,
-    SK_APU = 41,
-    SK_MST = 42,
-    SK_PPW = 43,
-    SK_PSR = 44,
-    SK_WPW = 45
-};
+#define SUB_SKILLS u8
+#define SK_MC 1
+#define SK_HC 2
+#define SK_TRA 3
+#define SK_FOR 22
+#define SK_PC 10
+#define SK_RC 11
+#define SK_TC 12
+#define SK_VHC 13
+#define SK_AGL 14
+#define SK_REP 15
+#define SK_REC 16
+#define SK_RCL 17
+#define SK_ATL 20
+#define SK_END 21
+#define SK_FIR 23
+#define SK_ENR 24
+#define SK_XRR 25
+#define SK_POR 26
+#define SK_HLT 27
+#define SK_HCK 30
+#define SK_BRT 31
+#define SK_PSU 32
+#define SK_WEP 33
+#define SK_CST 34
+#define SK_RES 35
+#define SK_IMP 36
+#define SK_PPU 40
+#define SK_APU 41
+#define SK_MST 42
+#define SK_PPW 43
+#define SK_PSR 44
+#define SK_WPW 45
 
-enum MAIN_SKILLS
-{
-    MS_STR = 1,
-    MS_DEX = 2,
-    MS_CON = 3,
-    MS_INT = 4,
-    MS_PSI = 5
-};
+#define MAIN_SKILLS u8
+#define MS_STR 1
+#define MS_DEX 2
+#define MS_CON 3
+#define MS_INT 4
+#define MS_PSI 5
+
 
 class PSkillHandler
 {

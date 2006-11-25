@@ -86,25 +86,48 @@ Console->Print("PWorld::Load - invalid apt type %d", AptTmplID);
       tCheckOK = Worlds->LeaseWorldDataTemplate(WorldTemplateName, tFileName);
     }
     if (!tCheckOK)
-{
-Console->Print("PWorld::Load - unable to lease apt world %s (%s)", WorldTemplateName.c_str(), tFileName.c_str());
+    {
+      Console->Print("PWorld::Load - unable to lease apt world %s (%s)", WorldTemplateName.c_str(), tFileName.c_str());
       return false;
-}
+    }
   }
   else
   {
-    const PDefWorldFile* nWorldFileDef = GameDefs->GetWorldFileDef(nWorldID);
-    if (!nWorldFileDef)
-      return false;
-    WorldTemplateName = nWorldFileDef->GetName();
+    const PDefWorldFile* nWorldFileDef;
+    
+    if ((nWorldID > 90000) && (nWorldID < 90017)) // hardcoded holomatch hack
+    {
+      nWorldFileDef = NULL;
+      char worldName[19];
+  	  int MatchID = nWorldID - 90000;
+  	  if (MatchID > 8) // to care for Neofrag 1 & 2
+  	    MatchID -= 8;
+  	  if (MatchID > 6)
+  	    MatchID = 6; // holomatch 7 and 8 are same as 6
+  	  snprintf(worldName, 19, "holomatch/neofrag%d", MatchID);
+  	  WorldTemplateName = worldName;
+    }
+    else
+    {
+      nWorldFileDef = GameDefs->GetWorldFileDef(nWorldID);
+      if (!nWorldFileDef)
+        return false;
+      WorldTemplateName = nWorldFileDef->GetName();
+    }
     
     const PDefWorld* tWorldDef = GameDefs->GetWorldDef(nWorldID);
     if (tWorldDef) // should always be true here
     {
       if(!(tWorldDef->GetDatFile().empty()))
         tFileName = tWorldDef->GetDatFile();
-      else
+      else if (nWorldFileDef)
         tFileName = nWorldFileDef->GetBasicFileName() + ".dat";
+      else
+      {
+        tFileName = "worlds/";
+        tFileName += WorldTemplateName;
+        tFileName += ".dat";
+      }
     }
     else
       return false; // should'nt happen here
@@ -513,8 +536,9 @@ if (gDevDebug) Console->Print("%s Leased world %d", Console->ColorText(GREEN, BL
     {
       PWorld* nWorld = new PWorld;
       if (! nWorld->Load(nWorldID)) // Error when loading (shouldn't happen)
-      {
+      {       
         delete nWorld;
+        Console->Print("% Could not load world %d - World now set as invalid", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
         return NULL; 
       }
       else
@@ -542,6 +566,7 @@ if (gDevDebug) Console->Print("%s Leased world %d", Console->ColorText(GREEN, BL
         if (! it->second->Load(nWorldID)) // Error when loading (shouldn't happen)
         {
           delete it->second;
+          Console->Print("%s Could not load world %d - World now set as invalid", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
           mStaticWorldsMap.erase(it); // remove from valid worlds map
           return NULL; 
         }

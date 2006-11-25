@@ -79,7 +79,14 @@ class PMsgBuilder
   
   PMessage* BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints);
   PMessage* BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 nMode); // mode = 1 for Direct, 2 for Buddy
+
+  PMessage* BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRawObjectID);
   
+  PMessage* BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue);  
+  PMessage* BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID);
+  PMessage* BuildCharUseGogoMsg (PClient* nClient);
+  PMessage* BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity);
+  PMessage* BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace);
   
 };
 

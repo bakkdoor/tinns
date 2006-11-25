@@ -59,7 +59,8 @@ static const time_t DEFAULT_TIMEOUT = 60;
 // To be put in config file
 #define RECVBUFFERSIZE 4096
 #define SENDBUFFERSIZE 4096
-#define DEFAULT_TIMEOUT 60
+#define DEFAULT_TCP_TIMEOUT 600
+#define DEFAULT_UDP_TIMEOUT 60
 
 // Better change that to a static members of each netcode class
 extern class PConsole* Console;

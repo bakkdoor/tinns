@@ -97,6 +97,7 @@ class PWorlds
     PWorld* GetWorld(u32 nWorldID);
     void ReleaseWorld(u32 nWorldID);
     bool IsAppartment(u32 nWorldID);
+    bool IsPotentialAppartement(u32 nWorldID) { return (nWorldID > APT_BASE_WORLD_ID); }
     
     void Update();
     void Shutdown();

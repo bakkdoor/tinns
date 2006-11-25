@@ -160,8 +160,7 @@ PUdpMsgAnalyser* PUdpCharSitting::Analyse()
   *nMsg >> mChairItemID;
   *nMsg >> mChairItemType;
 
-  //mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  mDecodeData->mState = DECODE_FINISHED; // no action to be done
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   
   return this;
 }
@@ -173,8 +172,8 @@ bool PUdpCharSitting::DoAction() // this message is repeated x times/sec ... is 
 //Console->Print("Char %d position : X(0x%x) Y(0x%x) Z(0x%x) U/D(0x%x) L/R(0x%x) Action(0x%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
 //Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
 //mDecodeData->mTraceDump = true;
-    //PMessage* tmpMsg = MsgBuilder->BuildCharSittingMsg(mDecodeData->mClient, mChairItemID);
-    //ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);    
+    PMessage* tmpMsg = MsgBuilder->BuildCharSittingMsg(mDecodeData->mClient, mChairItemID);
+    ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);    
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

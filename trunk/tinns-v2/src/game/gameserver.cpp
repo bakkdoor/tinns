@@ -826,7 +826,7 @@ bool PGameServer::HandleGame(PClient *Client, PGameState *State)
       if (MsgDecoder->Analyse())
       {
         if (gDevDebug && MsgDecoder->IsTraceKnownMsg())
-          Console->Print("Client[%d] msg: %s", Client->GetID(), MsgDecoder->GetName().c_str());
+          Console->Print("%s Client[%d] msg: %s", Console->ColorText(GREEN, BLACK, "[Debug]"), Client->GetID(), MsgDecoder->GetName().c_str());
 
         if (MsgDecoder->IsActionReady())
         {

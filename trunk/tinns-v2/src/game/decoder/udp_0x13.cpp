@@ -118,6 +118,11 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
             nextAnalyser = new PUdpOOO(mDecodeData);
             break;
           }
+          case 0x08: // Client zoning completed (!!! does not happen on login)
+          {        
+            //nextAnalyser = new PUdpXXX(mDecodeData);
+            break;
+          }
           case 0x1f:
           {        
             nextAnalyser = new PUdp0x1f(mDecodeData);

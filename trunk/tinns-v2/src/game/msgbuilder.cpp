@@ -196,6 +196,32 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
 }
 
 PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
+{ // This one was pure guess, but it works :p
+  PMessage* tmpMsg = new PMessage(32);
+  PChar* nChar = nClient->GetChar();
+  nData = nData;
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+	*tmpMsg << (u8)0x00; // Message length placeholder;
+	*tmpMsg << (u8)0x32;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)((nChar->Coords).mY);
+	*tmpMsg << (u16)((nChar->Coords).mZ);
+	*tmpMsg << (u16)((nChar->Coords).mX);
+	*tmpMsg << (u16)(31910+(nChar->Coords).mUD-50);  // Up - Mid - Down  mUD=(d6 - 80 - 2a) NeoX original offset: 31910
+	*tmpMsg << (u16)(31820+(nChar->Coords).mLR*2-179); // Compass direction mLR=(S..E..N..W..S [0-45-90-135-179]) There still is a small buggy movement when slowly crossing the South axis from the right
+	*tmpMsg << (u8)((nChar->Coords).mAct);
+	*tmpMsg << (u8)0x00;
+	
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  return tmpMsg;
+}
+
+/*PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
 {
   PMessage* tmpMsg = new PMessage(32);
   
@@ -223,7 +249,7 @@ PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 							  
   return tmpMsg;
-}
+}*/
 
 PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID)
 {
@@ -1130,13 +1156,6 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
 
   nClient->IncreaseUDP_ID();
 
-	/*if (nRawItemID)
-	{  
-  	nClient->IncreaseUDP_ID();
-  	tmpMsg->U16Data(1) = (u16)nClient->GetUDP_ID();
-  	tmpMsg->U16Data(3) = (u16)nClient->GetSessionID();
-  }*/
-
   return tmpMsg;  
 }
 
@@ -1151,30 +1170,29 @@ PMessage* PMsgBuilder::BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 
 	*tmpMsg << (u16)nClient->GetSessionID();
 
   nClient->IncreaseUDP_ID();	
-	*tmpMsg << (u8)0x09; // Message length placeholder;
+	*tmpMsg << (u8)0x09; // SubMessage length;
 	*tmpMsg << (u8)0x03;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
   *tmpMsg << (u8)0x25;
   *tmpMsg << (u8)0x23;
-  *tmpMsg << (u8)0x28; // ??
+  *tmpMsg << (u8)0x41; // 0x28 ??
 
-  //nClient->IncreaseUDP_ID(); // ?
-	*tmpMsg << (u8)0x11; // Message length placeholder;
+  nClient->IncreaseUDP_ID();
+  nClient->IncreaseTransactionID(); // testing ...
+	*tmpMsg << (u8)0x11; // SubMessage length;
 	*tmpMsg << (u8)0x03;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
   *tmpMsg << (u8)0x25;
   *tmpMsg << (u8)0x13;
-  *tmpMsg << (u16)nClient->GetUDP_ID(); // 0x0000 ????
+  *tmpMsg << (u16)nClient->GetTransactionID(); // testing / 0x0000 ????
   *tmpMsg << (u8)0x09; // ?
-  *tmpMsg << (u8)nSubskill;
-  *tmpMsg << (u8)0x00; // ?
-  *tmpMsg << (u8)0x01; // ?
+  *tmpMsg << (u16)nSubskill;
+  *tmpMsg << (u16)nClient->GetChar()->Skill->GetSubSkill(nSubskill); // nSubskill ?
 	*tmpMsg << (u16)nSkillPoints;
-	*tmpMsg << (u8)0x00; // ?
 
   //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
   
@@ -1251,6 +1269,176 @@ PMessage* PMsgBuilder::BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor)
   	*tmpMsg << (u16)0x00c8; //?
   	*tmpMsg << (u16)0x10ff; //?
   }*/
-  
+
+/*
+  case 3: // Single Locked
+  AptDoorUse[22] = 0x00;
+  AptDoorUse[24] = 0x64;
+  AptDoorUse[26] = 0xFF;
+  AptDoorUse[27] = 0x10;
+  break;
+  case 4: // Double Locked
+  AptDoorUse[22] = 0x05;
+  AptDoorUse[24] = 0x00;
+  AptDoorUse[26] = 0x00;
+  AptDoorUse[27] = 0x15;
+  break;
+  default:
+  AptDoorUse[22] = 0x00;
+  AptDoorUse[24] = 0x64;
+  AptDoorUse[26] = 0xFF;
+  AptDoorUse[27] = 0x10;
+  break;
+*/  
   return tmpMsg;
+}
+
+// Message from text.ini, section [MISC], id = 100+nTxtMsgId
+PMessage* PMsgBuilder::BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRawObjectID)
+{
+  PMessage* tmpMsg = new PMessage(17);
+    
+  nClient->IncreaseUDP_ID();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x0c; // Message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x31;
+  *tmpMsg << (u8)nTxtMsgId;
+	*tmpMsg << (u32)nRawObjectID;
+  
+  //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue)
+{
+  PMessage* tmpMsg = new PMessage(12);
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x06; // SubMessage length;
+	*tmpMsg << (u8)0x2d;
+	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u8)nActionValue; // known valid are 5 (ring), 9 (remove) and 10 (clic)
+
+  //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID)
+{
+  PMessage* tmpMsg = new PMessage(24);
+    
+  nClient->IncreaseUDP_ID();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x06; // SubMessage length;
+	*tmpMsg << (u8)0x2d;
+	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u8)0x0a;
+	
+	*tmpMsg << (u8)0x0b; // SubMessage length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x17;
+	*tmpMsg << (u32)nRawObjectID;
+  
+  return tmpMsg;  
+}	
+    
+PMessage* PMsgBuilder::BuildCharUseGogoMsg (PClient* nClient)
+{
+  PMessage* tmpMsg = new PMessage(17);
+    
+  nClient->IncreaseUDP_ID();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x0b; // Message length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x3d;
+	*tmpMsg << (u32)0x0000000d; // ?
+
+  //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity)
+{
+  PMessage* tmpMsg = new PMessage(24);
+    
+  nClient->IncreaseUDP_ID();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x06; // SubMessage length;
+	*tmpMsg << (u8)0x2d;
+	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u8)0x0a;
+	
+	// this submessage is only needed to set to location/entity ofthe GR for a potential record in the char's GR list
+	*tmpMsg << (u8)0x0d; // SubMessage length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x2d;
+	*tmpMsg << (u32)nLocation;
+	*tmpMsg << (u16)nEntity;
+  
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace)
+{
+  PMessage* tmpMsg = new PMessage(29);
+    
+  nClient->IncreaseUDP_ID();
+  
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	
+	*tmpMsg << (u8)0x06; // SubMessage length;
+	*tmpMsg << (u8)0x2d;
+	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u8)0x0a;
+	
+	*tmpMsg << (u8)0x11; // SubMessage length;
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x38;
+  *tmpMsg << (u8)0x01;
+	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u16)nAptPlace; // Entity ???
+	*tmpMsg << (u16)0x0000;
+	*tmpMsg << (u8)0x00;
+  
+  return tmpMsg;  
 }

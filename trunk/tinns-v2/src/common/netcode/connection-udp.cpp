@@ -95,7 +95,7 @@ ConnectionUDP::ConnectionUDP(int sockfd, int port, int remoteadress, int remotep
         mServerSocket = server;
     }
     
-    mTimeOutValue = DEFAULT_TIMEOUT;
+    mTimeOutValue = DEFAULT_UDP_TIMEOUT;
     mLastActive = std::time(NULL);
 
     mRemoteAddr.sin_family = AF_INET;       // host byte order

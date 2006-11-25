@@ -36,7 +36,7 @@
 class PUdpSubskillInc : public PUdpMsgAnalyser
 {
   private:
-    u8 SubskillID;
+    u16 SubskillID;
     
   public:
     PUdpSubskillInc(PMsgDecodeData* nDecodeData);

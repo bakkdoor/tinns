@@ -43,7 +43,7 @@ PUdpSubskillInc::PUdpSubskillInc(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(
 PUdpMsgAnalyser* PUdpSubskillInc::Analyse()
 {
   mDecodeData->mName << "=Subskill increase request";
-  SubskillID = mDecodeData->mMessage->U8Data(9);
+  SubskillID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+9);
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   
@@ -53,9 +53,11 @@ PUdpMsgAnalyser* PUdpSubskillInc::Analyse()
 bool PUdpSubskillInc::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
-  
+  PChar* nChar = nClient->GetChar();
   // Validity check must be done here
-  PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, 1000); // last is remaining skillpoints
+  nChar->Skill->SetSubSkill(SubskillID, nChar->Skill->GetSubSkill(SubskillID) + 1); // SubskillID
+//Console->Print("Skill %d inc to %d", SubskillID, nChar->Skill->GetSubSkill(SubskillID)); 
+  PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, 20); // last is remaining skillpoints
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

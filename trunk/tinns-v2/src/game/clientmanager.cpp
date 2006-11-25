@@ -207,6 +207,7 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
 {
   int msgCount = 0;
   PChar* nChar;
+  PChar* itChar;
   PMessage* tmpMsg;
   u32 nZoneID;
   PClient* itClient;
@@ -226,8 +227,8 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
     itClient = (PClient*)(it->second);
     if (itClient->getUDPConn())
     {
-      nChar = itClient->GetChar();
-      if (nChar->GetLocation() != nZoneID) // limit to zone
+      itChar = itClient->GetChar();
+      if (itChar->GetLocation() != nZoneID) // limit to zone
         continue;
         
       tmpMsg = MsgBuilder->BuildCharHelloMsg(itClient);
@@ -240,6 +241,20 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
 //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
 //tmpMsg->Dump();             
       nClient->getUDPConn()->SendMessage(tmpMsg);
+      
+      if (itChar->GetChairInUse())
+      {
+        tmpMsg = MsgBuilder->BuildCharPosUpdateMsg (itClient);
+        nClient->getUDPConn()->SendMessage(tmpMsg);
+        
+//Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
+        tmpMsg = MsgBuilder->BuildCharUseChairMsg(itClient, (itChar->GetChairInUse()+1)*1024);
+        nClient->IncreaseUDP_ID();
+        tmpMsg->U16Data(0x01) = nClient->GetUDP_ID();
+        tmpMsg->U16Data(0x03) = nClient->GetSessionID();
+        tmpMsg->U16Data(0x07) = nClient->GetUDP_ID();
+        nClient->getUDPConn()->SendMessage(tmpMsg);
+      }
       ++msgCount;
     }
   }

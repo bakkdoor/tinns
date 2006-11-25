@@ -31,6 +31,8 @@
 #ifndef APPARTEMENTS_H
 #define APPARTEMENTS_H
 
+class PChar;
+
 class PAppartements
 {
       private:
@@ -41,6 +43,7 @@ class PAppartements
         
         u32 CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 nFactionID);
         void DeleteCharAppartements(u32 nCharID);
+        bool CanFreelyEnter(PChar* nChar, u32 nLocation);
 };
 
 #endif

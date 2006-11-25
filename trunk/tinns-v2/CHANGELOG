@@ -595,4 +595,23 @@ Hammag; 21.11.2006 02:00 GMT+1
  => problem of char disapearing for others when sitting for some time still not fixed*
  - added "new_char_location" option in gameserver.conf, with default to mc5 starting zone
  - added starting apartment creation
+
+====================
+Hammag; 22.11.2006 02:00 GMT+1
+----------
+[rev. 28]
+
+<General changes>
+ - fixed a bug when zoning to holomatch zones
+ - fixed Holomatch exit (but still same problem for spawning entity as in some dungeon zoning)
+ - fixed UG exit (but still same problem for spawning entity as in some dungeon zoning)
+ - fixed appartement lift use
+ - fixed char-vanish-for-others-when-sitting-too-long issue
+    (but already sitting char still invisible for loggin-in chars)
+ - fixed a bug in starting apartment creation 
+ - increased TCP timeout which caused connection loss when taking too much time creating a char
+ - subskill increasing now works (freely, ie. without any check against class or available skill points)
+ 
+ 
+ 
  

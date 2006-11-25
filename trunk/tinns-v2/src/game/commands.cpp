@@ -296,11 +296,17 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        *(u16*)&ZonePacket[19] = SpawnPointID; // from NeoX
        // ZonePacket[1] = (char)Test; // from NeoX */
       
-       Client->ChangeCharLocation(zoneID);
+       if (Client->ChangeCharLocation(zoneID))
+       {
 Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
        //Client->getUDPConn()->write(ZonePacket, sizeof(ZonePacket));
         PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (Client, zoneID, SpawnPointID);
         Client->getUDPConn()->SendMessage(tmpMsg);
+       }
+       else
+       {
+Console->Print(RED, BLACK, "IngameCommand: Can't change location when trying to warp player %d to zone %d", Client->GetCharID(), zoneID);        
+       }
    }
 // -------------------------------------------------------
 #define DISABLE_RAWF
@@ -771,6 +777,29 @@ if(strcmp(Command, "brightness") == 0)
     else
     {
       Chat->send(Client, CHAT_GM, "Usage", "@brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]");
+    }
+  }
+
+if(strcmp(Command, "remove") == 0)
+  {    
+    u32 TargetID;
+    char delStr[128];
+    PMessage* tmpMsg;
+           
+    if(Arg1[0] != '\0')
+    {
+      TargetID = (u32)(atoi(Arg1) & 0xffffffff);
+      tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(Client, TargetID, 5);
+      ClientManager->UDPBroadcast(tmpMsg, Client); 
+      tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(Client, TargetID, 9);
+      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      snprintf(delStr, 127, "Item %d removed.", TargetID);
+      delStr[127] = '\0';
+      Chat->send(Client, CHAT_DIRECT, "System", delStr);
+    }
+    else
+    {
+      Chat->send(Client, CHAT_GM, "Usage", "@remove <raw item id>");
     }
   }
 

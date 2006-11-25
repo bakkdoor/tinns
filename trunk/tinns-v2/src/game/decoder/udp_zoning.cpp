@@ -130,7 +130,7 @@ bool PUdpGenrepZoning::DoAction()
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
-Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData);	
+if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData);	
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -169,7 +169,7 @@ bool PUdpAptGRZoning::DoAction()
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
-Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);	
+if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);	
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -240,7 +240,7 @@ bool PUdpAppartmentAccess::DoAction()
   PChar* nChar = nClient->GetChar();
   
   Location = nChar->GetLocation();
-Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);  
+if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);  
   if ((Location > 100000) && (!strcmp ("Exit", mPassword)))
   {
     AppLoc = MySQL->GetAptLocation(Location);
@@ -260,19 +260,23 @@ Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->G
   else
   {
     u32 Location = MySQL->GetAptID(mAppartmentPlace, (u8*)mPassword);
-    if (Location > 0)
+    if (Location > 1)
     {
       tmpMsg = MsgBuilder->BuildAptLiftUseMsg(nClient, Location, 1);
       nClient->ChangeCharLocation(Location);
     }
-    else
+    else if (Location < 1)
     {
       tmpMsg = MsgBuilder->BuildAptLiftFailedMsg(nClient);
     }
+    else
+      tmpMsg = NULL;
+      
     mDecodeData->mTraceDump = true;
   }
   
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  if (tmpMsg)
+    nClient->getUDPConn()->SendMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true; 

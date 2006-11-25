@@ -84,7 +84,7 @@ ConnectionTCP::ConnectionTCP(int sockfd, struct sockaddr_in addr, ServerSocket* 
             
     mbConnected = true; // client obviously is connected at creation...
 
-    mTimeOutValue = DEFAULT_TIMEOUT;
+    mTimeOutValue = DEFAULT_TCP_TIMEOUT;
     mLastActive = std::time(NULL);
       
     mReceiveBufferMsg = NULL;
