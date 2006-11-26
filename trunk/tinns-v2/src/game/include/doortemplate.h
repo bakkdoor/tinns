@@ -33,7 +33,6 @@
 
 #include "def_worldmodels.h"
 
-
 class PDoorTemplate
 {
   friend class PWorldDatParser;
@@ -42,11 +41,11 @@ class PDoorTemplate
     u16 mDoorID;
 
     // The commented out values are not loaded from dat file atm because they are not used yet.
-    u16 mUnknown1; //18 00
-    u16 mUnknown1bis; //00 00 ? varies
-    //f32 mPosY;
-    //f32 mPosZ;
-    //f32 mPosX;
+    //u16 mUnknown1; //18 00
+    //u16 mUnknown1bis; //00 00 ? varies
+    f32 mPosY;
+    f32 mPosZ;
+    f32 mPosX;
     //u16 mUnknown5; //00 00 ? second byte varies
     u16 mWorldmodelID; //door type from worldmodel.def
 
@@ -65,12 +64,13 @@ class PDoorTemplate
     inline const u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
     inline const u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
     inline const int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
-    inline const std::string& GetName() { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
+    inline const std::string& GetName() const { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
     inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
     
+    inline void GetPos(f32* nPosX, f32* nPosY, f32* nPosZ) const { *nPosY = mPosY; *nPosZ = mPosZ; *nPosX = mPosX;}
     inline u16 GetOtherDoorID() { return ( mIsDoubleDoor ? mDoorParameters[1] : 0 ); }
     inline bool IsDoubleDoor() const { return mIsDoubleDoor; }
-    inline bool IsTriggeredDoor() { return mIsTriggeredDoor; }
+    inline bool IsTriggeredDoor() const { return mIsTriggeredDoor; }
     
     void SetDoorTypeName(char* nDoorTypeName);
     void SetDoorParameters(char* nDoorParametersString);

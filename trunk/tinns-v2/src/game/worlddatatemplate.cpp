@@ -66,6 +66,10 @@ if (gDevDebug) Console->Print("Loading %s", nFilename.c_str());
     case 0:
     {
       mName = nWorldName;
+      if(!nTestAccesOnly)
+      {
+        SetLinkedObjects(); // temp until better solution found from .dat & .bsp files
+      }
       return true;
     }
       
@@ -100,14 +104,7 @@ u32 PWorldDataTemplate::AddFurnitureItem(PFurnitureItemTemplate* nItem)
   {
     if(mFurnitureItems.insert(std::make_pair(nItem->GetID(), nItem)).second)
     {
-if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem->GetID());
-if (gDevDebug)
-{
-if (nItem->GetDefWorldModel()->GetID() == 24)
-  Console->Print("Added Door access IF %d", nItem->GetID());
-else if (nItem->GetDefWorldModel()->GetID() == 26)
-  Console->Print("Added Access/Communicator IF %d", nItem->GetID());  
-}  
+if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem->GetID());  
       return nItem->GetID();
     }
     else
@@ -151,4 +148,53 @@ const PDoorTemplate* PWorldDataTemplate::GetDoor(u32 DoorID)
 	  return NULL;
   else
     return it->second;
+}
+
+void PWorldDataTemplate::SetLinkedObjects()
+{
+  f32 xI, yI, zI;
+  f32 xD, yD, zD;
+  f32 D2, minD2;
+  u32 minObjID;
+  u16 fnctType;
+  
+  for (PFurnitureItemsMap::iterator it = mFurnitureItems.begin(); it != mFurnitureItems.end(); it++)
+  {
+    fnctType = it->second->GetFunctionType();
+    if ((fnctType==11) || (fnctType==12) || (fnctType==13) ||(fnctType==23)) // if function is apt entry button, door access if, hack button or money button
+    {
+      it->second->GetPos(&xI, &yI, &zI);
+//Console->Print("Button pos: %0.0f %0.0f %0.0f", xI, yI, zI);      
+      minD2 = 1e9;
+      minObjID = 0;
+      for (PDoorsMap::iterator dit = mDoors.begin(); dit != mDoors.end(); dit++)
+      {
+//Console->Print("%s Found door %d (%s) : %s triggered, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), dit->first, dit->second->GetName().c_str(), (dit->second->IsTriggeredDoor()?"":"not"), (dit->second->IsDoubleDoor()?"double":"single") );
+        if (dit->second->IsTriggeredDoor())
+        {
+          dit->second->GetPos(&xD, &yD, &zD);
+//Console->Print("Door pos: %0.0f %0.0f %0.0f", xD, yD, zD);
+          D2 = (xI-xD)*(xI-xD)+(yI-yD)*(yI-yD)+(zI-zD)*(zI-zD);
+//Console->Print("Dist D2:%0.0f minD2:%0.0f", D2, minD2);
+          if (D2 < minD2)
+          {
+            minD2 = D2;
+            minObjID = 1+dit->first;
+          }
+        }
+      }
+      if (minObjID--)
+      {
+        it->second->SetLinkedObjectID(minObjID);
+if (gDevDebug) Console->Print("%s Found triggered door %d (%s) for button %d (%s)", Console->ColorText(GREEN, BLACK, "[Debug]"), minObjID, GetDoor(minObjID)->GetName().c_str(), it->first, it->second->GetName().c_str());
+
+      }
+      else
+      {
+        Console->Print("%s No triggered door found for button %d (%s)", Console->ColorText(YELLOW, BLACK, "[Warning]"), it->first, it->second->GetName().c_str());        
+      }
+    }
+  } 
+
+
 }

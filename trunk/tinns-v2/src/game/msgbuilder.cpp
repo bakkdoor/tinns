@@ -1251,6 +1251,8 @@ PMessage* PMsgBuilder::BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor)
   	*tmpMsg << (u16)0x10ff; //?
   }
 
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
 /*	*tmpMsg << (u8)0x0f; // Sub-message length;
 	*tmpMsg << (u8)0x03;
 	*tmpMsg << (u16)0x0000; //++Client->GetUDP_ID(); // just placeholder, must be set outside

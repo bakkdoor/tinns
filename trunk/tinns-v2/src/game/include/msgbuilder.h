@@ -87,7 +87,7 @@ class PMsgBuilder
   PMessage* BuildCharUseGogoMsg (PClient* nClient);
   PMessage* BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity);
   PMessage* BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace);
-  
+  PMessage* BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType);
 };
 
 #endif

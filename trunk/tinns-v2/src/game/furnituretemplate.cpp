@@ -37,6 +37,7 @@ PFurnitureItemTemplate::PFurnitureItemTemplate()
   mModelID = 0;
   mWorldmodelID = 0;
   mDefWorldModel = NULL;
+  mLinkedObjectID = 0;
 }
 
 PFurnitureItemTemplate::~PFurnitureItemTemplate()

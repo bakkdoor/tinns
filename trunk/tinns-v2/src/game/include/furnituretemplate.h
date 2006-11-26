@@ -53,9 +53,9 @@ class PFurnitureItemTemplate
     u32 mObjectID;
 
     // The commented out values are not loaded from dat file atm because they are not used yet.
-    //f32 mPosY; //= mPosY from dat file + 32000, to be coherent with char Pos scale
-    //f32 mPosZ;
-    //f32 mPosX;
+    f32 mPosY; //= mPosY from dat file + 32000, to be coherent with char Pos scale
+    f32 mPosZ;
+    f32 mPosX;
     //f32 mRotY;
     f32 mRotZ;
     //f32 mRotX;
@@ -81,6 +81,7 @@ class PFurnitureItemTemplate
     
     const PDefWorldModel* mDefWorldModel;
 
+    u32 mLinkedObjectID;
     
   public:
     PFurnitureItemTemplate();
@@ -94,6 +95,11 @@ class PFurnitureItemTemplate
     inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
     inline const u8 GetFrontLR() const { return mFrontLR; }
     inline void GetFrontPos(u16* nFrontPosX, u16* nFrontPosY, u16* nFrontPosZ) const { *nFrontPosY = mFrontPosY; *nFrontPosZ = mFrontPosZ; *nFrontPosX = mFrontPosX;}
+    inline void GetPos(f32* nPosX, f32* nPosY, f32* nPosZ) const { *nPosY = mPosY; *nPosZ = mPosZ; *nPosX = mPosX;}
+    
+    inline void SetLinkedObjectID(u32 nID) { mLinkedObjectID = nID; }
+    inline const u32 GetLinkedObjectID() const { return mLinkedObjectID; }
+
 };
 
 #endif

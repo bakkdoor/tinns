@@ -55,6 +55,8 @@ void LTrim(std::string *stString);
 std::string &Ssprintf(const char *fmt, ...);
 
 u16 DistanceApprox(const u16 x1, const u16 y1, const u16 z1, const u16 x2, const u16 y2, const u16 z2);
+f32 Distance(const f32 x1, const f32 y1, const f32 z1, const f32 x2, const f32 y2, const f32 z2);
+f32 Distance(const f32 x1, const f32 y1, const f32 x2, const f32 y2); // 2D only version
 
 #endif
 

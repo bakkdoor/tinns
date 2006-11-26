@@ -189,7 +189,7 @@ if (gDevDebug) Console->Print("Section %d ignored", SectionHeader.mSection);
 	return 0;
 }
 
-bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize)
+bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize) // furniture
 {
   PSec2ElemType3a DataA;
   PSec2ElemType3b DataB;
@@ -256,9 +256,9 @@ if (gDevDebug) Console->Print("Discarded");
   nItem->mObjectID = DataA.mObjectID;
 
   // The commented out values are not loaded from dat file atm because they are not used yet.
-//  nItem->mPosY = 32000 + DataA.mPosY;
-//  nItem->mPosZ = 32000 + DataA.mPosZ;
-//  nItem->mPosX = 32000 + DataA.mPosX;
+  nItem->mPosY = DataA.mPosY; // float pos values are kept 0-centered
+  nItem->mPosZ = DataA.mPosZ;
+  nItem->mPosX = DataA.mPosX;
 //  nItem->mRotY = DataA.mRotY;
   nItem->mRotZ = DataA.mRotZ;
 //  nItem->mRotX = DataA.mRotX;
@@ -287,7 +287,8 @@ if (gDevDebug) Console->Print("Discarded");
   }
   Radius *= DataA.mScale;
   Radius +=5;
-   
+  
+  // int pos values are change to match char pos scale (32000 centered)
   nItem->mFrontPosY = (u16)(32000 + DataA.mPosY + Radius * sinf(Angle));
   nItem->mFrontPosZ = (u16)(32000 + DataA.mPosZ);
   nItem->mFrontPosX = (u16)(32000 + DataA.mPosX + Radius * cosf(Angle));
@@ -298,7 +299,7 @@ if (gDevDebug) Console->Print("Discarded");
   return true;
 }
 
-bool PWorldDatParser::ProcessSec2ElemType5(u32 nSize)
+bool PWorldDatParser::ProcessSec2ElemType5(u32 nSize) // doors
 {
   PSec2ElemType5Start Data;
   char StringData[64];
@@ -368,26 +369,26 @@ Console->Print("Uk1:0x%04x Uk1bis:0x%04x Uk5:0x%04x", Data.mUnknown1, Data.mUnkn
 Console->Print("Type=%s Param=%s", ActorString, ParamString);
 }
 
-
-  if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
+// Let's keep knowledge of doors even without models !
+/*  if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
   {
 if (gDevDebug) Console->Print("Discarded");
-if (gDevDebug) 
+if (gDevDebug)
 {
 Console->Print("Door %s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mDoorID);
 Console->Print("Type=%s Param=%s", ActorString, ParamString);
 }
     return true;
-  }
+  }*/
   
   PDoorTemplate* nDoor = new PDoorTemplate;
   nDoor->mDoorID = Data.mDoorID;
 
   //nDoor->mUnknown1 = Data.mUnknown1; //18 00
   //nDoor->mUnknown1bis = Data.mUnknown1bis; //00 00 ? varies
-  //nDoor->mPosY = Data.mPosY;
-  //nDoor->mPosZ = Data.mPosZ;
-  //nDoor->mPosX = Data.mPosX;
+  nDoor->mPosY = Data.mPosY;
+  nDoor->mPosZ = Data.mPosZ;
+  nDoor->mPosX = Data.mPosX;
   //nDoor->mUnknown5 = Data.mUnknown5; //00 00 ? second byte varies
   nDoor->mWorldmodelID = Data.mWorldmodelID; //door type from worldmodel.def
   nDoor->mDefWorldModel = nWorldModel;

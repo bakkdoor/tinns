@@ -44,7 +44,9 @@ class PWorldDataTemplate
     PFurnitureItemsMap mFurnitureItems;
     PDoorsMap mDoors;
     int mUseCount;
+    
     void DatFileDataCleanup();
+    void SetLinkedObjects(); // This method implements some workarouds for some world objects on which we lack info.
     
   public:
     PWorldDataTemplate();

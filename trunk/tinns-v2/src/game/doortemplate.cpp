@@ -25,6 +25,8 @@
 	MODIFIED: 05 Nov 2006 Hammag
 	REASON: - creation
 	
+	TODO: - mem corruption occurs if mDoorParameters[] is given a size of 6, and that 6 max param can be accepted
+	        This bug occurs in world 105. Reason not found yet :-x
 */
 
 
@@ -49,7 +51,7 @@ void PDoorTemplate::SetDoorParameters(char* nDoorParametersString)
 {
   char* SepPos;
   int ParamNum = 0;
-  
+//Console->Print("door parameter: %s", nDoorParametersString);
   while ( *nDoorParametersString && (SepPos = strchr(nDoorParametersString, ',')) && (ParamNum < 4))
   {
     *SepPos = 0;
@@ -60,15 +62,15 @@ void PDoorTemplate::SetDoorParameters(char* nDoorParametersString)
   {
     if (ParamNum < 4)
       mDoorParameters[ParamNum] = atoi(nDoorParametersString);
-    else
-      Console->Print(RED, BLACK, "[ERROR] More than 4 parameters in Sec2ElemType5 ParamString");
+    //else
+    //  Console->Print(RED, BLACK, "[ERROR] More than 4 parameters in Sec2ElemType5 ParamString");
   }
 }
 
 void PDoorTemplate::SetDoorTypeName(char* nDoorTypeName)
 {
   mDoorTypeName = nDoorTypeName;
-  
+
   if (mDoorTypeName == "DDOOR")
   {
     mIsDoubleDoor = true;
@@ -77,5 +79,13 @@ void PDoorTemplate::SetDoorTypeName(char* nDoorTypeName)
   {
     mIsDoubleDoor = true;
     mIsTriggeredDoor = true;
+  }
+  else if (mDoorTypeName == "TRIGDOOR")
+  {
+    mIsTriggeredDoor = true;
+  }
+  else if (mDoorTypeName == "NBUTTON")
+  {
+    mIsTriggeredDoor = false;
   }
 }
