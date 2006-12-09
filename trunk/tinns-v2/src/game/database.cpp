@@ -63,6 +63,10 @@ void PDatabase::Update() {
 	mChars->Update();
 }
 
+void PDatabase::Rehash() {
+    mAccounts->RehashAccountData();
+}
+
 /*PChar *PDatabase::CreateChar(u32 Account, const std::string &Name, u32 Type, u32 Model) {
 	return(mChars->CreateChar(Account, Name, Type, Model));
 }*/

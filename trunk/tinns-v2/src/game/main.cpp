@@ -34,12 +34,12 @@
     MODIFIED: 25 Dec 2005 Namikon
 	  REASON: - Fixed shutdown procedure, wont cause segfault anymore
     MODIFIED: 06 Jan 2006 Namikon
-    REASON: - Added color to console outputs    
+    REASON: - Added color to console outputs
     MODIFIED: 01 Jul 2006 Hammag
 	  REASON: - commented out sched_yield() in main loop, as it is
 	            not needed anymore with a right timeout for ReadSetTCP select
     MODIFIED: 26 Jul 2006 Hammag
-	  REASON: - added memory leak check in the main loop for unreleased DB Ressources and messages          
+	  REASON: - added memory leak check in the main loop for unreleased DB Ressources and messages
 
 */
 
@@ -68,6 +68,7 @@ void signal_handler(int signal)
 
 int main()
 {
+    u32 time_old = time(0) + 60; // First rehash 1 Minute after serverstart
     // Connect signal with handlerfunction
     signal(SIGINT, signal_handler);
 
@@ -80,7 +81,7 @@ int main()
 	GameServer->Start();
 	//GameServer->SetGameTime(0);
 	ISC->Start();
-	
+
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
 	while(1)
@@ -93,6 +94,14 @@ int main()
 		MySQL->Update(); // Memory leak check	and MySQL keepalive
 		ISC->Update();
 		Console->Update();
+
+		if(time_old < time(0))
+		{
+		    if (gDevDebug) Console->Print("[Debug] Rehashing...");
+            Database->Rehash();
+            time_old = time(0) + 30; // Next rehash in 30 seconds
+		}
+
 		// in release mode, we just relinquish our remaining time slice to other processes
 		//SleepEx(0, true);
 		//sched_yield();

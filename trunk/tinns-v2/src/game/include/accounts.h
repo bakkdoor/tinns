@@ -157,6 +157,7 @@ class PAccounts
 		PAccount *Authenticate(const char *User, const char *Password) const;
 		//void Load();
 		bool SQLLoad();
+		void RehashAccountData();
 		//void Update();
         void SQLUpdate();
 

@@ -200,7 +200,7 @@ void PAccount::SetBannedStatus(int banneduntil)
 {
   int status;
   char query[255];
-  
+
   if(banneduntil == 0)
   {
     status = 0;
@@ -229,6 +229,105 @@ PAccounts::~PAccounts()
 	SQLUpdate();	// just to be sure
 	for(AccountMap::iterator i=mAccounts.begin(); i!=mAccounts.end(); i++)
 		delete i->second;
+}
+
+void PAccounts::RehashAccountData()
+{
+    MYSQL_ROW row = 0;
+    MYSQL_RES *result = 0;
+    result = MySQL->InfoResQuery("SELECT * FROM accounts");
+    if(result == NULL)
+    {
+        if (gDevDebug) Console->Print(RED, BLACK, "[Rehash] Unable to reload AccountData");
+        MySQL->ShowInfoSQLError();
+        return;
+    }
+
+    if(mysql_num_rows(result) == 0)
+    {
+        if (gDevDebug) Console->Print(RED, BLACK, "[Rehash] No AccountData found in infoserver Database! Skipping rehash...");
+        MySQL->FreeInfoSQLResult(result);
+        return;
+    }
+
+    // Now loop through all Account entries
+    while((row = mysql_fetch_row(result)))
+    {
+        bool bUpdate = false;
+
+        PAccount *Acc = 0;
+
+        // Search for account ID
+        AccountMap::const_iterator i = mAccounts.find(std::atoi(row[a_id]));
+        if(i != mAccounts.end())
+        {
+            // AccountID found? Ok, so we only have to update the dataset
+            Acc = i->second;
+            bUpdate = true;
+        }
+        else
+        {
+            // AccountID not found? Allright, then add a new one
+            Acc = new PAccount();
+            bUpdate = false;
+        }
+
+        if(bUpdate == false)
+        {
+            // Only set Login details when this is a new account
+            Acc->SetID(std::atoi(row[a_id]));
+            Acc->SetName(row[a_username]);
+        }
+        if(Acc->GetStatus() == PAS_OFFLINE || bUpdate == false)
+        {
+            // Add stuff here that needs to be updated when account is either
+            // a new one or account is offline.
+            // Since i dunno if PAS_OFFLINE really tells us if player is on/off
+            // nothing is in here. Maybe we could add a change of the loginname
+            // later, but i think it should remain static once created.
+        }
+
+        Acc->SetPassword(row[a_password]);
+
+        int a_status = 0;
+        bool IsStillBanned = false;
+
+        //int banneduntil = std::atoi(row[a_bandate]);
+        int banneduntil = 0;
+        int now = time(0);
+
+        if(now < banneduntil)
+        {
+            IsStillBanned = true;
+        }
+        else if(now >= banneduntil)
+        {
+            IsStillBanned = false;
+            Acc->SetBannedStatus(0);
+        }
+
+        if(a_status == 2 && IsStillBanned == true)
+        {
+            Acc->SetLevel(PAL_BANNED);
+            Acc->SetStatus(PAS_BANNED);
+        }
+        else
+        {
+            //int a_priv = std::atoi(row[a_priv]);
+            int a_priv = 100;
+            switch(a_priv)
+            {
+                case 0: Acc->SetLevel(PAL_UNREGPLAYER);
+                case 1: Acc->SetLevel(PAL_REGPLAYER);
+                case 30: Acc->SetLevel(PAL_VOLUNTEER);
+                case 50: Acc->SetLevel(PAL_GM);
+                case 100: Acc->SetLevel(PAL_ADMIN);
+            }
+        }
+        if(bUpdate == false) // This is not an update, so add account to list
+            mAccounts.insert(std::make_pair(Acc->GetID(), Acc)).second;
+    }
+    MySQL->FreeInfoSQLResult(result);
 }
 
 bool PAccounts::SQLLoad()

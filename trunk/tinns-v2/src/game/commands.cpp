@@ -100,11 +100,11 @@
                             with - meaning "no change"
                 - Added command @brightness to set skin color brightness
                   Usage: @brightness -|<head brightness: 0..255> [-|<torso brightness>]  [-|<legs brightness>]
-                            with 0 for max brightness, 255 for max darkness, and - meaning "no change"                                                                         
+                            with 0 for max brightness, 255 for max darkness, and - meaning "no change"
         MODIFIED: 09 Oct Hammag
         REASON: - Modified and extended @debug command
         MODIFIED: 08 Nov Hammag
-        REASON: - Modified @warp zone check so that we can warp to any really valid zone (even apartment) and only to valid zones        
+        REASON: - Modified @warp zone check so that we can warp to any really valid zone (even apartment) and only to valid zones
 
 	ToDo:
 	- Fix Subwaysyncy
@@ -183,7 +183,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
       int nHow = -1;
       char* DbgTarget = "all";
       char DbgMessage[80];
-      
+
       if(Arg1[0] == '0')
       {
         nHow = 0;
@@ -200,13 +200,13 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
         nWhat = DBG_ITEMID;
         DbgTarget = "itemid";
       }
-      
+
       if (nWhat != DBG_ALL)
       {
         if(Arg2[0] == '\0')
         {
           nHow = (Client->GetDebugMode(nWhat) ? 0 : 1); // toggle if no arg
-        } 
+        }
         else if(Arg2[0] == '0')
         {
           nHow = 0;
@@ -216,7 +216,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
           nHow = 1;
         }
       }
-      
+
       if (nHow != -1)
       {
         Client->SetDebugMode(nWhat, nHow);
@@ -280,7 +280,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
         0xcf, 0x03, 0x00, 0x01, 0x00, 0x15, 0x1b, 0x22, 0x01, 0x00, 0x00,
         0x1f, 0x49, 0x82, 0x81, 0x81, 0xe5, 0x6b, 0x04, 0xd5, 0x76, 0x01,
-        0x00, 0x00, 0x00, 0x11, 0x11}; 
+        0x00, 0x00, 0x00, 0x11, 0x11};
      u8 ZonePacket[] = {0x13, 0xc3, 0x00, 0x63, 0xf8, // shortened version from NeoX
         0x0f, 0x03, 0xc3, 0x00, 0x1f, 0x01, 0x00, 0x38, 0x04, 0x00, 0xda,
         0xcf, 0x03, 0x00, 0x01, 0x00};
@@ -295,7 +295,7 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
        *(u16*)&ZonePacket[10] = Client->GetLocalID(); // from NeoX
        *(u16*)&ZonePacket[19] = SpawnPointID; // from NeoX
        // ZonePacket[1] = (char)Test; // from NeoX */
-      
+
        if (Client->ChangeCharLocation(zoneID))
        {
 Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
@@ -305,7 +305,7 @@ Console->Print("IngameCommand: Warping player %d to zone %d (%s)", Client->GetCh
        }
        else
        {
-Console->Print(RED, BLACK, "IngameCommand: Can't change location when trying to warp player %d to zone %d", Client->GetCharID(), zoneID);        
+Console->Print(RED, BLACK, "IngameCommand: Can't change location when trying to warp player %d to zone %d", Client->GetCharID(), zoneID);
        }
    }
 // -------------------------------------------------------
@@ -592,12 +592,12 @@ Console->Print("SendChat");
 */
   if(strcmp(Command, "skin") == 0)
   {
-    
+
     u32 Skinval1, Skinval2, Skinval3, Skinval4;
     PChar *SkinChar = Database->GetChar(Client->GetCharID());
     std::stringstream SkinChat;
     char SkinStr[128];
-    
+
     if(Arg1[0] == '\0')
     {
       Chat->send(Client, CHAT_GM, "Usage", "@skin ( #<chardef idx> ) | ( <model> | # [<head>[ <torso>[ <legs>]]] )");
@@ -625,7 +625,7 @@ Console->Print("SendChat");
         {
           Skinval1 = atoi(Arg1);
         }
-        
+
         if(Arg2[0] != '\0')
         {
           if(Arg2[0] != '-')
@@ -650,18 +650,18 @@ Console->Print("SendChat");
             }
           }
         }
-        
+
         SkinChar->SetCurrentLook(Skinval1, Skinval2, Skinval3, Skinval4);
-        
+
         SkinChat << "Skin set to model ";
-        SkinChat << (int)Skinval1 << " with head " << (int)Skinval2 << ", torso " << (int)Skinval3 << ", legs " << (int)Skinval4;          
+        SkinChat << (int)Skinval1 << " with head " << (int)Skinval2 << ", torso " << (int)Skinval3 << ", legs " << (int)Skinval4;
       }
 
       snprintf(SkinStr, 127, "%s", SkinChat.str().c_str());
       SkinStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", SkinStr);
 
-      PMessage* tmpMsg = MsgBuilder->BuildCharHelloMsg(Client); 
+      PMessage* tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
       ClientManager->UDPBroadcast(tmpMsg, Client);
     }
   }
@@ -669,11 +669,11 @@ Console->Print("SendChat");
 // Body effect setting. See Changes at the begining of this file
 
 if(strcmp(Command, "effect") == 0)
-  {    
+  {
     u8 val1, val2;
     char effStr[128];
     PMessage* tmpMsg;
-           
+
     if(Arg1[0] != '\0')
     {
       val1 = (u8)(atoi(Arg1) & 0xff);
@@ -681,7 +681,7 @@ if(strcmp(Command, "effect") == 0)
       Client->GetChar()->SetBodyEffect(val1, val2);
 
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
-      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       snprintf(effStr, 127, "Body effect set to value %d with density %d (but you can see it yourself)", val1, val2);
       effStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", effStr);
@@ -691,25 +691,25 @@ if(strcmp(Command, "effect") == 0)
       Chat->send(Client, CHAT_GM, "Usage", "@effect <effect: 0=none, 1 .. 17> [<density: 0=max .. 255=min>]");
     }
   }
-  
+
 // -------------------------------------------------------
 // Speed override setting.
 // Usage: @speed <newspeed> | #
 //  with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
 
 if(strcmp(Command, "speed") == 0)
-  {    
+  {
     u8 val1;
     char effStr[128];
     PMessage* tmpMsg;
-           
+
     if(Arg1[0] != '\0')
     {
       val1 = ((Arg1[0] == '#') ? 255 : (u8)(atoi(Arg1) & 0xff));
       Client->GetChar()->SetSpeedOverride(val1);
 
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
-      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       snprintf(effStr, 127, "Speed override set to value %d ", val1);
       effStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", effStr);
@@ -719,14 +719,14 @@ if(strcmp(Command, "speed") == 0)
       Chat->send(Client, CHAT_GM, "Usage", "@speed <newspeed: 0 .. 254 > | 255 | #");
     }
   }
-  
+
 // Skin color setting.
 if(strcmp(Command, "color") == 0)
-  {    
+  {
     u8 val1, val2, val3, val4, val5, val6;
     char effStr[128];
     PMessage* tmpMsg;
-           
+
     if(Arg1[0] != '\0')
     {
       Client->GetChar()->GetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
@@ -739,7 +739,7 @@ if(strcmp(Command, "color") == 0)
       Client->GetChar()->SetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
 
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
-      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       snprintf(effStr, 127, "Body color set to values %d %d %d", val1, val2, val3);
       effStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", effStr);
@@ -752,11 +752,11 @@ if(strcmp(Command, "color") == 0)
 
 // Skin brightness setting.
 if(strcmp(Command, "brightness") == 0)
-  {    
+  {
     u8 val1, val2, val3, val4, val5, val6;
     char effStr[128];
     PMessage* tmpMsg;
-           
+
     if(Arg1[0] != '\0')
     {
       Client->GetChar()->GetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
@@ -769,7 +769,7 @@ if(strcmp(Command, "brightness") == 0)
       Client->GetChar()->SetCurrentBodyColor(val1, val2, val3, val4, val5, val6);
 
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
-      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       snprintf(effStr, 127, "Body brightness set to values %d %d %d", val4, val5, val6);
       effStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", effStr);
@@ -781,18 +781,18 @@ if(strcmp(Command, "brightness") == 0)
   }
 
 if(strcmp(Command, "remove") == 0)
-  {    
+  {
     u32 TargetID;
     char delStr[128];
     PMessage* tmpMsg;
-           
+
     if(Arg1[0] != '\0')
     {
       TargetID = (u32)(atoi(Arg1) & 0xffffffff);
       tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(Client, TargetID, 5);
-      ClientManager->UDPBroadcast(tmpMsg, Client); 
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(Client, TargetID, 9);
-      ClientManager->UDPBroadcast(tmpMsg, Client);        
+      ClientManager->UDPBroadcast(tmpMsg, Client);
       snprintf(delStr, 127, "Item %d removed.", TargetID);
       delStr[127] = '\0';
       Chat->send(Client, CHAT_DIRECT, "System", delStr);
@@ -802,11 +802,15 @@ if(strcmp(Command, "remove") == 0)
       Chat->send(Client, CHAT_GM, "Usage", "@remove <raw item id>");
     }
   }
-
+if(strcmp(Command, "rehash") == 0)
+{
+    Chat->send(Client, CHAT_DIRECT, "System", "Rehashing server...");
+    Database->Rehash();
+}
 /******* temp tests *******/
 if(strcmp(Command, "t") == 0) // testing apprence status
   {
-    
+
     u32 val1;
     u8 val2;
     char tmpStr[128];
@@ -814,7 +818,7 @@ if(strcmp(Command, "t") == 0) // testing apprence status
 
     if (!tmpMsg)
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
-       
+
     if(Arg1[0] != '\0' && Arg2[0] != '\0')
     {
         val1 = atoi(Arg1);
@@ -829,7 +833,7 @@ if(strcmp(Command, "t") == 0) // testing apprence status
       tmpMsg = MsgBuilder->BuildCharHelloMsg(Client);
       snprintf(tmpStr, 127, "Data reset to normal values");
     }
-    
+
     tmpStr[127] = '\0';
     Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
 
@@ -846,7 +850,7 @@ if(strcmp(Command, "h") == 0) // testing apprence status
     if(Arg1[0] != '\0')
     {
       val1 = (u8)(atoi(Arg1) & 0xff);
-      val2 = (u8)(atoi(Arg2) & 0xff);        
+      val2 = (u8)(atoi(Arg2) & 0xff);
     }
     else
     {
@@ -864,23 +868,23 @@ if(strcmp(Command, "h") == 0) // testing apprence status
 	*tmpMsg << (u16)Client->GetLocalID();
 	*tmpMsg << (u8)0x30;
 	*tmpMsg << (u8)val1; //Head Heath (% ?)
-	*tmpMsg << (u8)val1; //Body Heath 
-	*tmpMsg << (u8)val1; //Feet Heath 
+	*tmpMsg << (u8)val1; //Body Heath
+	*tmpMsg << (u8)val1; //Feet Heath
 	*tmpMsg << (u8)0x01;
 
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
    ClientManager->UDPBroadcast(tmpMsg, Client);
-    
+
   snprintf(tmpStr, 127, "Data set to values 0x%02x 0x%02x", val1, val2);
   tmpStr[127] = '\0';
   Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
   }
-  
+
  if(strcmp(Command, "v") == 0) // testing actions
   {
     char tmpStr[128];
     int testmode = 0; // change here only for u8/u16/u32 testvalue use
-    
+
     if(Arg1[0] != '\0')
     {
       switch(testmode)
@@ -896,7 +900,7 @@ if(strcmp(Command, "h") == 0) // testing apprence status
       Client->testval16 = 0;
       Client->testval32 = 0;
     }
-    
+
     switch(testmode)
     {
       case 0: snprintf(tmpStr, 127, "Test value u8 set to 0x%02x (%d)", Client->testval8, Client->testval8); break;
@@ -907,9 +911,9 @@ if(strcmp(Command, "h") == 0) // testing apprence status
     tmpStr[127] = '\0';
     Chat->send(Client, CHAT_DIRECT, "System", tmpStr);
   }
-/******* end temp *******/    
+/******* end temp *******/
 
-// -------------------------------------------------------   
+// -------------------------------------------------------
 }
 
 bool SendRawFile(PClient *Client, char *FileName, int protocoll) {
