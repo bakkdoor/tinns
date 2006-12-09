@@ -597,7 +597,7 @@ Hammag; 21.11.2006 02:00 GMT+1
  - added starting apartment creation
 
 ====================
-Hammag; 22.11.2006 02:00 GMT+1
+Hammag; 25.11.2006 16:45 GMT+1
 ----------
 [rev. 28]
 
@@ -613,6 +613,15 @@ Hammag; 22.11.2006 02:00 GMT+1
  - subskill increasing now works (freely, ie. without any check against class or available skill points)
  
 ====================
+Hammag; 26.11.2006 02:00 GMT+1
+----------
+[rev. 29]
+
+<General changes>
+ - triggered doors now work as expected (hopefully... the trigger button is the one
+    closest to the door). Hack button an money button just work like standard buttons for the moment.
+
+====================
 Namikon; 09.12.2006 01:20 GMT+1
 ----------
 [rev. 30]
@@ -626,4 +635,22 @@ Namikon; 09.12.2006 01:20 GMT+1
 Namikon; 09.12.2006 01:32 GMT+1
 ----------
 [rev. 31]
-- Forget to update the Changelog, ^_^ 
+- Forget to update the Changelog, ^_^
+
+====================
+Hammag; 09.12.2006 16:40 GMT+1
+----------
+[rev. 32]
+This revision is mostly a commit of intermediate change to avoid future conflicts, with no new functionnalty added
+
+<General changes>
+ - added regexsupport for futur use in user strings control (username, password, charname, etc)
+
+[GAME]
+main.cpp: changed type used for time in DB rehash from u32 (causing complile warning) to std::time_t which
+          is the time type (for seconds) now used in gameserver.
+          
+[COMMON]
+regex : added the RegEx class (Simple C++ wrapper for PCRE) to the tinns lib :
+        common/regex/regex++.cpp
+        include/regex++.h

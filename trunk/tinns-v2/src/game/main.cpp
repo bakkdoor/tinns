@@ -68,7 +68,7 @@ void signal_handler(int signal)
 
 int main()
 {
-    u32 time_old = time(0) + 60; // First rehash 1 Minute after serverstart
+    std::time_t TimeTrigger = std::time(NULL) + 60; // First rehash 1 Minute after serverstart
     // Connect signal with handlerfunction
     signal(SIGINT, signal_handler);
 
@@ -84,6 +84,7 @@ int main()
 
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
+  
 	while(1)
 	{
 	  ServerSock->update();
@@ -95,11 +96,11 @@ int main()
 		ISC->Update();
 		Console->Update();
 
-		if(time_old < time(0))
+		if(std::time(NULL) > TimeTrigger)
 		{
 		    if (gDevDebug) Console->Print("[Debug] Rehashing...");
             Database->Rehash();
-            time_old = time(0) + 30; // Next rehash in 30 seconds
+            TimeTrigger = std::time(NULL) + 30; // Next rehash in 30 seconds
 		}
 
 		// in release mode, we just relinquish our remaining time slice to other processes

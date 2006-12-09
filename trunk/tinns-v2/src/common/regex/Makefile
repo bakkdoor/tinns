@@ -15,7 +15,7 @@
 
 # Case 2 : target is a TinNS lib name
 #  (use short name, as in -l linker option) 
-#L_TARGET := tinns
+L_TARGET := tinns
 
 # Case 3 (usual): objects shall be made available to the parent dir
 #  The following line will set that automatically 
@@ -47,8 +47,8 @@
 #####################################################
 # Subdirectories
 #####################################################
-subdir-y := config console filesystem misc netcode regex
-subdir-$(CONFIG_GAMEMONKEY)	+= gamemonkey
+#subdir-y := def 
+#subdir-$(CONFIG_GAMEMONKEY)	+= gamemonkey
 
 
 #####################################################
