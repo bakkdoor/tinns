@@ -612,6 +612,18 @@ Hammag; 22.11.2006 02:00 GMT+1
  - increased TCP timeout which caused connection loss when taking too much time creating a char
  - subskill increasing now works (freely, ie. without any check against class or available skill points)
  
+====================
+Namikon; 09.12.2006 01:20 GMT+1
+----------
+[rev. 30]
+
+[GAME]
+ - (Hopefully) Fixed Autoaccount problem with Gameserver (Rehashing accountdata now every 30 seconds. However,
+   this isnt verified.)
+ - New command: @rehash. Does the same as the server every 30 seconds, for those who cant wait :P
  
- 
- 
+====================
+Namikon; 09.12.2006 01:32 GMT+1
+----------
+[rev. 31]
+- Forget to update the Changelog, ^_^ 
