@@ -94,6 +94,8 @@ class PChat
 
             void sendBroadcast(char* text, bool debugOut=false);
             void sendOOCBroadcast(char* text, bool debugOut=false);
+            void sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut=false);
+
 };
 
 

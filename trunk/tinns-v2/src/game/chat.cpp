@@ -307,6 +307,27 @@ void PChat::sendTeam(PClient* author, char* text, bool debugOut)
 
 }
 
+void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut)
+{
+    bool tmpTargetOnline = false;
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(it->second && it->second->GetCharID() == destination) // only send if the client is existing and the target of the direct
+        {
+            tmpTargetOnline = true;
+            PClient* receiver = it->second;
+            sendDirect(author, receiver, text, debugOut);
+        }
+    }
+    if(debugOut == true)
+    {
+        if(tmpTargetOnline == false)
+            Console->Print("[DEBUG] Requested target CharID %d is not online", destination);
+        else
+            Console->Print("[DEBUG] CharID %d found and message transmitted!", destination);
+    }
+}
+
 void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut)
 {
     PChar* authorChar = Database->GetChar(author->GetCharID());
@@ -855,7 +876,14 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
         }
   //    Console->Print("Channel no %#x %#x %#x %#x", Channel[0], Channel[1], Channel[2], Channel[3]);
 
-        if(*(u32*)Channel == CHANNEL_BUDDY) {
+        // First, check if packet is a direct-chat-packet
+        if(*(u8*)&Packet[8] == 0x04) {
+             //Console->Print("Direct Chat: %s", ChatText);
+             sendPlayerDirect(Client, ChatText, *(u32*)&Packet[9], false);
+             //sendDirect(Client, ChatText, false);
+             // "DIRECT> %s: %s", PlayerName, ChatText
+        }
+        else if(*(u32*)Channel == CHANNEL_BUDDY) {
              //Console->Print("Buddy Chat: %s", ChatText);
              sendBuddy(Client, ChatText, false);
              // "BUDDY> %s: %s", PlayerName, ChatText
@@ -869,11 +897,6 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
              //Console->Print("Team Chat: %s", ChatText);
              sendTeam(Client, ChatText, false);
              // "TEAM> %s: %s", PlayerName, ChatText
-        }
-        else if(*(u32*)Channel == CHANNEL_DIRECT) {
-             Console->Print("Direct Chat: %s", ChatText);
-             //sendDirect(Client, ChatText, false);
-             // "DIRECT> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_ZONE) {
              //Console->Print("Custom - Zone Chat: %s", ChatText);

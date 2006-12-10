@@ -713,3 +713,14 @@ Namikon; 10.12.2006 15:30 GMT+1
 buddylist.cpp / .h : Added function "IsInBuddy()" to perform a simple check "Is a buddy? y/n"
 chars.h		   : Added inline to pass IsBuddy to buddylist->IsInBuddy()
 chat.cpp	   : Fixed sendBuddy function. Working as it should now
+
+====================
+Namikon; 10.12.2006 23:20 GMT+1
+----------
+[rev. 38]
+- Worked again on Chat subsystem. Current status:
+> Direct		- Done. (100%)
+
+
+[GAME]
+chat.cpp/.h	   : Added new function sendPlayerDirect, altered main-chatloop, order is now Local, Direct, others
