@@ -179,7 +179,9 @@ if (gDevDebug) Console->Print("Item function type: %d value: %d", tFurnitureMode
             }
             else
             {
-              nEntity = MySQL->GetWorldItemOption(mRawItemID/256, nLocation, 1);
+              //nEntity = MySQL->GetWorldItemOption(mRawItemID/256, nLocation, 1);
+              // This is a kind of nearly-not-hardcoded-hack ...
+              nEntity = GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
             }
           
             tmpMsg = MsgBuilder->BuildCharUseGenrepMsg(nClient, mRawItemID, nLocation, nEntity);

@@ -54,7 +54,7 @@ class PInfoServer
             s_lastupdate,
             s_timecheck // computed field, not in table !
         };
-		int mNumClients;
+		//int mNumClients;
 		typedef std::map<PClient*, struct PInfoState*> InfoStateMap;
 		InfoStateMap ClientStates;
 

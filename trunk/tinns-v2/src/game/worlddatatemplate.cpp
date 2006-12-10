@@ -157,6 +157,7 @@ void PWorldDataTemplate::SetLinkedObjects()
   f32 D2, minD2;
   u32 minObjID;
   u16 fnctType;
+  u16 tGROrder = 0;
   
   for (PFurnitureItemsMap::iterator it = mFurnitureItems.begin(); it != mFurnitureItems.end(); it++)
   {
@@ -194,7 +195,10 @@ if (gDevDebug) Console->Print("%s Found triggered door %d (%s) for button %d (%s
         Console->Print("%s No triggered door found for button %d (%s)", Console->ColorText(YELLOW, BLACK, "[Warning]"), it->first, it->second->GetName().c_str());        
       }
     }
-  } 
-
+    else if (fnctType==6) // if function is genrep
+    {
+      it->second->SetLinkedObjectID(++tGROrder);
+    }
+  }
 
 }

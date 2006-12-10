@@ -133,6 +133,7 @@ class PGameDefs
 		
 		inline int GetNumRespawnDefs() const { return mRespawnDefs.size(); }
 		const PDefRespawn *GetRespawnDef(int Index) const;
+		int GetRespawnEntity(u32 nWorldID, u16 nGROrder) const;
 		
 		inline int GetNumWorldFileDefs() const { return mWorldFileDefs.size(); }
 		const PDefWorldFile *GetWorldFileDef(int Index) const;

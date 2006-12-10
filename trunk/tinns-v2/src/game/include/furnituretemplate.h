@@ -81,7 +81,8 @@ class PFurnitureItemTemplate
     
     const PDefWorldModel* mDefWorldModel;
 
-    u32 mLinkedObjectID;
+    u32 mLinkedObjectID; // for buttons, stores the corresponding triggered door
+                         // fo GR, stores order of the GR entity (spawn point) to later choose from respawn.def data
     
   public:
     PFurnitureItemTemplate();

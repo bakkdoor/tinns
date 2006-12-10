@@ -798,7 +798,7 @@ IP = IPStringToDWord(IPServerString.c_str());
 
     // hello-message from server..
     std::string serverName = Config->GetOption("server_name");
-    std::string helloMessage = "Welcome on " + serverName + " - A TinNS Neocron Server.";
+    std::string helloMessage = "Welcome to " + serverName + " - A TinNS Neocron Server.";
     char* message = (char*) helloMessage.c_str();
     Chat->send(Client, CHAT_DIRECT, "System", message, false);
 

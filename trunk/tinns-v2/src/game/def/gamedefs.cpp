@@ -840,3 +840,31 @@ const PDefWorldFile *PGameDefs::GetWorldFileDef(int Index) const
 
 	return (Result);
 }
+
+/****** Misc methods ******/
+
+int PGameDefs::GetRespawnEntity(u32 nWorldID, u16 nGROrder) const
+{
+  u16 tOrder = 0;
+  
+  for (PDefRespawnMap::const_iterator it = mRespawnDefs.begin(); it!=mRespawnDefs.end(); it++)
+  {
+    if ((u32)(it->second->GetWorldID()) == nWorldID)
+    {
+      ++tOrder;
+      if ((nWorldID == 1) || (nWorldID == 2)) // hack for zones 1 & 2
+      {
+        if ((3-tOrder) == nGROrder)
+        {
+          return (it->second->GetEntityID());
+        }
+      }
+      else if (tOrder == nGROrder)
+      {
+        return (it->second->GetEntityID());
+      }
+    }
+  }
+  return 0;
+
+}

@@ -65,7 +65,7 @@ first_rule: sub_dirs
 	@if [ ! -d .dep ]; then mkdir .dep ; fi
 	$(CXX) -MD -MP $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(CXXFLAGS_$@) -c $< -o $@
 	@ ( \
-	    egrep -v "/usr/include|/usr/lib|^$$" $(@:.o=.d) > $(DEPDIR)/$(@:.o=.dep); \
+	    egrep -v "/usr/include|/usr/lib|/usr/local/lib" $(@:.o=.d) > $(DEPDIR)/$(@:.o=.dep); \
 	    rm -f $(@:.o=.d); \
 	)
 	@ ( \

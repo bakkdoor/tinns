@@ -28,7 +28,10 @@
 	REASON: - Removed INFO_PORT use as value is available from config
   MODIFIED: 27 Aug 2006 hammag
 	REASON: - Modified GSLiveCheck() to be independant of gameserver time (no time sync needed between servers)
-	          
+  MODIFIED: 27 Aug 2006 hammag
+	REASON: - Display the client id in Client connection message rather than the always increasing mNumClients
+	        - Removed use of mNumClients in PInfoServer. the count is done in PServer.
+
     ToDo:
     - Take main loop timeout setting from config file
 */
@@ -56,7 +59,7 @@ struct PInfoState
 
 PInfoServer::PInfoServer()
 {
-	mNumClients = 1;
+	//mNumClients = 1;
 	mLivecheckInterval = Config->GetOptionInt("gameserver_livecheck");
 }
 
@@ -96,14 +99,14 @@ void PInfoServer::Update()
 		int clid = Server->NewClient();
 		if(clid!=-1)
 		{
-			Console->Print(GREEN, BLACK, "Infoserver: client [%i] connected", mNumClients);
+			Console->Print(GREEN, BLACK, "Infoserver: client [%i] connected", clid);
 			PClient *Client = Server->GetClient(clid);
 
 			ConnectionTCP* tcpConn = ServerSock->getTCPConnection();
 			Client->setTCPConnection(tcpConn);
 
 			Console->Print("Client address: %s", Client->GetAddress());
-			++mNumClients;
+			//++mNumClients;
 
 			PInfoState *state = new PInfoState();
 			ClientStates.insert(std::make_pair(Client, state));
