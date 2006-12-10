@@ -60,13 +60,58 @@ PChat::~PChat()
 }
 
 /*
-void PChat::sendBuddy(PClient* author, char* text, bool debugOut=false)
-{
-    // get the buddy list and send to each buddy!
-    //PChatMessage message(author, CHAT_BUDDY, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
-    //send(message);
-}
+NEED BUDDYDATA   void sendBuddy(PClient* author, char* text, bool debugOut=false);
+SEMI-DONE        void sendLocal(PClient* author, char* text, bool debugOut=false);
+                We need to figure out how the client handles localchat.
+                Until then, local chat will remain as ZoneChat
+NEED CLANDATA    void sendClan(PClient* author, char* text, bool debugOut=false);
+NEED TEAMDATA    void sendTeam(PClient* author, char* text, bool debugOut=false);
+DONE    void sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut=false);
+DONE    void sendZone(PClient* author, char* text, bool debugOut=false);
+DONE    void sendFrak(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTradeCS(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTradeMB(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTradeNC(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTradeTH(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTradeWL(PClient* author, char* text, bool debugOut=false);
+DONE    void sendOOC(PClient* author, char* text, bool debugOut=false);
+DONE    void sendHelp(PClient* author, char* text, bool debugOut=false);
+DONE    void sendClanSearch(PClient* author, char* text, bool debugOut=false);
+DONE    void sendServicesCS(PClient* author, char* text, bool debugOut=false);
+DONE    void sendServicesMB(PClient* author, char* text, bool debugOut=false);
+DONE    void sendServicesNC(PClient* author, char* text, bool debugOut=false);
+DONE    void sendServicesTH(PClient* author, char* text, bool debugOut=false);
+DONE    void sendServicesWL(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTeam10(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTeam30(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTeam50(PClient* author, char* text, bool debugOut=false);
+DONE    void sendTeam70(PClient* author, char* text, bool debugOut=false);
+DONE    void sendAdmin(PClient* author, char* text, bool debugOut=false);
+DONE    void sendGM(PClient* author, char* text, bool debugOut=false);
 */
+
+
+void PChat::sendBuddy(PClient* author, char* text, bool debugOut)
+{
+    /**
+        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS LIMITED TO THE ZONE TILL THEN
+    **/
+    // send the message to all clients that have same ZoneID
+    PChar* authorChar = Database->GetChar(author->GetCharID());
+    u32 ZID = authorChar->GetLocation(); // get LocationID of author
+
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second && Database->GetChar(it->second->GetCharID())->GetLocation() == ZID)
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
 
 void PChat::sendConnectedList(PClient* receiver, bool debugOut)
 {
@@ -87,14 +132,61 @@ void PChat::sendConnectedList(PClient* receiver, bool debugOut)
     }
 }
 
+
+void PChat::sendFrak(PClient* author, char* text, bool debugOut)
+{
+    // send the message to all clients that have same FactionID
+    PChar* authorChar = Database->GetChar(author->GetCharID());
+    u32 FID = authorChar->GetFaction(); // get LocationID of author
+
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second && Database->GetChar(it->second->GetCharID())->GetFaction() == FID)
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_FRAK, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendZone(PClient* author, char* text, bool debugOut)
+{
+    // send the message to all clients that have same ZoneID
+    PChar* authorChar = Database->GetChar(author->GetCharID());
+    u32 ZID = authorChar->GetLocation(); // get LocationID of author
+
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second && Database->GetChar(it->second->GetCharID())->GetLocation() == ZID)
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
 void PChat::sendLocal(PClient* author, char* text, bool debugOut)
 {
+    /**
+        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS LIMITED TO THE ZONE TILL THEN
+    **/
+
+    PChar* authorChar = Database->GetChar(author->GetCharID());
+    u32 ZID = authorChar->GetLocation(); // get LocationID of author
+
     // send the message to all clients that are in Area (Radius = X (needs to be defined somewhere!))
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
         if(author != it->second) // if its not the client, that send the message to the server
         {
-            if(it->second) // only send if the client is existing!
+            if(author != it->second && Database->GetChar(it->second->GetCharID())->GetLocation() == ZID)
+//            if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
                 send(receiver, CHAT_LOCAL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
@@ -105,7 +197,7 @@ void PChat::sendLocal(PClient* author, char* text, bool debugOut)
 
 void PChat::sendGM(PClient* author, char* text, bool debugOut)
 {
-    if(author->GetLevel() >= PCL_GM) // Only send GM> chat when user is an Gamemaster or higher
+    if(author->GetAccount()->GetLevel() >= PAL_GM) // Only send GM> chat when user is an Gamemaster or higher
     {
         // send the message to all GameMasters.
         for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -115,10 +207,8 @@ void PChat::sendGM(PClient* author, char* text, bool debugOut)
                 if(it->second) // only send if the client is existing!
                 {
                     PClient* receiver = it->second;
-                    if(receiver->GetLevel() >= PCL_GM) // Only send GM chat if RECEIVER is GM or higher
+                    if(receiver->GetAccount()->GetLevel() >= PAL_GM) // Only send GM chat if RECEIVER is GM or higher
                         send(receiver, CHAT_GM, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
-
-                    Console->Print("Sending GM Chat");
                 }
             }
         }
@@ -127,7 +217,7 @@ void PChat::sendGM(PClient* author, char* text, bool debugOut)
 
 void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
 {
-    if(author->GetLevel() >= PCL_ADMIN) // Only send ADMIN> chat when user is an serveradmin
+    if(author->GetAccount()->GetLevel() >= PAL_ADMIN) // Only send ADMIN> chat when user is an serveradmin
     {
         // send the message to ALL users online
         for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -138,26 +228,52 @@ void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
                 {
                     PClient* receiver = it->second;
                     send(receiver, CHAT_ADMIN, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
-
-                    Console->Print("Sending Admin Chat");
                 }
             }
         }
     }
 }
 
-/*
-void PChat::sendClan(PClient* author, char* text, bool debugOut=false)
+void PChat::sendBroadcast(char* text, bool debugOut)
 {
-    // send the message to all clients that have same ClanID
-
-    PChar* authorChar = Database->GetChar(author->GetCharID());
-
-    int ClanID = authorChar->getClanID(); // get clanID of author
-
-    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    // send the message to ALL users online
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Database->GetChar(it->second->GetCharID())->getClanID() == ClanID) // if its not the client, that send the message to the server and if it has the same clan id
+        if(it->second) // only send if the client is existing!
+        {
+            PClient* receiver = it->second;
+            send(receiver, CHAT_ADMIN, "Server", text, debugOut);
+        }
+    }
+}
+
+void PChat::sendOOCBroadcast(char* text, bool debugOut)
+{
+    // send the message to ALL users online
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(it->second) // only send if the client is existing!
+        {
+            PClient* receiver = it->second;
+            send(receiver, CHAT_OOC, "Server", text, debugOut);
+        }
+    }
+}
+
+void PChat::sendClan(PClient* author, char* text, bool debugOut)
+{
+    /**
+        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS SUPERGLOBAL TILL THEN
+    **/
+    // send the message to all clients that have same ClanID
+//    PChar* authorChar = Database->GetChar(author->GetCharID());
+
+//    int ClanID = authorChar->getClanID(); // get clanID of author
+
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+//        if(author != it->second && Database->GetChar(it->second->GetCharID())->getClanID() == ClanID) // if its not the client, that send the message to the server and if it has the same clan id
+        if(author != it->second)
         {
             if(it->second) // only send if the client is existing!
             {
@@ -168,20 +284,22 @@ void PChat::sendClan(PClient* author, char* text, bool debugOut=false)
     }
 
 }
-*/
 
-/*
-void PChat::sendTeam(PClient* author, char* text, bool debugOut=false)
+void PChat::sendTeam(PClient* author, char* text, bool debugOut)
 {
+    /**
+        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS SUPERGLOBAL TILL THEN
+    **/
     // send the message to all clients that have same TeamID
 
-    PChar* authorChar = Database->GetChar(author->GetCharID());
+    //PChar* authorChar = Database->GetChar(author->GetCharID());
 
-    int TeamID = authorChar->getTeamID(); // get TeamID of author
+    //int TeamID = authorChar->getTeamID(); // get TeamID of author
 
-    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Database->GetChar(it->second->GetCharID())->getTeamID() == TeamID) // if its not the client, that send the message to the server and if it has the same team id
+        //if(author != it->second && Database->GetChar(it->second->GetCharID())->getTeamID() == TeamID) // if its not the client, that send the message to the server and if it has the same team id
+        if(author != it->second)
         {
             if(it->second) // only send if the client is existing!
             {
@@ -192,7 +310,6 @@ void PChat::sendTeam(PClient* author, char* text, bool debugOut=false)
     }
 
 }
-*/
 
 void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut)
 {
@@ -262,41 +379,263 @@ void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debu
     delete[] DChatPacket;
 }
 
-/*
-void PChat::sendZone(PClient* author, char* text, bool debugOut=false)
+void PChat::sendTradeCS(PClient* author, char* text, bool debugOut)
 {
-    // send the message to all clients that have same ZoneID
-
-    PChar* authorChar = Database->GetChar(author->GetCharID());
-
-    int TeamID = authorChar->getZoneID(); // get TeamID of author
-
-    for(PClientMap::iterator it=ClientManager->getClientList()->begin(); it!=ClientManager->getClientList()->end(); it++)
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Database->GetChar(it->second->GetCharID())->getZoneID() == ZoneID)
+        if(author != it->second) // if its not the client, that send the message to the server
         {
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                send(receiver, CHAT_TRADECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
-
 }
-*/
 
-/*
-void PChat::sendFrak(PClient* author, char* text, bool debugOut=false)
+void PChat::sendTradeMB(PClient* author, char* text, bool debugOut)
 {
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TRADEMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
 }
-*/
 
-/*
-#######################################
-   more functions still missing here
-#######################################
-*/
+void PChat::sendTradeNC(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TRADENC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTradeTH(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TRADETH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTradeWL(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TRADEWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendOOC(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_OOC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendHelp(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_HELP, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendClanSearch(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_CLANSEARCH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendServicesCS(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_SERVICECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendServicesMB(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_SERVICESMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendServicesNC(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_SERVICESNC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendServicesTH(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_SERVICESTH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendServicesWL(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_SERVICESWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTeam10(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TEAM10, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTeam30(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TEAM30, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTeam50(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TEAM50, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(author != it->second) // if its not the client, that send the message to the server
+        {
+            if(it->second) // only send if the client is existing!
+            {
+                PClient* receiver = it->second;
+                send(receiver, CHAT_TEAM70, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+            }
+        }
+    }
+}
+
+
+
 
 bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickName, char* text, bool debugOut)
 {
@@ -486,8 +825,9 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
       if(ChatText[0] == '@' && sizeof(ChatText) > 2) {
             HandleGameCommand(ChatText, Client);
       } else {
-            Console->Print("Local Chat: %s", ChatText);
-            Console->Print("Client CharName is: %s", Database->GetChar(Client->GetCharID())->GetName().c_str());
+          // We know its working, so we dont need console output anymore
+            //Console->Print("Local Chat: %s", ChatText);
+            //Console->Print("Client CharName is: %s", Database->GetChar(Client->GetCharID())->GetName().c_str());
             sendLocal(Client, ChatText, false);
       }
 
@@ -520,103 +860,128 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
   //    Console->Print("Channel no %#x %#x %#x %#x", Channel[0], Channel[1], Channel[2], Channel[3]);
 
         if(*(u32*)Channel == CHANNEL_BUDDY) {
-             Console->Print("Buddy Chat: %s", ChatText);
+             //Console->Print("Buddy Chat: %s", ChatText);
+             sendBuddy(Client, ChatText, false);
              // "BUDDY> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CLAN) {
-             Console->Print("Clan Chat: %s", ChatText);
+             //Console->Print("Clan Chat: %s", ChatText);
+             sendClan(Client, ChatText, false);
              // "CLAN> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_TEAM) {
-             Console->Print("Team Chat: %s", ChatText);
+             //Console->Print("Team Chat: %s", ChatText);
+             sendTeam(Client, ChatText, false);
              // "TEAM> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_DIRECT) {
              Console->Print("Direct Chat: %s", ChatText);
+             //sendDirect(Client, ChatText, false);
              // "DIRECT> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_ZONE) {
-             Console->Print("Custom - Zone Chat: %s", ChatText);
+             //Console->Print("Custom - Zone Chat: %s", ChatText);
+             sendZone(Client, ChatText, false);
              // "ZONE> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_FRAKTION) {
-             Console->Print("Custom - Fraktion Chat: %s", ChatText);
+             //Console->Print("Custom - Fraktion Chat: %s", ChatText);
+             sendFrak(Client, ChatText, false);
              // "FRACTION> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TRADE_CANYON) {
-             Console->Print("Custom - Trade_Canyon Chat: %s", ChatText);
+             //Console->Print("Custom - Trade_Canyon Chat: %s", ChatText);
+             sendTradeCS(Client, ChatText, false);
              // "TRADE - CS> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TRADE_MB) {
-             Console->Print("Custom - Trade_MB Chat: %s", ChatText);
+             //Console->Print("Custom - Trade_MB Chat: %s", ChatText);
+             sendTradeMB(Client, ChatText, false);
              // "TRADE - MB> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TRADE_NC) {
-             Console->Print("Custom - Trade_NC Chat: %s", ChatText);
+             //Console->Print("Custom - Trade_NC Chat: %s", ChatText);
+             sendTradeNC(Client, ChatText, false);
              // "TRADE - NC> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TRADE_TH) {
-             Console->Print("Custom - Trade_TH Chat: %s", ChatText);
+             //Console->Print("Custom - Trade_TH Chat: %s", ChatText);
+             sendTradeTH(Client, ChatText, false);
              // "TRADE - TH> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TRADE_WASTE) {
-             Console->Print("Custom - Trade_Waste Chat: %s", ChatText);
+             //Console->Print("Custom - Trade_Waste Chat: %s", ChatText);
+             sendTradeWL(Client, ChatText, false);
              // "TRADE - WL> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_OOC) {
-             Console->Print("Custom - OOC Chat: %s", ChatText);
+             //Console->Print("Custom - OOC Chat: %s", ChatText);
+             sendOOC(Client, ChatText, false);
              // "OOC> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_PLAYERHELP) {
-             Console->Print("Custom - PlayerToPlayerhelp Chat: %s", ChatText);
+             //Console->Print("Custom - PlayerToPlayerhelp Chat: %s", ChatText);
+             sendHelp(Client, ChatText, false);
              // "HELP> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_CLANSEARCH) {
-             Console->Print("Custom - Clansearch Chat: %s", ChatText);
+             //Console->Print("Custom - Clansearch Chat: %s", ChatText);
+             sendClanSearch(Client, ChatText, false);
              // "CLANSEARCH> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_SERVICES_CANYON) {
-             Console->Print("Custom - Services_Canyon Chat: %s", ChatText);
+             //Console->Print("Custom - Services_Canyon Chat: %s", ChatText);
+             sendServicesCS(Client, ChatText, false);
              // "SKILL - CS> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_SERVICES_MB) {
-             Console->Print("Custom - Services_MB Chat: %s", ChatText);
+             //Console->Print("Custom - Services_MB Chat: %s", ChatText);
+             sendServicesMB(Client, ChatText, false);
              // "SKILL - MB> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_SERVICES_NC) {
-             Console->Print("Custom - Services_NC Chat: %s", ChatText);
+             //Console->Print("Custom - Services_NC Chat: %s", ChatText);
+             sendServicesNC(Client, ChatText, false);
              // "SKILL - NC> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_SERVICES_TH) {
-             Console->Print("Custom - Services_TH Chat: %s", ChatText);
+             //Console->Print("Custom - Services_TH Chat: %s", ChatText);
+             sendServicesTH(Client, ChatText, false);
              // "SKILL - TH> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_SERVICES_WASTE) {
-             Console->Print("Custom - Services_Waste Chat: %s", ChatText);
+             //Console->Print("Custom - Services_Waste Chat: %s", ChatText);
+             sendServicesWL(Client, ChatText, false);
              // "SKILL - WL> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TEAM_10) {
-             Console->Print("Custom - Team10 Chat: %s", ChatText);
+             //Console->Print("Custom - Team10 Chat: %s", ChatText);
+             sendTeam10(Client, ChatText, false);
              // "TEAMSEARCH 10> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TEAM_30) {
-             Console->Print("Custom - Team30 Chat: %s", ChatText);
+             //Console->Print("Custom - Team30 Chat: %s", ChatText);
+             sendTeam30(Client, ChatText, false);
              // "EAMSEARCH 30> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TEAM_50) {
-             Console->Print("Custom - Team50 Chat: %s", ChatText);
+             //Console->Print("Custom - Team50 Chat: %s", ChatText);
+             sendTeam50(Client, ChatText, false);
              // "EAMSEARCH 50> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_CUS_TEAM_70) {
-             Console->Print("Custom - Team70 Chat: %s", ChatText);
+             //Console->Print("Custom - Team70 Chat: %s", ChatText);
+             sendTeam70(Client, ChatText, false);
              // "EAMSEARCH 70> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_ADMIN) {
-             Console->Print("Admin Chat: %s", ChatText);
+             //Console->Print("Admin Chat: %s", ChatText);
+             sendAdmin(Client, ChatText, false);
              // "ADMIN> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_GMCHAT) {
-             Console->Print("GameMaster Chat: %s", ChatText);
+             //Console->Print("GameMaster Chat: %s", ChatText);
+             sendGM(Client, ChatText, false);
              // "GM> %s: %s", PlayerName, ChatText
         }
         else {

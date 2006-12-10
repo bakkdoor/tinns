@@ -79,18 +79,21 @@ class PChat
             void sendTradeWL(PClient* author, char* text, bool debugOut=false);
             void sendOOC(PClient* author, char* text, bool debugOut=false);
             void sendHelp(PClient* author, char* text, bool debugOut=false);
-            void sendClansKarch(PClient* author, char* text, bool debugOut=false);
-            void sendServiceCS(PClient* author, char* text, bool debugOut=false);
-            void sendServiceSMB(PClient* author, char* text, bool debugOut=false);
-            void sendServiceSNC(PClient* author, char* text, bool debugOut=false);
-            void sendServiceSTH(PClient* author, char* text, bool debugOut=false);
-            void sendServiceSWL(PClient* author, char* text, bool debugOut=false);
+            void sendClanSearch(PClient* author, char* text, bool debugOut=false);
+            void sendServicesCS(PClient* author, char* text, bool debugOut=false);
+            void sendServicesMB(PClient* author, char* text, bool debugOut=false);
+            void sendServicesNC(PClient* author, char* text, bool debugOut=false);
+            void sendServicesTH(PClient* author, char* text, bool debugOut=false);
+            void sendServicesWL(PClient* author, char* text, bool debugOut=false);
             void sendTeam10(PClient* author, char* text, bool debugOut=false);
             void sendTeam30(PClient* author, char* text, bool debugOut=false);
             void sendTeam50(PClient* author, char* text, bool debugOut=false);
             void sendTeam70(PClient* author, char* text, bool debugOut=false);
             void sendAdmin(PClient* author, char* text, bool debugOut=false);
             void sendGM(PClient* author, char* text, bool debugOut=false);
+
+            void sendBroadcast(char* text, bool debugOut=false);
+            void sendOOCBroadcast(char* text, bool debugOut=false);
 };
 
 

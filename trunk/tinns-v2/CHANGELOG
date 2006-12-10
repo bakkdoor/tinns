@@ -669,3 +669,35 @@ gameserver.h: Added "std::time_t mServerStartupTime" and public inline "GetStart
 gameserver.cpp: Added mServerStartupTime to gameserver's class constructor (Var gets set one time uppon startup)
 commands.cpp: Added @uptime. Generates readeable output in the form (Years, Months, Weeks, Days, ...) from the
               difference between mServerStartUp and the current timestamp
+
+====================
+Namikon; 10.12.2006 15:30 GMT+1
+----------
+[rev. 35]
+- Added @broadcast. GM and higher can now send out "ADMIN> Server: <text>" broadcasts
+- Worked on Chat subsystem. Current status:
+> Buddy		- Sends text to Buddy, everyone in the same Zone can read. No Buddylist yet
+> Local		- Another problem, local is TCP on retail, we use UDP. Works for now, needs further research
+> Clan		- Same as Buddy
+> Team		- Same as Buddy
+> Direct	- No function yet
+> GM		- Done. (100%)
+> Admin		- Done. (100%)
+> All others	- Nearly done. Sends/Receives to/from correct channel, including zone/fraction/etc
+		  limitation. However, you cant disable channels yet, needs further research.
+
+- 2 new options in gameserver.cfg: 
+> broadcast_new			- If set to 1, the server will send out an broadcast to channel OOC with
+				  a welcome message. Default is 0.
+> broadcast_new_hidestaff	- If set to 1, all "non-players" are not announced over OOC. Default is 0.
+- Fixed some typos in chat.h/.cpp
+
+[GAME]
+chat.h/.cpp	: Corrected some typos.
+		  Added sendBroadcast (Admin channel)
+		  Added sendOOCBroadcast (OOC channel)
+		  Added all missing sendXXX functions
+		  Removed several Console outputs. We know it works, no need to debug it anymore.
+gameserver.cpp	: Changed current welcome message to new OOC broadcast method
+configtemplate.h: Added 2 new default values for broadcast on connect
+commands.cpp	: Added @broadcast command. First command which checks your accesslevel. (as announced before)

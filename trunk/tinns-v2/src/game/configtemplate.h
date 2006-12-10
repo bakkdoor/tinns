@@ -24,12 +24,12 @@
       with a PConfig object.
 
 	MODIFIED: 28 Sep 2006 Hammag
-	REASON: - added worlds_path entry	 	  
+	REASON: - added worlds_path entry
   MODIFIED: 02 Oct 2006 Hammag
-	REASON: - added dev_debug entry	
-	
+	REASON: - added dev_debug entry
+
   TODO: put a single data_directory entry as the root directory for all NC data
-    
+
 */
 
 const char* GameConfigTemplate[][2] = {
@@ -51,7 +51,7 @@ const char* GameConfigTemplate[][2] = {
   {"server_name", "TinNS"},
   {"server_ip", "127.0.0.1"}, //IP address used with clients reached without NAT (see localnet)
   {"no_nat_net", "0"}, // 0 is for "don't bother with NAT", else format is like 192.168.1. (with trailing dot)
-  {"server_nat_ip", "127.0.0.1"}, //IP address used with clients reached through NAT 
+  {"server_nat_ip", "127.0.0.1"}, //IP address used with clients reached through NAT
   {"gameserver_port", "12000"},
   {"server_version", ""},
   {"maxclients", "128"},
@@ -69,7 +69,9 @@ const char* GameConfigTemplate[][2] = {
   {"dev_debug", "0"}, // set to non-zero to activate development outputs
   {"auto_save_period", "300"},
   {"new_char_location", "1085"},
-  
+  {"broadcast_new", "0"},
+  {"broadcast_new_hidestaff", "0"},
+
 // For futur use:
 //  {"max_chars_per_account", "4"},
 //  {"multiple_logins_per_account", "0"}, // 0=nobody, 1=gm+ only, 2=everybody

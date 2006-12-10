@@ -502,8 +502,6 @@ return;
    }
 // -------------------------------------------------------
    if(strcmp(Command, "sendchat") == 0) {
-//       SendChat(Client, Channel, NickName, TextToSend);
-Console->Print("SendChat");
       if(strcmp(Arg1, "buddy") == 0) {
              //SendChat(Client, CHAT_BUDDY, "NickName", "TextToSend");
              Chat->send(Client, CHAT_BUDDY, "Nickname", "TextToSend");
@@ -938,11 +936,32 @@ if(strcmp(Command, "uptime") == 0)
 
     //Copy the single msg's into one
     char tmpChatMsg[300];
-    snprintf(tmpChatMsg, 299, "The server is running %s%s%s%s%s%s%s", tmpY, tmpM, tmpW, tmpD, tmpH, tmpMi, tmpS);
+    snprintf(tmpChatMsg, 299, "The server has been running for %s%s%s%s%s%s%s", tmpY, tmpM, tmpW, tmpD, tmpH, tmpMi, tmpS);
     tmpChatMsg[299] = '\0';
 
     // Send it out
     Chat->send(Client, CHAT_DIRECT, "System", tmpChatMsg);
+}
+/****************************/
+if(strcmp(Command, "broadcast") == 0)
+{
+    if(Client->GetAccount()->GetLevel() >= PAL_GM)
+    {
+        int i = 0, j = 11;
+        char tmpStr[255];
+
+        do
+        {
+            tmpStr[i] = ChatText[j];
+            i++;
+            j++;
+        } while (ChatText[j] != '\0');
+        tmpStr[i] = '\0';
+
+        Chat->sendBroadcast(tmpStr);
+    }
+    else
+        Chat->send(Client, CHAT_DIRECT, "System", "You need at least GameMaster access to send broadcasts!");
 }
 /******* temp tests *******/
 if(strcmp(Command, "t") == 0) // testing apprence status

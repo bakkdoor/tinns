@@ -797,11 +797,37 @@ IP = IPStringToDWord(IPServerString.c_str());
     Client->ChangeCharLocation(Char->GetLocation(), true);
 
     // hello-message from server..
+    /*
     std::string serverName = Config->GetOption("server_name");
     std::string helloMessage = "Welcome to " + serverName + " - A TinNS Neocron Server.";
     char* message = (char*) helloMessage.c_str();
     Chat->send(Client, CHAT_DIRECT, "System", message, false);
+    */
 
+    bool SendBC = false;
+    if(Config->GetOptionInt("broadcast_new") == 1)
+    {
+        if(Config->GetOptionInt("broadcast_new_hidestaff") == 1)
+        {
+            if(Client->GetAccount()->GetLevel() > PAL_REGPLAYER)
+                SendBC = false;
+            else
+                SendBC = true;
+        }
+        else
+        {
+            SendBC = true;
+        }
+    }
+    if(SendBC == true)
+    {
+        std::string playerName = Database->GetChar(Client->GetCharID())->GetName();
+        std::string serverName = Config->GetOption("server_name");
+        std::string helloMessage = "Hello " + playerName + "! Welcome to " + serverName + " - A TinNS Neocron Server.";
+        char* message = (char*) helloMessage.c_str();
+
+        Chat->sendOOCBroadcast(message);
+    }
 		//Console->Print("UDP Setup: %s", nlGetErrorStr(nlGetError()));
 	}
 	else
