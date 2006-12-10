@@ -42,7 +42,7 @@
 	            any player to use it at the same time.
 	          - added use of auto_save_period config option in PChars::update()
 	          - removed old XML-storage related code
-  
+
   TODO:     - implement PChar::SQLDelete()
 */
 
@@ -69,12 +69,12 @@ PChar::PChar()
 	mLegs = 0;  // "
   mHeadColor = mTorsoColor = mLegsColor = 0; // "
   mHeadDarkness = mTorsoDarkness = mLegsDarkness = 0; // "
-  	
+
 	mBodyEffect = 0;
 	mBodyEffectDensity = 0;
-	
+
 	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
-	
+
 	mLocationLeased = false; // temp until char on-demand load/unload
 	mLocation = 0;
 	mStartApt=0;
@@ -88,6 +88,8 @@ PChar::PChar()
 	Skill = new PSkillHandler();
 	mBuddyList = NULL;
 	mGenrepList = NULL;
+
+	mActiveChatChannels = 0;
 }
 
 PChar::~PChar()
@@ -113,7 +115,7 @@ void PChar::SetProfession(u32 Profession)
     mProfession = Profession;
     mClass = def->GetType();
   }
-  SetDirtyFlag(); 
+  SetDirtyFlag();
 }
 
 u32 PChar::GetSkinFromCharType(u32 nType)
@@ -137,7 +139,7 @@ void PChar::SetRealLook(u32 nHead, u32 nTorso, u32 nLegs)
   mRealHead = nHead;
   mRealTorso = nTorso;
   mRealLegs = nLegs;
-  SetDirtyFlag(); 
+  SetDirtyFlag();
   ResetCurrentLook();
 }
 
@@ -153,7 +155,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
 {
   int iHead, iTorso, iLegs;
   u32 nSkin, nHead, nTorso, nLegs;
-  
+
   const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
   if (nDefCharacter)
   {
@@ -161,7 +163,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
     iHead = nDefCharacter->GetHead();
     iTorso = nDefCharacter->GetTorso();
     iLegs = nDefCharacter->GetLegs();
-    
+
     if ((iHead < 0) || (iTorso < 0) || (iLegs < 0))
     {
       // do something !
@@ -173,7 +175,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
       nTorso = iTorso % 10;
       nLegs = iLegs % 10;
     }
-    
+
     SetCurrentLook(nSkin, nHead, nTorso, nLegs);
   }
 }
@@ -193,8 +195,8 @@ void PChar::ResetCurrentLook()
 {
   SetCurrentLook(GetSkinFromCharType(GetType()), mRealHead, mRealTorso, mRealLegs);
 }
-    
-// GetCurrentLook will later have to take Power Armors and GM overrides into account    
+
+// GetCurrentLook will later have to take Power Armors and GM overrides into account
 void PChar::GetCurrentLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs)
 {
   nSkin = mSkin;
@@ -210,7 +212,7 @@ void PChar::SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8
   mLegsColor = nLegsColor;
   mHeadDarkness = nHeadDarkness;
   mTorsoDarkness = nTorsoDarkness;
-  mLegsDarkness = nLegsDarkness; 
+  mLegsDarkness = nLegsDarkness;
 }
 
 void PChar::GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness)
@@ -220,7 +222,7 @@ void PChar::GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor,
   nLegsColor = mLegsColor;
   nHeadDarkness = mHeadDarkness;
   nTorsoDarkness = mTorsoDarkness;
-  nLegsDarkness = mLegsDarkness; 
+  nLegsDarkness = mLegsDarkness;
 }
 
 void PChar::SetBaseSkills()
@@ -249,17 +251,17 @@ void PChar::SetBaseSkills()
   Skill->SetXP(MS_CON, ??? ));
   Skill->SetXP(MS_DEX, ??? ));
   Skill->SetXP(MS_STR, ??? ));
-  Skill->SetXP(MS_PSI, ??? )); */ 
+  Skill->SetXP(MS_PSI, ??? )); */
   Console->Print(YELLOW, BLACK, "PChar::SetBaseSkills() not fully functionnal - unused skill points will be lost");
 }
 
 void PChar::SetBaseSubskills(u8 NSZNb, const char* NonZeroSubskills)
 {
   int i;
-  
+
   if (NSZNb == 0)
     return;
-  
+
   for (i = 0; i < NSZNb; i++)
   {
      Skill->SetSubSkill((SUB_SKILLS) NonZeroSubskills[2 * i], (int) NonZeroSubskills[2 * i +1]);
@@ -271,10 +273,10 @@ void PChar::SetBaseInventory()
   u8 i;
   u32 BaseItemID;
   const PDefCharKind *def = GameDefs->GetCharKindDef(mProfession);
-  
+
   //mCash = 5000;
   mCash = def->GetStartMoney();
-  
+
   for (i = 0; i < 8 ; i++)
   {
     BaseItemID = def->GetStartInventory(i);
@@ -321,7 +323,7 @@ bool PChar::SQLLoad(int CharID) {
         // Profession
         int profvalue = std::atoi(row[c_profession]);
         SetProfession( static_cast<u32>(profvalue));
-         
+
         // Class
         //int classvalue = std::atoi(row[c_class]);
         //if(classvalue < 4)
@@ -331,7 +333,7 @@ bool PChar::SQLLoad(int CharID) {
         //  Console->Print(RED, BLACK, "Bad class value: %d (Char ID %d)", classvalue, mID);
         //  classvalue = 0;
         //}
-            
+
         // Faction
         int facvalue = std::atoi(row[c_faction]);
         if(GameDefs->GetFactionDef(facvalue))
@@ -347,7 +349,7 @@ bool PChar::SQLLoad(int CharID) {
         int torsovalue = std::atoi(row[c_torso]);
         int legsvalue = std::atoi(row[c_legs]);
         SetRealLook(static_cast<u32>(headvalue), static_cast<u32>(torsovalue), static_cast<u32>(legsvalue));
-            
+
         // Type
         /*
         int typevalue = std::atoi(row[c_type]);
@@ -357,7 +359,7 @@ bool PChar::SQLLoad(int CharID) {
         // Location
         int locvalue = std::atoi(row[c_location]);
         mLocation = static_cast<u32>(locvalue);
-        
+
         int posvalue = std::atoi(row[c_pos_x]);
         Coords.mX = static_cast<u16>(posvalue);
         posvalue = std::atoi(row[c_pos_y]);
@@ -367,12 +369,12 @@ bool PChar::SQLLoad(int CharID) {
         posvalue = std::atoi(row[c_angle_ud]);
         Coords.mUD = static_cast<u8>(posvalue);
         posvalue = std::atoi(row[c_angle_lr]);
-        Coords.mLR = static_cast<u8>(posvalue);        
-        
+        Coords.mLR = static_cast<u8>(posvalue);
+
         int primapt = std::atoi(row[c_apt]);
         mPrimaryApt = static_cast<u32>(primapt);
         mStartApt = mPrimaryApt;
-        
+
         // Cash
         f32 cashvalue = std::atof(row[c_cash]);
         mCash = static_cast<u32>(cashvalue);
@@ -437,20 +439,20 @@ bool PChar::SQLLoad(int CharID) {
         // ---------------------------------------------
         mInventory.SQLLoad(mID);
         // + Belt, Implants(&Armor), Gogo, GR list, Chats settings & friendlist
-        
+
         // temp value forcing, not get/saved from DB atm
         mSoullight = 10;
         mCombatRank = (u8)(random() % 127); // bad result there on randomness
         mSynaptic = 0;
-        mIsDead = false; 
-        
+        mIsDead = false;
+
         mDirectCharID = 0; // until saved/loaded with char
         mBuddyList = new PBuddyList(mID);
         if (!mBuddyList->SQLLoad())
         {
           Console->Print(RED, BLACK, "Char ID %d : Can't load buddy list", mID);
         }
-        
+
         mGenrepList = new PGenrepList(mID);
         if (!mGenrepList->SQLLoad())
         {
@@ -459,7 +461,7 @@ bool PChar::SQLLoad(int CharID) {
 
     }
     MySQL->FreeGameSQLResult(result);
-    
+
     return true;
 }
 
@@ -469,7 +471,7 @@ bool PChar::SQLCreate() // Specific method for creation in order to avoid existe
 
     query = "INSERT INTO characters (c_id";
     queryv = ") VALUES (NULL";
-    
+
     query += ",c_name";
     queryv = queryv + ",'" + mName + "'";
 
@@ -479,7 +481,7 @@ bool PChar::SQLCreate() // Specific method for creation in order to avoid existe
     queryv += Ssprintf(",'%u'", mClass);
     query += ",c_sex";
     queryv += Ssprintf(",'%u'", mGender);
-    query += ",c_profession";   
+    query += ",c_profession";
     queryv += Ssprintf(",'%u'", mProfession);
     query += ",c_faction";
     queryv += Ssprintf(",'%u'", mFaction);
@@ -499,7 +501,7 @@ bool PChar::SQLCreate() // Specific method for creation in order to avoid existe
     queryv += Ssprintf(",'%u'", mCash);
 
     query = query + queryv + ");";
-    
+
     if ( MySQL->GameQuery(query.c_str()) )
     {
         Console->Print(RED, BLACK, "PChar::SQLCreate could not add char %s to database", mName.c_str());
@@ -531,23 +533,23 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
 	SetAccount(Account);
 	SetCharSlot(Slot);
 	mLocation = Config->GetOptionInt("new_char_location");
-	
+
 	// This part will have to be rewritten with proper methods
   mSoullight = 10;
   mCombatRank = (u8)(random() % 127); // bad result there on randomness
   mSynaptic = 0;
-  mIsDead = false; 
-  
+  mIsDead = false;
+
   mDirectCharID = 0; // until saved/loaded with char
-        	
+
 	SetDirtyFlag();
-	
+
 	if (SQLCreate()) // mID isn't defined before that
 	{
     mBuddyList = new PBuddyList(mID);
     mGenrepList = new PGenrepList(mID);
     mStartApt = mPrimaryApt = Appartements->CreateBaseAppartement(mID, mName, mFaction);
-    
+
 	  if (mStartApt && SQLSave())
 	  {
       return true;
@@ -568,7 +570,7 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
 }
 
 bool PChar::SQLSave()
-{ 
+{
     std::string query;
     //std::string ts;
 
@@ -583,9 +585,9 @@ bool PChar::SQLSave()
             Legs change: style, brightness, color
             mHealt, mStamina, mMana (not in DB !!!)
             How to compute MaxHealth etc. ?
-*/                    
+*/
     query = "UPDATE characters SET";
-    
+
     query += Ssprintf(" c_location='%u'", mLocation);
     query += Ssprintf(",c_pos_x='%u'", Coords.mX);
     query += Ssprintf(",c_pos_y='%u'", Coords.mY);
@@ -594,15 +596,15 @@ bool PChar::SQLSave()
     query += Ssprintf(",c_angle_lr='%u'", Coords.mLR);
     query += Ssprintf(",c_cash='%u'", mCash);
     query += Ssprintf(",c_apt='%u'", mPrimaryApt);
-    
+
     query += Ssprintf(",c_head='%u'", mRealHead);
     query += Ssprintf(",c_torso='%u'", mRealTorso);
     query += Ssprintf(",c_legs='%u'", mRealLegs);
 
     query += Ssprintf(",c_faction='%u'", mFaction);
-        
+
     /* This group of fiels shouldn't change in-game
-    query = query + ",c_name='" + mName + "'";    
+    query = query + ",c_name='" + mName + "'";
     query += Ssprintf(",a_id='%u'", mAccount);
     query += Ssprintf(",c_class='%u'", mClass);
     query += Ssprintf(",c_sex='%u'", mGender);
@@ -610,7 +612,7 @@ bool PChar::SQLSave()
     // query += Ssprintf(",c_model='%u'", mModel);
     // query += Ssprintf(",c_type='%u'", mType);
     */
-    
+
         // ---------------------------------------------
         // Saving skills --- MAIN Skills with SP and XP
         // ---------------------------------------------
@@ -669,7 +671,7 @@ bool PChar::SQLSave()
         // ---------------------------------------------
 
     query += Ssprintf(" WHERE c_id='%u' LIMIT 1;", mID);
-    
+
     if ( MySQL->GameQuery( query.c_str()) )
     {
         Console->Print(RED, BLACK, "PChar::SQLSave could not save char %s (%u) to database", mName.c_str(), mID);
@@ -681,17 +683,17 @@ bool PChar::SQLSave()
 
     if (! mInventory.SQLSave(mID))
       return false;
-      
+
     // + Belt, Implants(&Armor), Gogo, GRs,
     // Chats settings (?), directs & buddies, GR list
-    
+
     mDirtyFlag = false;
     return true;
 }
 
 bool PChar::SQLDelete()
 {
-  return true; 
+  return true;
 }
 
 void PChar::SetOnlineStatus(bool IsOnline)
@@ -725,7 +727,7 @@ void PChar::FillinCharDetails(u8 *Packet)
 {
     //const PDefCharKind *def = GameDefs->GetCharKindDef(GetType());
     const PDefCharKind *def = GameDefs->GetCharKindDef(GetProfession());
-    
+
     if(!Packet)
         return;
 
@@ -880,7 +882,7 @@ PChars::PChars()
 {
 	mLastID = 0;
 	mLastSave = std::time(NULL);
-	  
+
 	mAutoSavePeriod = Config->GetOptionInt("auto_save_period");
 	if (mAutoSavePeriod < 0)
 	{
@@ -888,7 +890,7 @@ PChars::PChars()
 	  mAutoSavePeriod = 0;
 	}
 	else if (mAutoSavePeriod > 3600)
-	{ 
+	{
 	  Console->Print("%s auto_save_period (%d) too high. Forced to 3600 sec.", Console->ColorText(YELLOW, BLACK, "[Warning]"), mAutoSavePeriod);
 	  mAutoSavePeriod = 0;
 	}
@@ -898,10 +900,10 @@ PChars::PChars()
 	  Console->Print("%s Auto-save disabled.", Console->ColorText(YELLOW, BLACK, "[Info]"));
 	}
 	else if (mAutoSavePeriod < 60)
-	{ 
+	{
 	  Console->Print("%s auto_save_period (%d) is low and might lead to high server load.", Console->ColorText(YELLOW, BLACK, "[Warning]"), mAutoSavePeriod);
 	}
-	
+
 }
 
 PChars::~PChars()

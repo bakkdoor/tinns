@@ -206,6 +206,8 @@ class PChar
             }
 		};
 
+		u32 mActiveChatChannels;
+
     bool mIsOnline;
 		bool mDirtyFlag;
 
@@ -311,6 +313,8 @@ class PChar
 
 		inline u32 GetChairInUse() { return mChairInUse; }
 		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
+
+		inline u32 GetActiveChannels() { return mActiveChatChannels; };
 };
 
 class PChars

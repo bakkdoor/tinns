@@ -724,3 +724,14 @@ Namikon; 10.12.2006 23:20 GMT+1
 
 [GAME]
 chat.cpp/.h	   : Added new function sendPlayerDirect, altered main-chatloop, order is now Local, Direct, others
+====================
+Namikon; 11.12.2006 00:59 GMT+1
+----------
+[rev. 39]
+Last update for this weekend lol ^^
+- Worked again on Chat subsystem. (What else)
+  This release may break tinns from working, until Hammag found a way to grab the data i need for the CustomChannels.
+
+[GAME]
+chat.cpp/.h	: Added check for every custom channel if its enabled or not
+chars.cpp/.h	: Added inline and variable to hold custom channel info

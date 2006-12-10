@@ -95,10 +95,12 @@ class PChat
             void sendBroadcast(char* text, bool debugOut=false);
             void sendOOCBroadcast(char* text, bool debugOut=false);
             void sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut=false);
+            bool chanEnabled(PClient* Client, u32 channel);
 
 };
 
-
+/** A WARNING: DO >N O T< (!!!) CHANGE >ANY< OF THE FOLLOWING VARIABLES UNLESS YOU KNOW EXACT WHAT YOU'RE DOING! **/
+/** You can easily mess up the entire chat subsystem. If you're unsure, ask Namikon first! **/
 /*
 ####################
    CHANNEL-CODES:
@@ -163,4 +165,29 @@ static const u8 CHAT_TEAM70[] = {0x05, 0x0F};
 static const u8 CHAT_ADMIN[] = {0xFF, 0x10};
 static const u8 CHAT_GM[] = {0xFD, 0x10};
 
+/*
+####################
+   CHANNEL-CODES:
+(EN/DISABLE-ABLE CHANNELS)
+####################
+*/
+static const u32 C_ZONE = 1;
+static const u32 C_FRAK = 2;
+static const u32 C_TRADENC = 4;
+static const u32 C_TRADEMB = 8;
+static const u32 C_TRADETH = 16;
+static const u32 C_TRADECS = 32;
+static const u32 C_TRADEWL = 64;
+static const u32 C_SERVICENC = 128;
+static const u32 C_SERVICEMB = 256;
+static const u32 C_SERVICETH = 512;
+static const u32 C_SERVICECS = 1024;
+static const u32 C_SERVICEWL = 2048;
+static const u32 C_TEAM10 = 4096;
+static const u32 C_TEAM30 = 8192;
+static const u32 C_TEAM50 = 16384;
+static const u32 C_TEAM70 = 32768;
+static const u32 C_CLANSEARCH = 65536;
+static const u32 C_HELP = 131072;
+static const u32 C_OOC = 262144;
 #endif

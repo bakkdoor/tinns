@@ -142,7 +142,8 @@ void PChat::sendFrak(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_FRAK, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_FRAK) == true)
+                    send(receiver, CHAT_FRAK, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -161,7 +162,8 @@ void PChat::sendZone(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_ZONE) == true)
+                    send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -251,7 +253,8 @@ void PChat::sendOOCBroadcast(char* text, bool debugOut)
         if(it->second) // only send if the client is existing!
         {
             PClient* receiver = it->second;
-            send(receiver, CHAT_OOC, "Server", text, debugOut);
+            if(chanEnabled(receiver, C_OOC) == true)
+                send(receiver, CHAT_OOC, "Server", text, debugOut);
         }
     }
 }
@@ -405,7 +408,8 @@ void PChat::sendTradeCS(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TRADECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TRADECS) == true)
+                    send(receiver, CHAT_TRADECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -420,7 +424,8 @@ void PChat::sendTradeMB(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TRADEMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TRADEMB) == true)
+                    send(receiver, CHAT_TRADEMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -435,7 +440,8 @@ void PChat::sendTradeNC(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TRADENC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TRADENC) == true)
+                    send(receiver, CHAT_TRADENC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -450,7 +456,8 @@ void PChat::sendTradeTH(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TRADETH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TRADETH) == true)
+                    send(receiver, CHAT_TRADETH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -465,7 +472,8 @@ void PChat::sendTradeWL(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TRADEWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TRADEWL) == true)
+                    send(receiver, CHAT_TRADEWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -480,7 +488,8 @@ void PChat::sendOOC(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_OOC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_OOC) == true)
+                    send(receiver, CHAT_OOC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -495,7 +504,8 @@ void PChat::sendHelp(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_HELP, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_HELP) == true)
+                    send(receiver, CHAT_HELP, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -510,7 +520,8 @@ void PChat::sendClanSearch(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_CLANSEARCH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_CLANSEARCH) == true)
+                    send(receiver, CHAT_CLANSEARCH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -525,7 +536,8 @@ void PChat::sendServicesCS(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_SERVICECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_SERVICECS) == true)
+                    send(receiver, CHAT_SERVICECS, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -540,7 +552,8 @@ void PChat::sendServicesMB(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_SERVICESMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_SERVICEMB) == true)
+                    send(receiver, CHAT_SERVICESMB, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -555,7 +568,8 @@ void PChat::sendServicesNC(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_SERVICESNC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_SERVICENC) == true)
+                    send(receiver, CHAT_SERVICESNC, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -570,7 +584,8 @@ void PChat::sendServicesTH(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_SERVICESTH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_SERVICETH) == true)
+                    send(receiver, CHAT_SERVICESTH, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -585,7 +600,8 @@ void PChat::sendServicesWL(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_SERVICESWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_SERVICEWL) == true)
+                    send(receiver, CHAT_SERVICESWL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -600,7 +616,8 @@ void PChat::sendTeam10(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TEAM10, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TEAM10) == true)
+                    send(receiver, CHAT_TEAM10, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -615,7 +632,8 @@ void PChat::sendTeam30(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TEAM30, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TEAM30) == true)
+                    send(receiver, CHAT_TEAM30, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -630,7 +648,8 @@ void PChat::sendTeam50(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TEAM50, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TEAM50) == true)
+                    send(receiver, CHAT_TEAM50, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -645,14 +664,43 @@ void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_TEAM70, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                if(chanEnabled(receiver, C_TEAM70) == true)
+                    send(receiver, CHAT_TEAM70, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }
 }
 
 
+bool PChat::chanEnabled(PClient* Client, u32 channel)
+{
+    // Check if player has target channel enabled or disabled
+    u32 actChans = Database->GetChar(Client->GetCharID())->GetActiveChannels();
 
+    // Quick answers to save time
+    if(actChans == 0) return false;
+    if(actChans < channel) return false;
+    if(actChans == channel) return true;
+
+    u32 loopvar = 262144;
+
+    while(loopvar > 0)
+    {
+        if(actChans > loopvar)
+        {
+            if(channel == loopvar) return true;
+            actChans = actChans - loopvar;
+        }
+        else
+            if(channel == loopvar) return true;
+
+        if(loopvar > 1)
+            loopvar = loopvar / 2;
+        else
+            loopvar = 0;
+    }
+    return false;
+}
 
 bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickName, char* text, bool debugOut)
 {
