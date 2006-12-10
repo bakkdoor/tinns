@@ -654,3 +654,18 @@ main.cpp: changed type used for time in DB rehash from u32 (causing complile war
 regex : added the RegEx class (Simple C++ wrapper for PCRE) to the tinns lib :
         common/regex/regex++.cpp
         include/regex++.h
+
+====================
+Namikon; 10.12.2006 11:35 GMT+1
+----------
+[rev. 33]
+- Added @uptime to view server's uptime ingame
+
+<General changes>
+
+[GAME]
+gameserver.h: Added "std::time_t mServerStartupTime" and public inline "GetStartTime()" to receive Server's
+	      startup timestamp anywhere in the source
+gameserver.cpp: Added mServerStartupTime to gameserver's class constructor (Var gets set one time uppon startup)
+commands.cpp: Added @uptime. Generates readeable output in the form (Years, Months, Weeks, Days, ...) from the
+              difference between mServerStartUp and the current timestamp

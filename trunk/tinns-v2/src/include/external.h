@@ -58,8 +58,8 @@
 
     MODIFIED: 26 Aug 2006 Hammag
 	  REASON: - splitted from main.h, keeping external includes in this single file
-	            for all source tree	  
-	  
+	            for all source tree
+
 */
 
 #ifndef EXTERNAL_H

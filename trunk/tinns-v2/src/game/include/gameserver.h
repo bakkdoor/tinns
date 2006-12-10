@@ -91,11 +91,12 @@ class PUdpMsgDecoder;
 class PGameServer
 {
 	private :
+        std::time_t mServerStartupTime;
 		int mNumClients;
 		u32 mBaseGameTime;
     struct timespec mStartTime;
     u32 mInternalRand;
-    
+
 		typedef std::map<PClient*, struct PGameState*> GameStateMap;
 		GameStateMap ClientStates;
 		PUdpMsgDecoder* MsgDecoder;
@@ -134,7 +135,9 @@ class PGameServer
 		void UDPStreamClosed(PClient *Client);
 		void SetGameTime(u32 newtime);
 		u32 GetGameTime();
-		
+
+		inline std::time_t GetStartTime() const { return mServerStartupTime; };
+
 		u16 GetRandom(u16 MaxVal, u16 MinVal = 0); // u16 value between MinVal and MaxVal (inclusive) with max range 32768
 		f32 GetRandomFloat(); // f32 value between 0 and 1
 };

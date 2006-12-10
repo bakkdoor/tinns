@@ -75,6 +75,9 @@
 
   MODIFIED: 03 Oct 2006 hammag
 	REASON: - Added some more DB cleanup when a char is deleted (still incomplete and will later be done in PChar::SQLDelete() )
+    MODIFIED: 10 Dec 2006 Namikon
+	REASON: - Added new variable "mServerStartupTime". Holds the unix timestamp uppon startup. Required for @uptime
+              and other time-based stuff
 
     TODO:
     - Deny login if char is already online (More information about the login procedure is necessary to do that)
@@ -94,7 +97,8 @@
 
 
 PGameServer::PGameServer()
-{  
+{
+  mServerStartupTime = std::time(NULL);
   mNumClients = 0;
   mInternalRand = 1;
   MsgDecoder = new PUdpMsgDecoder();
@@ -121,7 +125,7 @@ void PGameServer::Start()
 	}
 	Console->LClose();
 	ServerSock->settimeout(0, 10000);
-	
+
 	SetGameTime(0);	//Init time
 
   // Init random generator
@@ -131,8 +135,8 @@ void PGameServer::Start()
 	  srandom((u32)tmpTime.tv_sec);
 	  mInternalRand = tmpTime.tv_sec;
 //Console->Print("Initializing random generator. First value is %d", random());
-	}  
-	
+	}
+
   if (Config->GetOptionInt("gameserver_udpport_max") - Config->GetOptionInt("gameserver_udpport_min") + 1 < Config->GetOptionInt("maxclients"))
   {
     Console->Print("%s UDP port range setting doesn't allow for the simultaneous max clients set in config", Console->ColorText(YELLOW, BLACK, "[Warning]"));
@@ -147,8 +151,8 @@ void PGameServer::SetGameTime(u32 newtime)
 	  perror("clock_gettime CLOCK_REALTIME");
 	  mStartTime.tv_sec = 0;
     mStartTime.tv_nsec = 0;
-	}  
-  mBaseGameTime = newtime;    
+	}
+  mBaseGameTime = newtime;
 }
 
 u32 PGameServer::GetGameTime()
@@ -156,9 +160,9 @@ u32 PGameServer::GetGameTime()
   //const u32 TimeFactor = 375;
   const u32 TimeFactor = 1000;
   const u32 nsTimeFactor = 1000000000 / TimeFactor;
-  
+
   struct timespec tmpTime;
-    
+
   if (mStartTime.tv_sec)
   {
   	clock_gettime(CLOCK_REALTIME, &tmpTime);
@@ -177,7 +181,7 @@ u16 PGameServer::GetRandom(u16 MaxVal, u16 MinVal)
 f32 PGameServer::GetRandomFloat()
 {
   mInternalRand = mInternalRand * 1103515245 + 12345; //from rand() manpage
-  return ((f32)((mInternalRand>>16) % 32768)/(f32)32768);  
+  return ((f32)((mInternalRand>>16) % 32768)/(f32)32768);
 }
 
 void PGameServer::Update()
@@ -217,7 +221,7 @@ void PGameServer::Update()
 		PClient *Client = i->first;
 		PGameState *State = i->second;
 		// node gets erased in FinalizeClient, increment iterator now
-		++i;		
+		++i;
 		if (!ProcessClient(Client, State))
 			FinalizeClient(Client, State);
 	}
@@ -361,7 +365,7 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 			else if (Server->GetNumClients() > Server->GetMaxClients())
 			{
 					Console->Print("Server full, refusing connection from privileged user '%s'", UserID);
-					Failed = true;	// server full even for GM users			  
+					Failed = true;	// server full even for GM users
 			}
 		}
 		else
@@ -497,7 +501,7 @@ bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u
 			  CharEntry[i].Legs = tLegs;
 				CharEntry[i].NameLen = Char->GetName().length()+1;
 				CharEntry[i].Name = Char->GetName();
-				
+
 				NameLengths += CharEntry[i].NameLen;
 			}
 			else
@@ -618,11 +622,11 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 						else
 						{
 						  Console->Print("Char %d removed!", CharID);
-						  
+
 						  sprintf(query, "DELETE FROM buddy_list WHERE bud_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print("Char %d's buddy list not removed!", CharID);
-							  
+
 						  sprintf(query, "DELETE FROM genrep WHERE g_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print("Char %d's genrep list not removed!", CharID);
@@ -630,8 +634,8 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 						  sprintf(query, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print("Char %d's inventory not removed!", CharID);
-							
-							Appartements->DeleteCharAppartements(CharID);  							  							  
+
+							Appartements->DeleteCharAppartements(CharID);
 					  }
 					}
 				}
@@ -643,7 +647,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 				if (PacketSize < 64)
 					return (false);
 
-        u32 Slot =* (u32*)&Packet[30]; 
+        u32 Slot =* (u32*)&Packet[30];
 				//u32 nClass =* (u32*)&Packet[34]; // Not used - indirectly redundant with Profession
 				u32 Profession =* (u32*)&Packet[38];
 				u32 Gender =* (u32*)&Packet[42];
@@ -668,7 +672,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 					PChar *c = Database->CreateChar(Acc->GetID(), TempName, Gender, Profession, Faction,
 					     Head, Torso, Legs, NZSNb, (const char*)&Packet[64+NameLen], Slot);
-      
+
 					if (c)
 					{
 						Acc->AddChar(c->GetID());
@@ -738,13 +742,13 @@ bool PGameServer::HandleGameInfo(PClient *Client, PGameState *State, const u8 *P
     {
       			Console->Print(RED, BLACK, "Client %d: UDP port setup failed", Client->GetID());
       			ClientDisconnected(Client);
-    }	
+    }
 
 		u16 Port = Client->getUDPConn()->getPort();
 
 		if (Port == 0)
 			Console->Print(RED, BLACK, "Client->OpenUDP() failed");
-      
+
 
 		/* if(PortFix == 1) // removed, no more use
 		{
@@ -775,7 +779,7 @@ IP = IPStringToDWord(IPServerString.c_str());
 		*(u32*)&GameInfo[5] = Client->GetAccount()->GetID();
 		*(u32*)&GameInfo[9] = Client->GetCharID(); // NEW : SOLVED ? was TODO : charid
 		Console->Print("Serving char id :%d", Client->GetCharID()); //NEW
-		
+
 		Socket->write(GameInfo, 31);
 		Socket->flushSendBuffer();
 
@@ -786,18 +790,18 @@ IP = IPStringToDWord(IPServerString.c_str());
 		State->UDP.mState = PGameState::UDP::GUS_SYNC0;
 //Console->Print("Sync Reset");
 		Client->ResetTransactionID();
-		  
+
     // Mark char as Online
     PChar *Char = Client->GetChar();
     Char->SetOnlineStatus(true); //Also using this info to check if Char may have to be saved at client disconnect
     Client->ChangeCharLocation(Char->GetLocation(), true);
-    
+
     // hello-message from server..
     std::string serverName = Config->GetOption("server_name");
     std::string helloMessage = "Welcome on " + serverName + " - A TinNS Neocron Server.";
     char* message = (char*) helloMessage.c_str();
     Chat->send(Client, CHAT_DIRECT, "System", message, false);
-    
+
 		//Console->Print("UDP Setup: %s", nlGetErrorStr(nlGetError()));
 	}
 	else
@@ -841,12 +845,12 @@ bool PGameServer::HandleGame(PClient *Client, PGameState *State)
       {
          Console->Print("%s Client[%d] Unknown msg: %s", Console->ColorText(YELLOW, BLACK, "[Info]"), Client->GetID(), MsgDecoder->GetName().c_str());
       }
-      
+
       if (gDevDebug && MsgDecoder->IsTraceDump())
       {
         MsgDecoder->DumpMsg();
       }
-      
+
     } while(MsgDecoder->MoreSubMsg());
   }
   if (NewMsg)
@@ -953,7 +957,7 @@ void PGameServer::FinalizeClient(PClient *Client, PGameState *State)
 
     // delete client from clientmanager list => Do it before we remove network access
 	ClientManager->deleteClientFromList(Client->GetLocalID());
-	
+
 	Client->GameDisconnect();
 	ClientStates.erase(Client);
 	delete State;

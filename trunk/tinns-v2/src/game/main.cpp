@@ -84,7 +84,7 @@ int main()
 
 	Console->Print("Gameserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
 
-  
+
 	while(1)
 	{
 	  ServerSock->update();
