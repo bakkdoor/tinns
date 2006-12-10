@@ -154,34 +154,34 @@ class PChar
   	u8 mTorsoDarkness; // "
   	u8 mLegsDarkness;  // "
 		            // Skin scale factor setting remain to discover, provided they are somewhere for player chars ...
-		
+
 		bool mLocationLeased; // temp until char on-demand load/unload
 		u32 mLocation;
 		u32 mCash;
 		u32 mStartApt; // set same as PrimaryApt atm
 		u32 mPrimaryApt;
     u32 mChairInUse; // not saved in DB atm
-    
+
 		u16 mHealth;
 		u16 mMana;
 		u16 mStamina;
-		
+
 		s8 mSoullight; // *** Not got/saved from DB atm ***
 		u8 mCombatRank; // *** Not got/saved from DB atm ***
 		u8 mSynaptic; // *** Not got/saved from DB atm ***
 		bool mIsDead; // *** Not got/saved from DB atm ***
-		
+
 		// Only one body effect supported atm. Should be extended later to multiple effects
 		u8 mBodyEffect; // *** Not got/saved from DB atm ***
 		u8 mBodyEffectDensity; // *** Not got/saved from DB atm ***
-		
+
 		u8 mSpeedOverride; // a hack to control move speed. Not saved in DB
-		
+
 		u32 mDirectCharID; // for Direct Chat // *** Not got/saved from DB atm ***
 		PBuddyList* mBuddyList; // For Buddy list Chat
-		
+
 		PGenrepList* mGenrepList; // Character's GR list
-		
+
 		struct PCharCoordinates {
 		    u16 mY;     // Y-Position in world
         u16 mZ;     // Z-Position in world
@@ -208,9 +208,9 @@ class PChar
 
     bool mIsOnline;
 		bool mDirtyFlag;
-		
+
 		class PInventory mInventory;
-		
+
 	protected :
 		friend class PChars;
 		inline void SetID(u32 ID) { mID = ID; }
@@ -223,29 +223,29 @@ class PChar
 		//inline void SetType(u32 Type) { mType = Type; } // Removed. Type is computed from Gender & Profession (??? is it not Gender + Class ???)
 		inline void SetFaction(u32 Faction) { mFaction = Faction; }
 		//inline void SetModel(u32 Model) { mModel = Model; } // Inhibited for the moment. Base model is deduced from from Gender & Class (Profession)
-    void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);    
+    void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);
     void SetBaseSkills();
     void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
 	  void SetBaseInventory();
 
     void FillinCharDetails(u8 *Packet);
     bool SQLCreate();
-    
+
 	public :
 		PChar();
 		~PChar();
-	
+
     PSkillHandler *Skill;
     PCharCoordinates Coords;
-    
+
     void SetCurrentLook(u32 nSkin, u32 nHead = 0, u32 nTorso = 0, u32 nLegs = 0);
     void SetCurrentLookFromCharType(u32 nType);
-    void ResetCurrentLook();   
-    
+    void ResetCurrentLook();
+
     void SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness = 0, u8 nTorsoDarkness = 0, u8 nLegsDarkness = 0);
     inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
     inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
-    
+
 		inline u32 GetID() const { return mID; }
 		inline u32 GetAccount() const { return mAccount; }
 		inline const std::string &GetName() const { return mName; }
@@ -275,8 +275,8 @@ class PChar
     u8 GetMainRank();
 		inline u8 GetCombatRank() const { return mCombatRank; }
 		inline u8 GetSynaptic() const { return mSynaptic; }
-		inline bool IsDead() const { return mIsDead; } 
-		
+		inline bool IsDead() const { return mIsDead; }
+
 		inline bool SetDirectChat(u32 nBuddyCharID) { mDirectCharID = nBuddyCharID; return true; }
 		inline u32 GetDirectChat() { return mDirectCharID; }
     inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
@@ -285,11 +285,13 @@ class PChar
     inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
     inline u8 GetBuddyCount() { return mBuddyList->Count(); }
 
+    inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
+
     inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
     inline u16 GetGenrepListDataSize() { return mGenrepList->GetListDataSize(); }
     inline const void* GetGenrepListData() { return mGenrepList->GetListData(); }
     inline u8 GetGenrepCount() { return mGenrepList->Count(); }
-         
+
 		inline bool IsDirty() const { return mDirtyFlag; }
     inline bool IsOnline() { return mIsOnline; }
     void SetOnlineStatus(bool IsOnline);
@@ -299,14 +301,14 @@ class PChar
 		bool SQLLoad(int CharID);
 		bool SQLSave();
 		bool SQLDelete(); // not implemented yet
-		
+
 		inline void SetLocation(u32 Location) { mLocation = Location; }
 		inline void SetDirtyFlag(bool Dirty = true) { mDirtyFlag = Dirty; }
-		
+
 		// temp until char on-demand load/unload
 		inline void SetLocationLeased(bool nState = true) { mLocationLeased = nState; }
 		inline bool GetLocationLeased() { return mLocationLeased; }
-		
+
 		inline u32 GetChairInUse() { return mChairInUse; }
 		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
 };
@@ -317,10 +319,10 @@ class PChars
 		typedef std::map<u32, PChar*> CharMap;
 		CharMap mChars;
 		u32 mLastID;
-		
+
 		std::time_t mAutoSavePeriod;
 		std::time_t mLastSave;
-		
+
 
 	public :
 		PChars();

@@ -60,7 +60,7 @@ PChat::~PChat()
 }
 
 /*
-NEED BUDDYDATA   void sendBuddy(PClient* author, char* text, bool debugOut=false);
+DONE    void sendBuddy(PClient* author, char* text, bool debugOut=false);
 SEMI-DONE        void sendLocal(PClient* author, char* text, bool debugOut=false);
                 We need to figure out how the client handles localchat.
                 Until then, local chat will remain as ZoneChat
@@ -93,21 +93,17 @@ DONE    void sendGM(PClient* author, char* text, bool debugOut=false);
 
 void PChat::sendBuddy(PClient* author, char* text, bool debugOut)
 {
-    /**
-        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS LIMITED TO THE ZONE TILL THEN
-    **/
-    // send the message to all clients that have same ZoneID
     PChar* authorChar = Database->GetChar(author->GetCharID());
-    u32 ZID = authorChar->GetLocation(); // get LocationID of author
-
+    // send the message to all Buddys in list
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Database->GetChar(it->second->GetCharID())->GetLocation() == ZID)
+        if(author != it->second && authorChar->IsBuddy(it->second->GetCharID()) == true)
         {
             if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_ZONE, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                //Console->Print("DEBUG: Buddychat - Sending msg to %s", Database->GetChar(receiver->GetCharID())->GetName().c_str());
+                send(receiver, CHAT_BUDDY, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
             }
         }
     }

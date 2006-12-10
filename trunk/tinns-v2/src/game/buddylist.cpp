@@ -25,7 +25,7 @@
 
 	MODIFIED: 19 Sep 2006 Hammag
 	REASON: - creation
-	
+
 	TODO: - link with a online char list, updated when needed (chars in/out, or list modified)
 */
 
@@ -48,7 +48,7 @@ PBuddyList::~PBuddyList()
 bool PBuddyList::AddChar(u32 nBuddyCharID)
 {
   char query[256];
-    
+
   if ((FindEntry(nBuddyCharID) >= mListSize) && (mListSize < 255))
   {
     if (mListSize == mListMaxSize)
@@ -66,7 +66,7 @@ bool PBuddyList::AddChar(u32 nBuddyCharID)
         MySQL->ShowGameSQLError();
         return false;
     }
-    
+
     return true;
   }
   else
@@ -77,7 +77,7 @@ bool PBuddyList::RemoveChar(u32 nBuddyCharID)
 {
   char query[256];
   u8 rEntry, i;
-  
+
   if ((rEntry = FindEntry(nBuddyCharID)) < mListSize)
   {
     --mListSize;
@@ -115,12 +115,12 @@ bool PBuddyList::SQLLoad()
   {
     return false;
   }
-//Console->Print(GREEN, BLACK, "PBuddyList::SQLLoad Loading buddylist for char %d", mOwnerCharID);  
+//Console->Print(GREEN, BLACK, "PBuddyList::SQLLoad Loading buddylist for char %d", mOwnerCharID);
   mListSize = 0;
   if((EntriesNum = mysql_num_rows(result)))
   {
     IncreaseMaxSize(EntriesNum);
-    
+
     while((row = mysql_fetch_row(result)))
     {
         mCharIDList[mListSize++] = std::atoi(row[bud_buddyid]);
@@ -130,11 +130,11 @@ bool PBuddyList::SQLLoad()
   MySQL->FreeGameSQLResult(result);
   return true;
 }
-  
+
 void PBuddyList::IncreaseMaxSize(u8 nNewMax)
 {
   u16 tmpSize;
-    
+
   if (!nNewMax)
   {
     tmpSize = mListMaxSize + BUDDYLIST_ALLOC_SIZE;
@@ -148,9 +148,9 @@ void PBuddyList::IncreaseMaxSize(u8 nNewMax)
   }
   else
     return;
-    
+
   mListMaxSize = (tmpSize < 256) ? tmpSize : 255;
-  
+
   u32* tmpList = new u32[mListMaxSize];
   if (mCharIDList)
   {
@@ -161,12 +161,12 @@ void PBuddyList::IncreaseMaxSize(u8 nNewMax)
     delete[] mCharIDList;
   }
   mCharIDList = tmpList;
-}  
+}
 
 u8 PBuddyList::FindEntry(u32 CharID)
 {
   u8 i = 255;
-  
+
   if (mCharIDList)
   {
     for (i = 0; i < mListSize; i++)
@@ -175,6 +175,19 @@ u8 PBuddyList::FindEntry(u32 CharID)
         break;
     }
   }
-  
+
   return i;
+}
+
+bool PBuddyList::IsInBuddy(u32 CharID)
+{
+  if (mCharIDList)
+  {
+    for (u8 i = 0; i < mListSize; i++)
+    {
+       if (mCharIDList[i] == CharID)
+        return true;
+    }
+  }
+  return false;
 }

@@ -701,3 +701,15 @@ chat.h/.cpp	: Corrected some typos.
 gameserver.cpp	: Changed current welcome message to new OOC broadcast method
 configtemplate.h: Added 2 new default values for broadcast on connect
 commands.cpp	: Added @broadcast command. First command which checks your accesslevel. (as announced before)
+====================
+Namikon; 10.12.2006 15:30 GMT+1
+----------
+[rev. 36+37]
+- Worked again on Chat subsystem. Current status:
+> Buddy		- Done. (100%)
+
+
+[GAME]
+buddylist.cpp / .h : Added function "IsInBuddy()" to perform a simple check "Is a buddy? y/n"
+chars.h		   : Added inline to pass IsBuddy to buddylist->IsInBuddy()
+chat.cpp	   : Fixed sendBuddy function. Working as it should now

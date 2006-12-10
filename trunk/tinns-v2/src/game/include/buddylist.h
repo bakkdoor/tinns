@@ -25,7 +25,7 @@
 
 	MODIFIED: 19 Sep 2006 Hammag
 	REASON: - creation
-	
+
 */
 
 #ifndef BUDDYLIST_H
@@ -41,24 +41,26 @@ class PBuddyList
         bud_charid,
         bud_buddyid
     };
-        
+
     u32 mOwnerCharID;
     u8 mListMaxSize;
     u8 mListSize;
     u32* mCharIDList;
-    
+
     void IncreaseMaxSize(u8 nNewMax = 0);
     u8 FindEntry(u32 CharID);
-    
+
   public:
     PBuddyList(u32 nOwnerCharID);
     ~PBuddyList();
     bool AddChar(u32 nBuddyCharID);
-    bool RemoveChar(u32 nBuddyCharID);    
+    bool RemoveChar(u32 nBuddyCharID);
     inline u8 Count() { return mListSize; }
     u16 GetListDataSize() { return (sizeof(u32) * mListSize); }
     const void* GetListData() { return (const void*)mCharIDList; }
     bool SQLLoad();
+
+    bool IsInBuddy(u32 CharID);
 //    bool SQLSave();
 };
 
