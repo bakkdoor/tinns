@@ -686,14 +686,19 @@ bool PChat::chanEnabled(PClient* Client, u32 channel)
 
     while(loopvar > 0)
     {
-        if(actChans > loopvar)
+        //if remaining active channels are greater or equal the loopvar...
+        if(actChans >= loopvar)
         {
-            if(channel == loopvar) return true;
+            // ... substract the value from actchans. ("bit" matches)
             actChans = actChans - loopvar;
-        }
-        else
+            // Now if the requested channel is equal to the loopvar return true
             if(channel == loopvar) return true;
+        }
+        // Now if the remaining active channels are lower than the requested channel, return false.
+        if(actChans < channel) return false;
 
+        // goto next "bit" (....32, 16, 8....)
+        // Or set loopvar to zero if current var == 1 (Result would be 0.5, doesnt make sense
         if(loopvar > 1)
             loopvar = loopvar / 2;
         else

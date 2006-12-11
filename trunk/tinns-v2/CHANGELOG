@@ -807,3 +807,14 @@ misc.h/.cpp: Commented out GetSVNRev() that is not used anymore
  - updated src/Makefile and src/Rules.make accordingly
    No manual action should be needed to manage svn revision number inclusion in source
    Game/Info/Patch servers version can still be set in version.h
+
+====================
+Namikon; 11.12.2006 21:46 GMT+1
+----------
+[rev. 42]
+
+<General changes>
+- Fixed (hopefully) customchannels. They're not loaded / saved from/to SQL yet, but you should be able to enable/disable them.
+  uppon entry, all channels are disabled.
+
+Hopefully, because i cant verify it. (No time to compile and try it). Will verify (and debug) it in the next few days
