@@ -35,7 +35,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "version.h"
+//#include "version.h"
 
 //basic includes
 #include "external.h"

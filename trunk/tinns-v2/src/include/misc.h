@@ -30,6 +30,8 @@
 	REASON: - Added function to trim a string/char
 	MODIFIED: 27 Aug 2006 Hammag
 	REASON: - Merged misc function from all 3 servers
+	MODIFIED: 11 Dec 2006 Hammag
+	REASON: - Commented out GetSVNRev() that is not used anymore
 */
 
 #ifndef MISC_H
@@ -42,7 +44,7 @@
 u32 IPStringToDWord(const char *IP);
 char *IPlongToString(const u32 IP);
 std::string GetAccessString(int level);
-void GetSVNRev(char *version);
+//void GetSVNRev(char *version);
 
 void PrintPacket(u8 *Packet, int PacketSize);
 

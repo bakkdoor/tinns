@@ -40,8 +40,10 @@
       	REASON: - add IPlongToString()
       	MODIFIED: 27 Aug 2006 Hammag
       	REASON: - Merged misc function from all 3 servers
+      	MODIFIED: 11 Dec 2006 Hammag
+      	REASON: - Commented out GetSVNRev() that is not used anymore      	
       	
-      	TODO:   - Check/Fix GetSVNRev stuff as it isn't server-specific anymore
+      	TODO:
       	        - Put Network Utility function in a netutility.cpp in netcode
       	        - Put GetAccessString() as a static member of Accounts class
 */
@@ -192,7 +194,7 @@ std::string GetAccessString(int level)
     return "Error";
 }
 
-void GetSVNRev(char *version)
+/*void GetSVNRev(char *version)
 {
 #if defined(TINNS_VERSION_GAME)
     if(sizeof(TINNS_VERSION_GAME) > 10)
@@ -227,7 +229,7 @@ void GetSVNRev(char *version)
 
     sprintf(version, "Unknown");
 #endif
-}
+}*/
 
 std::string &Ssprintf(const char *fmt, ...)
 {

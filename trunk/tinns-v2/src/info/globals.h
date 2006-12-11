@@ -50,6 +50,8 @@ extern class PInfoServer *InfoServer;
 extern class PMySQL* MySQL;
 extern class PAccounts* Accounts;
 
+extern const char ServerVersion[];
+extern const char SVNRevision[];
 
 bool Init();
 void Shutdown();

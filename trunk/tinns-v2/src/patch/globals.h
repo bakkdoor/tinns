@@ -29,7 +29,8 @@ extern class PFileSystem *Filesystem;
 extern class PServer *Server;
 extern class PPatchServer *PatchServer;
 
-//multiuser chat
+extern const char ServerVersion[];
+extern const char SVNRevision[];
 
 bool InitTinNS();
 void Shutdown();

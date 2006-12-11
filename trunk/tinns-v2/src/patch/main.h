@@ -28,7 +28,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "version.h"
+//#include "version.h"
 
 #define PATCH_PORT 7000
 #define MAX_PATCH_CLIENTS 50

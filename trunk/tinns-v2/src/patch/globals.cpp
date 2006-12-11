@@ -33,6 +33,10 @@
 #include "main.h"
 #include "configtemplate.h"
 
+#include "version.h"
+const char ServerVersion[] = TINNS_PATCH_VERSION;
+const char SVNRevision[] = TINNS_SVN_REVISION;
+
 ServerSocket* ServerSock = 0;
 PConsole *Console = 0;
 PServer *Server = 0;
@@ -46,24 +50,27 @@ bool InitTinNS()
 	Console->Print("Starting TinNS Patchserver...");
 	Console->Print(WHITE, BLUE, "/-------------------------------------------------------------------\\");
 	Console->Print(WHITE, BLUE, "|               TinNS (TinNS is not a Neocron Server)               |");
-    Console->Print(WHITE, BLUE, "|            Copyright (C) 2005 Linux Addicted Community            |");
+  Console->Print(WHITE, BLUE, "|            Copyright (C) 2005 Linux Addicted Community            |");
 	Console->Print(WHITE, BLUE, "|                  maintainer Akiko <akiko@gmx.org>                 |");
 	Console->Print(WHITE, BLUE, "|             ==========================================            |");
 	Console->Print(WHITE, BLUE, "|      Head coders:                   The packet analyzing team:    |");
 	Console->Print(WHITE, BLUE, "|      - Akiko                         - MaxxJag                    |");
 	Console->Print(WHITE, BLUE, "|      - bakkdoor                      - Sting                      |");
 	Console->Print(WHITE, BLUE, "|      - Namikon                       - Balm                       |");
+	Console->Print(WHITE, BLUE, "|      - Hammag                                                     |");
 	Console->Print(WHITE, BLUE, "|-------------------------------------------------------------------|");
 	Console->Print(WHITE, BLUE, "|  This project would'nt be at its current stage without the help   |");
-    Console->Print(WHITE, BLUE, "|        from the NeoPolis team, special thanks to you guys!        |");
+  Console->Print(WHITE, BLUE, "|        from the NeoPolis team, special thanks to you guys!        |");
 	Console->Print(WHITE, BLUE, "|-------------------------------------------------------------------|");
 	Console->Print(WHITE, BLUE, "|  This project is under GPL, see any source file for more details  |");
 	Console->Print(WHITE, BLUE, "\\-------------------------------------------------------------------/");
 
-	char svnrev[10];
-	GetSVNRev(svnrev);
+	//char svnrev[10];
+	//GetSVNRev(svnrev);
 	Console->LPrint("You are running TinNS Patchserver version");
-	Console->LPrint(GREEN, BLACK, " %s", svnrev);
+	Console->LPrint(GREEN, BLACK, " %s", ServerVersion);
+	Console->LPrint(WHITE, BLACK, " - SVN Rev");
+	Console->LPrint(GREEN, BLACK, " %s", SVNRevision);
 	Console->LClose();
 	
 	Config = new PConfig();

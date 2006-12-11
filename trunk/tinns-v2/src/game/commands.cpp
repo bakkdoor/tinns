@@ -109,7 +109,8 @@
         REASON: - Added @rehash
         MODIFIED: 10 Dec Namikon
         REASON: - Added @uptime
-
+        MODIFIED: 11 Dec Hammag
+        REASON: - Added @version
 
 	ToDo:
 	- Fix Subwaysyncy
@@ -942,6 +943,15 @@ if(strcmp(Command, "uptime") == 0)
     // Send it out
     Chat->send(Client, CHAT_DIRECT, "System", tmpChatMsg);
 }
+if(strcmp(Command, "version") == 0)
+{
+    char tmpChatMsg[300];
+    snprintf(tmpChatMsg, 299, "You are on TinNS server %s runnig version %s - SVN Rev. %s", Config->GetOption("server_name").c_str(), ServerVersion, SVNRevision);
+    tmpChatMsg[299] = '\0';
+
+    Chat->send(Client, CHAT_DIRECT, "System", tmpChatMsg);
+}
+
 /****************************/
 if(strcmp(Command, "broadcast") == 0)
 {
@@ -963,6 +973,7 @@ if(strcmp(Command, "broadcast") == 0)
     else
         Chat->send(Client, CHAT_DIRECT, "System", "You need at least GameMaster access to send broadcasts!");
 }
+
 /******* temp tests *******/
 if(strcmp(Command, "t") == 0) // testing apprence status
   {

@@ -93,9 +93,10 @@ AR		= $(CROSS_COMPILE)ar
 STRIP		= $(CROSS_COMPILE)strip
 PERL		= perl
 DEPDIR		= .dep
+TOOLS = $(TOPDIR)/tools
 export	TOPDIR HPATH HOSTCC HOSTCFLAGS CROSS_COMPILE LD CC \
    CXX AR STRIP MAKE CPPFLAGS CXXFLAGS CFLAGS LDFLAGS LINKFLAGS
-export TINNSRELEASE BINDEST LIBS DEPDIR
+export TINNSRELEASE BINDEST LIBS DEPDIR TOOLS
 #
 #
 #
@@ -107,7 +108,7 @@ ALLSUBDIRS	= $(LIBSSRC) $(SUBDIRS)
 # files removed with 'make cleaner'
 CLEANER_FILES= \
 	scripts/lxdialog/*.o scripts/lxdialog/lxdialog \
-	.hdepend scripts/mkdep \
+	.hdepend tools/cleandepfile \
 
 # directories removed with 'make cleaner'
 #CLEANER_DIRS = \
@@ -119,20 +120,24 @@ CLEANER_FILES= \
 #
 all:	do-it-all
 
-do-it-all: tinnslibs tinnssubdirs
+do-it-all: tools svnrev tinnslibs tinnssubdirs
 
 #
 #
 #
+tools: dummy
+	$(MAKE) -C $(TOOLS)
+  
 tinnslibs : $(patsubst %, _ldir_%, $(LIBSSRC))
 $(patsubst %, _ldir_%, $(LIBSSRC)) : dummy 
 	$(MAKE) -C $(patsubst _ldir_%, %, $@)
-
 
 tinnssubdirs: $(patsubst %, _dir_%, $(SUBDIRS)) tinnslibs
 $(patsubst %, _dir_%, $(SUBDIRS)) : dummy 
 	$(MAKE) -C $(patsubst _dir_%, %, $@)
 
+svnrev:
+	$(TOOLS)/setsvnrev $(TOPDIR) $(HPATH)/svnrevision.h
 
 clean:	
 	find . \( -name '*.[oas]' -o -name core -o -name '.*.flags' \) -type f -print \

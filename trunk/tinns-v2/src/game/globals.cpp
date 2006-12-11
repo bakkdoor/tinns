@@ -54,6 +54,10 @@
 #include "worlds.h"
 #include "appartements.h"
 
+#include "version.h"
+const char ServerVersion[] = TINNS_GAME_VERSION;
+const char SVNRevision[] = TINNS_SVN_REVISION;
+
 PVehicles *Vehicles = 0;
 PMySQL *MySQL = 0;
 PConsole *Console = 0;
@@ -100,10 +104,12 @@ bool InitTinNS()
 	Console->Print(WHITE, BLUE, "|  This project is under GPL, see any source file for more details  |");
 	Console->Print(WHITE, BLUE, "\\-------------------------------------------------------------------/");
 
-	char svnrev[10];
-	GetSVNRev(svnrev);
+	//char svnrev[10];
+	//GetSVNRev(svnrev);
 	Console->LPrint("You are running TinNS Gameserver version");
-	Console->LPrint(GREEN, BLACK, " %s", svnrev);
+	Console->LPrint(GREEN, BLACK, " %s", ServerVersion);
+	Console->LPrint(WHITE, BLACK, " - SVN Rev");
+	Console->LPrint(GREEN, BLACK, " %s", SVNRevision);
 	Console->LClose();
 
 	Config = new PConfig();

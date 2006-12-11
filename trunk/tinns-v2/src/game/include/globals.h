@@ -67,7 +67,10 @@ extern class PISC *ISC;
 
 //Empty string
 extern const std::string EmptyString;
-  
+
+extern const char ServerVersion[];
+extern const char SVNRevision[];
+
 bool InitTinNS();
 void Shutdown();
 

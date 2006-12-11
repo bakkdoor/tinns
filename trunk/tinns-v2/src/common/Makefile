@@ -47,8 +47,7 @@
 #####################################################
 # Subdirectories
 #####################################################
-subdir-y := config console filesystem misc netcode 
-#subdir-y := config console filesystem misc netcode regex
+subdir-y := config console filesystem misc netcode regex
 subdir-$(CONFIG_GAMEMONKEY)	+= gamemonkey
 
 
