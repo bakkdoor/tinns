@@ -179,6 +179,7 @@ class PChar
 
 		u32 mDirectCharID; // for Direct Chat // *** Not got/saved from DB atm ***
 		PBuddyList* mBuddyList; // For Buddy list Chat
+		u32 mActiveChatChannels; // Active chat channels flags // *** Not got/saved from DB atm ***
 
 		PGenrepList* mGenrepList; // Character's GR list
 
@@ -205,8 +206,6 @@ class PChar
                 mX = mY = mZ = mUD = mLR = mAct = 0;
             }
 		};
-
-		u32 mActiveChatChannels;
 
     bool mIsOnline;
 		bool mDirtyFlag;
@@ -281,12 +280,14 @@ class PChar
 
 		inline bool SetDirectChat(u32 nBuddyCharID) { mDirectCharID = nBuddyCharID; return true; }
 		inline u32 GetDirectChat() { return mDirectCharID; }
+		inline void SetActiveChannels(u32 nChannels) { mActiveChatChannels = nChannels; }
+		inline u32 GetActiveChannels() { return mActiveChatChannels; }
+		
     inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
     inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
     inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
     inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
     inline u8 GetBuddyCount() { return mBuddyList->Count(); }
-
     inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
 
     inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
@@ -314,7 +315,6 @@ class PChar
 		inline u32 GetChairInUse() { return mChairInUse; }
 		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
 
-		inline u32 GetActiveChannels() { return mActiveChatChannels; };
 };
 
 class PChars

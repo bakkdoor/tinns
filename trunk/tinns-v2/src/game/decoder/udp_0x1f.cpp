@@ -155,7 +155,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     }
     case 0x4c:
     {       
-      nextAnalyser = new PUdpMsgIgnore(mDecodeData); // Ignore 0x4c until its use is found !
+      nextAnalyser = new PUdpChatChannels(mDecodeData);
       break;
     }
     default:

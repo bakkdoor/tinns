@@ -25,8 +25,8 @@
   
 	CREATION: 15 Sep 2006 Hammag
 
-	MODIFIED:
-	REASON: - 
+	MODIFIED: 11 Dec 2006 Hammag
+	REASON: - added PUdpChatChannels
 
 */
 
@@ -226,6 +226,35 @@ bool PUdpChatListRemove::DoAction()
     nClient->getUDPConn()->SendMessage(tmpMsg);
   }*/
   
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+/**** PUdpChatChannels ****/
+
+PUdpChatChannels::PUdpChatChannels(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x4c";
+} 
+
+PUdpMsgAnalyser* PUdpChatChannels::Analyse()
+{
+  mDecodeData->mName << "=update listening custom chat channels selection";
+
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 8);
+  (*nMsg) >> mChannelFlags;
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpChatChannels::DoAction()
+{
+  PChar* nChar = mDecodeData->mClient->GetChar();
+  nChar->SetActiveChannels(mChannelFlags);
+//Console->Print("Channel flag: %08x", mChannelFlags);
+
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

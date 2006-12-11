@@ -40,7 +40,10 @@
         MODIFIED: 01 Jul 2006 hammag
         REASON: - added set timeout to 10 msec (for ReadSetTCP select) in Start()
 	                to avoid useless 100% CPU use
-	          
+	      MODIFIED: 11 Dec 2006 hammag
+	      REASON: - Display the client id in Client connection message rather than the always increasing mNumClients
+	              - Removed use of mNumClients in PPatchServer. the count is done in PServer.
+
         ToDo:
           - Take main loop timeout setting from config file
 */
@@ -103,7 +106,7 @@ struct PPatchState
 
 PPatchServer::PPatchServer()
 {
-	mNumClients = 1;
+	//mNumClients = 1;
 	mNumFileTransfers = 0;
 }
 
@@ -143,14 +146,14 @@ void PPatchServer::Update()
 		int clid = Server->NewClient();
 		if(clid!=-1)
 		{
-			Console->Print(GREEN, BLACK, "Patchserver: client [%i] connected", mNumClients);
+			Console->Print(GREEN, BLACK, "Patchserver: client [%i] connected", clid);
 			PClient *Client = Server->GetClient(clid);
 
 			ConnectionTCP* tcpConn = ServerSock->getTCPConnection();
 			Client->setTCPConnection(tcpConn);
 
 			Console->Print("Client address: %s", Client->GetAddress());
-			++mNumClients;
+			//++mNumClients;
 
 			PPatchState *state = new PPatchState();
 			ClientStates.insert(std::make_pair(Client, state));

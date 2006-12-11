@@ -50,7 +50,7 @@ CXXFLAGS := $(CPPFLAGS) -pedantic -W -Wall -Wno-long-long -O3 \
    -D_GNU_SOURCE -D_THREAD_SAFE -D_REENTRANT
 #CXXFLAGS += -march=$(shell arch)
 #CXXFLAGS += -O0 -ggdb
-#CXXFLAGS += -Werror
+CXXFLAGS += -Werror
 
 # Common Linker Flags for all source tree (partial linking with LD (ld))
 LDFLAGS := -r 

@@ -23,6 +23,7 @@ Developers:
 - Akiko
 - bakkdoor
 - Namikon
+- Hammag
 
 > Recent changes
 ====================
@@ -659,9 +660,9 @@ regex : added the RegEx class (Simple C++ wrapper for PCRE) to the tinns lib :
 Namikon; 10.12.2006 11:35 GMT+1
 ----------
 [rev. 33]
-- Added @uptime to view server's uptime ingame
 
 <General changes>
+- Added @uptime to view server's uptime ingame
 
 [GAME]
 gameserver.h: Added "std::time_t mServerStartupTime" and public inline "GetStartTime()" to receive Server's
@@ -671,9 +672,30 @@ commands.cpp: Added @uptime. Generates readeable output in the form (Years, Mont
               difference between mServerStartUp and the current timestamp
 
 ====================
+Hammag; 10.12.2006 14:50 GMT+1
+----------
+[rev. 34]
+
+<General changes>
+ - GenReps now dont need database info anymore.
+   However, the solution is not satisfaying, but will do until we find better
+ - Fixed Makefile issue about buggy dependency files
+ - Removed old unused src/netcode directory (the right dir is in src/common)
+
+[GAME]
+worlddatatemplate.cpp : in SetLinkedObjects(), added storage of GR order to later access to entity info
+def/gamedef.h/.cpp : added GetRespawnEntity() to get GR entity value from respawn.def, by entry order,
+   with management of exceptions in zones 1 & 2
+decoder/udp_useobject.cpp : now use PGameDefs::GetRespawnEntity() to get the entity of a GR object
+
+[INFO]
+Minor change in client connection message after checking for what looked to be a memleak (but was not ! :-D )
+
+====================
 Namikon; 10.12.2006 15:30 GMT+1
 ----------
 [rev. 35]
+
 - Added @broadcast. GM and higher can now send out "ADMIN> Server: <text>" broadcasts
 - Worked on Chat subsystem. Current status:
 > Buddy		- Sends text to Buddy, everyone in the same Zone can read. No Buddylist yet
@@ -701,13 +723,14 @@ chat.h/.cpp	: Corrected some typos.
 gameserver.cpp	: Changed current welcome message to new OOC broadcast method
 configtemplate.h: Added 2 new default values for broadcast on connect
 commands.cpp	: Added @broadcast command. First command which checks your accesslevel. (as announced before)
+
 ====================
 Namikon; 10.12.2006 15:30 GMT+1
 ----------
 [rev. 36+37]
+
 - Worked again on Chat subsystem. Current status:
 > Buddy		- Done. (100%)
-
 
 [GAME]
 buddylist.cpp / .h : Added function "IsInBuddy()" to perform a simple check "Is a buddy? y/n"
@@ -721,9 +744,9 @@ Namikon; 10.12.2006 23:20 GMT+1
 - Worked again on Chat subsystem. Current status:
 > Direct		- Done. (100%)
 
-
 [GAME]
 chat.cpp/.h	   : Added new function sendPlayerDirect, altered main-chatloop, order is now Local, Direct, others
+
 ====================
 Namikon; 11.12.2006 00:59 GMT+1
 ----------
@@ -735,3 +758,18 @@ Last update for this weekend lol ^^
 [GAME]
 chat.cpp/.h	: Added check for every custom channel if its enabled or not
 chars.cpp/.h	: Added inline and variable to hold custom channel info
+
+====================
+Hammag; 11.12.2006 13:00 GMT+1
+----------
+[rev. 40]
+ - added Custom Chat Channel selection retrieval from client packets
+ - temp deactivated regex lib compilation as there still are some issues with dependencies
+ 
+[GAME]
+chars.h	: Added SetActiveChannels method
+          Regrouped some method declarations by theme
+decoder/udp_chat.h/.cpp : added PUdpChatChannels class for custom channel info decoding
+
+[PATCH]
+Minor change in client connection message, same as what has been done for infoserver.

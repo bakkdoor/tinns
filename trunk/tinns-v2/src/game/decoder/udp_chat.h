@@ -25,8 +25,8 @@
   
 	CREATION: 15 Sep 2006 Hammag
 
-	MODIFIED:
-	REASON: - 
+	MODIFIED: 11 Dec 2006 Hammag
+	REASON: - added PUdpChatChannels
 
 */
 
@@ -75,6 +75,18 @@ class PUdpChatListRemove : public PUdpMsgAnalyser
   public:
     PUdpChatListRemove(PMsgDecodeData* nDecodeData);
     //~PUdpChatListRemove();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
+class PUdpChatChannels : public PUdpMsgAnalyser
+{
+  private:
+    u32 mChannelFlags; // 1 bit per custom channel, starting from LSB, in same order as in chat i/f
+    
+  public:
+    PUdpChatChannels(PMsgDecodeData* nDecodeData);
+    //~PUdpChatChannels();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };
