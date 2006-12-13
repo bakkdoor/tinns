@@ -671,7 +671,8 @@ void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
     }
 }
 
-
+/** Until it is verified that the new method works, keep the old version here **/
+/*
 bool PChat::chanEnabled(PClient* Client, u32 channel)
 {
     // Check if player has target channel enabled or disabled
@@ -705,6 +706,19 @@ bool PChat::chanEnabled(PClient* Client, u32 channel)
             loopvar = 0;
     }
     return false;
+}
+*/
+
+bool PChat::chanEnabled(PClient* Client, u32 channel)
+{
+    // Check if player has target channel enabled or disabled
+    u32 actChans = Database->GetChar(Client->GetCharID())->GetActiveChannels();
+    u32 check = actChans&channel;
+
+    if(check == channel)
+        return true;
+    else
+        return false;
 }
 
 bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickName, char* text, bool debugOut)
@@ -817,7 +831,7 @@ bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickNam
     } while(AuthorNickName[LenNick] != '\0');
 
     if(LenText == 0 || LenNick == 0) {
-       Console->Print("Error in SendChat, nickname of text is missing");
+       Console->Print("Error in SendChat, nickname or text is missing");
        return false;
     }
 

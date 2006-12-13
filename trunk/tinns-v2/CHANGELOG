@@ -818,3 +818,11 @@ Namikon; 11.12.2006 21:46 GMT+1
   uppon entry, all channels are disabled.
 
 Hopefully, because i cant verify it. (No time to compile and try it). Will verify (and debug) it in the next few days
+
+====================
+Namikon; 13.12.2006 12:02 GMT+1
+----------
+[rev. 43]
+- Quick update: I replaced the "old" function to check if a customchannel is enabled or not with a much
+  faster one. (Bitwise comparison)
+- Fixed an typo in chat.cpp
