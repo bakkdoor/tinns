@@ -91,6 +91,9 @@ $(B_REALTARGET): $(obj-y) $(LIBDEP)
 	@rm -f $@
     ifneq "$(strip $(obj-y))" ""
 	$(CXX) -o $@ $(filter $(obj-y), $^) $(LINKFLAGS) $(FULLEXT_LINKFLAGS)
+        ifndef DO_DEBUG
+	   @$(STRIP) $@
+        endif
     else
 	@echo No object files to build $@ !!!
     endif

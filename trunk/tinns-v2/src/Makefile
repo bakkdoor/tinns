@@ -6,14 +6,13 @@
 
 # NOTA: Be carefull no to put extra spaces at EOL when specifing dir path !
 
-# TinNS version (for futur use through $(TINNSRELEASE))
-VERSION = 0
-PATCHLEVEL = 0
-SUBLEVEL = 10
-EXTRAVERSION =
-
 # Config options
 export CONFIG_GAMEMONKEY := n
+
+# Debug mode compilation option
+# Uncommenting the following line will activate degub symbols generation
+# and inhibit binries stripping
+#DO_DEBUG = y
 
 # Do not change TOPDIR definiton
 TOPDIR	:= $(shell /bin/pwd)
@@ -26,10 +25,10 @@ SUBDIRS		= patch info game
 #SHORTCUT_TARGETn :=[name] : tinnslibs _dir_[sub_dir]
 # Implemented for n=0..9 atm. See at the end of the file if more needed
 
-SHORTCUT_TARGET0 :=libs : tinnslibs
-SHORTCUT_TARGET1 :=gameserver : tinnslibs _dir_game
-SHORTCUT_TARGET2 :=infoserver : tinnslibs _dir_info
-SHORTCUT_TARGET3 :=patchserver : tinnslibs _dir_patch
+SHORTCUT_TARGET0 :=libs : min_needed
+SHORTCUT_TARGET1 :=gameserver : min_needed _dir_game
+SHORTCUT_TARGET2 :=infoserver : min_needed _dir_info
+SHORTCUT_TARGET3 :=patchserver : min_needed _dir_patch
 
 # Directory where we want to build executables in
 BINDEST		= $(TOPDIR)/..
@@ -49,7 +48,6 @@ CPPFLAGS := -I$(HPATH)
 CXXFLAGS := $(CPPFLAGS) -pedantic -W -Wall -Wno-long-long -O3 \
    -D_GNU_SOURCE -D_THREAD_SAFE -D_REENTRANT
 #CXXFLAGS += -march=$(shell arch)
-#CXXFLAGS += -O0 -ggdb
 CXXFLAGS += -Werror
 
 # Common Linker Flags for all source tree (partial linking with LD (ld))
@@ -61,6 +59,9 @@ LINKFLAGS := -L$(LIBS)
 # specific files to be removed with 'make clean'
 CLEAN_FILES = $(BINDEST)/gameserver $(BINDEST)/infoserver \
   $(BINDEST)/patchserver
+
+# Include local Makefile options/override if needed (for dev use only)
+-include options.local
 
 #
 # Install stuf not done yet
@@ -74,8 +75,10 @@ CLEAN_FILES = $(BINDEST)/gameserver $(BINDEST)/infoserver \
 # No further config should be needed after this line
 #  for usual operations
 #***************************************************#
+ifdef DO_DEBUG
+ CXXFLAGS += -O0 -ggdb
+endif
 
-TINNSRELEASE=$(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 CFLAGS		:= CXXFLAGS
 
 HOSTCC  	= gcc
@@ -93,10 +96,10 @@ AR		= $(CROSS_COMPILE)ar
 STRIP		= $(CROSS_COMPILE)strip
 PERL		= perl
 DEPDIR		= .dep
-TOOLS = $(TOPDIR)/tools
+TOOLS = $(TOPDIR)/dev-tools
 export	TOPDIR HPATH HOSTCC HOSTCFLAGS CROSS_COMPILE LD CC \
    CXX AR STRIP MAKE CPPFLAGS CXXFLAGS CFLAGS LDFLAGS LINKFLAGS
-export TINNSRELEASE BINDEST LIBS DEPDIR TOOLS
+export BINDEST LIBS DEPDIR TOOLS DO_DEBUG
 #
 #
 #
@@ -108,24 +111,26 @@ ALLSUBDIRS	= $(LIBSSRC) $(SUBDIRS)
 # files removed with 'make cleaner'
 CLEANER_FILES= \
 	scripts/lxdialog/*.o scripts/lxdialog/lxdialog \
-	.hdepend tools/cleandepfile \
+	.hdepend dev-tools/cleandepfile \
 
 # directories removed with 'make cleaner'
 #CLEANER_DIRS = \
 	include/config
 
 
-#
+############################################
 # Rules Start
 #
 all:	do-it-all
 
-do-it-all: tools svnrev tinnslibs tinnssubdirs
+do-it-all: min_needed tinnssubdirs
+
+min_needed: dev_tools svnrev tinnslibs
 
 #
 #
 #
-tools: dummy
+dev_tools: dummy
 	$(MAKE) -C $(TOOLS)
   
 tinnslibs : $(patsubst %, _ldir_%, $(LIBSSRC))
@@ -137,7 +142,7 @@ $(patsubst %, _dir_%, $(SUBDIRS)) : dummy
 	$(MAKE) -C $(patsubst _dir_%, %, $@)
 
 svnrev:
-	$(TOOLS)/setsvnrev $(TOPDIR) $(HPATH)/svnrevision.h
+	@$(TOOLS)/setsvnrev $(TOPDIR) $(HPATH)/svnrevision.h
 
 clean:	
 	find . \( -name '*.[oas]' -o -name core -o -name '.*.flags' \) -type f -print \
@@ -158,7 +163,7 @@ distclean: cleaner
 		-o -name '.*.rej' -o -name '.SUMS' -o -size 0 \) -type f -print` 
 
 backup: cleaner
-	cd .. && tar cf - src/ | gzip -9 > tinns-$(TINNSRELEASE)-backup.gz
+	cd .. && tar cf - src/ | gzip -9 > tinns-svnrev-`svnversion .`-backup.gz
 	sync
 
 sums:

@@ -46,7 +46,7 @@ char* filter_out[] = {
 #define filter_nb 3
 int filter_len[filter_nb];
 
-void init_filter()
+void init_filter(void)
 {
   int i;
   
@@ -70,10 +70,9 @@ int check_filter(char* buffer)
   return 1;
 }
 
-int main()
+int main(int argc, char **argv)
 {
   int ret;
-  int do_print;
   int len;
   int inside = 0;
   

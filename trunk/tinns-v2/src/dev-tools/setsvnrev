@@ -22,7 +22,7 @@ filever=`grep TINNS_SVN_REVISION $2 | sed 's/^.*"\([0-9]\+\)".*$/\1/'`
 #echo svnver in file: $filever
 
 if [[ $filever -ge $current ]]; then
-#	echo no change
+	echo No SVN Revision number change needed
 	exit 0;
 fi
 
