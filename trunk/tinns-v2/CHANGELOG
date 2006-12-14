@@ -826,3 +826,12 @@ Namikon; 13.12.2006 12:02 GMT+1
 - Quick update: I replaced the "old" function to check if a customchannel is enabled or not with a much
   faster one. (Bitwise comparison)
 - Fixed an typo in chat.cpp
+
+
+====================
+Namikon; 14.12.2006 22:58 GMT+1
+----------
+[rev. 45]
+- Updated ISC definition file (v2)
+- Updated isc.h: Added enum for ISC connection stages
+- Added ISC Example.txt to show a few examples of an  "normal" datatransfer between game and infoserver

@@ -2,17 +2,20 @@ ISC Protocoll definition
 by Namikon
 =========================
 
-This file defines the InterServerCommunication Protocoll, Version 1
+This file defines the InterServerCommunication Protocoll.
 It is used to exchange Data between the Gameservers and the Infoserver.
 
+=======================================================================================================================
+ISC Version: 2
+Last Update: 13.12.2006 21:48 GMT+1
 =======================================================================================================================
 0xF0		ISC Protocoll
 <u16>		SizeOf entire packet
 <u8>		PacketType (Byte - Direction:Description - Data [Data format])
                 - "Handshake 01 - Initial connection and version check"
-        		0x01 - GS->IS: Hello, i'm using protocoll version xxx - ISC Version (*Note1) [u16]
-        		0x02 - GS<-IS: Hi. Your version is not compatible, reject. Need version xxx - ISC Version NEEDED (*Note1) [u16]
-        		0x03 - GS<-IS: Hi. Your version is compatible. Need PW to connect - No data [-]
+									0x01 - GS->IS: Hello, i'm using protocoll version xxx - ISC Version (*Note1) [u16]
+        					0x02 - GS<-IS: Hi. Your version is not compatible, reject. Need version xxx - ISC Version NEEDED (*Note1) [u16]
+        					0x03 - GS<-IS: Hi. Your version is compatible. Need PW to connect - No data [-]
 
                 - "Handshake 02 - Connection password"
                		0x10 - GS->IS: Here comes the password... - Passwort as MD5 hash (or plain?) [char/u8]
@@ -41,11 +44,23 @@ It is used to exchange Data between the Gameservers and the Infoserver.
                 	0x51 - GS<-IS: -Reserved for further usage- (Dont think there will be any errors to report)
                 	0x52 - GS<-IS: All right - No Data [-]
 
+								- "Common checks: Client identification"
+								  0x60 - GS->IS: Client ID AA is trying to login. Has he passed your Login screen? [AA[u16]]
+								  0x61 - GS<-IS: No, playerID AA is unknown. Could try to bypass loginserver [AA[u16]]
+								  0x62 - GS<-IS: Yes, playerID AA has passed my loginscreen, let him in. [AA[u16]]
+								  
+								- "Infoserver control - Login"
+								  0x90 - GS->IS: Someone is trying to login as admin in order to control infoserver over ISC - Password (md5) [u8]
+								  							 (This password is defined in infoserver.cfg)
+								  0x91 - GS<-IS: Login failed, wrong PW - no data required [-]
+								  0x92 - GS<-IS: Login success, admin commands are enabled - no data required [-]
+								  
                 - "Infoserver control"
               		0xA0 - GS->IS: Toogle AutoAccount creation - On(1) Off(0) [u8]
                 	0xA1 - GS->IS: Change level required to login - Level required to login [u16]
                 	0xA2 - GS->IS: Reload Infoserver configfile - no data required [-]
                 	0xA3 - GS->IS: Shutdown Infoserver - no data required [-]
+                	0xA4 - GS->IS: Hide People in OnlineList (Bitmask: Regular(1) | Volunteer(2) | GM(4) | Admin(8) => 12: Hide GM and Admin)	
 
                 - "Infoserver control - Return packets"
                 	0xB0 - GS<-IS: Done - No Data [-]
@@ -54,6 +69,8 @@ It is used to exchange Data between the Gameservers and the Infoserver.
                 - "General returns"
                 	0xF0 - GS<>IS: Packet received and understood - Either no data or Checksum  [- / checksum as u8 elements]
                 	0xF1 - GS<>IS: Packet received but not understood. Wrong protocoll? - No Data [-]
+                	0xFF - GS->IS: Gameserver is going down (Not crash, normal shutdown) - No Data [-]
+                	
 <u16>           Bytes to follow (If no data is send, 0x00)
 <u8[]>          Data
 
