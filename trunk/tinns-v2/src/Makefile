@@ -60,6 +60,10 @@ LINKFLAGS := -L$(LIBS)
 CLEAN_FILES = $(BINDEST)/gameserver $(BINDEST)/infoserver \
   $(BINDEST)/patchserver
 
+# defines where Source tarball and Binaries tarball will be put (for dev use)
+# Use ABSOLUTE path
+TARBALLS_DEST = ~
+
 # Include local Makefile options/override if needed (for dev use only)
 -include options.local
 
@@ -166,14 +170,17 @@ backup: cleaner
 	cd .. && tar cf - src/ | gzip -9 > tinns-svnrev-`svnversion .`-backup.gz
 	sync
 
+sourcetar:
+	@$(TOOLS)/make-src-tarball $(TARBALLS_DEST) $(HPATH)/svnrevision.h
+
+bintar: do-it-all dummy
+	@$(TOOLS)/make-bin-tarball $(TARBALLS_DEST) $(HPATH)/svnrevision.h $(BINDEST)
+	
 sums:
 	find . -type f -print | sort | xargs sum > .SUMS
 
 depend dep: 
-	@echo This rule is not used anymore. Just do Make
-
-checkincludes:
-	find * \( -name '*.h' -o -name '*.cpp' \) -type f -print | sort | xargs $(PERL) -w scripts/checkincludes.pl
+	@echo This rule is not used anymore. Just do make
 
 
 include Rules.make

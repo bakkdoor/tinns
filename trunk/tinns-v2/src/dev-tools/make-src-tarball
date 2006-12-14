@@ -1,0 +1,47 @@
+#!/bin/bash
+# This script is to be launched from TinNS src directory
+#
+if [[ $# -ne 2 ]]; then
+	echo
+	echo "Error - usage:" `basename $0` "<dest base path> <svnrevision.h file>" >&2
+	exit 1
+fi
+
+if [[ ! -d $1 ]]; then
+	echo
+	echo "Destination directory $1 doesn't exist !"
+	exit 2
+fi
+
+if [[ ! -d ../.svn ]]; then
+	current=`grep TINNS_SVN_REVISION $2 | sed 's/^.*"\([0-9]\+\)".*$/\1/'`
+else
+	v=`svnversion ..`
+	current=`echo $v | sed 's/^\([0-9]*:\)\?\([0-9]\+[^0-9]*\)/\2/'`
+fi
+
+destfile=$1/tinns_v2.r${current}_src.tar.bz2
+
+cd ..
+tar -cj --exclude .svn -f $destfile -T - <<ENDOFLIST
+./LICENSE.txt
+./CHANGELOG
+./WORK_IN_PROGRESS
+./docs
+./database
+`find ./conf -name "*.conf" -type f`
+./src/dev-tools/setsvnrev
+./src/dev-tools/make-src-tarball
+./src/dev-tools/make-bin-tarball
+./src/Rules.make
+`find . \( -name "Makefile" -o -name "*.h" -o -name "*.cpp" -o -name "*.c" \) -type f`
+ENDOFLIST
+
+echo
+if [[ $? -eq 0 ]]; then
+	echo "Source archive built:"
+else
+	echo "An error occured ! Could not build source archive :"
+fi
+echo $destfile
+

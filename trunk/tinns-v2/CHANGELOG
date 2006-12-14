@@ -827,6 +827,29 @@ Namikon; 13.12.2006 12:02 GMT+1
   faster one. (Bitwise comparison)
 - Fixed an typo in chat.cpp
 
+====================
+Hammag; 13.12.2006 17:10 GMT+1
+----------
+[rev. 44]
+
+<General changes>
+ - Added missing GPL licence file LICENCE.txt
+ - Renamed directory tools to dev-tools to distinguish from futur NC tools
+ - Fixed a small prototype issue causing compile warnings in dev-tools/cleandepfile.c
+ - Added option DO_DEBUG in Makefile to be uncommented if you want debug symbols and not stripped binaries
+ - Added inclusion of src/options.local (if exists, which is not mandatory) in Makefile to set local Makefile options
+    This is mostly for developer use, as it enables local compilation customization without propagation to SVN,
+    and avoids the need to use 'svn revert Makefile' each time...
+    
+    My current options.local file looks like:
+#
+# Local Makefile custom options
+# not in SVN !
+#
+DO_DEBUG = y
+CXXFLAGS += -march=pentium4
+
+    If I don't want to use these additonal options and test the real config, I just rename it to something else.
 
 ====================
 Namikon; 14.12.2006 22:58 GMT+1
@@ -835,3 +858,23 @@ Namikon; 14.12.2006 22:58 GMT+1
 - Updated ISC definition file (v2)
 - Updated isc.h: Added enum for ISC connection stages
 - Added ISC Example.txt to show a few examples of an  "normal" datatransfer between game and infoserver
+
+
+====================
+Hammag; 14.12.2006 23:10 GMT+1
+----------
+[rev. 46]
+
+<General changes>
+ - Really added missing GPL licence file LICENCE.txt this time (hopefully...)
+ - Some compilation warning fixes
+ - Added internal tools to ease sources & bin packages generation
+   
+   make sourcetar : Builds a clean archive of all that is needed to compile and run TinNS (except NC data)
+   make bin tar : Builds a clean archive of TinNS binaries and other files needed to run TinNS (except NC data)
+                  Also alerts about src/options.local presence. (To be improved as check is done AFTER compilation right now ...)
+   Destination directory for tarballs is set in Makefile with TARBALLS_DEST (default ~)
+
+[DEV-TOOLS]
+Modifies src/Makefile (added sourcetar and bintar targets) and src/Rules.make
+Added make-src-tarball and make-bin-tarball in src/dev-tools

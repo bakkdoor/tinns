@@ -130,6 +130,7 @@ endif # O_TARGET
 ifdef L_REALTARGET
 $(L_REALTARGET): $(obj-y)
 #	rm -f $@
+	@ if [ ! -d $(LIBS) ]; then mkdir $(LIBS); fi
 	$(if $(filter $(obj-y),$?),$(AR) $(EXTRA_ARFLAGS) rcs $@ $(filter $(obj-y),$?),)
 	@ ( \
 	    echo 'ifeq ($(strip $(subst $(comma),:,$(EXTRA_ARFLAGS) $(obj-y))),$$(strip $$(subst $$(comma),:,$$(EXTRA_ARFLAGS) $$(obj-y))))' ; \

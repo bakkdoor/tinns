@@ -27,9 +27,11 @@ It involves modification of:
  - minor modifications to autosave
     [DONE] but more improvements will have to be done when more efficiency needed
  - [DONE]full filling-in of the baseline for char visual aspects, stats and inventory
-
-Other current work:
  - [DONE] make use of worldinfo.def, appplaces.def, appartments.def, respawn.def to manage genreping and
     appartment in/out rather than hardcoded info (e.g. zoning.cpp) and manually built database.
- - make use of world .dat files and worldmodels.def to manage item use rather than
+ - [DONE] make use of world .dat files and worldmodels.def to manage item use rather than
     a manually built database.
+    
+Other current work:
+ - dynamic loading/unloading of chars, non mem-resident account info
+ 
