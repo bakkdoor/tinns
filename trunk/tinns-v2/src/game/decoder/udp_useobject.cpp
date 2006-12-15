@@ -174,14 +174,15 @@ if (gDevDebug) Console->Print("Item function type: %d value: %d", tFurnitureMode
             u16 nEntity;
             if (Worlds->IsPotentialAppartement(nLocation))
             {
-              nLocation = (u32)-1;
-              nEntity = (u16)-1;
+              nLocation = 0xffffffff; // (u32)-1;
+              nEntity = 0xffff; //(u16)-1;
             }
             else
             {
               //nEntity = MySQL->GetWorldItemOption(mRawItemID/256, nLocation, 1);
               // This is a kind of nearly-not-hardcoded-hack ...
-              nEntity = (u16)GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
+              int nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
+              nEntity = (nEntityInt < 0 ? 0xffff : (u16)nEntityInt);
             }
           
             tmpMsg = MsgBuilder->BuildCharUseGenrepMsg(nClient, mRawItemID, nLocation, nEntity);

@@ -48,15 +48,11 @@ PUdpMsgAnalyser* PUdpOOO::Analyse()
   return this;
 }
 
-bool PUdpOOO::DoAction() // Console->Print("Out of Order! (at 0x%04hx)", *(u16*)&Packet[5]);
+bool PUdpOOO::DoAction()
 {
-    /*PMessage* cMsg = mDecodeData->mMessage;
-    u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
+    u16 MissingUDP_ID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+5);
+    Console->Print("%s Out of Order packet received ! (at 0x%04hx) ***not managed yet***", Console->ColorText(YELLOW, BLACK, "[Notice]"), MissingUDP_ID);
     
-    PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
-    
-    //cMsg->SetNextByteOffset(mDecodeData->Sub0x13StartNext);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true; 
 }

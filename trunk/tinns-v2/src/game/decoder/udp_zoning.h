@@ -25,8 +25,8 @@
   
 	CREATION: 6 Sep 2006 Hammag
 
-	MODIFIED:
-	REASON: - 
+	MODIFIED: 15 Dec 2006 Hammag
+	REASON: - added PUdpEndOfZoning management class
 
 */
 
@@ -91,6 +91,18 @@ class PUdpAppartmentAccess : public PUdpMsgAnalyser
   public:
     PUdpAppartmentAccess(PMsgDecodeData* nDecodeData);
     //~PUdpAppartmentAccess();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
+
+class PUdpEndOfZoning : public PUdpMsgAnalyser
+{
+  private:
+
+  public:
+    PUdpEndOfZoning(PMsgDecodeData* nDecodeData);
+    //~PUdpEndOfZoning();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

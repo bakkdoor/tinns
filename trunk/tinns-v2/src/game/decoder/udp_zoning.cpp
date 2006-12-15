@@ -25,8 +25,8 @@
   
 	CREATION: 6 Sep 2006 Hammag
 
-	MODIFIED:
-	REASON: - 
+	MODIFIED: 15 Dec 2006 Hammag
+	REASON: - added PUdpEndOfZoning management class
 
 */
 
@@ -280,4 +280,26 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true; 
+}
+
+/**** PUdpEndOfZoning ****/
+
+PUdpEndOfZoning::PUdpEndOfZoning(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x08";
+} 
+
+PUdpMsgAnalyser* PUdpEndOfZoning::Analyse()
+{
+  mDecodeData->mName << "=End of zoning";
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  
+  return this;
+}
+
+bool PUdpEndOfZoning::DoAction()
+{
+// Nothing implemented yet    
+    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+    return true; 
 }

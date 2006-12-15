@@ -52,9 +52,9 @@ ENDOFLIST
 
 echo
 if [[ $? -eq 0 ]]; then
-	echo "Source archive built:"
+	echo "Binary archive built:"
 else
-	echo "An error occured ! Could not build source archive :"
+	echo "An error occured ! Could not build binary archive :"
 fi
 echo $destfile
 

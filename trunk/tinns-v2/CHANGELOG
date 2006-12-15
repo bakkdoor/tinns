@@ -878,3 +878,16 @@ Hammag; 14.12.2006 23:10 GMT+1
 [DEV-TOOLS]
 Modifies src/Makefile (added sourcetar and bintar targets) and src/Rules.make
 Added make-src-tarball and make-bin-tarball in src/dev-tools
+
+====================
+Hammag; 15.12.2006 16:40 GMT+1
+----------
+[rev. 46]
+
+<General changes>
+ - minor internal changes only
+
+[GAME]
+decoder/udp_useobject.cpp : fixed again some signed to unsigned cast issue.
+decoder/udp_zoning.cpp .h : added PUdpEndOfZoning class
+decoder/udp_OOO.cpp : made message reception verbose

@@ -32,6 +32,7 @@
 #include "udp_0x13.h"
 
 #include "udp_OOO.h"
+#include "udp_zoning.h"
 #include "udp_0x1f.h"
 #include "udp_0x22.h"
 #include "udp_ping.h"
@@ -120,7 +121,7 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
           }
           case 0x08: // Client zoning completed (!!! does not happen on login)
           {        
-            //nextAnalyser = new PUdpXXX(mDecodeData);
+            nextAnalyser = new PUdpEndOfZoning(mDecodeData);
             break;
           }
           case 0x1f:
