@@ -1,13 +1,15 @@
-ISC Protocoll definition
+Definition file for ISCP (Inter Server Communication Protocoll)
 by Namikon
 =========================
 
-This file defines the InterServerCommunication Protocoll.
-It is used to exchange Data between the Gameservers and the Infoserver.
+This file defines the InterServerCommunication Protocoll (ISCP).
+It is used to exchange Data between Gameservers and the (Main/Master)Infoserver over
+an TCP connection.
 
 =======================================================================================================================
-ISC Version: 2
-Last Update: 13.12.2006 21:48 GMT+1
+ISCP Type   : TCP
+ISCP Version: 2
+Last Update : 13.12.2006 21:48 GMT+1
 =======================================================================================================================
 0xF0		ISC Protocoll
 <u16>		SizeOf entire packet
@@ -76,4 +78,4 @@ Last Update: 13.12.2006 21:48 GMT+1
 
 
 
-(*Note1) This is <<NOT>> the patchlevel!!! Its the version of the ISC Protocol. Can be found in isc.h
+(*Note1) This is <<NOT>> the patchlevel!!! Its the version of the ISC Protocoll. Can be found in isc.h

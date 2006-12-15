@@ -882,7 +882,7 @@ Added make-src-tarball and make-bin-tarball in src/dev-tools
 ====================
 Hammag; 15.12.2006 16:40 GMT+1
 ----------
-[rev. 46]
+[rev. 47]
 
 <General changes>
  - minor internal changes only
@@ -891,3 +891,15 @@ Hammag; 15.12.2006 16:40 GMT+1
 decoder/udp_useobject.cpp : fixed again some signed to unsigned cast issue.
 decoder/udp_zoning.cpp .h : added PUdpEndOfZoning class
 decoder/udp_OOO.cpp : made message reception verbose
+
+====================
+Hammag; 15.12.2006 20:02 GMT+1
+----------
+[rev. 48]
+
+<General changes>
+ - minor internal changes only
+
+[GAME]
+Updated ISC ProtDef again. The protocol itself will be called ISCP from now on (Inter-Server-Communication-Protocol)
+Updated infoserver.conf, added ISC config values
