@@ -170,20 +170,6 @@ std::string PAccount::GetLevelString() const
 	return "banned";
 }
 
-/*void PAccount::Save(TiXmlElement *Node)
-{
-	if(!Node)
-		return;
-
-	Node->SetAttribute("name", GetName().c_str());
-	Node->SetAttribute("password", GetPassword().c_str());
-	Node->SetAttribute("id", GetID());
-	Node->SetAttribute("level", GetLevelString().c_str());
-	Node->SetAttribute("console", IsConsoleAllowed() ? "1" : "0");
-
-	ClearDirtyFlag();
-}*/
-
 void PAccount::SQLSave()
 {
     char query[1024];
@@ -313,8 +299,8 @@ void PAccounts::RehashAccountData()
         }
         else
         {
-            //int a_priv = std::atoi(row[a_priv]);
-            int a_priv = 100;
+            int a_priv = std::atoi(row[a_priv]);
+            //int a_priv = 100;
             switch(a_priv)
             {
                 case 0: Acc->SetLevel(PAL_UNREGPLAYER);
@@ -385,8 +371,8 @@ bool PAccounts::SQLLoad()
         }
         else
         {
-            //int a_priv = std::atoi(row[a_priv]);
-            int a_priv = 100;
+            int a_priv = std::atoi(row[a_priv]);
+            //int a_priv = 100;
             switch(a_priv)
             {
                 case 0: info->SetLevel(PAL_UNREGPLAYER);
@@ -415,48 +401,8 @@ bool PAccounts::SQLLoad()
   return 0;
 }
 
-/*void PAccounts::Load()
-{
-	Console->Print("Loading accounts...");
-	int nAcc=0;
-	bool HasAdminAcc = false;
-	TiXmlDocument doc("./database/accounts.xml");
-	if(doc.LoadFile())
-	{
-		TiXmlElement *Root = doc.RootElement();
-		if(Root)
-		{
-			TiXmlElement *Acc = Root->FirstChildElement("account");
-			while(Acc)
-			{
-				PAccount *info = new PAccount();
-				if(!info->Load(Acc))
-				{
-					Console->Print("Invalid account entry found in database. Ignored.");
-					delete info;
-				} else
-				{
-					if(!mAccounts.insert(std::make_pair(info->GetID(), info)).second)
-					{
-						Console->Print("Duplicate account id found: %s", info->GetName().c_str());
-						delete info;
-					} else
-						++nAcc;
-					mLastID = max(mLastID, info->GetID());
-					if(info->GetLevel()==PAL_ADMIN)
-						HasAdminAcc=true;
-				}
-				Acc=Acc->NextSiblingElement("account");
-			}
-		}
-	}
-
-	Console->Print("Loaded %i accounts", nAcc);
-	if(!HasAdminAcc)
-		Console->Print("Warning: no admin account in database");
-}
-*/
-PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key, bool UseAutoAccounts)
+//PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key, bool UseAutoAccounts)
+PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key)
 {
 	PAccount *Account = 0;
 	char Pass[128];
@@ -489,7 +435,8 @@ PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int Pass
 	} else
 		Console->Print("Accounts: malformed auth data");
 
-	// auto accounts
+// AutoAccount should *NOT* be performed by GameServer!
+/*	// auto accounts
 	if(!Acc && UseAutoAccounts && Config->GetOptionInt("auto_accounts"))
 	{
 		if(std::strlen(User) >= 3 && std::strlen(Pass) >= 4)
@@ -499,7 +446,7 @@ PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int Pass
 		} else
 			Console->Print("Could not autocreate account: user name or password too short");
 	}
-
+*/
 	return Account;
 }
 
@@ -578,62 +525,8 @@ void PAccounts::SQLUpdate()
     }
     Console->Print("Update done, %i accounts updated", NumUpd);
 }
-
-/*void PAccounts::Update()
-{
-	Console->Print("Updating account database...");
-	TiXmlDocument doc("./database/accounts.xml");
-	int NumUpd=0;
-	if(doc.LoadFile())
-	{
-		TiXmlElement *Root = doc.RootElement();
-		if(Root)
-		{
-			// update already exisiting accounts first
-			TiXmlElement *e = Root->FirstChildElement("account");
-			while(e)
-			{
-				int id;
-				e->Attribute("id", &id);
-				u32 id32 = static_cast<u32>(id);
-
-				// WARNING: do not supply functions to change an account id from outside
-				// because this piece of code won't work anymore!
-				AccountMap::const_iterator i = mAccounts.find(id32);
-				if(i!=mAccounts.end() && i->second->IsDirty())
-				{
-					i->second->Save(e);
-					++NumUpd;
-				}
-
-				e = e->NextSiblingElement("account");
-			}
-
-			// now add unsaved accounts
-			for(AccountMap::iterator i=mAccounts.begin(); i!=mAccounts.end(); i++)
-			{
-				PAccount *acc = i->second;
-				if(acc->IsDirty())
-				{
-					TiXmlElement elem("account");
-					acc->Save(&elem);
-					Root->InsertEndChild(elem);
-					++NumUpd;
-				}
-			}
-
-			if(!doc.SaveFile())
-				Console->Print("PAccounts::Update: could not save account database");
-		}
-	} else
-	{
-		Console->Print("PAccounts::Update: could not load account database");
-	}
-
-	Console->Print("Update done, %i accounts updated", NumUpd);
-}
-*/
-
+// AutoAccount should *NOT* be performed by GameServer!
+/*
 PAccount *PAccounts::CreateAccount(const std::string &Name, const std::string &Password)
 {
 	PAccount *Acc = GetAccount(Name);
@@ -655,3 +548,4 @@ PAccount *PAccounts::CreateAccount(const std::string &Name, const std::string &P
 	SQLUpdate();
 	return Acc;
 }
+*/

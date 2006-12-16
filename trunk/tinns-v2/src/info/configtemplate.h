@@ -37,7 +37,8 @@ const char* InfoConfigTemplate[][2] = {
   {"infoserver_port", "7000"},
   {"gameserver_livecheck", "60"},
   {"minlevel", "0"},
-  {"maxclients", "50"},  
+  {"maxclients", "50"},
+  {"require_validation", "0"},
 // For futur use:
 //  {"max_chars_per_account", "4"},
 //  {"account_name_regex", "[a-zA-Z0-9_-]{3-20}"}, // for account name sytnax control. Better be used in infoserver

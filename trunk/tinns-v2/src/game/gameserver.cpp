@@ -362,6 +362,11 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 					Failed = true;	// server full for non-GM users
 				}
 			}
+			else if (Config->GetOptionInt("require_validation") == 1 && Account->GetLevel() == PAL_UNREGPLAYER)
+			{
+					Console->Print("Rejecting connection from regular user '%s', account not activated yet", UserID);
+					Failed = true;
+			}
 			else if (Server->GetNumClients() > Server->GetMaxClients())
 			{
 					Console->Print("Server full, refusing connection from privileged user '%s'", UserID);

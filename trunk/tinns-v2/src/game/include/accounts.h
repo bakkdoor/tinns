@@ -153,7 +153,8 @@ class PAccounts
 		PAccounts();
 		~PAccounts();
 
-		PAccount *Authenticate(const char *User, const u8* Password, int PassLen, const u8 *Key, bool UseAutoAccounts=false);
+		//PAccount *Authenticate(const char *User, const u8* Password, int PassLen, const u8 *Key, bool UseAutoAccounts=false);
+		PAccount *Authenticate(const char *User, const u8* Password, int PassLen, const u8 *Key);
 		PAccount *Authenticate(const char *User, const char *Password) const;
 		//void Load();
 		bool SQLLoad();
@@ -163,7 +164,7 @@ class PAccounts
 
 		PAccount *GetAccount(u32 AccountID) const;
 		PAccount *GetAccount(const std::string &Name) const;
-		PAccount *CreateAccount(const std::string &Name, const std::string &Password);
+		//PAccount *CreateAccount(const std::string &Name, const std::string &Password);
 };
 
 #endif

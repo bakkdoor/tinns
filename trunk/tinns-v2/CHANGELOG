@@ -893,7 +893,7 @@ decoder/udp_zoning.cpp .h : added PUdpEndOfZoning class
 decoder/udp_OOO.cpp : made message reception verbose
 
 ====================
-Hammag; 15.12.2006 20:02 GMT+1
+Namikon; 15.12.2006 20:02 GMT+1
 ----------
 [rev. 48]
 
@@ -903,3 +903,23 @@ Hammag; 15.12.2006 20:02 GMT+1
 [GAME]
 Updated ISC ProtDef again. The protocol itself will be called ISCP from now on (Inter-Server-Communication-Protocol)
 Updated infoserver.conf, added ISC config values
+
+====================
+Namikon; 16.12.2006 15:36 GMT+1
+----------
+[rev. 49]
+
+[IMPORTANT]
+From this release on, TinNS will check more and more for accountlevels.
+If you want admin access, you have to edit your MySQL table. (Admin: Level 100)
+Its not much yet, but the first steps have been made, and more will follow.
+Next step will be the gamemaster/admin commands.
+
+<Infoserver>
+- Changed default error-return for Sql Checkaccount from -12 to -99, to create free place for further errormessages
+- Added require_validation to infoserver.conf. You can enable this if you like to create accounts on your own,
+  not by autoaccount.
+
+<Gameserver>
+- Removed traces of old AutoAccount creation in GameServer. AutoAcc should *only* be done by Infoserver!
+- Added accountlevel check.

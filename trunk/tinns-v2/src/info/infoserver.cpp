@@ -133,7 +133,7 @@ void PInfoServer::GSLiveCheck()
     MYSQL_ROW row;
     MYSQL_RES *result;
     char query[256];
-    snprintf (query, 256, "SELECT *, (NOW()< (`s_lastupdate` + INTERVAL %d SECOND)) FROM `server_list`", mLivecheckInterval); 
+    snprintf (query, 256, "SELECT *, (NOW()< (`s_lastupdate` + INTERVAL %d SECOND)) FROM `server_list`", mLivecheckInterval);
 
     result = MySQL->ResQuery(query);
     if(result == NULL)
@@ -176,7 +176,7 @@ void PInfoServer::GSLiveCheck()
             {
                 it->second.mOnline = false;
             }
-            
+
             it->second.mUpdated = true;
         }
         else
@@ -199,7 +199,7 @@ void PInfoServer::GSLiveCheck()
         }
     }
     MySQL->FreeSQLResult(result);
-    
+
 	for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
     {
         if(it->second.mUpdated == false)
@@ -251,7 +251,7 @@ bool PInfoServer::HandleHandshake(PInfoState *State, const u8 *Packet, int Packe
 
 bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u8 *Packet, int PacketSize)
 {
-    // returnval values:
+    // ReturnValue values:
     // 0: No error
     // -1: Wrong/Unknown username
     // -2: Wrong Password
@@ -264,6 +264,8 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
     // -9: Duplicate entry for Username! Contact Admin
     // -10: User is banned
     // -11: Insufficient access rights
+    // -12: Account is not yet activated (accesslevel = 0)
+    // -99: General fault. Contact admin
 	ConnectionTCP *Socket = Client->getTCPConn();
 	if(PacketSize > 20 && *(u16*)&Packet[3]==0x8084)
 	{
@@ -296,9 +298,13 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			std::string errorReason;
 			switch(returnval)
 			{
-			    case -12:
+			    case -99:
 			    {
                     errorReason = "General fault in processing your login request";
+			    }
+			    case -12:
+			    {
+                    errorReason = "Account not activated. Please check your EMails";
 			    }
 			    case -11:
 			    {

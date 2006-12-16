@@ -34,7 +34,7 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
     char query[1024];
     MYSQL_RES *result;
     MYSQL_ROW row;
-    int RetVal = -12;
+    int RetVal = -99;
     // ReturnValue values:
     // 0: No error
     // -1: Wrong/Unknown username
@@ -48,7 +48,8 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
     // -9: Duplicate entry for Username! Contact Admin
     // -10: User is banned
     // -11: Insufficient access rights
-    // -12: General fault. Contact admin
+    // -12: Account is not yet activated (accesslevel = 0)
+    // -99: General fault. Contact admin
 	char Pass[128];
 	Pass[0]=0;
 	if(PassLen < 128)
@@ -66,7 +67,7 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
 				Pass[i] = (char)(Password[i]-Key[0]);
 			Pass[PassLen]=0;
 		}
-		
+
     sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s'", User);
     result = MySQL->ResQuery(query);
     if(result == NULL) // SQL Error
@@ -134,6 +135,10 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
                 {
                     RetVal = -11;
                 }
+                else if(Config->GetOptionInt("require_validation") == 1 && atoi(row[a_priv]) == 0)
+                {
+                    RetVal = -12;
+                }
                 else
                 {
                     *accID = atoi(row[a_id]);
@@ -149,7 +154,7 @@ int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, c
 		Console->Print("Accounts: malformed auth data");
         RetVal = -3;
 	}
-	
+
 	return RetVal;
 }
 
@@ -187,7 +192,7 @@ std::string PAccounts::GetBannedTime(const char *username)
     }
     banneduntil = atol(row[0]);
     MySQL->FreeSQLResult(result);
-    
+
     if(banneduntil < time(NULL))
     {
         return "0 more seconds. Please relog";

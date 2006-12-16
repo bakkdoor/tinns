@@ -71,6 +71,7 @@ const char* GameConfigTemplate[][2] = {
   {"new_char_location", "1085"},
   {"broadcast_new", "0"},
   {"broadcast_new_hidestaff", "0"},
+  {"require_validation", "0"},
 
 // For futur use:
 //  {"max_chars_per_account", "4"},
