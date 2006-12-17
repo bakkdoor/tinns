@@ -302,11 +302,11 @@ void PAccounts::RehashAccountData()
             int a_priv_tmp = std::atoi(row[a_priv]);
             switch(a_priv_tmp)
             {
-                case 0: Acc->SetLevel(PAL_UNREGPLAYER);
-                case 1: Acc->SetLevel(PAL_REGPLAYER);
-                case 30: Acc->SetLevel(PAL_VOLUNTEER);
-                case 50: Acc->SetLevel(PAL_GM);
-                case 100: Acc->SetLevel(PAL_ADMIN);
+                case 0:     Acc->SetLevel(PAL_UNREGPLAYER); break;
+                case 1:     Acc->SetLevel(PAL_REGPLAYER);   break;
+                case 30:    Acc->SetLevel(PAL_VOLUNTEER);   break;
+                case 50:    Acc->SetLevel(PAL_GM);          break;
+                case 100:   Acc->SetLevel(PAL_ADMIN);       break;
             }
         }
         if(bUpdate == false) // This is not an update, so add account to list
@@ -372,11 +372,11 @@ bool PAccounts::SQLLoad()
             int a_priv_tmp = std::atoi(row[a_priv]);
             switch(a_priv_tmp)
             {
-                case 0: info->SetLevel(PAL_UNREGPLAYER);
-                case 1: info->SetLevel(PAL_REGPLAYER);
-                case 30: info->SetLevel(PAL_VOLUNTEER);
-                case 50: info->SetLevel(PAL_GM);
-                case 100: info->SetLevel(PAL_ADMIN);
+                case 0:     info->SetLevel(PAL_UNREGPLAYER);    break;
+                case 1:     info->SetLevel(PAL_REGPLAYER);      break;
+                case 30:    info->SetLevel(PAL_VOLUNTEER);      break;
+                case 50:    info->SetLevel(PAL_GM);             break;
+                case 100:   info->SetLevel(PAL_ADMIN);          break;
             }
         }
         info->SetStatus(PAS_OFFLINE);
@@ -525,27 +525,3 @@ void PAccounts::SQLUpdate()
     }
     Console->Print("Update done, %i accounts updated", NumUpd);
 }
-// AutoAccount should *NOT* be performed by GameServer!
-/*
-PAccount *PAccounts::CreateAccount(const std::string &Name, const std::string &Password)
-{
-	PAccount *Acc = GetAccount(Name);
-	if(Acc)
-	{
-		Console->Print("Accounts: account name %s already exists", Name.c_str());
-		return 0;
-	}
-
-	Acc = new PAccount();
-	Acc->SetID(++mLastID);
-	Acc->SetName(Name);
-	Acc->SetPassword(Password);
-	Acc->SetLevel(PAL_UNREGPLAYER);
-	Acc->SetConsoleAllowed(false);
-
-	mAccounts.insert(std::make_pair(Acc->GetID(), Acc));
-
-	SQLUpdate();
-	return Acc;
-}
-*/

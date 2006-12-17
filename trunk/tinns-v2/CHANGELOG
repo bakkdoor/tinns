@@ -941,3 +941,11 @@ this down first.
 [INFO]
 - Fixed errors from last SVN release (Caused several segmentation faults)
 - Added default values for isc stuff to configtemplate.h. I forgot to add them in the last revision
+
+====================
+Namikon; 18.12.2006 00:23 GMT+1
+----------
+[rev. 51]
+
+Small update:
+- Fixed AccountLevel (You always got full admin access after login)
