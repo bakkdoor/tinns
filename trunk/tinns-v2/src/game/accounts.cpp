@@ -299,9 +299,8 @@ void PAccounts::RehashAccountData()
         }
         else
         {
-            int a_priv = std::atoi(row[a_priv]);
-            //int a_priv = 100;
-            switch(a_priv)
+            int a_priv_tmp = std::atoi(row[a_priv]);
+            switch(a_priv_tmp)
             {
                 case 0: Acc->SetLevel(PAL_UNREGPLAYER);
                 case 1: Acc->SetLevel(PAL_REGPLAYER);
@@ -344,7 +343,6 @@ bool PAccounts::SQLLoad()
         info->SetID(std::atoi(row[a_id]));
         info->SetName(row[a_username]);
         info->SetPassword(row[a_password]);
-//        info->SetLevel(row[3]);
 
         //int a_status = std::atoi(row[a_status]);
         int a_status = 0;
@@ -371,9 +369,8 @@ bool PAccounts::SQLLoad()
         }
         else
         {
-            int a_priv = std::atoi(row[a_priv]);
-            //int a_priv = 100;
-            switch(a_priv)
+            int a_priv_tmp = std::atoi(row[a_priv]);
+            switch(a_priv_tmp)
             {
                 case 0: info->SetLevel(PAL_UNREGPLAYER);
                 case 1: info->SetLevel(PAL_REGPLAYER);
@@ -392,6 +389,7 @@ bool PAccounts::SQLLoad()
             HasAdminAcc = true;
         }
     }
+    MySQL->FreeInfoSQLResult(result);
     Console->Print("%s Loaded %i accounts", Console->ColorText(GREEN, BLACK, "[Success]"), nAcc);
 	if(!HasAdminAcc)
 	{
@@ -404,6 +402,7 @@ bool PAccounts::SQLLoad()
 //PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key, bool UseAutoAccounts)
 PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key)
 {
+    //Console->Print("D3");
 	PAccount *Account = 0;
 	char Pass[128];
 	Pass[0]=0;
@@ -434,7 +433,7 @@ PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int Pass
 			Console->Print("Unknown user %s", User);
 	} else
 		Console->Print("Accounts: malformed auth data");
-
+//Console->Print("D4");
 // AutoAccount should *NOT* be performed by GameServer!
 /*	// auto accounts
 	if(!Acc && UseAutoAccounts && Config->GetOptionInt("auto_accounts"))
@@ -447,6 +446,7 @@ PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int Pass
 			Console->Print("Could not autocreate account: user name or password too short");
 	}
 */
+//Console->Print("D5");
 	return Account;
 }
 

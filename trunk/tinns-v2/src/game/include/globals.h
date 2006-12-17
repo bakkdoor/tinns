@@ -39,6 +39,8 @@ extern class ServerSocket *ServerSock;
 extern class PConsole *Console;
 //extern class PRConsole *RemoteConsole;
 extern class PConfig *Config;
+extern class PConfig *CmdAccess;
+
 extern class PGameDefs *GameDefs;
 extern class PDatabase *Database;
 extern class PFileSystem *Filesystem;

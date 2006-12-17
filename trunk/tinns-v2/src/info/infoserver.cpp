@@ -292,23 +292,30 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			Console->Print("Infoserver: User '%s': authentication failed. Errorcode %d", UserID, returnval);
 			Failed = true;	// auth failed
 		}
-
-		if(Failed)
+		if(Failed == true)
 		{
 			std::string errorReason;
 			switch(returnval)
 			{
+			    // It seems that the client cuts the line off after 40 chars...
+//                                 |1       |10       |20       |30       |40       |50       |60       |70       |80
 			    case -99:
 			    {
-                    errorReason = "General fault in processing your login request";
+                    //errorReason = "General fault in processing your login request";
+                    errorReason = "General fault while login request";
+                    break;
 			    }
 			    case -12:
 			    {
-                    errorReason = "Account not activated. Please check your EMails";
+                    //errorReason = "Account not activated. Please check your EMails";
+                    errorReason = "Error: Your account is not activated";
+                    break;
 			    }
 			    case -11:
 			    {
-			        errorReason = "Insufficient accesslevel. You have to be " + GetAccessString(Config->GetOptionInt("minlevel")) + " or higher to login";
+			        //errorReason = "Login rejected. You have to be " + GetAccessString(Config->GetOptionInt("minlevel")) + " or higher";
+			        errorReason = "Level " + GetAccessString(Config->GetOptionInt("minlevel")) + " or higher required";
+			        break;
 			    }
 			    case -10:
 			    {
@@ -317,12 +324,14 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			    }
 			    case -9:
 			    {
-			        errorReason = "Duplicate entry for this username. Contact Administrator";
+			        //errorReason = "Duplicate entry for this login. Contact Admin";
+			        errorReason = "Duplicate entry found. Contact Admin";
 			        break;
 			    }
 			    case -8:
 			    {
-			        errorReason = "Autoaccount failed, name and password too short";
+			        //errorReason = "Autoaccount failed, name and password too short";
+			        errorReason = "AutoAcc failed, name and pwd too short";
 			        break;
 			    }
 			    case -7:
@@ -332,7 +341,8 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			    }
 			    case -6:
 			    {
-			        errorReason = "Autoaccount failed, password is too short";
+			        //errorReason = "Autoaccount failed, password is too short";
+			        errorReason = "Autoaccount failed, pwd is too short";
 			        break;
 			    }
 			    case -5:
@@ -347,7 +357,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			    }
 			    case -3:
 			    {
-			        errorReason = "Malformed Auth Data. Please login again";
+			        errorReason = "Malformed AuthData. Please login again";
 			        break;
 			    }
 			    case -2:
@@ -361,10 +371,8 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			        break;
 			    }
 			}
-
 			u8 AUTHFAILED_HEADER[] = {0xfe, 0x0c, 0x00, 0x83, 0x86, 0x05, 0x00, 0x06, 0x00};
 			u8 AUTHFAILED_FOOTER[] = {0x00, 0x40};
-
 			*(u16*)&AUTHFAILED_HEADER[1] = errorReason.size() + 8;
 			*(u16*)&AUTHFAILED_HEADER[7] = errorReason.size() + 1;
 			//*(u8*)&AUTHFAILED_FOOTER[1] = {0x40};

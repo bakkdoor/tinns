@@ -85,3 +85,25 @@ const char* GameConfigTemplate[][2] = {
 
   {"", ""} // do not change this line (end mark)
 };
+
+const char* CommandsTemplate[][2] = {
+    {"debug", "100"},
+    {"settime", "100"},
+    {"warp", "0"},
+    {"delworlditem", "100"},
+    {"addworlditem", "100"},
+    {"adddoor", "100"},
+    {"connectedList", "0"},
+    {"sendchat", "50"},
+    {"skin", "50"},
+    {"effect", "0"},
+    {"speed", "0"},
+    {"color", "0"},
+    {"brightness", "0"},
+    {"remove", "100"},
+    {"rehash", "100"},
+    {"uptime", "0"},
+    {"version", "0"},
+    {"broadcast", "100"},
+    {"", ""} // do not change this line (end mark)
+};

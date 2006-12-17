@@ -185,6 +185,8 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
 
 // -------------------------------------------------------
    if(strcmp(Command, "debug") == 0) {
+       if(CmdAccess->GetOptionInt("debug") > Client->GetAccount()->GetLevel()) return;
+
       PDebugMode nWhat = DBG_ALL;
       int nHow = -1;
       char* DbgTarget = "all";
@@ -236,6 +238,8 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
    }
 // -------------------------------------------------------
    if(strcmp(Command, "settime") == 0) {
+       if(CmdAccess->GetOptionInt("settime") > Client->GetAccount()->GetLevel()) return;
+
        int newtime = 0;
        newtime = std::atoi(Arg1);
 
@@ -264,6 +268,8 @@ void HandleGameCommand(char *ChatText, PClient *Client) {
    }
 // -------------------------------------------------------
    if(strcmp(Command, "warp") == 0) {
+       if(CmdAccess->GetOptionInt("warp") > Client->GetAccount()->GetLevel()) return;
+
        int zoneID = std::atoi(Arg1);
        int SpawnPointID = std::atoi(Arg2);
 
@@ -375,6 +381,8 @@ return;
    }
 // -------------------------------------------------------
    if(strcmp(Command, "delworlditem") == 0) {
+       if(CmdAccess->GetOptionInt("delworlditem") > Client->GetAccount()->GetLevel()) return;
+
        PChar *Char = Database->GetChar(Client->GetCharID());
        char query[255], answer[255];
        int worlditemID = 0;
@@ -413,6 +421,7 @@ return;
    }
 // -------------------------------------------------------
    if(strcmp(Command, "addworlditem") == 0) {
+       if(CmdAccess->GetOptionInt("addworlditem") > Client->GetAccount()->GetLevel()) return;
        PChar *Char = Database->GetChar(Client->GetCharID());
        char query[255], answer[255];
        int worlditemID = 0, worlditemType = 0, worlditemOp1 = 0, worlditemOp2 = 0;
@@ -464,6 +473,7 @@ return;
    }
 // -------------------------------------------------------
    if(strcmp(Command, "adddoor") == 0) {
+       if(CmdAccess->GetOptionInt("adddoor") > Client->GetAccount()->GetLevel()) return;
        int doorID = 0, doorType = 0;
        doorID = std::atoi(Arg1);
        doorType = std::atoi(Arg2);
@@ -498,11 +508,13 @@ return;
    }
 // -------------------------------------------------------
    if(strcmp(Command, "connectedList") == 0) {
+       if(CmdAccess->GetOptionInt("connectedList") > Client->GetAccount()->GetLevel()) return;
        Console->Print("IngameCommand: Sending connected-player-list to client %s", Arg1);
        Chat->sendConnectedList(Client, false);
    }
 // -------------------------------------------------------
    if(strcmp(Command, "sendchat") == 0) {
+       if(CmdAccess->GetOptionInt("sendchat") > Client->GetAccount()->GetLevel()) return;
       if(strcmp(Arg1, "buddy") == 0) {
              //SendChat(Client, CHAT_BUDDY, "NickName", "TextToSend");
              Chat->send(Client, CHAT_BUDDY, "Nickname", "TextToSend");
@@ -596,7 +608,7 @@ return;
 */
   if(strcmp(Command, "skin") == 0)
   {
-
+if(CmdAccess->GetOptionInt("skin") > Client->GetAccount()->GetLevel()) return;
     u32 Skinval1, Skinval2, Skinval3, Skinval4;
     PChar *SkinChar = Database->GetChar(Client->GetCharID());
     std::stringstream SkinChat;
@@ -674,6 +686,7 @@ return;
 
 if(strcmp(Command, "effect") == 0)
   {
+      if(CmdAccess->GetOptionInt("effect") > Client->GetAccount()->GetLevel()) return;
     u8 val1, val2;
     char effStr[128];
     PMessage* tmpMsg;
@@ -703,6 +716,7 @@ if(strcmp(Command, "effect") == 0)
 
 if(strcmp(Command, "speed") == 0)
   {
+      if(CmdAccess->GetOptionInt("speed") > Client->GetAccount()->GetLevel()) return;
     u8 val1;
     char effStr[128];
     PMessage* tmpMsg;
@@ -727,6 +741,7 @@ if(strcmp(Command, "speed") == 0)
 // Skin color setting.
 if(strcmp(Command, "color") == 0)
   {
+      if(CmdAccess->GetOptionInt("color") > Client->GetAccount()->GetLevel()) return;
     u8 val1, val2, val3, val4, val5, val6;
     char effStr[128];
     PMessage* tmpMsg;
@@ -757,6 +772,7 @@ if(strcmp(Command, "color") == 0)
 // Skin brightness setting.
 if(strcmp(Command, "brightness") == 0)
   {
+      if(CmdAccess->GetOptionInt("brightness") > Client->GetAccount()->GetLevel()) return;
     u8 val1, val2, val3, val4, val5, val6;
     char effStr[128];
     PMessage* tmpMsg;
@@ -786,6 +802,7 @@ if(strcmp(Command, "brightness") == 0)
 
 if(strcmp(Command, "remove") == 0)
   {
+      if(CmdAccess->GetOptionInt("remove") > Client->GetAccount()->GetLevel()) return;
     u32 TargetID;
     char delStr[128];
     PMessage* tmpMsg;
@@ -808,11 +825,13 @@ if(strcmp(Command, "remove") == 0)
   }
 if(strcmp(Command, "rehash") == 0)
 {
+    if(CmdAccess->GetOptionInt("rehash") > Client->GetAccount()->GetLevel()) return;
     Chat->send(Client, CHAT_DIRECT, "System", "Rehashing server...");
     Database->Rehash();
 }
 if(strcmp(Command, "uptime") == 0)
 {
+    if(CmdAccess->GetOptionInt("uptime") > Client->GetAccount()->GetLevel()) return;
     // get difference between var uptime and current time
     std::time_t Uptime = GameServer->GetStartTime();
     u32 TimeDiff = std::time(NULL) - Uptime;
@@ -945,6 +964,7 @@ if(strcmp(Command, "uptime") == 0)
 }
 if(strcmp(Command, "version") == 0)
 {
+    if(CmdAccess->GetOptionInt("version") > Client->GetAccount()->GetLevel()) return;
     char tmpChatMsg[300];
     snprintf(tmpChatMsg, 299, "You are on TinNS server %s runnig version %s - SVN Rev. %s", Config->GetOption("server_name").c_str(), ServerVersion, SVNRevision);
     tmpChatMsg[299] = '\0';
@@ -955,28 +975,26 @@ if(strcmp(Command, "version") == 0)
 /****************************/
 if(strcmp(Command, "broadcast") == 0)
 {
-    if(Client->GetAccount()->GetLevel() >= PAL_GM)
+    if(CmdAccess->GetOptionInt("broadcast") > Client->GetAccount()->GetLevel()) return;
+    int i = 0, j = 11;
+    char tmpStr[255];
+
+    do
     {
-        int i = 0, j = 11;
-        char tmpStr[255];
+        tmpStr[i] = ChatText[j];
+        i++;
+        j++;
+    } while (ChatText[j] != '\0');
+    tmpStr[i] = '\0';
 
-        do
-        {
-            tmpStr[i] = ChatText[j];
-            i++;
-            j++;
-        } while (ChatText[j] != '\0');
-        tmpStr[i] = '\0';
-
-        Chat->sendBroadcast(tmpStr);
-    }
-    else
-        Chat->send(Client, CHAT_DIRECT, "System", "You need at least GameMaster access to send broadcasts!");
+    Chat->sendBroadcast(tmpStr);
 }
 
 /******* temp tests *******/
 if(strcmp(Command, "t") == 0) // testing apprence status
   {
+    if(Client->GetAccount()->GetLevel() < PAL_ADMIN)
+        return;
 
     u32 val1;
     u8 val2;
@@ -1011,6 +1029,9 @@ if(strcmp(Command, "t") == 0) // testing apprence status
 
 if(strcmp(Command, "h") == 0) // testing apprence status
   {
+    if(Client->GetAccount()->GetLevel() < PAL_ADMIN)
+        return;
+
     u8 val1, val2;
     char tmpStr[128];
 
@@ -1049,6 +1070,9 @@ if(strcmp(Command, "h") == 0) // testing apprence status
 
  if(strcmp(Command, "v") == 0) // testing actions
   {
+    if(Client->GetAccount()->GetLevel() < PAL_ADMIN)
+        return;
+
     char tmpStr[128];
     int testmode = 0; // change here only for u8/u16/u32 testvalue use
 

@@ -35,14 +35,14 @@
     REASON: - Added color to console outputs
             - Added shiny and colored copyright box :D
     MODIFIED: 22 Jul 2006 Hammag
-    REASON: - Added Server NOT NULL check to avoid segfault when shuting down during startup        
+    REASON: - Added Server NOT NULL check to avoid segfault when shuting down during startup
     MODIFIED: 27 Aug 2006 Hammag
     REASON: - Implemented shared Config class use and config template to load conf.
                 Added gameserver configtemplate.h include,
                 Added new required parameters to Config->LoadOptions()
     MODIFIED: 02 Oct 2006 Hammag
     REASON: - Added gDevDebug global flag to control development debug outputs (flagged messaged, dump-flagged messes, dev console->print)
-    
+
     TODO:   - Get logfile name from config file
 */
 
@@ -63,6 +63,7 @@ PMySQL *MySQL = 0;
 PConsole *Console = 0;
 PServer *Server = 0;
 PConfig *Config = 0;
+PConfig *CmdAccess = 0;
 PGameDefs *GameDefs = 0;
 PDatabase *Database = 0;
 PFileSystem *Filesystem = 0;
@@ -79,7 +80,7 @@ PChat *Chat = 0;
 PISC *ISC = 0;
 
 const std::string EmptyString;
-  
+
 // Development debug output control (set by config option dev_debug)
 bool gDevDebug = false;
 
@@ -116,6 +117,10 @@ bool InitTinNS()
 	if(!Config->LoadOptions(GameConfigTemplate, "./conf/gameserver.conf"))
 	    Shutdown();
 
+    CmdAccess = new PConfig();
+	if(!CmdAccess->LoadOptions(CommandsTemplate, "./conf/commands.conf"))
+	    Shutdown();
+
   gDevDebug = Config->GetOptionInt("dev_debug");
 	std::string MyName = Config->GetOption("server_name");
 	std::string IP = Config->GetOption("server_ip");
@@ -135,9 +140,9 @@ bool InitTinNS()
 
   Worlds = new PWorlds();
   Worlds->LoadWorlds();
-  
+
   Appartements = new PAppartements;
-  
+
 	Database = new PDatabase();
 	Database->Init();
 
@@ -145,14 +150,14 @@ bool InitTinNS()
 	Server = new PServer();
 	GameServer = new PGameServer();
 	MsgBuilder = new PMsgBuilder();
-  
+
 	Vehicles = new PVehicles();
 
 	ClientManager = new PClientManager();
 	Chat = new PChat();
 
   ISC = new PISC();
-  
+
 	return true;
 }
 
