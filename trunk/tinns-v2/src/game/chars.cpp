@@ -89,7 +89,9 @@ PChar::PChar()
 	mBuddyList = NULL;
 	mGenrepList = NULL;
 
-	mActiveChatChannels = 0;
+	// Required for initial OOC Broadcast welcome message.
+	//Gets overwritten as soon as the first PingPacket arrives
+	mActiveChatChannels = 262144;
 }
 
 PChar::~PChar()

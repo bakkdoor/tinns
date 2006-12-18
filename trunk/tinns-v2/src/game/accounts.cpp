@@ -219,6 +219,8 @@ PAccounts::~PAccounts()
 
 void PAccounts::RehashAccountData()
 {
+    return; /// Temp Fix to verify that rehash really causes SegFault
+
     MYSQL_ROW row = 0;
     MYSQL_RES *result = 0;
     result = MySQL->InfoResQuery("SELECT * FROM accounts");
@@ -248,7 +250,7 @@ void PAccounts::RehashAccountData()
         if(i != mAccounts.end())
         {
             // AccountID found? Ok, so we only have to update the dataset
-            Acc = i->second;
+            Acc = i->second; /// <= Possible SegFault source. If i->second doesnt exist, it could produce an error.
             bUpdate = true;
         }
         else

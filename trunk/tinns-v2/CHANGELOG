@@ -949,3 +949,12 @@ Namikon; 18.12.2006 00:23 GMT+1
 
 Small update:
 - Fixed AccountLevel (You always got full admin access after login)
+
+====================
+Namikon; 18.12.2006 01:57 GMT+1
+----------
+[rev. 52]
+
+- Fixed bug that you could'nt see the welcome message after login
+- Added (hopefully) a workaround for our SegFault problem (2 user online, 3rd is trying to connect -> SegFault)
+
