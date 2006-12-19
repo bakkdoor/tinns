@@ -1004,7 +1004,7 @@ PChar *PChars::GetChar(const std::string &Name) const
 {
 	PChar *Result = 0;
 	for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
-	{
+    {
 		if(!/*std::*/strcasecmp(i->second->GetName().c_str(), Name.c_str()))
 		{
 			Result = i->second;

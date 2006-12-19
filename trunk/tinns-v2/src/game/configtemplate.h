@@ -105,5 +105,10 @@ const char* CommandsTemplate[][2] = {
     {"uptime", "0"},
     {"version", "0"},
     {"broadcast", "100"},
+    {"kick", "50"},
+    {"info", "50"},
+    {"setlevel", "100"},
+    {"warpto", "50"},
+    {"recall", "50"},
     {"", ""} // do not change this line (end mark)
 };

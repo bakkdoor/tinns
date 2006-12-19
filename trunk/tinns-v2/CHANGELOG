@@ -958,3 +958,16 @@ Namikon; 18.12.2006 01:57 GMT+1
 - Fixed bug that you could'nt see the welcome message after login
 - Added (hopefully) a workaround for our SegFault problem (2 user online, 3rd is trying to connect -> SegFault)
 
+====================
+Namikon; 19.12.2006 03:03 GMT+1
+----------
+[rev. 53]
+
+its a pity, but the workaround didnt work. Still investigating this!
+MANY changes to the source, cant remember all. Here is what my brain has stored:
+
+- Direct chat completed. (If target player isnt online, you'll get this nice "Player not online" message)
+- ReEnabled AutoRehash, wasnt responsible for the crash
+- Added @kick, @info, @warpto, @recall and @setlevel. @info is tested and verified, @kick does nothing (yet) the
+  rest is untested but should work. (Hard to test with only 1 char online...)
+- Some more very small changes. If you want a detailed log, ask SVN history :D

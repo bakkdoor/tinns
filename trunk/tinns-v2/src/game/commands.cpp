@@ -972,6 +972,306 @@ if(strcmp(Command, "version") == 0)
     Chat->send(Client, CHAT_DIRECT, "System", tmpChatMsg);
 }
 
+/** ========================================================================== **/
+
+if(strcmp(Command, "kick") == 0)
+{
+    if(CmdAccess->GetOptionInt("kick") > Client->GetAccount()->GetLevel()) return;
+
+    int destCharID;
+    PClient* victim;
+
+    if(Arg1[0] == '\0')
+    {
+        Chat->send(Client, CHAT_DIRECT, "Usage", "@kick <charID or nickname>");
+        return;
+    }
+    // Assuming player is using charID to kick
+    destCharID = std::atoi(Arg1);
+
+    if(destCharID == 0)
+        victim = GetClientByNick(Arg1); // If we're wrong (used nickname), get PClient for victim by nickname
+    else
+        victim = GetClientByID(destCharID); // Now get PClient for victim over charID
+
+    if(victim == NULL) // If victim isnt found, return error
+    {
+        Chat->send(Client, CHAT_DIRECT, "System", "No such player");
+        return;
+    }
+
+    // Make sure only people with a higher level than victim can kick victim
+    if(Client->GetAccount()->GetLevel() <= victim->GetAccount()->GetLevel())
+    {
+        char tmpMsg[200];
+        snprintf(tmpMsg, 199, "Cant kick %s, target level is higher or equal to yours!", Database->GetChar(victim->GetCharID())->GetName().c_str());
+        tmpMsg[199] = '\0';
+        Chat->send(Client, CHAT_DIRECT, "System", tmpMsg);
+        return;
+    }
+
+// *************** Checks done, proceed with command
+    Console->Print("%s %s (Lv %d) kicked %s (Lv %d)", Console->ColorText(YELLOW, BLACK, "[GameCommand]"), Database->GetChar(Client->GetCharID())->GetName().c_str(), Client->GetAccount()->GetLevel(), Database->GetChar(victim->GetCharID())->GetName().c_str(), victim->GetAccount()->GetLevel());
+    //victim->GameDisconnect();  // causes SegFault here. Need to find a better way to disconnect player
+}
+
+if(strcmp(Command, "info") == 0)
+{
+    if(CmdAccess->GetOptionInt("info") > Client->GetAccount()->GetLevel()) return;
+
+    int destCharID;
+    PClient* victim;
+
+    if(Arg1[0] == '\0')
+    {
+        Chat->send(Client, CHAT_DIRECT, "Usage", "@info <charID or nickname>");
+        return;
+    }
+    destCharID = std::atoi(Arg1);
+
+    if(destCharID == 0)
+        victim = GetClientByNick(Arg1); // If we're wrong (used nickname), get PClient for victim by nickname
+    else
+        victim = GetClientByID(destCharID); // Now get PClient for victim over charID
+
+    if(victim == NULL) // If victim isnt found, return error
+    {
+        Chat->send(Client, CHAT_DIRECT, "System", "No such player");
+        return;
+    }
+    // *************** Checks done, proceed with command
+    /*
+        DIRECT> System: PlayerInformation
+        DIRECT> Info: CharID     : %d     // victim->GetCharID();
+        DIRECT> Info: AccountID  : %d     // victim->GetAccount()->GetID();
+        DIRECT> Info: LoginName  : %s     // victim->GetAccount()->GetName();
+        DIRECT> Info: AccessLevel: %d     // victim->GetAccount()->GetLevel();
+        DIRECT> Info: Current Loc: %d     // Database->GetChar(Client->GetCharID())->GetLocation();
+        DIRECT> Info: IP address : %s     // victim->GetAddress():
+
+        Maybe for future addons...
+        DIRECT> System: CharInformation
+        DIRECT> Info: Faction      : %d     // Database->GetChar(Client->GetCharID())->GetFaction();
+        DIRECT> Info: Cash         : %d     // Database->GetChar(Client->GetCharID())->GetCash();
+        DIRECT> Info: Soullight    : %d     // Database->GetChar(Client->GetCharID())->GetSoullight();
+    */
+    char tmpInfo_head[151];
+    char tmpInfo_cID[151];
+    char tmpInfo_aID[151];
+    char tmpInfo_Login[151];
+    char tmpInfo_AxxLv[151];
+    char tmpInfo_Loc[151];
+    char tmpInfo_IP[151];
+
+    snprintf(tmpInfo_head, 150,     "PlayerInformation");
+    snprintf(tmpInfo_cID, 150,      "CharID     : %d",  victim->GetCharID());
+    snprintf(tmpInfo_aID, 150,      "AccountID  : %d",  victim->GetAccount()->GetID());
+    snprintf(tmpInfo_Login, 150,    "LoginName  : %s",  victim->GetAccount()->GetName().c_str());
+    snprintf(tmpInfo_AxxLv, 150,    "AccessLevel: %d",  victim->GetAccount()->GetLevel());
+    snprintf(tmpInfo_Loc, 150,      "Current Loc: %d",  Database->GetChar(Client->GetCharID())->GetLocation());
+    snprintf(tmpInfo_IP, 150,       "IP address : %s",  victim->GetAddress());
+
+    tmpInfo_head[150] = '\0';
+    tmpInfo_cID[150] = '\0';
+    tmpInfo_aID[150] = '\0';
+    tmpInfo_Login[150] = '\0';
+    tmpInfo_AxxLv[150] = '\0';
+    tmpInfo_Loc[150] = '\0';
+    tmpInfo_IP[150] = '\0';
+
+    Chat->send(Client, CHAT_DIRECT, "System", tmpInfo_head);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_cID);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_aID);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_Login);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_AxxLv);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_Loc);
+    Chat->send(Client, CHAT_DIRECT, "Info", tmpInfo_IP);
+}
+
+if(strcmp(Command, "setlevel") == 0)
+{
+    if(CmdAccess->GetOptionInt("setlevel") > Client->GetAccount()->GetLevel()) return;
+
+    int destCharID, destLevel;
+    PClient* victim;
+
+    if(Arg1[0] == '\0' || Arg2[0] == '\0')
+    {
+        Chat->send(Client, CHAT_DIRECT, "Usage", "@setlevel <charID or nickname> <newlevel 1-99>");
+        return;
+    }
+    destCharID = std::atoi(Arg1);
+    destLevel = std::atoi(Arg2);
+
+    if(destCharID == 0)
+        victim = GetClientByNick(Arg1); // If we're wrong (used nickname), get PClient for victim by nickname
+    else
+        victim = GetClientByID(destCharID); // Now get PClient for victim over charID
+
+    if(victim == NULL) // If victim isnt found, return error
+    {
+        Chat->send(Client, CHAT_DIRECT, "System", "No such player");
+        return;
+    }
+
+    // Check accountlevel (Only higher's can perform commands on lower's)
+    if(Client->GetAccount()->GetLevel() <= victim->GetAccount()->GetLevel())
+    {
+        char tmpMsg[200];
+        snprintf(tmpMsg, 199, "Cant set level for %s, target level is higher or equal to yours!", Database->GetChar(victim->GetCharID())->GetName().c_str());
+        tmpMsg[199] = '\0';
+        Chat->send(Client, CHAT_DIRECT, "System", tmpMsg);
+        return;
+    }
+
+// *************** Checks done, proceed with command
+    victim->GetAccount()->SetLevel(destLevel);
+    char tmpMsg[60], tmpMsg2[60];
+
+    snprintf(tmpMsg, 59, "Set level for player %s to %d", Database->GetChar(victim->GetCharID())->GetName().c_str(), destLevel);
+    snprintf(tmpMsg2, 59, "**POOF** Your new AccessLevel is now %d", destLevel);
+
+    tmpMsg[59] = '\0';
+    tmpMsg2[59] = '\0';
+
+    Chat->send(Client, CHAT_DIRECT, "System", tmpMsg);
+    Chat->send(victim, CHAT_DIRECT, "System", tmpMsg2);
+}
+
+if(strcmp(Command, "warpto") == 0)
+{
+    if(CmdAccess->GetOptionInt("warpto") > Client->GetAccount()->GetLevel()) return;
+
+    int destCharID, destZone;
+    PClient* victim;
+
+    if(Arg1[0] == '\0')
+    {
+        Chat->send(Client, CHAT_DIRECT, "Usage", "@warpto <charID or nickname>");
+        return;
+    }
+    destCharID = std::atoi(Arg1);
+
+    if(destCharID == 0)
+        victim = GetClientByNick(Arg1); // If we're wrong (used nickname), get PClient for victim by nickname
+    else
+        victim = GetClientByID(destCharID); // Now get PClient for victim over charID
+
+    if(victim == NULL) // If victim isnt found, return error
+    {
+        Chat->send(Client, CHAT_DIRECT, "System", "No such player");
+        return;
+    }
+
+    // Warp GM/Admin to target player
+    destZone = Database->GetChar(victim->GetCharID())->GetLocation();
+    if (!Worlds->IsValidWorld(destZone))
+    {
+        Console->Print("%s Can't change location, destZone '%d' is invalid for some reason", Console->ColorText(RED, BLACK, "[PANIC]"), destZone);
+        return;
+    }
+// *************** Checks done, proceed with command
+    if (Client->ChangeCharLocation(destZone))
+    {
+        // World changed, now place GM/Admin to position of target player "victim"
+        PMessage* tmpMsg;
+
+        // Get position of target player "victim"
+        u16 nNewX, nNewY, nNewZ;
+        nNewX = victim->GetChar()->Coords.mX;
+        nNewY = victim->GetChar()->Coords.mY;
+        nNewZ = victim->GetChar()->Coords.mZ;
+
+        // And now built new message for GM/Admin, with new X/Y/Z Coords
+        tmpMsg = MsgBuilder->BuildCharPosMoveMsg(Client, nNewX, nNewY, nNewZ);
+
+        // Finish packet (Add UDP_ID stuff etc)
+        Client->IncreaseUDP_ID();
+        tmpMsg->U16Data(0x01) = Client->GetUDP_ID();
+        tmpMsg->U16Data(0x03) = Client->GetSessionID();
+        tmpMsg->U16Data(0x07) = Client->GetUDP_ID();
+
+        // Send packet
+        Client->getUDPConn()->SendMessage(tmpMsg);
+    }
+    else
+    {
+        Console->Print("%s Unable to change location for player %d to %d", Console->ColorText(RED, BLACK, "[PANIC]"), Client->GetCharID(), destZone);
+    }
+}
+
+if(strcmp(Command, "recall") == 0)
+{
+    if(CmdAccess->GetOptionInt("recall") > Client->GetAccount()->GetLevel()) return;
+
+    int destCharID, destZone;
+    PClient* victim;
+
+    if(Arg1[0] == '\0')
+    {
+      Chat->send(Client, CHAT_DIRECT, "Usage", "@recall <charID or nickname>");
+      return;
+    }
+    destCharID = std::atoi(Arg1);
+
+    if(destCharID == 0)
+        victim = GetClientByNick(Arg1); // If we're wrong (used nickname), get PClient for victim by nickname
+    else
+        victim = GetClientByID(destCharID); // Now get PClient for victim over charID
+
+    if(victim == NULL) // If victim isnt found, return error
+    {
+        Chat->send(Client, CHAT_DIRECT, "System", "No such player");
+        return;
+    }
+
+    // Check accountlevel (Only higher's can perform commands on lower's)
+    if(Client->GetAccount()->GetLevel() <= victim->GetAccount()->GetLevel())
+    {
+        char tmpMsg[200];
+        snprintf(tmpMsg, 199, "Cant warp %s to you, target level is higher or equal to yours!", Database->GetChar(victim->GetCharID())->GetName().c_str());
+        tmpMsg[199] = '\0';
+        Chat->send(Client, CHAT_DIRECT, "System", tmpMsg);
+        return;
+    }
+
+    // Warp target player to GM/Admin
+    destZone = Database->GetChar(Client->GetCharID())->GetLocation();
+    if (!Worlds->IsValidWorld(destZone))
+    {
+        Console->Print("%s Can't change location, destZone '%d' is invalid for some reason", Console->ColorText(RED, BLACK, "[PANIC]"), destZone);
+        return;
+    }
+// *************** Checks done, proceed with command
+    if (victim->ChangeCharLocation(destZone))
+    {
+        // World changed, now place victim to position of GM/Admin
+        PMessage* tmpMsg;
+
+        // Get position of GM/Admin
+        u16 nNewX, nNewY, nNewZ;
+        nNewX = Client->GetChar()->Coords.mX;
+        nNewY = Client->GetChar()->Coords.mY;
+        nNewZ = Client->GetChar()->Coords.mZ;
+
+        // And now built new message for Victim, with new X/Y/Z Coords
+        tmpMsg = MsgBuilder->BuildCharPosMoveMsg(victim, nNewX, nNewY, nNewZ);
+
+        // Finish packet (Add UDP_ID stuff etc)
+        victim->IncreaseUDP_ID();
+        tmpMsg->U16Data(0x01) = victim->GetUDP_ID();
+        tmpMsg->U16Data(0x03) = victim->GetSessionID();
+        tmpMsg->U16Data(0x07) = victim->GetUDP_ID();
+
+        // Send packet
+        victim->getUDPConn()->SendMessage(tmpMsg);
+    }
+    else
+    {
+        Console->Print("%s Unable to change location for player %d to %d", Console->ColorText(RED, BLACK, "[PANIC]"), Client->GetCharID(), destZone);
+    }
+}
+
 /****************************/
 if(strcmp(Command, "broadcast") == 0)
 {
@@ -1105,6 +1405,36 @@ if(strcmp(Command, "h") == 0) // testing apprence status
 /******* end temp *******/
 
 // -------------------------------------------------------
+}
+/// ****************************** ///
+///         FUNCTIONS PART         ///
+/// ****************************** ///
+PClient* GetClientByID(int charid)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(it->second)
+        {
+            PClient* target = it->second;
+            if((int)target->GetCharID() == charid)
+                return it->second;
+        }
+    }
+    return NULL;
+}
+
+PClient* GetClientByNick(const char *nick)
+{
+    for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+    {
+        if(it->second)
+        {
+            PClient* target = it->second;
+            if(!strcasecmp(Database->GetChar(target->GetCharID())->GetName().c_str(), nick))
+                return it->second;
+        }
+    }
+    return NULL;
 }
 
 bool SendRawFile(PClient *Client, char *FileName, int protocoll) {

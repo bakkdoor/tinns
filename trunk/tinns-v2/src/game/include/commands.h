@@ -42,4 +42,7 @@
 void HandleGameCommand(char *ChatText, PClient *Client);
 bool SendRawFile(PClient *Client, char *FileName, int protokoll);
 
+PClient* GetClientByID(int charid);
+PClient* GetClientByNick(const char *nick);
+
 #endif

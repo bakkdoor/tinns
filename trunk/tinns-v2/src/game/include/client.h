@@ -45,7 +45,7 @@
   MODIFIED: 09 Oct 2006 Hammag
   REASON: - added GetDebugMode() and SetDebugMode() methods
 
-  
+
   TODO:   - check that SetUDP_ID, and the mSessionID(UDP_ID_HIGH) real use,
               and if UDP_ID and mSessionID must be synced (like in NeoX) or not
 
@@ -60,6 +60,8 @@ enum PClientConnection
 	PCC_GAME = 1
 };
 
+// AccountLevel handling is part of accounts.cpp
+/*
 enum PClientLevel
 {
 	PCL_BANNED = -1,
@@ -69,7 +71,7 @@ enum PClientLevel
 	PCL_GM = 50,
 	PCL_ADMIN = 100
 };
-
+*/
 #define DEBUG_MODES 2
 enum PDebugMode
 {
@@ -91,10 +93,11 @@ class PClient
 		u16 mUDP_ID;
 		u16 mSessionID;
 		u16 mTransactionID;
-		PClientLevel mLevel;
+		// AccountLevel handling is part of accounts.cpp
+		//PClientLevel mLevel;
 		int mConnection;
 		int mRemotePort;
-    
+
     bool mDebugMode[DEBUG_MODES];
 		// new multiuser-chat implementation //
     int m_ZoneID;
@@ -107,14 +110,14 @@ class PClient
 
     inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
     void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
-    
+
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
 		inline int GetLocalID() const { return mIndex + 1; }
 		inline u32 GetCharID() const { return mCharID; }
 		PChar* GetChar() const;
 		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
-		
+
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
 		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
 		inline u16 GetTransactionID() {return mTransactionID; }
@@ -126,8 +129,9 @@ class PClient
 		inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
     inline void ResetTransactionID() { mTransactionID = 10170; }
     inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
-    
-		inline PClientLevel GetLevel() const { return mLevel; }
+
+        // AccountLevel handling is part of accounts.cpp
+		//inline PClientLevel GetLevel() const { return mLevel; }
 
     inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
     inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
@@ -147,7 +151,7 @@ class PClient
 		// new multiuser-chat implementation //
 		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
 		//inline int*	getIP() const { return (int*) m_IP; }
-		
+
 		// used for dynamic ingame testing
 		u8 testval8;
 		u16 testval16;

@@ -47,7 +47,17 @@
 50 = GM
 100 = Admin
 */
-enum PAccountLevel
+
+// New way of AccountLevel handling:
+// Every level is possible, the following values are only edge values. We need a bit control about that
+#define PAL_BANNED -1
+#define PAL_UNREGPLAYER 0
+#define PAL_REGPLAYER 1
+#define PAL_VOLUNTEER 30
+#define PAL_GM 50
+#define PAL_ADMIN 100
+
+/*enum PAccountLevel
 {
 	PAL_BANNED = -1,
 	PAL_UNREGPLAYER = 0,
@@ -55,7 +65,7 @@ enum PAccountLevel
 	PAL_VOLUNTEER = 30,
 	PAL_GM = 50,
 	PAL_ADMIN = 100
-};
+};*/
 
 /*
 0 = Offline
@@ -87,7 +97,7 @@ class PAccount
 		std::string mName;
 		std::string mPassword;
 
-		PAccountLevel mLevel;
+		int mLevel;
 		PAccountStatus mStatus;
 
 		u32 mChars[MAXCHARSPERACC];
@@ -100,7 +110,7 @@ class PAccount
 		void SetName(const std::string &Name);
 		void SetPassword(const std::string &Pass);
 
-		void SetLevel(PAccountLevel Level);
+		//void SetLevel(PAccountLevel Level);
 		void SetStatus(PAccountStatus Status);
 
 		void SetConsoleAllowed(bool Allowed);
@@ -113,7 +123,9 @@ class PAccount
 		inline const std::string &GetName() const { return mName; }
 		inline const std::string &GetPassword() const { return mPassword; }
 
-		inline PAccountLevel GetLevel() const { return mLevel; }
+		inline int GetLevel() const { return mLevel; }
+		void SetLevel(int newLevel);
+
 		inline PAccountStatus GetStatus() const { return mStatus; }
 
 		std::string GetLevelString() const;

@@ -587,6 +587,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 				// check for valid name string
 				bool ValidString = false;
+
 				for (int i = 30; i < PacketSize; i++)
 					if (Packet[i] == 0)
 					{
@@ -599,6 +600,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 				const char *Name = (char*)&Packet[30];
 				PChar *Char = Database->GetChar(Name);
+
 				if (!Char)
 					Answer[5] = 1;	// ok
 				else

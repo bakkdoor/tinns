@@ -322,6 +322,15 @@ void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool 
             sendDirect(author, receiver, text, debugOut);
         }
     }
+    if(tmpTargetOnline == false)
+    {
+        ConnectionTCP *Socket = author->getTCPConn();
+        u8 DirectTargetNotOnline[] = {0xFE, 0x07, 0x00, 0x83, 0x18, 0x01, 0x81, 0x54, 0x00, 0x00};
+
+        Socket->write(DirectTargetNotOnline, sizeof(DirectTargetNotOnline));
+        Socket->flushSendBuffer();
+    }
+
     if(debugOut == true)
     {
         if(tmpTargetOnline == false)
@@ -670,44 +679,6 @@ void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
         }
     }
 }
-
-/** Until it is verified that the new method works, keep the old version here **/
-/*
-bool PChat::chanEnabled(PClient* Client, u32 channel)
-{
-    // Check if player has target channel enabled or disabled
-    u32 actChans = Database->GetChar(Client->GetCharID())->GetActiveChannels();
-
-    // Quick answers to save time
-    if(actChans == 0) return false;
-    if(actChans < channel) return false;
-    if(actChans == channel) return true;
-
-    u32 loopvar = 262144;
-
-    while(loopvar > 0)
-    {
-        //if remaining active channels are greater or equal the loopvar...
-        if(actChans >= loopvar)
-        {
-            // ... substract the value from actchans. ("bit" matches)
-            actChans = actChans - loopvar;
-            // Now if the requested channel is equal to the loopvar return true
-            if(channel == loopvar) return true;
-        }
-        // Now if the remaining active channels are lower than the requested channel, return false.
-        if(actChans < channel) return false;
-
-        // goto next "bit" (....32, 16, 8....)
-        // Or set loopvar to zero if current var == 1 (Result would be 0.5, doesnt make sense
-        if(loopvar > 1)
-            loopvar = loopvar / 2;
-        else
-            loopvar = 0;
-    }
-    return false;
-}
-*/
 
 bool PChat::chanEnabled(PClient* Client, u32 channel)
 {

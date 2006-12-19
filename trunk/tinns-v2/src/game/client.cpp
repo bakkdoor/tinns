@@ -43,14 +43,13 @@ PClient::PClient(int Index)
 	mAccount = 0;
 	mIndex = Index;
 	mCharID = 0;
-	mLevel = PCL_BANNED;
 	mConnection = PCC_NONE;
 	mUDP_ID = 0;
 	mSessionID = 37917;
 	mRemotePort = 0;
 	m_TCPConnection = NULL;
 	m_UDPConnection = NULL;
-	
+
 	for (int i = 0; i < DEBUG_MODES ; i++)
       mDebugMode[i] = false;
 }
@@ -114,7 +113,7 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
       }
       tChar->SetLocation(nLocation);
       tChar->SetLocationLeased();
-      
+
       return true;
     }
   }
@@ -122,7 +121,7 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
   {
     return ChangeCharLocation(1, DoForce);
   }
-  
+
   return false;
 }
 
@@ -135,13 +134,13 @@ void PClient::GameDisconnect()
 	    delete m_TCPConnection;
       m_TCPConnection = NULL;
 	}
-	
+
 	if(m_UDPConnection)
 	{
 	    delete m_UDPConnection;
 	    m_UDPConnection = NULL;
 	}
-	
+
   /**** Will be better to put that char-saving-at-disconnect in Char destructor, when only used Chars will be loaded ****/
   PChar *tChar = GetChar();
   if (tChar)
@@ -160,7 +159,7 @@ void PClient::GameDisconnect()
       if (!tChar->IsOnline())
         Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex);
     }
-    
+
     /* Disabled until dynamic char load/unload
     if(tChar->GetLocation())
     {
@@ -168,7 +167,7 @@ void PClient::GameDisconnect()
       tChar->SetLocation(0);
     }
     */
-    
+
     // temp
     if(tChar->GetLocationLeased())
     {
@@ -186,7 +185,7 @@ void PClient::GameDisconnect()
     //Console->Print(YELLOW, BLACK, "GameDisconnect: Client %i had no char online.", mIndex);
   }
   /**********************************/
-    
+
 	//mConnection &= ~PCC_GAME;
 	mConnection = PCC_NONE;
 }
@@ -231,7 +230,7 @@ void PClient::Update()
     }
 }
 
-PChar* PClient::GetChar() const 
+PChar* PClient::GetChar() const
 {
   return Database->GetChar(mCharID);
 }

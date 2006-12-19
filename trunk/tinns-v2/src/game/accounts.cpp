@@ -131,7 +131,7 @@ void PAccount::SetPassword(const std::string &Pass)
 	mPassword = Pass;
 }
 
-void PAccount::SetLevel(PAccountLevel Level)
+void PAccount::SetLevel(int Level)
 {
 	if(mLevel != Level)
 		SetDirtyFlag();
@@ -167,7 +167,7 @@ std::string PAccount::GetLevelString() const
 		case PAL_ADMIN : return "admin";
 	}
 
-	return "banned";
+	return "custom";
 }
 
 void PAccount::SQLSave()
@@ -219,8 +219,6 @@ PAccounts::~PAccounts()
 
 void PAccounts::RehashAccountData()
 {
-    return; /// Temp Fix to verify that rehash really causes SegFault
-
     MYSQL_ROW row = 0;
     MYSQL_RES *result = 0;
     result = MySQL->InfoResQuery("SELECT * FROM accounts");
@@ -250,7 +248,7 @@ void PAccounts::RehashAccountData()
         if(i != mAccounts.end())
         {
             // AccountID found? Ok, so we only have to update the dataset
-            Acc = i->second; /// <= Possible SegFault source. If i->second doesnt exist, it could produce an error.
+            Acc = i->second;
             bUpdate = true;
         }
         else
@@ -302,14 +300,7 @@ void PAccounts::RehashAccountData()
         else
         {
             int a_priv_tmp = std::atoi(row[a_priv]);
-            switch(a_priv_tmp)
-            {
-                case 0:     Acc->SetLevel(PAL_UNREGPLAYER); break;
-                case 1:     Acc->SetLevel(PAL_REGPLAYER);   break;
-                case 30:    Acc->SetLevel(PAL_VOLUNTEER);   break;
-                case 50:    Acc->SetLevel(PAL_GM);          break;
-                case 100:   Acc->SetLevel(PAL_ADMIN);       break;
-            }
+            Acc->SetLevel(a_priv_tmp);
         }
         if(bUpdate == false) // This is not an update, so add account to list
             mAccounts.insert(std::make_pair(Acc->GetID(), Acc)).second;
@@ -372,14 +363,7 @@ bool PAccounts::SQLLoad()
         else
         {
             int a_priv_tmp = std::atoi(row[a_priv]);
-            switch(a_priv_tmp)
-            {
-                case 0:     info->SetLevel(PAL_UNREGPLAYER);    break;
-                case 1:     info->SetLevel(PAL_REGPLAYER);      break;
-                case 30:    info->SetLevel(PAL_VOLUNTEER);      break;
-                case 50:    info->SetLevel(PAL_GM);             break;
-                case 100:   info->SetLevel(PAL_ADMIN);          break;
-            }
+            info->SetLevel(a_priv_tmp);
         }
         info->SetStatus(PAS_OFFLINE);
 
@@ -435,20 +419,7 @@ PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int Pass
 			Console->Print("Unknown user %s", User);
 	} else
 		Console->Print("Accounts: malformed auth data");
-//Console->Print("D4");
-// AutoAccount should *NOT* be performed by GameServer!
-/*	// auto accounts
-	if(!Acc && UseAutoAccounts && Config->GetOptionInt("auto_accounts"))
-	{
-		if(std::strlen(User) >= 3 && std::strlen(Pass) >= 4)
-		{
-			Account = CreateAccount(User, Pass);
-			Console->Print("Account %s created", User);
-		} else
-			Console->Print("Could not autocreate account: user name or password too short");
-	}
-*/
-//Console->Print("D5");
+
 	return Account;
 }
 
