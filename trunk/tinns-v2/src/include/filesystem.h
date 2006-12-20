@@ -83,7 +83,7 @@ class PFileSystem
 	public :
 		PFileSystem();
 		~PFileSystem();
-		PFile *Open(const std::string &Package, const char *File);
+		PFile *Open(const std::string &Package, const char *File, std::string BasePath);
 		bool Close(PFile *File);
 		void ClearCache();
 };

@@ -971,3 +971,20 @@ MANY changes to the source, cant remember all. Here is what my brain has stored:
 - Added @kick, @info, @warpto, @recall and @setlevel. @info is tested and verified, @kick does nothing (yet) the
   rest is untested but should work. (Hard to test with only 1 char online...)
 - Some more very small changes. If you want a detailed log, ask SVN history :D
+
+====================
+Hammag; 20.12.2006 21:00 GMT+1
+----------
+[rev. 54]
+
+<General changes>
+ - fixed bug in NC datafiles lookup when nc_data_path was set to something else than .
+
+[LIBS]
+filesystem/filesystem.cpp .h : added base path arg to file open method.
+
+[GAME]
+def/defparser.cpp, def/world_dataparser.cpp : modified accordingly to changes made to PFileSystem
+
+[PATCH]
+patchserver.cpp : modified accordingly to changes made to PFileSystem

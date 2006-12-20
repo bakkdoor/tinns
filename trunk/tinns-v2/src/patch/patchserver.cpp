@@ -454,9 +454,9 @@ u32 PPatchServer::StartFile(PPatchState *State)
 		return 0;
 	}
 
-	std::stringstream path;
-	path << Config->GetOption("file_path") << "/" << State->mCurrentFile << '\0';
-	State->mSendFile = Filesystem->Open("", State->mCurrentFile.c_str());
+	//std::stringstream path;
+	//path << Config->GetOption("file_path") << "/" << State->mCurrentFile << '\0';
+	State->mSendFile = Filesystem->Open("", State->mCurrentFile.c_str(), Config->GetOption("file_path"));
 	if(State->mSendFile)
 	{
 		++mNumFileTransfers;

@@ -50,7 +50,7 @@ PDefParser::~PDefParser()
 
 bool PDefParser::Parse(const char *File)
 {
-	PFile *f = Filesystem->Open("", File);
+	PFile *f = Filesystem->Open("", File, Config->GetOption("nc_data_path"));
 	enum { NOPE, MAYBE, LINE, BLOCK, MAYBE_END } Comment = NOPE;
 
 	if(f)

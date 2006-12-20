@@ -123,7 +123,7 @@ bool PGameDefs::LoadCharDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_CHARACTERS;
+	const string DEF_FILE = DEF_CHARACTERS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -169,7 +169,7 @@ bool PGameDefs::LoadSkillDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_SKILLS;
+	const string DEF_FILE = DEF_SKILLS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -214,7 +214,7 @@ bool PGameDefs::LoadSubSkillDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_SUBSKILLS;
+	const string DEF_FILE = DEF_SUBSKILLS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -259,7 +259,7 @@ bool PGameDefs::LoadCharKindDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_CHARKINDS;
+	const string DEF_FILE = DEF_CHARKINDS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -303,7 +303,7 @@ bool PGameDefs::LoadWorldDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_WORLDINFO;
+	const string DEF_FILE = DEF_WORLDINFO;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -347,7 +347,7 @@ bool PGameDefs::LoadFactionDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_FRACTIONS;
+	const string DEF_FILE = DEF_FRACTIONS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -392,7 +392,7 @@ bool PGameDefs::LoadHackDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_HACK;
+	const string DEF_FILE = DEF_HACK;
 
 	if(parser.Parse(DEF_FILE.c_str()))
 	{
@@ -437,7 +437,7 @@ bool PGameDefs::LoadItemsDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_ITEMS;
+	const string DEF_FILE = DEF_ITEMS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -481,7 +481,7 @@ bool PGameDefs::LoadWorldModelDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_WORLDMODEL;
+	const string DEF_FILE = DEF_WORLDMODEL;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -525,7 +525,7 @@ bool PGameDefs::LoadAppPlaceDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_APPPLACES;
+	const string DEF_FILE = DEF_APPPLACES;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -569,7 +569,7 @@ bool PGameDefs::LoadAppartementDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_APPARTEMENTS;
+	const string DEF_FILE = DEF_APPARTEMENTS;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -613,7 +613,7 @@ bool PGameDefs::LoadRespawnDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + DEF_RESPAWN;
+	const string DEF_FILE = DEF_RESPAWN;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -657,7 +657,7 @@ bool PGameDefs::LoadWorldFileDefs()
 {
 	PDefParser parser;
 	int nDefs = 0, nErrors = 0, nDup = 0;
-	const string DEF_FILE = Config->GetOption("nc_data_path") + "/" + WRLD_WORLDFILE;
+	const string DEF_FILE = WRLD_WORLDFILE;
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{

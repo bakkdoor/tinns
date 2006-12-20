@@ -234,7 +234,7 @@ void splitpath(const string &file, string &path, string &name, string &ext)
 	}
 }
 
-PFile *PFileSystem::Open(const std::string &Package, const char *File)
+PFile *PFileSystem::Open(const std::string &Package, const char *File, std::string BasePath)
 {
 	      std::string name = "";
         std::string ext = "";
@@ -243,7 +243,24 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
 
         std::string pak2;
         std::string name2;
-          
+
+        if ((BasePath == ".") || (BasePath == "./"))
+        {
+          BasePath = "";
+        }
+        else
+        {
+          if (BasePath.substr(0, 2) == "./")
+          {
+            BasePath = BasePath.substr(2, BasePath.length() -2);
+          }
+          if ( BasePath[BasePath.length()-1] != '/' )
+          {
+            BasePath += '/';
+          }
+        }
+//Console->Print("Basepath:%s", BasePath.c_str());
+     
         std::string pak = Package;
         if(pak=="")
         {
@@ -273,11 +290,11 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
 
         std::stringstream package;
         //package << pak << ".pak" << '\0';
-        package << pak2 << ".pak" << '\0';
+        package << BasePath << pak2 << ".pak" << '\0';
         std::stringstream fname;
-        fname << pak << '/' << name << "." << ext << '\0';
+        fname << BasePath << pak << '/' << name << "." << ext << '\0';
         std::stringstream pakname;
-        pakname << pak << "/pak_" << name << "." << ext << '\0';
+        pakname << BasePath << pak << "/pak_" << name << "." << ext << '\0';
 
         std::FILE *f = std::fopen(fname.str().c_str(), "rb");
         if(f)
@@ -290,7 +307,8 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                 std::fclose(f);
                 return Result;
         }
-
+//else
+//  Console->Print("File not found:%s", fname.str().c_str());
         f = std::fopen(pakname.str().c_str(), "rb");
         if(f)
         {
@@ -304,7 +322,9 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                 std::fclose(f);
                 return Result;
         }
-
+//else
+//  Console->Print("Pak_ not found:%s", pakname.str().c_str());
+  
 //Console->Print("Serching package %s, file %s.%s", package.str().c_str(), name2.c_str(), ext.c_str());
         f = std::fopen(package.str().c_str(), "rb");
         if(f)
@@ -330,17 +350,17 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File)
                         Result = new PFile();
                         std::fseek(f, file->mOffset, SEEK_SET);
                         Result->ReadUnpakData(f, file->mCompressedSize, file->mUncompressedSize);
-                        //Console->Print("%s, %s: file found", package.str().c_str(), filename.c_str());
+//Console->Print("%s, %s: file found", package.str().c_str(), filename.c_str());
                 }
                 else
                 {
                         if(!list)
                                 //Console->Print("%s, %s: pak error", Package.c_str(), File);
                                 Console->Print("%s, %s: pak error", package.str().c_str(), File);
-                        //else
-                        //if(!file)
-                                //Console->Print("%s, %s: file not found", Package.c_str(), File);
-                                //Console->Print("%s, %s: file not found", package.str().c_str(), filename.c_str());
+//else
+//if(!file)
+//Console->Print("%s, %s: file not found", Package.c_str(), File);
+//  Console->Print("%s, %s: file not found", package.str().c_str(), filename.c_str());
                 }
 
                 std::fclose(f);
