@@ -68,6 +68,7 @@
 #include <cstdio>
 #include <ctime>
 #include <cstring>
+#include <cctype>
 #include <fstream>
 #include <vector>
 #include <string>

@@ -93,7 +93,7 @@ const char* CommandsTemplate[][2] = {
     {"delworlditem", "100"},
     {"addworlditem", "100"},
     {"adddoor", "100"},
-    {"connectedList", "0"},
+    {"online", "0"},
     {"sendchat", "50"},
     {"skin", "50"},
     {"effect", "0"},
@@ -110,5 +110,15 @@ const char* CommandsTemplate[][2] = {
     {"setlevel", "100"},
     {"warpto", "50"},
     {"recall", "50"},
+
+    {"ban", "50"},          // Set ban
+    {"unban", "50"},        // Remove ban
+    {"listbans", "50"},     // Show list of all banned accounts
+    {"shun", "50"},         // Quiet all chat
+    {"unshun", "50"},       // UnQuiet all chat
+    {"jail", "50"},         // "Jail" someone (Regants ^^)
+    {"unjail", "50"},       // Move him out
+    {"teleport", "50"},     // Warp targetplayer XX to zone YY
+
     {"", ""} // do not change this line (end mark)
 };

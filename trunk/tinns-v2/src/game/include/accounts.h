@@ -104,6 +104,8 @@ class PAccount
 		bool mConsoleAllowed;
 		bool mDirty;
 		bool mAdminDebug;
+		bool mShunned;
+
 	protected :
 		friend class PAccounts;
 		void SetID(u32 ID);
@@ -122,6 +124,9 @@ class PAccount
 		inline u32 GetID() const { return mID; }
 		inline const std::string &GetName() const { return mName; }
 		inline const std::string &GetPassword() const { return mPassword; }
+
+		inline void SetShun(bool val) { mShunned = val; };
+		inline bool IsShunned() { return mShunned; };
 
 		inline int GetLevel() const { return mLevel; }
 		void SetLevel(int newLevel);

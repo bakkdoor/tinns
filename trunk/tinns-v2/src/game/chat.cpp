@@ -878,7 +878,7 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
 
       ChatText[j] = '\0';
       if(ChatText[0] == '@' && sizeof(ChatText) > 2) {
-            HandleGameCommand(ChatText, Client);
+            GameCommands->HandleGameCommand(ChatText, Client);
       } else {
           // We know its working, so we dont need console output anymore
             //Console->Print("Local Chat: %s", ChatText);
@@ -904,7 +904,7 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
 
       ChatText[j] = '\0';
       if(ChatText[0] == '@' && sizeof(ChatText) > 2) {
-            HandleGameCommand(ChatText, Client);
+            GameCommands->HandleGameCommand(ChatText, Client);
       } else {
         //      Console->Print("CHATLINE: %s HEX: %#X", ChatText, Packet[i-1]);
         char Channel[4];

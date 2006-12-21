@@ -76,6 +76,7 @@ PAppartements* Appartements = 0;
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
 PChat *Chat = 0;
+PCommands *GameCommands = 0;
 
 PISC *ISC = 0;
 
@@ -155,6 +156,7 @@ bool InitTinNS()
 
 	ClientManager = new PClientManager();
 	Chat = new PChat();
+	GameCommands = new PCommands();
 
   ISC = new PISC();
 

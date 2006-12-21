@@ -54,6 +54,7 @@ extern class PAppartements* Appartements;
 //multiuser chat
 extern class PClientManager *ClientManager;
 extern class PChat *Chat;
+extern class PCommands *GameCommands;
 
 // Development debug output control
 extern bool gDevDebug;

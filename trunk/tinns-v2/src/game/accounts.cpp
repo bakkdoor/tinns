@@ -64,6 +64,7 @@ PAccount::PAccount()
 	mConsoleAllowed = false;
 	mDirty = false;
 	mAdminDebug = false;
+	mShunned = false;
 }
 
 bool PAccount::AddChar(u32 CharID)

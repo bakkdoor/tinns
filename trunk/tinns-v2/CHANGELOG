@@ -988,3 +988,55 @@ def/defparser.cpp, def/world_dataparser.cpp : modified accordingly to changes ma
 
 [PATCH]
 patchserver.cpp : modified accordingly to changes made to PFileSystem
+
+
+====================
+Namikon; 21.12.2006 19:28 GMT+1
+----------
+[rev. 55]
+
+*Note*
+The new commands have to be tested first! Dont expect them to work yet, its just a upload
+since the entire command files got rewritten.
+
+<General changes>
+ - Rewritten entire commands.cpp/.h files
+ - Fixed ingame command @kick. Works now as it should.
+   Also sets a temp-ban for a configureable amount of seconds to prevent instant-relog.
+ - Added new ingame coommands:
+   @ban <charID/nick> <xS>/<xM>/<xH>/<xD>   || @ban EvilUser 20m  <- Bans "EvilUser" for 20 minutes.
+   - Bans given player for given time. You can only set ONE timevalue. (Either S/M/H or D. Not case sensitive)
+
+   @unban
+   - Not working yet. Has to be done by direct SQL access
+   @listbans
+   - Not working yet. Has to be done by direct SQL access
+
+   @shun <charID/nick>
+   - Blocks all incoming char/command traffic from given client until re relogs
+     Returns error if already shunned
+
+   @unshun <charID/nick>
+   - Remove shun instantly. Returns error if not shunned
+
+   @jail <charID/nick>
+   - Warp given player to Regants legacy. Returns error if player is already in Regants
+
+   @unjail <charID/nick>
+   - Free given player from Regants. Returns error if player is not in Regants/Jailed
+
+   @teleport <charID/nick> <worldID>
+   - Teleport given player to given world
+
+ - Added (experimental) startscript for TinNS. Has to be testen/debugged
+
+[COMMON]
+ <external.h>   Added <cctype> to get access to isdigit() function
+ <version.h>    Increased VerNr
+
+[GAME]
+ <accounts.cpp/.h>   Added vars&methods to store shunned status
+ <globals.cpp/.h>    Added global class for gamecommands
+ <chat.cpp>          Changed GameCommand call to work with the new command class
+ <commands.cpp/.h>   Completely rewritten. Moved every ingame command into own method, called by
+                     a main function which takes care of all args. Maybe has to be improved later, but its ok for now.
