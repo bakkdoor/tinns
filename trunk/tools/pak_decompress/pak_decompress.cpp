@@ -35,9 +35,12 @@
 	MODIFIED: 09 Dec 2005 Akiko
 	REASON: - fixed typo
 		- compression ratio
+	MODIFIED: 21 Dec 2006 Namikon
+	REASON: - Added errorcheck for in/output file
+		- Added check for NC and normal zLib files
+		- Added optional details-output
 
-	TODO:	- there is no real check for the 16 byte header
-		- time needed for decompression
+	TODO:	- time needed for decompression
 		- ideas for a compression tool
 */
 
@@ -53,9 +56,10 @@
 
 using namespace std;
 
-int inf(FILE *source, FILE *dest)
+int inf(FILE *source, FILE *dest, bool details)
 {
 	int ret;
+	char check;
 	unsigned have;
 	z_stream strm;
 	unsigned char in[CHUNK];
@@ -71,7 +75,27 @@ int inf(FILE *source, FILE *dest)
 	if (ret != Z_OK)
         	return(ret);
 
-	fseek(source, 16, SEEK_SET);
+	check = fgetc(source);
+	if(check == 'x')
+	{
+		if(details == true) cout << "Found zLibfile" << endl;
+		fseek(source, 0, SEEK_SET);
+	}
+	else
+	{
+		fseek(source, 16, SEEK_SET);
+		check = fgetc(source);
+		if(check == 'x')
+		{
+			if(details == true) cout << "Found Neocron file" << endl;
+			fseek(source, 16, SEEK_SET);
+		}
+		else
+		{
+			if(details == true) cout << "Error: No compatible file!" << endl;
+			return -3;
+		}
+	}
 
 	do {
 		strm.avail_in = fread(in, 1, CHUNK, source);
@@ -114,7 +138,7 @@ int inf(FILE *source, FILE *dest)
 	} while (ret != Z_STREAM_END);
 
 	(void)inflateEnd(&strm);
-	
+
 	return(ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR);
 }
 
@@ -147,6 +171,7 @@ int main(int argc, char **argv) {
 	int ret;
 	long inSize;
 	long outSize;
+	bool details;
 	FILE *inFile;
 	FILE *outFile;
 	std::string src;
@@ -156,33 +181,62 @@ int main(int argc, char **argv) {
 		src = argv[1];
 		dst = strcat(argv[1], ".decompressed");
 	}
-	else if(argc == 3 && strcmp(argv[1], argv[2])) {
+	else if(argc > 2 && strcmp(argv[1], argv[2])) {
 		src = argv[1];
 		dst = argv[2];
 	}
 	else {
-		cout << "Usage: nc1decompress source <dest != source>" << std::endl;
-
+		cout << "Usage: pak_decompress source <dest != source> <detailedoutput 1/0>" << std::endl;
 		return(0);
 	}
+	if(argc == 4)
+	{
+		if(argv[3][0] == '1') details = true;
+		else if(argv[3][0] == '0') details = false;
+	}
+	else
+		details = false;
 
 	inFile = fopen(src.c_str(), "rb");
 	outFile = fopen(dst.c_str(), "wb");
-	ret = inf(inFile, outFile);
+
+	if(inFile == NULL)
+	{
+		cout << "Cannot open InFile" << endl;
+		return(-1);
+	}
+	if(outFile == NULL)
+	{
+		cout << "Cannot open OutFile" << endl;
+		return(-2);
+	}
+	ret = inf(inFile, outFile, details);
 
 	/* just to be sure - we got to the end */
 	fseek(inFile, 0, SEEK_END);
 	fseek(outFile, 0, SEEK_END);
 	inSize = ftell(inFile);
 	outSize = ftell(outFile);
-	
+
 	fclose(outFile);
 	fclose(inFile);
 
-	cout << "bytes read:        " << inSize << std::endl;
-	cout << "bytes written:     " << outSize << std::endl;
-	cout << "compression ratio: " << (100-((float)inSize/(float)outSize*100)) << "%" << std::endl;
+	if(ret == Z_OK && details == true)
+	{
+		cout << "bytes read:        " << inSize << std::endl;
+		cout << "bytes written:     " << outSize << std::endl;
+		cout << "compression ratio: " << (100-((float)inSize/(float)outSize*100)) << "%" << std::endl;
+	}
+	else if(ret == Z_OK && details == false)
+	{
+		cout << "[OK]    " << src.c_str() << endl;
+	}
+	else if(ret != Z_OK && details == false)
+	{
+		cout << "[ERROR] " << src.c_str() << endl;
+	}
 
 	return(ret);
 }
+
 
