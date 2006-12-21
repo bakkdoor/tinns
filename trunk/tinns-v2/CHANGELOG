@@ -1040,3 +1040,17 @@ since the entire command files got rewritten.
  <chat.cpp>          Changed GameCommand call to work with the new command class
  <commands.cpp/.h>   Completely rewritten. Moved every ingame command into own method, called by
                      a main function which takes care of all args. Maybe has to be improved later, but its ok for now.
+
+====================
+Namikon; 21.12.2006 21:50 GMT+1
+----------
+[rev. 56]
+
+Improved pak_decompress script from Akiko
+- Added errorcheck for in/output file
+- Added check for NC and normal zLib files
+  (Can unpak both)
+- Added optional details-output
+
+The script is now capable to be used in batchfiles, since the only output is either [OK] <filename> or [ERROR] <filename>.
+if you dont want this, you can specify detailed output with all errors.
