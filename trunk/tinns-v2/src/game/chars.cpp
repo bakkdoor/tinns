@@ -85,6 +85,10 @@ PChar::PChar()
   mIsOnline = false;
   mDirtyFlag = false;
 
+    mShunned = false;
+    mJailed = false;
+
+
 	Skill = new PSkillHandler();
 	mBuddyList = NULL;
 	mGenrepList = NULL;
@@ -361,6 +365,9 @@ bool PChar::SQLLoad(int CharID) {
         // Location
         int locvalue = std::atoi(row[c_location]);
         mLocation = static_cast<u32>(locvalue);
+
+        if(mLocation == 550 || mLocation == 551)
+            mJailed = true;
 
         int posvalue = std::atoi(row[c_pos_x]);
         Coords.mX = static_cast<u16>(posvalue);

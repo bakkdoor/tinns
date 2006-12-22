@@ -1078,3 +1078,16 @@ Namikon; 22.12.2006 17:33 GMT+1
 
 No real "changes" or "fixes" to main-source files. Only splitup's and new/improved devtools.
 See SVN->Diff for details
+
+====================
+Namikon; 22.12.2006 22:55 GMT+1
+----------
+[rev. 59]
+<internal version: 0.1.5 Dev>
+
+- Added missing Makefile for gamecommands/ subfolder
+- Removed check for ZoneID 552 from jail.cpp and unjail.cpp; This zone is never used
+- Moved mShunned from Account to chars
+- Added mJailed to chars with methods to identify a jailed player
+- Added explicit override to GM teleport and jail/unjail commands (The only way to move someone if target is jailed)
+- Completed shun/unshun command

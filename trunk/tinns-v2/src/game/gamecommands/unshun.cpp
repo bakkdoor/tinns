@@ -58,9 +58,9 @@ void PCommands::doCmdunshun()
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;
     }
-    if(target->GetAccount()->IsShunned() == true)
+    if(target->GetChar()->IsShunned() == true)
     {
-        target->GetAccount()->SetShun(false);
+        target->GetChar()->SetShun(false);
     }
     else
     {

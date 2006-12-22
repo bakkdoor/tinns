@@ -72,7 +72,7 @@ void PCommands::doCmdteleport()
         return;
     }
 // *************** Checks done, proceed with command
-    if (target->ChangeCharLocation(destZone))
+    if (target->ChangeCharLocation(destZone, true))
     {
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->getUDPConn()->SendMessage(tmpMsg_zone);

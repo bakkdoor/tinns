@@ -100,6 +100,19 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
     u32 CurrentLocation = tChar->GetLocation();
     if ((CurrentLocation == nLocation) && !DoForce)
       return true;
+
+    // DoForce is used in GM teleport and jail/unjail command to free player from jail
+    if ((tChar->IsJailed() == true) && !DoForce)
+    {
+        if(CurrentLocation != 550 && CurrentLocation != 551) // If player managed to "get out of jail" somehow, replace him there
+        {
+            tChar->SetLocation(550);
+        }
+        // Player still in 550 or 551 and trying to warp out (by death for example) just
+        // return true and let him respawn at 550 entrypoint 0
+        return true;
+    }
+
     if (Worlds->LeaseWorld(nLocation))
     {
       if(tChar->GetLocationLeased())

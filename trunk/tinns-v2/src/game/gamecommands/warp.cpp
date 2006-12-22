@@ -73,7 +73,7 @@ void PCommands::doCmdwarp()
         return;
     }
 
-    if (source->ChangeCharLocation(zoneID))
+    if (source->ChangeCharLocation(zoneID, true))
     {
         if (gDevDebug) Console->Print("IngameCommand: Warping player %d to zone %d (%s)", source->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
 

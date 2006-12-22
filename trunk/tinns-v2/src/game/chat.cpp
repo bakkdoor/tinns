@@ -858,12 +858,17 @@ bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickNam
 
 
 
-bool PChat::HandleGameChat(PClient *Client, const u8 *Packet) {
-     int i, j, k;
+bool PChat::HandleGameChat(PClient *Client, const u8 *Packet)
+{
+    // if player is shunned, ignore all incomming chat and game commands.
+    // ServerAdmins are not affected by any shuns. (Should never happen anyways...)
+    if((Client->GetChar()->IsShunned() == true) && (Client->GetAccount()->GetLevel() < PAL_ADMIN)) return true;
+
+    int i, j, k;
 
      u8 chattype = *(u8*)&Packet[7];
 // -----------------------------------------------
-   if(chattype == 0x1B) {
+    if(chattype == 0x1B) {
       // Local chat
       i = 8;
       j = 0;

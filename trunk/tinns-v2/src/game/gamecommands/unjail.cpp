@@ -61,7 +61,8 @@ void PCommands::doCmdunjail()
     }
 
     u32 currLoc = target->GetChar()->GetLocation();
-    if(currLoc != 550 && currLoc != 551 && currLoc != 552)
+    // Make sure that target player is really in Regants
+    if(currLoc != 550 && currLoc != 551)
     {
         Chat->send(source, CHAT_DIRECT, "System", "Target player is not jailed!");
         return;
@@ -69,7 +70,7 @@ void PCommands::doCmdunjail()
 
 // *************** Checks done, proceed with command
     int destZone = 503; // TH Sec2. Maybe set to appartment later ?
-    if (target->ChangeCharLocation(destZone))
+    if (target->ChangeCharLocation(destZone, true))
     {
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->getUDPConn()->SendMessage(tmpMsg_zone);

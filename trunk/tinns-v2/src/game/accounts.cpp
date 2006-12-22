@@ -64,7 +64,6 @@ PAccount::PAccount()
 	mConsoleAllowed = false;
 	mDirty = false;
 	mAdminDebug = false;
-	mShunned = false;
 }
 
 bool PAccount::AddChar(u32 CharID)
@@ -303,6 +302,7 @@ void PAccounts::RehashAccountData()
             int a_priv_tmp = std::atoi(row[a_priv]);
             Acc->SetLevel(a_priv_tmp);
         }
+
         if(bUpdate == false) // This is not an update, so add account to list
             mAccounts.insert(std::make_pair(Acc->GetID(), Acc)).second;
     }

@@ -210,6 +210,9 @@ class PChar
     bool mIsOnline;
 		bool mDirtyFlag;
 
+        bool mShunned;
+        bool mJailed;
+
 		class PInventory mInventory;
 
 	protected :
@@ -272,6 +275,13 @@ class PChar
 		inline u32 GetCash() const { return mCash; }
 		inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
+        inline void SetJail(bool val) { mJailed = val; };
+        inline void SetShun(bool val) { mShunned = val; };
+
+        inline bool IsJailed() { return mJailed; };
+        inline bool IsShunned() { return mShunned; };
+
+
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();
 		inline u8 GetCombatRank() const { return mCombatRank; }
@@ -282,7 +292,7 @@ class PChar
 		inline u32 GetDirectChat() { return mDirectCharID; }
 		inline void SetActiveChannels(u32 nChannels) { mActiveChatChannels = nChannels; }
 		inline u32 GetActiveChannels() { return mActiveChatChannels; }
-		
+
     inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
     inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
     inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
