@@ -1,4 +1,30 @@
 #!/bin/bash
+#
+###########################################################
+# setsvnrev script for TinNS. Original written by Hammag, #
+# improved by Namikon.                                    #
+# See bottom of file for GPL license.                     #
+###########################################################
+#                                                         #
+# Last edited: 22.12.2006 16:58 GMT +1 by Namikon         #
+#                                                         #
+###########################################################
+# How this works:                                         #
+#    Everytime you do "make", this script is called.      #
+#    It will check the current svn headerfile if its      #
+#    a new revision or just a recompile.                  #
+#    IF it is a new revision, the script tries to get     #
+#    the actual version from the official SVN             #
+#    tool "svnversion". If your server has no SVN         #
+#    installed (like mine) or it is outdated for some     #
+#    reason, an alternative way is choosen. A custom      #
+#    script is called which tries to readout the          #
+#    .svn/entries file for the revision number.           #
+#    This number is then written to svnrev.h, compiled    #
+#    into Patch, Info and Gameserver, and can be viewed   #
+#    ingame by typing @version                            #
+###########################################################
+
 if [[ $# -ne 2 ]]; then
 	echo "Error - usage:" `basename $0` "<svn base path> <svnrev.h filepath>" >&2
 	exit -1
@@ -8,14 +34,30 @@ fi
 if [[ ! -d $1/.svn ]]; then exit 0; fi
  
 v=`svnversion $1`
-current=`echo $v | sed 's/^\([0-9]*:\)\?\([0-9]\+\)[^0-9]*/\2/'`
-modif=`echo $v | sed 's/^\([0-9]*:\)\?[0-9]\+[^0-9]*\(M\)/\2/'`
-#echo svnver: $v
-#echo current: $current
-#echo modif: $modif
+if expr "$v" : '[0-9]\+$' > /dev/null; then
+	current=`echo $v | sed 's/^\([0-9]*:\)\?\([0-9]\+\)[^0-9]*/\2/'`
+	modif=`echo $v | sed 's/^\([0-9]*:\)\?[0-9]\+[^0-9]*\(M\)/\2/'`
+	#echo svnver: $v
+	#echo current: $current
+	#echo modif: $modif
 
-if [[ $modif == M ]]; then
-	current=$[$current + 1];
+	if [[ $modif == M ]]; then
+		current=$[$current + 1];
+	fi
+else
+	v=`$1/dev-tools/getsvnrev $1`
+	if [ "$v" = "0" ]; then
+		exit 0;
+	fi
+	if ! expr "$v" : '[0-9]\+$' > /dev/null; then
+		echo "Error: Unable to get SVN Revision!";
+		exit 0;
+	fi
+	if [ -z "$v" ]; then
+                echo "Error: Unable to get SVN Revision!";
+                exit 0;
+	fi
+	current="$v"
 fi
 
 filever=`grep TINNS_SVN_REVISION $2 | sed 's/^.*"\([0-9]\+\)".*$/\1/'`

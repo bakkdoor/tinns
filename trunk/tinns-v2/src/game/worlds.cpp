@@ -339,7 +339,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
       if (!tCheckOK)
       {
         InvalideFiles.insert(tFileName);
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
       }
     }
     if (!tCheckOK) // in case full path was given without omiting worlds/ or in another dir/archive ...
@@ -359,12 +359,12 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     if (tCheckOK)
     {
       ++ValidCount;
-//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for appartment %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for appartment %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
     }
     else
     {
       ++InvalidCount;
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for appartment %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for appartment %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
     }
   }
 
@@ -398,7 +398,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         if (!tCheckOK)
         {
           InvalideFiles.insert(tFileName);
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
         }
       }
             
@@ -413,12 +413,12 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         {
           mStaticWorldsMap.insert(std::make_pair(tDefWorldFile->GetIndex(), (PWorld*)NULL));
         }
-//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
       }
       else
       {
         ++InvalidCount;
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), i->second->GetIndex(), i->second->GetName().c_str());
       }
     }
   }
@@ -453,7 +453,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         if (!tCheckOK)
         {
           InvalideFiles.insert(tFileName);
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s invalid", tFileName.c_str());
         }
       }
             
@@ -468,12 +468,12 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         {
           mStaticWorldsMap.insert(std::make_pair(90000 + i, (PWorld*)NULL));
         }
-//if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
+if (gDevDebug) Console->Print(GREEN, BLACK, "Template file %s for world %d (%s) loaded", tFileName.c_str(), 90000+i, worldName);
       }
       else
       {
         ++InvalidCount;
-//if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), 90000+i, worldName);
+if (gDevDebug) Console->Print(RED, BLACK, "Template file %s for world %d (%s) not available or invalid", tFileName.c_str(), 90000+i, worldName);
       }
 	  }
 	}

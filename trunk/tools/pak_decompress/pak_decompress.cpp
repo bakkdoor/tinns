@@ -38,7 +38,6 @@
 	MODIFIED: 21 Dec 2006 Namikon
 	REASON: - Added errorcheck for in/output file
 		- Added check for NC and normal zLib files
-		- Added optional details-output
 
 	TODO:	- time needed for decompression
 		- ideas for a compression tool
@@ -138,7 +137,7 @@ int inf(FILE *source, FILE *dest, bool details)
 	} while (ret != Z_STREAM_END);
 
 	(void)inflateEnd(&strm);
-
+	
 	return(ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR);
 }
 
@@ -217,10 +216,10 @@ int main(int argc, char **argv) {
 	fseek(outFile, 0, SEEK_END);
 	inSize = ftell(inFile);
 	outSize = ftell(outFile);
-
+	
 	fclose(outFile);
 	fclose(inFile);
-
+	
 	if(ret == Z_OK && details == true)
 	{
 		cout << "bytes read:        " << inSize << std::endl;

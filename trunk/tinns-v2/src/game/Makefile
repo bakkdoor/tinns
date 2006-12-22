@@ -49,7 +49,7 @@ EXTRA_LINKFLAGS += -lpcre
 #####################################################
 # Subdirectories
 #####################################################
-subdir-y := decoder def 
+subdir-y := decoder def gamecommands
 #subdir-$(CONFIG_GAMEMONKEY)	+= gamemonkey
 
 

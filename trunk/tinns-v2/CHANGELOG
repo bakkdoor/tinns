@@ -1054,3 +1054,27 @@ Improved pak_decompress script from Akiko
 
 The script is now capable to be used in batchfiles, since the only output is either [OK] <filename> or [ERROR] <filename>.
 if you dont want this, you can specify detailed output with all errors.
+
+====================
+Namikon; 21.12.2006 21:55 GMT+1
+----------
+[rev. 57]
+
+Forgot the CHANGELOG ^^
+
+====================
+Namikon; 22.12.2006 17:33 GMT+1
+----------
+[rev. 58]
+
+<General changes>
+- Improved pak_decompress tool from Akiko
+- Added tool "getsvnrev" (Same again in src/dev_tools, required for make process)
+- Improved Hammag's setsvnrev bash script (Now does errorcheck and has an alternative way to
+  grab SVN revision if SVN is not installed)
+- Splitup of commands.cpp. Every command has now its own .cpp file in gamecommands/.
+  Makes it a lot easier to handle new commands or change/fix/remove existing ones
+- ReEnabled debug-output while loading world .dat files. Was commented out for some reason
+
+No real "changes" or "fixes" to main-source files. Only splitup's and new/improved devtools.
+See SVN->Diff for details
