@@ -1091,3 +1091,13 @@ Namikon; 22.12.2006 22:55 GMT+1
 - Added mJailed to chars with methods to identify a jailed player
 - Added explicit override to GM teleport and jail/unjail commands (The only way to move someone if target is jailed)
 - Completed shun/unshun command
+
+====================
+Namikon; 22.12.2006 22:55 GMT+1
+----------
+[rev. 60]
+<internal version: 0.1.6 Dev>
+
+- Added several security checks to game commands
+- Added missing status outputs on successfull gamecommand
+- Added solution to send an delayed positionupdate after warping

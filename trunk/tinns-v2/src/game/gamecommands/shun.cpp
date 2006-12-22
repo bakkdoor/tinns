@@ -61,6 +61,12 @@ void PCommands::doCmdshun()
     if(target->GetChar()->IsShunned() == false)
     {
         target->GetChar()->SetShun(true);
+
+        char tmpMsg_success[81];
+        snprintf(tmpMsg_success, 80, "Successfully shunned %s", target->GetChar()->GetName().c_str());
+        tmpMsg_success[80] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+        return;
     }
     else
     {

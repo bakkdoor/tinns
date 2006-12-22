@@ -37,6 +37,7 @@
 #include "main.h"
 
 #include "worlds.h"
+#include "msgbuilder.h"
 
 PClient::PClient(int Index)
 {
@@ -52,6 +53,13 @@ PClient::PClient(int Index)
 
 	for (int i = 0; i < DEBUG_MODES ; i++)
       mDebugMode[i] = false;
+
+    //********
+    mAwaitingWarpto = false;
+    mTargetX = 0;
+    mTargetY = 0;
+    mTargetZ = 0;
+    //********
 }
 
 PClient::~PClient()
@@ -247,3 +255,24 @@ PChar* PClient::GetChar() const
 {
   return Database->GetChar(mCharID);
 }
+
+void PClient::CheckAwaitingWarpto()
+{
+    if(mAwaitingWarpto == true)
+    {
+        mAwaitingWarpto = false;
+        PMessage* tmpMsg_posupdate;
+
+        tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(this, mTargetX, mTargetY, mTargetZ);
+
+        // Finish packet (Add UDP_ID stuff etc)
+        IncreaseUDP_ID();
+        tmpMsg_posupdate->U16Data(0x01) = GetUDP_ID();
+        tmpMsg_posupdate->U16Data(0x03) = GetSessionID();
+        tmpMsg_posupdate->U16Data(0x07) = GetUDP_ID();
+
+        // Send packet
+        getUDPConn()->SendMessage(tmpMsg_posupdate);
+    }
+}
+

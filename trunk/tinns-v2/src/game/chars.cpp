@@ -88,7 +88,6 @@ PChar::PChar()
     mShunned = false;
     mJailed = false;
 
-
 	Skill = new PSkillHandler();
 	mBuddyList = NULL;
 	mGenrepList = NULL;

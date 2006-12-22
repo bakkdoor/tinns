@@ -213,7 +213,7 @@ class PChar
         bool mShunned;
         bool mJailed;
 
-		class PInventory mInventory;
+        class PInventory mInventory;
 
 	protected :
 		friend class PChars;

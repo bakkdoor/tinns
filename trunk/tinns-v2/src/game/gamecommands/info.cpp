@@ -66,6 +66,15 @@ void PCommands::doCmdinfo()
         DIRECT> Info: Cash         : %d     // Database->GetChar(source->GetCharID())->GetCash();
         DIRECT> Info: Soullight    : %d     // Database->GetChar(source->GetCharID())->GetSoullight();
     */
+    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    {
+        char tmpMsg[200];
+        snprintf(tmpMsg, 199, "Cant display info about %s, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        tmpMsg[199] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
+        return;
+    }
+
     char tmpInfo_head[151];
     char tmpInfo_cID[151];
     char tmpInfo_aID[151];

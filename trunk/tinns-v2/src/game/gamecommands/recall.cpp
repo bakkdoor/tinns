@@ -68,32 +68,23 @@ void PCommands::doCmdrecall()
         return;
     }
 // *************** Checks done, proceed with command
-    if (target->ChangeCharLocation(destZone))
+    if (target->ChangeCharLocation(destZone), true)
     {
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->getUDPConn()->SendMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;
 
-        // World changed, now place victim to position of GM/Admin
-        PMessage* tmpMsg_posupdate;
-
-        // Get position of GM/Admin
         u16 nNewX, nNewY, nNewZ;
         nNewX = source->GetChar()->Coords.mX;
         nNewY = source->GetChar()->Coords.mY;
         nNewZ = source->GetChar()->Coords.mZ;
+        target->SetAwaitingWarpto(true, nNewX, nNewY, nNewZ);
 
-        // And now built new message for Victim, with new X/Y/Z Coords
-        tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(target, nNewX, nNewY, nNewZ);
-
-        // Finish packet (Add UDP_ID stuff etc)
-        target->IncreaseUDP_ID();
-        tmpMsg_posupdate->U16Data(0x01) = target->GetUDP_ID();
-        tmpMsg_posupdate->U16Data(0x03) = target->GetSessionID();
-        tmpMsg_posupdate->U16Data(0x07) = target->GetUDP_ID();
-
-        // Send packet
-        target->getUDPConn()->SendMessage(tmpMsg_posupdate);
+        char tmpMsg_success[81];
+        snprintf(tmpMsg_success, 80, "Successfully recalled %s", target->GetChar()->GetName().c_str());
+        tmpMsg_success[80] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+        return;
     }
     else
     {

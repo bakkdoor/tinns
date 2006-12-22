@@ -75,6 +75,12 @@ void PCommands::doCmdjail()
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->getUDPConn()->SendMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;
+
+        char tmpMsg_success[81];
+        snprintf(tmpMsg_success, 80, "Successfully jailed %s", target->GetChar()->GetName().c_str());
+        tmpMsg_success[80] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+        return;
     }
     else
     {

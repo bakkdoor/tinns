@@ -99,4 +99,10 @@ void PCommands::doCmdban()
     target->GetAccount()->SetBannedStatus(final_bantime);
     target->GetAccount()->SQLSave();
     GameServer->ClientDisconnected(target);  // Now kick the player (Hes banned :) )
+
+    char tmpMsg_success[81];
+    snprintf(tmpMsg_success, 80, "Successfully banned %s", target->GetChar()->GetName().c_str());
+    tmpMsg_success[80] = '\0';
+    Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+    return;
 }

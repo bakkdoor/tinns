@@ -61,33 +61,23 @@ void PCommands::doCmdwarpto()
         return;
     }
 // *************** Checks done, proceed with command
-    if (source->ChangeCharLocation(destZone))
+    if (source->ChangeCharLocation(destZone), true)
     {
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (source, destZone, 0);
         source->getUDPConn()->SendMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;
 
-        /*if (gDevDebug)*/ Console->Print("%s Warp successfull, now placing char near target", Console->ColorText(YELLOW, BLACK, "[Notice]"));
-        // World changed, now place GM/Admin to position of target player "victim"
-        PMessage* tmpMsg_posupdate;
-
-        // Get position of target player "victim"
         u16 nNewX, nNewY, nNewZ;
         nNewX = target->GetChar()->Coords.mX;
         nNewY = target->GetChar()->Coords.mY;
         nNewZ = target->GetChar()->Coords.mZ;
+        source->SetAwaitingWarpto(true, nNewX, nNewY, nNewZ);
 
-        // And now built new message for GM/Admin, with new X/Y/Z Coords
-        tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(source, nNewX, nNewY, nNewZ);
-
-        // Finish packet (Add UDP_ID stuff etc)
-        source->IncreaseUDP_ID();
-        tmpMsg_posupdate->U16Data(0x01) = source->GetUDP_ID();
-        tmpMsg_posupdate->U16Data(0x03) = source->GetSessionID();
-        tmpMsg_posupdate->U16Data(0x07) = source->GetUDP_ID();
-
-        // Send packet
-        source->getUDPConn()->SendMessage(tmpMsg_posupdate);
+        char tmpMsg_success[81];
+        snprintf(tmpMsg_success, 80, "Successfully warped you to %s", target->GetChar()->GetName().c_str());
+        tmpMsg_success[80] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+        return;
     }
     else
     {

@@ -103,6 +103,13 @@ class PClient
     int m_ZoneID;
 		//int[4] m_IP;
 
+        //*******
+        bool mAwaitingWarpto;
+        u16 mTargetX;
+        u16 mTargetY;
+        u16 mTargetZ;
+        //*******
+
 	protected :
 	public :
 		PClient(int Index);
@@ -151,6 +158,16 @@ class PClient
 		// new multiuser-chat implementation //
 		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
 		//inline int*	getIP() const { return (int*) m_IP; }
+
+        inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
+        {
+            mAwaitingWarpto = yesno;
+            mTargetX = NewX;
+            mTargetY = NewY;
+            mTargetZ = NewZ;
+        }
+        void CheckAwaitingWarpto();
+
 
 		// used for dynamic ingame testing
 		u8 testval8;
