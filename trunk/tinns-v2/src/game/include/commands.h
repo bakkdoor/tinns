@@ -73,9 +73,10 @@ class PCommands
             void doCmdsettime();
             void doCmdwarp();
             void doCmdrawf();
-            //void doCmddelworlditem();  \
-            //void doCmdaddworlditem();   |-Not required anymore, TinNS gets is worlditemdata from .dat files now
-            //void doCmdadddor();        /
+            // Not required anymore, TinNS gets is worlditemdata from .dat files now
+            // void doCmddelworlditem();
+            // void doCmdaddworlditem();
+            // void doCmdadddor();
             void doCmdconlist();
             void doCmdskin();
             void doCmdeffect();
