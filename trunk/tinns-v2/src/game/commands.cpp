@@ -152,6 +152,7 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdrawf();
     }
+/* Not required anymore, TinNS gets is worlditemdata from .dat files now
     else if(strcmp(Command, "delworlditem") == 0)
     {
         doCmddelworlditem();
@@ -164,6 +165,7 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdadddor();
     }
+*/
     else if(strcmp(Command, "online") == 0) // Was: connectedList
     {
         doCmdconlist();

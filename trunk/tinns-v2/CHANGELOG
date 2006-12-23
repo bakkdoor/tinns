@@ -1101,3 +1101,19 @@ Namikon; 22.12.2006 22:55 GMT+1
 - Added several security checks to game commands
 - Added missing status outputs on successfull gamecommand
 - Added solution to send an delayed positionupdate after warping
+
+====================
+Namikon; 23.12.2006 09:31 GMT+1
+----------
+[rev. 61]
+<internal version: 0.1.7 Dev>
+
+Small update:
+- Removed ingamecommands "addworlditem", "delworlditem" and "adddoor". TinNS gets the worlddata dynamicly from loaded
+  .dat files instead of MySQL Database.
+  
+commands.conf   : Removed config settings for the 3 commands mentioned above
+commands.cpp/.h : Commented out the 3 mentioned commands
+adddoor.cpp     : Commented out entire file
+delworlditem.cpp: Commented out entire file
+addworlditem.cpp: Commented out entire file

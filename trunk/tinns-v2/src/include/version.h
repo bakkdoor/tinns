@@ -26,7 +26,7 @@
 
 #define TINNS_PATCH_VERSION "0.0.2 Dev"
 #define TINNS_INFO_VERSION "0.0.2 Dev"
-#define TINNS_GAME_VERSION "0.1.6 Dev"
+#define TINNS_GAME_VERSION "0.1.7 Dev"
 
 #endif
 
