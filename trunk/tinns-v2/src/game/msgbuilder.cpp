@@ -195,32 +195,6 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharPosMoveMsg (PClient* nClient, u16 nNewX, u16 nNewY, u16 nNewZ)
-{
-  PMessage* tmpMsg = new PMessage(22);
-  PChar* nChar = nClient->GetChar();
-
-	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
-	*tmpMsg << (u16)0x0000; // nClient->GetSessionID()placeholder
-	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
-	*tmpMsg << (u8)0x1f;
-	*tmpMsg << (u16)nClient->GetLocalID();
-	*tmpMsg << (u8)0x22;
-	*tmpMsg << (u16)(nNewY + 768) ;
-	*tmpMsg << (u16)(nNewZ + 768) ;
-	*tmpMsg << (u16)(nNewX + 768) ;
-	*tmpMsg << (u8)(nChar->Coords).mUD;
-	*tmpMsg << (u8)(nChar->Coords).mLR;
-	*tmpMsg << (u8)(nChar->Coords).mAct;
-
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-  return tmpMsg;
-}
-
 PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
 { // This one was pure guess, but it works :p
   PMessage* tmpMsg = new PMessage(32);
@@ -398,7 +372,6 @@ PMessage* PMsgBuilder::BuildPacket0Msg (PClient* nClient)
 	*tmpMsg << (u32)0x00000000;
 
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
   return tmpMsg;
 }
 

@@ -1119,7 +1119,7 @@ delworlditem.cpp: Commented out entire file
 addworlditem.cpp: Commented out entire file
 
 ====================
-Namikon; 23.12.2006 09:31 GMT+1
+Namikon; 24.12.2006 01:30 GMT+1
 ----------
 [rev. 62-63]
 <internal version: 0.1.8 Dev - 0.1.10 Dev>
@@ -1133,3 +1133,13 @@ Namikon; 23.12.2006 09:31 GMT+1
   Devs can easily add stuff there to test various things.
 - Removed adddoor, delworlditem and addworlditem completely from SVN, they're not needed anymore
 - And a few things i cant remember -.-
+
+====================
+Namikon; 25.12.2006 00:24 GMT+1
+----------
+[rev. 64]
+<internal version: 0.1.11 Dev>
+
+- Fixed Blacksync issue when logging in
+- Disabled position update on warpto and recall commands. It's not possible at the moment to
+  force the client to update the charposition.

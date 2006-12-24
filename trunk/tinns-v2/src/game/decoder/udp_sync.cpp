@@ -207,7 +207,6 @@ bool PUdpSync2::DoAction()
     nbSent = ClientManager->UDPBroadcast(HelloMsg, nClient);
 //Console->Print(GREEN, BLACK, "Client %d: Hello message sent to %d chars", Client->GetIndex(), nbSent);
 
-    nClient->CheckAwaitingWarpto();
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
   }

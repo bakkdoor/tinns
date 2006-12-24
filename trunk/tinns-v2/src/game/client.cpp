@@ -256,16 +256,23 @@ PChar* PClient::GetChar() const
   return Database->GetChar(mCharID);
 }
 
-void PClient::CheckAwaitingWarpto()
+bool PClient::CharIsAwaitingWarpto()
 {
     if(mAwaitingWarpto == true)
     {
-        mAwaitingWarpto = false;
-        PMessage* tmpMsg_posupdate;
 
-        tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(this, mTargetX, mTargetY, mTargetZ);
-        ClientManager->UDPBroadcast(tmpMsg_posupdate, this);
-        tmpMsg_posupdate = NULL;
+        // Position update doesnt work. Uncomment&Change function if ever required again
+//        mAwaitingWarpto = false;
+//            (GetChar()->Coords).mX = mTargetX;
+//            (GetChar()->Coords).mY = mTargetY;
+//            (GetChar()->Coords).mZ = mTargetZ;
+        return true;
+//        PMessage* tmpMsg_posupdate;
+//
+//        tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(this, mTargetX, mTargetY, mTargetZ);
+//        ClientManager->UDPBroadcast(tmpMsg_posupdate, this);
+//        tmpMsg_posupdate = NULL;
     }
+    return false;
 }
 
