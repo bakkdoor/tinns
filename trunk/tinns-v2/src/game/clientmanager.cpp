@@ -28,7 +28,7 @@
 	- bakkdoor
 
 	MODIFIED: 13 Dec 2005 bakkdoor
-	REASON: - introduced	
+	REASON: - introduced
 	MODIFIED: 29 Jul 2006 Hammag
 	REASON: - Added UDP broadcast fonction
 	        - Added "zone players say Hello" fonction
@@ -39,12 +39,12 @@
 	        - Modified deleteClientFromListByID() and renamed to deleteClientFromList()
 	        - Modified destructor as to not destroy stored clients, which is already done in PServer
 	            (even if it could well be done here in near futur)
-	        
+
 	MODIFIED: 12 Aug 2006 Hammag
 	REASON: - implemented range filtering in UDPBroadcast()
 	        - implemented the two versions of UDPBroadcast()
-	
-  TODO:   - these are just begining of modif, as the Client Manager is bound to be a major component for multiplayer management	            
+
+  TODO:   - these are just begining of modif, as the Client Manager is bound to be a major component for multiplayer management
 */
 
 #include "main.h"
@@ -71,7 +71,7 @@ bool PClientManager::addClientToList(PClient* newClient)
 {
   if (!newClient)
     return false;
-    
+
   PClientMap::const_iterator it = mClientList.find(newClient->GetLocalID());
 	if(it == mClientList.end()) // only if client not found in list
 	{
@@ -79,7 +79,7 @@ bool PClientManager::addClientToList(PClient* newClient)
         ++m_LastID; */
 
 	    mClientList.insert(std::make_pair(newClient->GetLocalID(), newClient));
-//Console->Print(GREEN, BLACK, "Client %d added to clientmanager", newClient->GetIndex());        
+//Console->Print(GREEN, BLACK, "Client %d added to clientmanager", newClient->GetIndex());
 /*        if(newClient)
         {
             return true;
@@ -137,7 +137,7 @@ PClient* PClientManager::getClientByID(int id)
 } */
 
 // Distance checking doesn't care for Z axis ATM
-int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist)
+int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipSource)
 {
   int msgCount = 0;
   PChar* nChar;
@@ -155,6 +155,9 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
         if (nChar->GetLocation() != nZoneID) // if limited to zone, do check
           continue;
 
+        if ((int)itClient->GetCharID() == nSkipSource) // if source of broadcast should be skipped
+            continue;
+
         if (nMaxDist) // if limited to distance, do check
         {
           Dapprox = DistanceApprox((nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nX, nY, nZ);
@@ -164,7 +167,7 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
 
         tmpMsg = new PMessage(nMessage->GetMaxSize());
         (*tmpMsg) = (*nMessage);
-         
+
         if ((tmpMsg->GetSize() > 9) && (tmpMsg->U8Data(0x00) == 0x13))
         {
           CurrPos = 5;
@@ -180,24 +183,29 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
         }
         tmpMsg->U16Data(0x01) = itClient->GetUDP_ID();
         tmpMsg->U16Data(0x03) = itClient->GetSessionID();
-       
+
         itClient->getUDPConn()->SendMessage(tmpMsg);
         ++msgCount;
       }
   }
 
-//Console->Print("Broadcast in zone %d to %d chars", nZoneID, msgCount); 
-  delete nMessage;  
-  return msgCount;  
+//Console->Print("Broadcast in zone %d to %d chars", nZoneID, msgCount);
+  delete nMessage;
+  return msgCount;
 }
 
-int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxDist)
+int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxDist, bool nSkipSource)
 {
-  PChar* nChar; 
+  PChar* nChar;
+  int skipVal = -1;
 
+  if(nSkipSource == true)
+  {
+      skipVal = nClient->GetCharID();
+  }
   if (nClient && (nChar = nClient->GetChar()))
   {
-    return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist);
+    return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist, skipVal);
   }
   else
     return 0;
@@ -211,42 +219,42 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
   PMessage* tmpMsg;
   u32 nZoneID;
   PClient* itClient;
-    
+
   if (nClient && (nChar = nClient->GetChar())) // if nClient is set, always use its zone
   {
     nZoneID = nChar->GetLocation();
   }
   else
     return 0;
-  
+
   for(PClientMap::iterator it=mClientList.begin(); it!=mClientList.end(); it++)
   {
     if (nClient->GetLocalID() == it->first)
       continue;
-      
+
     itClient = (PClient*)(it->second);
     if (itClient->getUDPConn())
     {
       itChar = itClient->GetChar();
       if (itChar->GetLocation() != nZoneID) // limit to zone
         continue;
-        
+
       tmpMsg = MsgBuilder->BuildCharHelloMsg(itClient);
-       
+
       nClient->IncreaseUDP_ID();
       tmpMsg->U16Data(0x01) = nClient->GetUDP_ID();
       tmpMsg->U16Data(0x03) = nClient->GetSessionID();
       tmpMsg->U16Data(0x07) = nClient->GetUDP_ID();
 
 //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
-//tmpMsg->Dump();             
+//tmpMsg->Dump();
       nClient->getUDPConn()->SendMessage(tmpMsg);
-      
+
       if (itChar->GetChairInUse())
       {
         tmpMsg = MsgBuilder->BuildCharPosUpdateMsg (itClient);
         nClient->getUDPConn()->SendMessage(tmpMsg);
-        
+
 //Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
         tmpMsg = MsgBuilder->BuildCharUseChairMsg(itClient, (itChar->GetChairInUse()+1)*1024);
         nClient->IncreaseUDP_ID();
@@ -258,6 +266,6 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
       ++msgCount;
     }
   }
-  
-  return msgCount;        
+
+  return msgCount;
 }

@@ -65,6 +65,8 @@ void PCommands::doCmdkick()
     int final_bantime = std::time(NULL) + 60;               // Ban 60 seconds (Anti-Rejoin)
     target->GetAccount()->SetBannedStatus(final_bantime);
     target->GetAccount()->SQLSave();
+
+    InitCharVanish(target);
     GameServer->ClientDisconnected(target);                 // Kick
 
     Console->Print("%s %s (Lv %d) kicked %s (Lv %d)", Console->ColorText(YELLOW, BLACK, "[GameCommand]"), Database->GetChar(source->GetCharID())->GetName().c_str(), source->GetAccount()->GetLevel(), Database->GetChar(target->GetCharID())->GetName().c_str(), target->GetAccount()->GetLevel());

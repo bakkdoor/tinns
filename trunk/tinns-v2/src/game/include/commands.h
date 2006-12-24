@@ -68,6 +68,10 @@ class PCommands
 
         void FlushArgs();           // Empty all vars for next command
 
+        void InitWarpCircle(PClient* nClient);
+        void InitCharVanish(PClient* nClient);
+
+
         /// ------- Begin commandset -------
             void doCmddebug();
             void doCmdsettime();
@@ -104,6 +108,8 @@ class PCommands
             void doCmdjail();
             void doCmdunjail();
             void doCmdteleport();
+
+            void doCmdtest();
         /// ------- End commandset -------
 
     public:

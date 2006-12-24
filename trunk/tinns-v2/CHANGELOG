@@ -1117,3 +1117,19 @@ commands.cpp/.h : Commented out the 3 mentioned commands
 adddoor.cpp     : Commented out entire file
 delworlditem.cpp: Commented out entire file
 addworlditem.cpp: Commented out entire file
+
+====================
+Namikon; 23.12.2006 09:31 GMT+1
+----------
+[rev. 62-63]
+<internal version: 0.1.8 Dev - 0.1.10 Dev>
+
+- Added experimental char warp-aura and char disappear packets to all warp-commands
+  (Worked while testing, but not after implementation into the commands)
+- Worked on Chatsystem: Localchat 99% working. Localchat is now limited to a small area around the player
+  (However, the chat is sent over TCP, like all other packets. It should be UDP, but this isnt working
+  for some reason. If anyone finds out why, tell us please)
+- Added Developercommand "@test". It has no fixed function, and is not configureable by config file.
+  Devs can easily add stuff there to test various things.
+- Removed adddoor, delworlditem and addworlditem completely from SVN, they're not needed anymore
+- And a few things i cant remember -.-

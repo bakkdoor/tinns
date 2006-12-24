@@ -20,7 +20,7 @@
 */
 #include "main.h"
 
-void PCommands::doCmdwarp()
+void PCommands::doCmdtest()
 {
     int SpawnPointID = 0;
     int zoneID = 0;
@@ -73,9 +73,13 @@ void PCommands::doCmdwarp()
     {
         if (gDevDebug) Console->Print("IngameCommand: Warping player %d to zone %d (%s)", source->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
 
-        InitWarpCircle(source);
-        InitCharVanish(source);
+        PMessage* tmpMsg_circle = MsgBuilder->BuildCharShowGlowCircleMsg (source);
+        ClientManager->UDPBroadcast(tmpMsg_circle, source);
+        tmpMsg_circle = NULL;
 
+        PMessage* tmpMsg_vanish = MsgBuilder->BuildCharVanishMsg (source);
+        ClientManager->UDPBroadcast(tmpMsg_vanish, source);
+        tmpMsg_vanish = NULL;
         PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (source, zoneID, SpawnPointID);
         source->getUDPConn()->SendMessage(tmpMsg);
     }

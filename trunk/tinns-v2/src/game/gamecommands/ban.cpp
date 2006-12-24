@@ -98,6 +98,9 @@ void PCommands::doCmdban()
     int final_bantime = std::time(NULL) + time_to_ban;
     target->GetAccount()->SetBannedStatus(final_bantime);
     target->GetAccount()->SQLSave();
+
+    InitCharVanish(target);
+
     GameServer->ClientDisconnected(target);  // Now kick the player (Hes banned :) )
 
     char tmpMsg_success[81];

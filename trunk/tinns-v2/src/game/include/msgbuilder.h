@@ -57,6 +57,8 @@ class PMsgBuilder
   PMessage* BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat);
   PMessage* BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor = false);
   PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID);
+  PMessage* BuildCharShowGlowCircleMsg (PClient* nClient);
+  PMessage* BuildCharVanishMsg (PClient* nClient);
 
   // Following methods for unicast messages DO include UDP_ID increment and
   // UDP_ID / SessionID setting when needed (at least for now)

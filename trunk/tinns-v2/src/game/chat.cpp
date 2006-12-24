@@ -50,6 +50,7 @@
 */
 
 #include "main.h"
+#include "msgbuilder.h"
 
 PChat::PChat()
 {
@@ -61,9 +62,7 @@ PChat::~PChat()
 
 /*
 DONE    void sendBuddy(PClient* author, char* text, bool debugOut=false);
-SEMI-DONE        void sendLocal(PClient* author, char* text, bool debugOut=false);
-                We need to figure out how the client handles localchat.
-                Until then, local chat will remain as ZoneChat
+DONE    void sendLocal(PClient* author, char* text, bool debugOut=false);
 NEED CLANDATA    void sendClan(PClient* author, char* text, bool debugOut=false);
 NEED TEAMDATA    void sendTeam(PClient* author, char* text, bool debugOut=false);
 DONE    void sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut=false);
@@ -171,10 +170,6 @@ void PChat::sendZone(PClient* author, char* text, bool debugOut)
 
 void PChat::sendLocal(PClient* author, char* text, bool debugOut)
 {
-    /**
-        NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS LIMITED TO THE ZONE TILL THEN
-    **/
-
     PChar* authorChar = Database->GetChar(author->GetCharID());
     u32 ZID = authorChar->GetLocation(); // get LocationID of author
 
@@ -187,7 +182,13 @@ void PChat::sendLocal(PClient* author, char* text, bool debugOut)
 //            if(it->second) // only send if the client is existing!
             {
                 PClient* receiver = it->second;
-                send(receiver, CHAT_LOCAL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                PChar* receiverChar = Database->GetChar(receiver->GetCharID());
+                u16 distance = DistanceApprox((authorChar->Coords).mX, (authorChar->Coords).mY, (authorChar->Coords).mZ, (receiverChar->Coords).mX, (receiverChar->Coords).mY, (receiverChar->Coords).mZ);
+                if(distance < LOCALCHAT_MAXDISTANCE)
+                {
+                    //sendLocalchat(receiver, author, text, debugOut); // Doesnt work!
+                    send(receiver, CHAT_LOCAL, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                }
             }
         }
     }
@@ -406,6 +407,56 @@ void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debu
     Socket->write(DChatPacket, packetsize);
     Socket->flushSendBuffer();
     delete[] DChatPacket;
+}
+
+void PChat::sendLocalchat(PClient* receiver, PClient* author, char* text, bool debugOut)
+{
+    char *LocalChatPacket;
+    int overallsize = 0, LenText = 0;
+    u8 BasicLocal[] = { 0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x1B };
+
+    // Get size of Text to send
+    do {
+      LenText++;
+    } while(text[LenText] != '\0');
+
+    // Calculate packetsize
+    overallsize = sizeof(BasicLocal) + LenText + 1;
+
+    if(debugOut == true)
+       Console->Print("Whole size: %d", overallsize);
+
+    LocalChatPacket = new char [overallsize];
+
+    // Copy basic packet into final packet
+    int fpp = 0;
+    for(unsigned int c = 0; c < sizeof(BasicLocal); c++) {
+       LocalChatPacket[fpp] = BasicLocal[c];
+       fpp++;
+    }
+
+    // Copy Text into final packet
+    for(int e = 0; e < LenText; e++) {
+       LocalChatPacket[fpp] = text[e];
+       fpp++;
+    }
+
+    // Terminate string
+    LocalChatPacket[fpp] = 0x00;
+
+    // Add UdpID, SessionID, lenght and local charid
+    receiver->IncreaseUDP_ID();
+    *(u16*)&LocalChatPacket[1] = receiver->GetUDP_ID();     // UDP
+    *(u16*)&LocalChatPacket[3] = receiver->GetSessionID();  // Session
+    *(u8*)&LocalChatPacket[5] = overallsize - 6;            // Packetlen
+    *(u16*)&LocalChatPacket[7] = receiver->GetUDP_ID();     // 2nd UDP
+    *(u16*)&LocalChatPacket[10] = author->GetLocalID();     // Local ID
+
+    // Sending local chat packet and removing dynamic array
+    ConnectionUDP *Socket = receiver->getUDPConn();
+    Socket->write(LocalChatPacket, overallsize);
+    Socket->flushSendBuffer();
+    delete[] LocalChatPacket;
 }
 
 void PChat::sendTradeCS(PClient* author, char* text, bool debugOut)

@@ -197,24 +197,24 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
 
 PMessage* PMsgBuilder::BuildCharPosMoveMsg (PClient* nClient, u16 nNewX, u16 nNewY, u16 nNewZ)
 {
-  PMessage* tmpMsg = new PMessage(32);
+  PMessage* tmpMsg = new PMessage(22);
   PChar* nChar = nClient->GetChar();
 
 	*tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-	*tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+	*tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
+	*tmpMsg << (u16)0x0000; // nClient->GetSessionID()placeholder
 	*tmpMsg << (u8)0x00; // Message length placeholder;
-	*tmpMsg << (u8)0x1b;
-	*tmpMsg << (u16)nClient->GetLocalID();
-	*tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
 	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)nNewY;
-	*tmpMsg << (u16)nNewZ;
-	*tmpMsg << (u16)nNewX;
-	*tmpMsg << (u16)(31910+(nChar->Coords).mUD-50);  // Up - Mid - Down  mUD=(d6 - 80 - 2a) NeoX original offset: 31910
-	*tmpMsg << (u16)(31820+(nChar->Coords).mLR*2-179); // Compass direction mLR=(S..E..N..W..S [0-45-90-135-179]) There still is a small buggy movement when slowly crossing the South axis from the right
-	*tmpMsg << (u8)((nChar->Coords).mAct);
-	*tmpMsg << (u8)0x00;
+	*tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x22;
+	*tmpMsg << (u16)(nNewY + 768) ;
+	*tmpMsg << (u16)(nNewZ + 768) ;
+	*tmpMsg << (u16)(nNewX + 768) ;
+	*tmpMsg << (u8)(nChar->Coords).mUD;
+	*tmpMsg << (u8)(nChar->Coords).mLR;
+	*tmpMsg << (u8)(nChar->Coords).mAct;
 
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
@@ -1469,4 +1469,38 @@ PMessage* PMsgBuilder::BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, 
 	*tmpMsg << (u8)0x00;
 
   return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharVanishMsg (PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(14);
+
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; // UDP ID placeholder
+	*tmpMsg << (u16)0x0000; // SessionID placeholder
+	*tmpMsg << (u8)0x08;    // Len (static, always 0x08
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
+	*tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
+	*tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u16)0x0000;   // No idea yet...
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(14);
+
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; // UDP ID placeholder
+	*tmpMsg << (u16)0x0000; // SessionID placeholder
+	*tmpMsg << (u8)0x08;    // Len (static, always 0x08
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
+	*tmpMsg << (u8)0x1F;    // Command SHOW GLOWING CIRCLE (kinda ^^)
+	*tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u16)0x3C01;   // No idea yet...
+
+    return tmpMsg;
 }

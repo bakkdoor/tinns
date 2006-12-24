@@ -1,0 +1,18 @@
+How to add new IngameCommands:
+
+- Write your gamecommand into a single .cpp file. No return value, no parameters.
+  The function name should be: doCmd<yourcommand>
+  also, add this method to class PCommands.
+  Example:
+  	void PCommands::doCmdExampe() {};
+  	
+- Open commands.h: Add the command-function prototype to the class
+- Open commands.cpp: Add a new else if() for your command
+- If your command is a developer command, make sure to add it to PCommands::IsDevCommand()
+- If your command works with the packetdumb instead of pre-striped args, make sure to add
+  your command to PCommands::RequirePacketDumb()
+- Open configtemplate.h: Add a new default level for your command
+- Open commands.conf: Add the command.
+- Save everything
+
+ Done :)

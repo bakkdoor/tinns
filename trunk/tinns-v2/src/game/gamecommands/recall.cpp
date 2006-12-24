@@ -70,6 +70,9 @@ void PCommands::doCmdrecall()
 // *************** Checks done, proceed with command
     if (target->ChangeCharLocation(destZone), true)
     {
+        InitWarpCircle(target);
+        InitCharVanish(target);
+
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->getUDPConn()->SendMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;

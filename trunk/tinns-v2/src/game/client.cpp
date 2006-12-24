@@ -264,15 +264,8 @@ void PClient::CheckAwaitingWarpto()
         PMessage* tmpMsg_posupdate;
 
         tmpMsg_posupdate = MsgBuilder->BuildCharPosMoveMsg(this, mTargetX, mTargetY, mTargetZ);
-
-        // Finish packet (Add UDP_ID stuff etc)
-        IncreaseUDP_ID();
-        tmpMsg_posupdate->U16Data(0x01) = GetUDP_ID();
-        tmpMsg_posupdate->U16Data(0x03) = GetSessionID();
-        tmpMsg_posupdate->U16Data(0x07) = GetUDP_ID();
-
-        // Send packet
-        getUDPConn()->SendMessage(tmpMsg_posupdate);
+        ClientManager->UDPBroadcast(tmpMsg_posupdate, this);
+        tmpMsg_posupdate = NULL;
     }
 }
 

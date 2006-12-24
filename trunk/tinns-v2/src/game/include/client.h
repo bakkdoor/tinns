@@ -126,7 +126,8 @@ class PClient
 		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
 
 		inline u16 GetUDP_ID() const { return mUDP_ID; }
-		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+		//inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+		inline u16 GetSessionID() const { return 50544 + mUDP_ID ; }
 		inline u16 GetTransactionID() {return mTransactionID; }
 		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 

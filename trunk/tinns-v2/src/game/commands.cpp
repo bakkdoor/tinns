@@ -133,7 +133,11 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
             Console->Print("%s MAXARGS reached, cant parse more args for command!", Console->ColorText(YELLOW, BLACK, "[Warning]"));
     }
     // Check if client is allowed to perform command
-    if(CheckPermission() == false && IsDevCommand() == false)
+    if(CheckPermission() == false)
+        return;
+
+    // Also, if command is a developercommand, only let admins perform it
+    if(IsDevCommand() == true && IsAdmin() == false)
         return;
 
     if(strcmp(Command, "debug") == 0)
@@ -273,6 +277,10 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     else if(strcmp(Command, "teleport") == 0)
     {
         doCmdteleport();
+    }
+    else if(strcmp(Command, "test") == 0)
+    {
+        doCmdtest(); // Testcommand for various testings.
     }
 
     // Else: unknown command. Ignore
@@ -429,7 +437,23 @@ bool PCommands::IsDevCommand()
         tmpIsDev = true;
     else if(strcmp(Command, "v") == 0)
         tmpIsDev = true;
+    else if(strcmp(Command, "test") == 0)
+        tmpIsDev = true;
     // Add more checks here
 
     return tmpIsDev;
+}
+
+void PCommands::InitWarpCircle(PClient* nClient)
+{
+    PMessage* tmpMsg_circle = MsgBuilder->BuildCharShowGlowCircleMsg (nClient);
+    ClientManager->UDPBroadcast(tmpMsg_circle, nClient, 0, true);
+    tmpMsg_circle = NULL;
+}
+
+void PCommands::InitCharVanish(PClient* nClient)
+{
+    PMessage* tmpMsg_vanish = MsgBuilder->BuildCharVanishMsg (nClient);
+    ClientManager->UDPBroadcast(tmpMsg_vanish, nClient, 0, true);
+    tmpMsg_vanish = NULL;
 }
