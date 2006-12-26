@@ -86,7 +86,7 @@ void ConnectionUDP::ReSendUDPMessage(u16 nUDP_ID)
             *tmpMsg << nUDP_ID;
             *tmpMsg << (u8)0x1F;
             *tmpMsg << (u16)0xFFFF;     // Should do nothing, CharID 65535 should never exist
-            *tmpMsg << (u16)0x3C01;
+            *tmpMsg << (u16)0x3C01;     // This value IS wrong way, so that nothing can happen at all
             SendMessage(tmpMsg, true);
         }
         else if(it->second)
@@ -141,10 +141,11 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
                     *tmpMsg << mLastUDPID;
                     *tmpMsg << (u8)0x1F;
                     *tmpMsg << (u16)0xFFFF;     // Should do nothing, CharID 65535 should never exist
-                    *tmpMsg << (u16)0x3C01;
+                    *tmpMsg << (u16)0x3C01;     // This value IS wrong way, so that nothing can happen at all
 
                     UDPMessages.insert(std::make_pair(mLastUDPID, tmpMsg));
                     tmpOffset--;
+
                     Console->Print("Added fake Udp message with ID %d to history buffer. New offset is: %d (Remaining fake packets to add: %d)", mLastUDPID, tmpOffset, (tmpOffset - 1));
                 }
             }

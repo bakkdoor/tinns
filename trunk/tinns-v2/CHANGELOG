@@ -1154,3 +1154,12 @@ Namikon; 26.12.2006 22:33 GMT+1
   possible resend after a OOO notice by the client
 - Finally fixed the warpcircle and charvanish! The mentioned commands in Rev 62-63 now work as announced
 - UDP_ID and all related stuff moved to connection_udp. Will be more controlled in the future from there
+
+====================
+Namikon; 26.12.2006 22:33 GMT+1
+----------
+[rev. 66]
+<internal version: 0.1.14 Dev>
+
+- Added, by Stings request, serveranswer to worldroute query: "Where is the Primary App" works now.
+- "Fixed" SQL function GetAptLocID(). Now only decreases the location value if the given AppartmentID is higher than 100000

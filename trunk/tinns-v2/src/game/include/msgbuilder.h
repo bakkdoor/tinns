@@ -79,6 +79,8 @@ class PMsgBuilder
   PMessage* BuildAptLiftFailedMsg (PClient* nClient);
   PMessage* BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel = 0, u32 nRawItemID = 0);
 
+  PMessage* BuildCharAptLocInfoMsg (PClient* nClient);
+
   PMessage* BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints);
   PMessage* BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 nMode); // mode = 1 for Direct, 2 for Buddy
 

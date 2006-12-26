@@ -1158,6 +1158,32 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
   return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildCharAptLocInfoMsg (PClient* nClient)
+{
+  PMessage* tmpMsg = new PMessage(21);
+  nClient->IncreaseUDP_ID();
+
+  int BaseAppId = nClient->GetChar()->GetBaseApartment();
+  u32 AptLocation = (u32)MySQL->GetAptLocation(BaseAppId);
+
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  *tmpMsg << (u8)0x0f;
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x3d;
+  *tmpMsg << (u8)0x0b;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u32)AptLocation;
+
+  return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints)
 {
   /*** Doesn't work for NC1 ??? ***/

@@ -43,19 +43,19 @@
                 - Added missing "return NULL" to ResQuery
         MODIFIED: 06 Jan 2006 Namikon
         REASON: - Added color to console outputs
-                - Changed a few lines on the Get* functions (another std::atoi thing)              
-        MODIFIED: 26 Jul 2006 Hammag                
+                - Changed a few lines on the Get* functions (another std::atoi thing)
+        MODIFIED: 26 Jul 2006 Hammag
         REASON: - Added CheckResCount() for DB Res memory leak tracking (to be done in the main loop)
                     rather than through Info/GameResQuery()
                 - fixed InfoDBInuse and GameDBInuse updating
                 - inhibited Info/GameDBInuse warning message in Info/GameResQuery()
-        MODIFIED: 27 Sep 2006 Hammag                
+        MODIFIED: 27 Sep 2006 Hammag
         REASON: - Added GetAptLocation() method
                 - Modified Apt & Item info methods as they should work, but it doesn't match the DB
                   So commented out some changes
                   DB shouln't be used anymore for that soon anyway
-        
-                
+
+
 */
 #include "main.h"
 
@@ -74,7 +74,7 @@ PMySQL::PMySQL()
     strcpy(game_userName, Config->GetOption("game_sql_username").c_str());
     strcpy(game_password, Config->GetOption("game_sql_password").c_str());
     strcpy(game_database, Config->GetOption("game_sql_database").c_str());
-    
+
     mKeepaliveDelay = (std::time_t) (Config->GetOptionInt("mysql_wait_timeout") * 0.9) ; // we take 90% of the wait_timeout to trigger keepalive
     if (mKeepaliveDelay == 0)
     {
@@ -98,7 +98,7 @@ PMySQL::~PMySQL()
 void PMySQL::Update()
 {
     CheckResCount(); // Check for MYSQL_RES mem leak
-    
+
     // MySQL keepalive
     std::time_t t = std::time(NULL);
     if ((mKeepaliveDelay > 0) && ((t - mLastKeepaliveSent) > mKeepaliveDelay))
@@ -116,7 +116,7 @@ void PMySQL::Update()
       }
       else
         FreeGameSQLResult(result);
-  
+
       result = InfoResQuery(query);
       if(!result)
       {
@@ -125,8 +125,8 @@ void PMySQL::Update()
           return;
       }
       else
-        FreeInfoSQLResult(result);      
-    
+        FreeInfoSQLResult(result);
+
       mLastKeepaliveSent = std::time(NULL);
       if (gDevDebug) Console->Print("%s MySQL keepalive sent", Console->ColorText(GREEN, BLACK, "[Debug]"));
     }
@@ -136,13 +136,13 @@ void PMySQL::CheckResCount()
 {
   static int MaxInfoDBCount = 0;
   static int MaxGameDBCount = 0;
- 
+
   if (InfoDBInuse > MaxInfoDBCount)
   {
     Console->Print("%s Max In-use InfoDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), InfoDBInuse, InfoDBInuse-MaxInfoDBCount);
     MaxInfoDBCount = InfoDBInuse;
   }
-  
+
   if (GameDBInuse > MaxGameDBCount)
   {
     Console->Print("%s Max In-use GameDB Resources number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), GameDBInuse, GameDBInuse-MaxGameDBCount);
@@ -307,7 +307,7 @@ int PMySQL::GetWorldItemType(unsigned short ID, int Location)
     char query[2048];
     MYSQL_RES *result;
     MYSQL_ROW row;
-    
+
     if (Location > 100000)
     {
       //int nAppLoc = GetAptLocation(Location);
@@ -377,7 +377,7 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
     }
     else
       sprintf(query, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
-      
+
     result = GameResQuery(query);
     if(!result)
     {
@@ -576,8 +576,12 @@ int PMySQL::GetAptLocation(int loc)
     MYSQL_ROW row;
     char query[255];
 
-    sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc - 100000);
+    if(loc > 100000)
+        loc = loc - 100000;
 
+    sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
+
+Console->Print("Q: %s", query);
     result = GameResQuery(query);
     if(!result)
     {
