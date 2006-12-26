@@ -1153,7 +1153,7 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
 	*tmpMsg << (u32)nLocation;
 	*tmpMsg << (u16)nEntity;
 
-  nClient->IncreaseUDP_ID();
+  //nClient->IncreaseUDP_ID(); // Why PostIncrement here??
 
   return tmpMsg;
 }
@@ -1473,7 +1473,7 @@ PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
 	*tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
 	*tmpMsg << (u8)0x1F;    // Command SHOW GLOWING CIRCLE (kinda ^^)
 	*tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u16)0x3C01;   // No idea yet...
+    *tmpMsg << (u16)0x013C;   // No idea yet...
 
     return tmpMsg;
 }

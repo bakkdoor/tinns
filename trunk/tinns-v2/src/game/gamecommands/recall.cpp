@@ -68,6 +68,9 @@ void PCommands::doCmdrecall()
         return;
     }
 // *************** Checks done, proceed with command
+    InitWarpCircle(source);
+    InitCharVanish(source);
+
     if (target->ChangeCharLocation(destZone), true)
     {
         InitWarpCircle(target);

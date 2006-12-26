@@ -411,6 +411,7 @@ void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debu
 
 void PChat::sendLocalchat(PClient* receiver, PClient* author, char* text, bool debugOut)
 {
+    return; // IncreaseUDP could cause OOO here. Since this function is doing nothing, we disabled it
     char *LocalChatPacket;
     int overallsize = 0, LenText = 0;
     u8 BasicLocal[] = { 0x13, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x1B };

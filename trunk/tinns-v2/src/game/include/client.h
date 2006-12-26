@@ -90,9 +90,11 @@ class PClient
 		PAccount *mAccount;
 		int mIndex;
 		u32 mCharID;
-		u16 mUDP_ID;
-		u16 mSessionID;
-		u16 mTransactionID;
+
+//		u16 mUDP_ID;
+//		u16 mSessionID;
+//		u16 mTransactionID;
+
 		// AccountLevel handling is part of accounts.cpp
 		//PClientLevel mLevel;
 		int mConnection;
@@ -115,8 +117,8 @@ class PClient
 		PClient(int Index);
 		~PClient();
 
-    inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
-    void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+        inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
+        void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
 
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
@@ -125,18 +127,35 @@ class PClient
 		PChar* GetChar() const;
 		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
 
-		inline u16 GetUDP_ID() const { return mUDP_ID; }
-		inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
-		inline u16 GetTransactionID() {return mTransactionID; }
 		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 
 		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
-		inline void SetUDP_ID(int id) { if (mUDP_ID == 0xffff) { mUDP_ID = 0; } else { mUDP_ID = id; } }
-		inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
-    inline void ResetTransactionID() { mTransactionID = 10170; }
-    inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
 
+/*
+            inline u16 GetUDP_ID() const { return mUDP_ID; }
+            inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+            inline u16 GetTransactionID() {return mTransactionID; }
+            void SetUDP_ID(int id);
+            inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
+            inline void ResetTransactionID() { mTransactionID = 10170; }
+
+            inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
+*/
+
+            // All outgoing ID's and stuff is now part of the ConnectionUDP class itself!
+            // However, we still have full access to it through these functions
+            u16 GetUDP_ID();
+            void SetUDP_ID(int id);
+            void IncreaseUDP_ID();
+
+            u16 GetSessionID();
+
+            u16 GetTransactionID();
+            void ResetTransactionID();
+            void IncreaseTransactionID(u8 nInc = 1);
+
+// ************************************************************************ //
         // AccountLevel handling is part of accounts.cpp
 		//inline PClientLevel GetLevel() const { return mLevel; }
 

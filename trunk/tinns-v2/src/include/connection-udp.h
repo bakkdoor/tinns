@@ -29,11 +29,11 @@
 
 	MODIFIED: 09 Feb 2006 bakkdoor
 	REASON: - introduced
-	
+
 	MODIFIED: 01 Jul 2006 hammag
 	REASON: - added private member m_ServerSocket
 	            and added corresponding parameter in constructor;
-	            
+
   MODIFIED: 24 Jul 2006 hammag
 	REASON: - changed member data prefix from "m_" to "m" in for homogeneity with the reste of TinNS code
 	        - added private members data mQueueIn and mQueueOut
@@ -41,16 +41,16 @@
 	        - removed old read/write member data, and added a compatibility mSendBufferMsg* member
 
 	MODIFIED: 05 Aug 2006 hammag
-	REASON: - renamed "getLocalAddress()" to "getRemoteAddress()" as it is ... what it does !	        
-	        
+	REASON: - renamed "getLocalAddress()" to "getRemoteAddress()" as it is ... what it does !
+
 	TODO:   - remove old read/write compatibility methods when not needed anymore
 	        - see .cpp for current implementation limits
-	
+
 */
 
 #ifndef CONNECTIONUDP_H
 #define CONNECTIONUDP_H
-
+#define MAX_RETENTION 20 // How many packets should be stored until we can delete them
 class ServerSocket;
 
 class ConnectionUDP
@@ -71,10 +71,11 @@ class ConnectionUDP
 
             int                 mPort;
             ServerSocket*       mServerSocket; // pointer to the serversocket
-            
+
             std::queue<PMessage*> mQueueIn;
             std::queue<PMessage*> mQueueOut;
-            
+            std::queue<PMessage*> mVIPQueueOut;
+
     public:
             ConnectionUDP(int sockfd, int port, int remoteadress, int remoteport, ServerSocket* server);
             ~ConnectionUDP();
@@ -85,20 +86,47 @@ class ConnectionUDP
             struct sockaddr_in  getAddr() { return mRemoteAddr; }
             int                 getSockfd() { return mSockfd; }
             char*               getRemoteAddress();
-            
+
             bool                timeOut() const;
             inline time_t       getTimeOutValue() const { return mTimeOutValue; }
             inline void         setTimeOutValue(time_t Value) { mTimeOutValue = Value; }
-            
-            inline void SendMessage(PMessage* nMessage) { if (nMessage) mQueueOut.push(nMessage); }
+
+            void SendMessage(PMessage* nMessage, bool nVIP = false);
             inline int GetReadyMessagesNumber() { return mQueueIn.size(); }
             PMessage* GetMessage(); // returns NULL if no message available
             void DeleteOutgoingMessages();
-            
+
+
+/********************* UDP MessageBuffer stuff *********************/
+    private:
+            typedef std::map<u16, PMessage*> PMessageMap;
+            u16 mUDP_ID;
+            u16 mLastUDPID;
+            u16 mSessionID;
+            u16 mTransactionID;
+            PMessageMap UDPMessages;
+            PMessageMap::iterator GetMsgListBegin() { return UDPMessages.begin(); }
+            PMessageMap::iterator GetMsgListEnd() { return UDPMessages.end(); }
+
+            void InsertUDPMessage(PMessage* nMsg);  // Save message for possible OOO handling later
+            void UpdateMessageBuffer();             // Delete old packets, depending on define "MAX_RETENTION"
+            void ResetMessageBuffer();              // Done when UDP_ID gets set to zero
+
+    public:
+            void ReSendUDPMessage(u16 nUDP_ID);     // OOO happend, resend udp packet with UDP_ID nUDP_ID
+            inline u16 GetUDP_ID() const { return mUDP_ID; }
+            inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+            inline u16 GetTransactionID() {return mTransactionID; }
+            void SetUDP_ID(u16 id);
+            inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
+            inline void ResetTransactionID() { mTransactionID = 10170; }
+
+            inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
+
 /**************** Old I/F compatibility stuff ******************/
     private:
-            PMessage* mSendBufferMsg;    
-              
+            PMessage* mSendBufferMsg;
+
     public:
             int                 getRecvBufferSize();
             int                 getSendBufferSize();

@@ -1143,3 +1143,14 @@ Namikon; 25.12.2006 00:24 GMT+1
 - Fixed Blacksync issue when logging in
 - Disabled position update on warpto and recall commands. It's not possible at the moment to
   force the client to update the charposition.
+  
+====================
+Namikon; 26.12.2006 22:33 GMT+1
+----------
+[rev. 65]
+<internal version: 0.1.13 Dev>
+
+- Added UDPManager functions to connection_udp. Keeps the last 20 important UDP messages in a queue, for
+  possible resend after a OOO notice by the client
+- Finally fixed the warpcircle and charvanish! The mentioned commands in Rev 62-63 now work as announced
+- UDP_ID and all related stuff moved to connection_udp. Will be more controlled in the future from there

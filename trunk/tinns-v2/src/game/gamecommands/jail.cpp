@@ -69,6 +69,9 @@ void PCommands::doCmdjail()
     }
 
 // *************** Checks done, proceed with command
+    InitWarpCircle(source);
+    InitCharVanish(source);
+
     int destZone = 550; // DarkMetal #1
     if (target->ChangeCharLocation(destZone, true))
     {

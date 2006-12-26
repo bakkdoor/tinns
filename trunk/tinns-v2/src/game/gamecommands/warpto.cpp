@@ -61,11 +61,10 @@ void PCommands::doCmdwarpto()
         return;
     }
 // *************** Checks done, proceed with command
+    InitWarpCircle(source);
+    InitCharVanish(source);
     if (source->ChangeCharLocation(destZone), true)
     {
-        InitWarpCircle(source);
-        InitCharVanish(source);
-
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (source, destZone, 0);
         source->getUDPConn()->SendMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;

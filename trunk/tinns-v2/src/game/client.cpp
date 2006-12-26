@@ -45,8 +45,6 @@ PClient::PClient(int Index)
 	mIndex = Index;
 	mCharID = 0;
 	mConnection = PCC_NONE;
-	mUDP_ID = 0;
-	mSessionID = 37917;
 	mRemotePort = 0;
 	m_TCPConnection = NULL;
 	m_UDPConnection = NULL;
@@ -75,19 +73,69 @@ PClient::~PClient()
         m_UDPConnection = NULL;
     }
 }
+/// ******************************************************
 
-/*void PClient::IncreaseUDP_ID()
+u16 PClient::GetUDP_ID()
 {
-  if (++mUDP_ID > 65534)
-  {
-    mUDP_ID = 0; // is 65533 the higher valid value ???
-  }
-	//mSessionID = 37917 + mUDP_ID;
-  if (++mSessionID > 65534)
-  {
-    mSessionID = 0; // is 65533 the higher valid value ???
-  }
-}*/
+    if(m_UDPConnection)
+        return m_UDPConnection->GetUDP_ID();
+    else
+        Console->Print("%s Unable to get UDP_ID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+    return 0;
+}
+
+void PClient::SetUDP_ID(int id)
+{
+    if(m_UDPConnection)
+        m_UDPConnection->SetUDP_ID(id);
+    else
+        Console->Print("%s Unable to set UDP_ID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+}
+
+void PClient::IncreaseUDP_ID()
+{
+    if(m_UDPConnection)
+        m_UDPConnection->IncreaseUDP_ID();
+    else
+        Console->Print("%s Unable to increase UDP_ID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+}
+
+u16 PClient::GetSessionID()
+{
+    if(m_UDPConnection)
+        return m_UDPConnection->GetSessionID();
+    else
+        Console->Print("%s Unable to get UDP SessionID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+    return 0;
+}
+
+u16 PClient::GetTransactionID()
+{
+    if(m_UDPConnection)
+        return m_UDPConnection->GetTransactionID();
+    else
+        Console->Print("%s Unable to get UDP TransactionID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+    return 0;
+}
+
+void PClient::ResetTransactionID()
+{
+    if(m_UDPConnection)
+        m_UDPConnection->ResetTransactionID();
+    else
+        Console->Print("%s Unable to reset UDP TransactionID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+}
+
+void PClient::IncreaseTransactionID(u8 nInc)
+{
+    if(m_UDPConnection)
+        m_UDPConnection->IncreaseTransactionID(nInc);
+    else
+        Console->Print("%s Unable to increase UDP TransactionID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
+}
+
+
+/// ******************************************************
 
 void PClient::SetDebugMode(PDebugMode nDebugID, bool nVal)
 {
@@ -113,12 +161,13 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
     if ((tChar->IsJailed() == true) && !DoForce)
     {
         if(CurrentLocation != 550 && CurrentLocation != 551) // If player managed to "get out of jail" somehow, replace him there
-        {
-            tChar->SetLocation(550);
+        { // Do nothing here. This doesnt work as long as we are able to warp the player around just by
+          // sending some packets out. Enable/modify this if fixed
+            //tChar->SetLocation(550);
         }
         // Player still in 550 or 551 and trying to warp out (by death for example) just
         // return true and let him respawn at 550 entrypoint 0
-        return true;
+        //return true;
     }
 
     if (Worlds->LeaseWorld(nLocation))

@@ -169,7 +169,7 @@ bool PUdpSync2::DoAction()
       }
 
       ChunkMsg = new PMessage(ChunkSize + 15);
-      //Client->IncreaseUDP_ID();
+      //Client->IncreaseUDP_ID();  // lol? Below is exact the same .... But ok, should not matter now
       nClient->SetUDP_ID(nClient->GetUDP_ID()+1);
 
       *ChunkMsg << (u8)0x13;

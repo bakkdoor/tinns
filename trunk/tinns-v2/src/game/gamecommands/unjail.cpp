@@ -69,6 +69,9 @@ void PCommands::doCmdunjail()
     }
 
 // *************** Checks done, proceed with command
+    InitWarpCircle(source);
+    InitCharVanish(source);
+
     int destZone = 503; // TH Sec2. Maybe set to appartment later ?
     if (target->ChangeCharLocation(destZone, true))
     {

@@ -22,6 +22,8 @@
 
 void PCommands::doCmdtest()
 {
+
+/*
     int SpawnPointID = 0;
     int zoneID = 0;
 
@@ -87,4 +89,5 @@ void PCommands::doCmdtest()
     {
         Console->Print(RED, BLACK, "IngameCommand: Can't change location when trying to warp player %d to zone %d", source->GetCharID(), zoneID);
     }
+*/
 }
