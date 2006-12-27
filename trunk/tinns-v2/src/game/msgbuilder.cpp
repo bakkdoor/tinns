@@ -1046,6 +1046,54 @@ PMessage* PMsgBuilder::BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation,
   return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildGenrepDenyEnemyFacMsg (PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(20);
+
+    nClient->IncreaseUDP_ID();
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x0e; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x15; // ??
+	*tmpMsg << (u8)0x06; // ??
+	*tmpMsg << (u8)0x98; // ??
+	*tmpMsg << (u8)0x01; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildGenrepDenyBrokenMsg (PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(18);
+
+    nClient->IncreaseUDP_ID();
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x0c; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x31; // ??
+	*tmpMsg << (u8)0x3c; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+
+	return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat)
 {
   PMessage* tmpMsg = new PMessage(18);

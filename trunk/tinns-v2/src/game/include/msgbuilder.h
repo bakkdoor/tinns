@@ -74,6 +74,8 @@ class PMsgBuilder
   PMessage* BuildGenrepZoningMsg (PClient* nClient, u32 nLocation, u16 nEntity);
 
   PMessage* BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation, u16 nEntity);
+  PMessage* BuildGenrepDenyEnemyFacMsg (PClient* nClient);
+  PMessage* BuildGenrepDenyBrokenMsg (PClient* nClient);
 
   PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity);
   PMessage* BuildAptLiftFailedMsg (PClient* nClient);

@@ -1163,3 +1163,12 @@ Namikon; 26.12.2006 22:33 GMT+1
 
 - Added, by Stings request, serveranswer to worldroute query: "Where is the Primary App" works now.
 - "Fixed" SQL function GetAptLocID(). Now only decreases the location value if the given AppartmentID is higher than 100000
+
+====================
+Namikon; 27.12.2006 19:05 GMT+1
+----------
+[rev. 67]
+<internal version: 0.1.15 Dev>
+
+Small update
+- Added 2 error messages for genrep activation. (Wrong faction and MC5 "broken")
