@@ -71,6 +71,7 @@ const char* GameConfigTemplate[][2] = {
   {"new_char_location", "1085"},
   {"broadcast_new", "0"},
   {"broadcast_new_hidestaff", "0"},
+  {"max_cash", "20000000"},
   {"require_validation", "0"},
 
 // For futur use:
@@ -119,6 +120,8 @@ const char* CommandsTemplate[][2] = {
     {"jail", "50"},         // "Jail" someone (Regants ^^)
     {"unjail", "50"},       // Move him out
     {"teleport", "50"},     // Warp targetplayer XX to zone YY
+    {"givemoney", "50"},     // Warp targetplayer XX to zone YY
+    {"takemoney", "50"},     // Warp targetplayer XX to zone YY
 
     {"", ""} // do not change this line (end mark)
 };

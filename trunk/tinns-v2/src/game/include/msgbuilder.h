@@ -74,7 +74,6 @@ class PMsgBuilder
   PMessage* BuildGenrepZoningMsg (PClient* nClient, u32 nLocation, u16 nEntity);
 
   PMessage* BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation, u16 nEntity);
-  PMessage* BuildGenrepDenyEnemyFacMsg (PClient* nClient);
   PMessage* BuildGenrepDenyBrokenMsg (PClient* nClient);
 
   PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity);
@@ -87,6 +86,7 @@ class PMsgBuilder
   PMessage* BuildChatAddMsg (PClient* nClient, u32 nAddedCharID, u8 nMode); // mode = 1 for Direct, 2 for Buddy
 
   PMessage* BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRawObjectID);
+  PMessage* BuildTextIniMsg (PClient* nClient, u8 nTxtGroupID, u16 nTxtID);
 
   PMessage* BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue);
   PMessage* BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID);
@@ -94,6 +94,8 @@ class PMsgBuilder
   PMessage* BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity);
   PMessage* BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace);
   PMessage* BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType);
+
+  PMessage* BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits);
 };
 
 #endif

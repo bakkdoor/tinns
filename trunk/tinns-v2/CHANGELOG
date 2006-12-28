@@ -1172,3 +1172,16 @@ Namikon; 27.12.2006 19:05 GMT+1
 
 Small update
 - Added 2 error messages for genrep activation. (Wrong faction and MC5 "broken")
+
+====================
+Namikon; 28.12.2006 18:45 GMT+1
+----------
+[rev. 68]
+<internal version: 0.1.16 Dev>
+
+- 2 new ingame commands:
+ @givemoney <amount> [<charID or nick>]
+ @takemoney <amount> [<charID or nick>]
+ I dont think i have to explain what they do :)
+
+- Added universal udpmessage to trigger messages from text.ini

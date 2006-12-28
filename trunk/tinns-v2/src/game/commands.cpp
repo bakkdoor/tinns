@@ -282,6 +282,14 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdtest(); // Testcommand for various testings.
     }
+    else if(strcmp(Command, "givemoney") == 0)
+    {
+        doCmdgivemoney(); // Testcommand for various testings.
+    }
+    else if(strcmp(Command, "takemoney") == 0)
+    {
+        doCmdtakemoney(); // Testcommand for various testings.
+    }
 
     // Else: unknown command. Ignore
 }

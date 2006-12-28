@@ -53,6 +53,8 @@
 	#pragma once
 #endif
 
+#define MAXCASH 1000000000
+
 #include "inventory.h"
 #include "buddylist.h"
 #include "genreplist.h"
@@ -140,19 +142,19 @@ class PChar
 		//u32 mType; // Removed that and only keep GetType()
 		u32 mProfession;
 		u32 mFaction;
-  	u32 mRealHead;  // Base Skin elements, in complement of (computed) mType
-  	u32 mRealTorso; // " Head shouldn't be changeable, except in case of surgery !!!
-  	u32 mRealLegs;  // "
-  	u32 mSkin;  // Current Skin elements. *** Not saved in DB atm ***
-  	u32 mHead;  // "
-  	u32 mTorso; // "
-  	u32 mLegs;  // "
-  	u8 mHeadColor;  // "
-  	u8 mTorsoColor; // "
-  	u8 mLegsColor;  // "
-  	u8 mHeadDarkness;  // " // 0=Bright, 255=dark
-  	u8 mTorsoDarkness; // "
-  	u8 mLegsDarkness;  // "
+        u32 mRealHead;  // Base Skin elements, in complement of (computed) mType
+        u32 mRealTorso; // " Head shouldn't be changeable, except in case of surgery !!!
+        u32 mRealLegs;  // "
+        u32 mSkin;  // Current Skin elements. *** Not saved in DB atm ***
+        u32 mHead;  // "
+        u32 mTorso; // "
+        u32 mLegs;  // "
+        u8 mHeadColor;  // "
+        u8 mTorsoColor; // "
+        u8 mLegsColor;  // "
+        u8 mHeadDarkness;  // " // 0=Bright, 255=dark
+        u8 mTorsoDarkness; // "
+        u8 mLegsDarkness;  // "
 		            // Skin scale factor setting remain to discover, provided they are somewhere for player chars ...
 
 		bool mLocationLeased; // temp until char on-demand load/unload
@@ -160,7 +162,7 @@ class PChar
 		u32 mCash;
 		u32 mStartApt; // set same as PrimaryApt atm
 		u32 mPrimaryApt;
-    u32 mChairInUse; // not saved in DB atm
+        u32 mChairInUse; // not saved in DB atm
 
 		u16 mHealth;
 		u16 mMana;
@@ -227,28 +229,28 @@ class PChar
 		//inline void SetType(u32 Type) { mType = Type; } // Removed. Type is computed from Gender & Profession (??? is it not Gender + Class ???)
 		inline void SetFaction(u32 Faction) { mFaction = Faction; }
 		//inline void SetModel(u32 Model) { mModel = Model; } // Inhibited for the moment. Base model is deduced from from Gender & Class (Profession)
-    void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);
-    void SetBaseSkills();
-    void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
-	  void SetBaseInventory();
+        void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);
+        void SetBaseSkills();
+        void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
+        void SetBaseInventory();
 
-    void FillinCharDetails(u8 *Packet);
-    bool SQLCreate();
+        void FillinCharDetails(u8 *Packet);
+        bool SQLCreate();
 
 	public :
 		PChar();
 		~PChar();
 
-    PSkillHandler *Skill;
-    PCharCoordinates Coords;
+        PSkillHandler *Skill;
+        PCharCoordinates Coords;
 
-    void SetCurrentLook(u32 nSkin, u32 nHead = 0, u32 nTorso = 0, u32 nLegs = 0);
-    void SetCurrentLookFromCharType(u32 nType);
-    void ResetCurrentLook();
+        void SetCurrentLook(u32 nSkin, u32 nHead = 0, u32 nTorso = 0, u32 nLegs = 0);
+        void SetCurrentLookFromCharType(u32 nType);
+        void ResetCurrentLook();
 
-    void SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness = 0, u8 nTorsoDarkness = 0, u8 nLegsDarkness = 0);
-    inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
-    inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
+        void SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness = 0, u8 nTorsoDarkness = 0, u8 nLegsDarkness = 0);
+        inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
+        inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
 
 		inline u32 GetID() const { return mID; }
 		inline u32 GetAccount() const { return mAccount; }
@@ -263,7 +265,7 @@ class PChar
 		void GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness);
 		inline u8 GetSpeedOverride() { return mSpeedOverride; }
 		inline u32 GetBaseModel();
-	  inline u32 GetProfession() const { return mProfession; }
+        inline u32 GetProfession() const { return mProfession; }
 		inline u16 GetMaxHealth() { return mHealth; }
 		inline u16 GetMaxMana() { return mMana; }
 		inline u16 GetMaxStamina() { return mStamina; }
@@ -272,7 +274,10 @@ class PChar
 		inline u16 GetStamina() { return mStamina; }
 		inline u32 GetFaction() const { return mFaction; }
 		inline u32 GetLocation() const { return mLocation; }
+
 		inline u32 GetCash() const { return mCash; }
+        u32 SetCash(u32 nCash);
+
 		inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
         inline void SetJail(bool val) { mJailed = val; };
@@ -282,8 +287,8 @@ class PChar
         inline bool IsShunned() { return mShunned; };
 
 
-    inline s8 GetSoullight() const { return mSoullight; }
-    u8 GetMainRank();
+        inline s8 GetSoullight() const { return mSoullight; }
+        u8 GetMainRank();
 		inline u8 GetCombatRank() const { return mCombatRank; }
 		inline u8 GetSynaptic() const { return mSynaptic; }
 		inline bool IsDead() const { return mIsDead; }
@@ -293,24 +298,24 @@ class PChar
 		inline void SetActiveChannels(u32 nChannels) { mActiveChatChannels = nChannels; }
 		inline u32 GetActiveChannels() { return mActiveChatChannels; }
 
-    inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
-    inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
-    inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
-    inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
-    inline u8 GetBuddyCount() { return mBuddyList->Count(); }
-    inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
+        inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
+        inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
+        inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
+        inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
+        inline u8 GetBuddyCount() { return mBuddyList->Count(); }
+        inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
 
-    inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
-    inline u16 GetGenrepListDataSize() { return mGenrepList->GetListDataSize(); }
-    inline const void* GetGenrepListData() { return mGenrepList->GetListData(); }
-    inline u8 GetGenrepCount() { return mGenrepList->Count(); }
+        inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
+        inline u16 GetGenrepListDataSize() { return mGenrepList->GetListDataSize(); }
+        inline const void* GetGenrepListData() { return mGenrepList->GetListData(); }
+        inline u8 GetGenrepCount() { return mGenrepList->Count(); }
 
 		inline bool IsDirty() const { return mDirtyFlag; }
-    inline bool IsOnline() { return mIsOnline; }
-    void SetOnlineStatus(bool IsOnline);
+        inline bool IsOnline() { return mIsOnline; }
+        void SetOnlineStatus(bool IsOnline);
 
 		bool CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
-      u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
+        u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 		bool SQLLoad(int CharID);
 		bool SQLSave();
 		bool SQLDelete(); // not implemented yet

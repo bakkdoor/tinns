@@ -108,6 +108,8 @@ class PCommands
             void doCmdjail();
             void doCmdunjail();
             void doCmdteleport();
+            void doCmdgivemoney();
+            void doCmdtakemoney();
 
             void doCmdtest();
         /// ------- End commandset -------

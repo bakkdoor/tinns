@@ -1046,31 +1046,6 @@ PMessage* PMsgBuilder::BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation,
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildGenrepDenyEnemyFacMsg (PClient* nClient)
-{
-    PMessage* tmpMsg = new PMessage(20);
-
-    nClient->IncreaseUDP_ID();
-    *tmpMsg << (u8)0x13;
-	*tmpMsg << (u16)nClient->GetUDP_ID();
-	*tmpMsg << (u16)nClient->GetSessionID();
-	*tmpMsg << (u8)0x0e; // Message length
-	*tmpMsg << (u8)0x03;
-	*tmpMsg << (u16)nClient->GetUDP_ID();
-	*tmpMsg << (u8)0x1f;
-	*tmpMsg << (u16)nClient->GetLocalID();
-	*tmpMsg << (u8)0x25; // ??
-	*tmpMsg << (u8)0x15; // ??
-	*tmpMsg << (u8)0x06; // ??
-	*tmpMsg << (u8)0x98; // ??
-	*tmpMsg << (u8)0x01; // ??
-	*tmpMsg << (u8)0x00; // ??
-	*tmpMsg << (u8)0x00; // ??
-	*tmpMsg << (u8)0x00; // ??
-
-	return tmpMsg;
-}
-
 PMessage* PMsgBuilder::BuildGenrepDenyBrokenMsg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(18);
@@ -1371,26 +1346,50 @@ PMessage* PMsgBuilder::BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor)
 // Message from text.ini, section [MISC], id = 100+nTxtMsgId
 PMessage* PMsgBuilder::BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRawObjectID)
 {
-  PMessage* tmpMsg = new PMessage(17);
+    PMessage* tmpMsg = new PMessage(17);
 
-  nClient->IncreaseUDP_ID();
+    nClient->IncreaseUDP_ID();
 
-	*tmpMsg << (u8)0x13;
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+
+    *tmpMsg << (u8)0x0c; // Message length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x31;
+    *tmpMsg << (u8)nTxtMsgId;
+    *tmpMsg << (u32)nRawObjectID;
+
+    //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildTextIniMsg (PClient* nClient, u8 nTxtGroupID, u16 nTxtID)
+{
+    PMessage* tmpMsg = new PMessage(20);
+
+    nClient->IncreaseUDP_ID();
+    *tmpMsg << (u8)0x13;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u16)nClient->GetSessionID();
-
-	*tmpMsg << (u8)0x0c; // Message length;
+	*tmpMsg << (u8)0x0e; // Message length
 	*tmpMsg << (u8)0x03;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u8)0x1f;
 	*tmpMsg << (u16)nClient->GetLocalID();
-  *tmpMsg << (u8)0x31;
-  *tmpMsg << (u8)nTxtMsgId;
-	*tmpMsg << (u32)nRawObjectID;
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x15; // ??
+	*tmpMsg << nTxtGroupID;
+	*tmpMsg << nTxtID;
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
 
-  //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-  return tmpMsg;
+	return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue)
@@ -1550,4 +1549,27 @@ PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
     *tmpMsg << (u16)0x013C;   // No idea yet...
 
     return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits)
+{
+    PMessage* tmpMsg = new PMessage(21);
+    nClient->IncreaseUDP_ID();
+    nClient->IncreaseTransactionID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x0f; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x13; // ??
+    *tmpMsg << (u16)nClient->GetTransactionID();
+	*tmpMsg << (u8)0x04; // ??
+	*tmpMsg << nCredits;
+
+	return tmpMsg;
 }
