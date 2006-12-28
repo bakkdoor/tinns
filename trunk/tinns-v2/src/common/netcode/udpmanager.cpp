@@ -92,15 +92,14 @@ void ConnectionUDP::ReSendUDPMessage(u16 nUDP_ID)
         else if(it->second)
         {
             Console->Print("[OOO-Buster] ReSending UDP packet with ID %d", nUDP_ID);
-
             // Build new message, including the missing UDP packets as content
-            PMessage* tmpMsg = it->second;
+            u16 MsgSize = it->second->GetSize();
+            PMessage* tmpMsg = new PMessage(MsgSize);
+            tmpMsg = it->second;
             tmpMsg->SetNextByteOffset(1);
-
             // The packet is sent unchanged, except the first UDP and Session ID
             *tmpMsg << mUDP_ID;
             *tmpMsg << mSessionID;
-
             SendMessage(tmpMsg, true);  // Add message to outgoing VIP queue
         }
     }
@@ -125,7 +124,7 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
         {
             if(tmpOffset > 1)    // Check if UDP_ID got increased correctly. If not, add missing UDP_IDs and add original packet after
             {
-                Console->Print("%s UdpID is out of order, expected %d, got %d (%d too high)!", Console->ColorText(RED, BLACK, "[WARNING]"), mLastUDPID + 1, tmpUDPID, tmpOffset);
+                Console->Print("%s UdpID is out of order, expected %d, got %d (%d too high)!", Console->ColorText(RED, BLACK, "[WARNING]"), mLastUDPID + 1, tmpUDPID, tmpOffset - 1);
                 Console->Print("Adding %d fake Udp messages to history buffer...", tmpOffset);
                 while(tmpOffset > 1)  // Add as many packets until tmpOffset is 1 again. This one packet is added after
                 {
@@ -157,7 +156,9 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
             }
 
             // Insert new message. The UDP_ID is stored as index-value, so be able to search for it
-            UDPMessages.insert(std::make_pair(tmpUDPID, nMsg));
+            PMessage* tmpMsg = new PMessage(nMsg->GetSize());
+            tmpMsg = nMsg;
+            UDPMessages.insert(std::make_pair(tmpUDPID, tmpMsg));
             mLastUDPID++;       // Could also be mLastUDPID = tmpUDPID, but its a bit more "safer" to just increment it
             //Console->Print("Added Udp message with ID %d to queue", mLastUDPID);
         }

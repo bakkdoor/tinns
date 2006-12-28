@@ -52,8 +52,8 @@ bool PUdpOOO::DoAction()
 {
     u16 MissingUDP_ID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+5);
 
-    mDecodeData->mClient->getUDPConn()->ReSendUDPMessage(MissingUDP_ID);
-    //Console->Print("%s Out of Order packet received ! (at 0x%04hx) ***not managed yet***", Console->ColorText(YELLOW, BLACK, "[Notice]"), MissingUDP_ID);
+    //mDecodeData->mClient->getUDPConn()->ReSendUDPMessage(MissingUDP_ID);
+    Console->Print("%s Out of Order packet received ! (at 0x%04hx) ***not managed yet***", Console->ColorText(YELLOW, BLACK, "[Notice]"), MissingUDP_ID);
 
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;

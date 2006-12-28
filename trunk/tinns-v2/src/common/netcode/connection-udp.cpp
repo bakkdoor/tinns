@@ -235,9 +235,7 @@ bool ConnectionUDP::update()
             {
                 tmpMsg = mQueueOut.front();
             }
-
-            InsertUDPMessage(tmpMsg);
-
+//            InsertUDPMessage(tmpMsg);
             //int numBytes = send(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0);
             int numBytes = sendto(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0, (struct sockaddr *)&mRemoteAddr, sizeof(struct sockaddr));
             if(numBytes > 0)
