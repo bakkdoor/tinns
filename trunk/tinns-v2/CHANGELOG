@@ -1195,3 +1195,15 @@ Namikon; 28.12.2006 20:02 GMT+1
 Internal Release / "Hotfix"
 The udpmanager was planned to cancel OOO notices, but he causes an segfault when trying to send the message.
 Its not clear yet why, therefore, the OOO handling got disabled. It will be re-enabled when this is fixed.
+
+====================
+Namikon; 30.12.2006 08:11 GMT+1
+----------
+[rev. 70]
+<internal version: 0.1.17 Dev>
+
+- Added "life" to hackbuttons and entrance-fee buttons. (Level GM and higher can just "use" hackbuttons, lower levels
+	must hack it. For entrance fee buttons, everyone must pay. Why? Well, for what is the @givemoney command ^.^)
+	Since hacking is not working yet, (we have to add item-usage first) make sure to set your own level to 50+, or you
+	wont get these doors open)
+- Disabled some debug outputs forgotten in the last release

@@ -1368,6 +1368,7 @@ PMessage* PMsgBuilder::BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRaw
     return tmpMsg;
 }
 
+// Same as BuildText100Msg, but here we can specify *ANY* text from text.ini, not limited to section [MISC]
 PMessage* PMsgBuilder::BuildTextIniMsg (PClient* nClient, u8 nTxtGroupID, u16 nTxtID)
 {
     PMessage* tmpMsg = new PMessage(20);

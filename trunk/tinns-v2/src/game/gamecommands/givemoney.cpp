@@ -93,6 +93,6 @@ void PCommands::doCmdgivemoney()
         PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(source, newcashvalue);
         source->getUDPConn()->SendMessage(tmpMsg_cash);
         tmpMsg_cash = NULL;
-        Console->Print("oldcashval: %d  newcashvalue: %d", oldcashval, newcashvalue);
+        //Console->Print("oldcashval: %d  newcashvalue: %d", oldcashval, newcashvalue);
     }
 }

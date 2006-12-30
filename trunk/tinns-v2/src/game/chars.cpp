@@ -886,23 +886,23 @@ u8 PChar::GetMainRank() {
 
 u32 PChar::SetCash(u32 nCash)
 {
-    Console->Print("Trying to set cash to nCash: %d", nCash);
+    //Console->Print("Trying to set cash to nCash: %d", nCash);
     if((int)nCash > Config->GetOptionInt("max_cash"))
     {
-        Console->Print("Newcash would be more than dynamic maxcash, setting to maxcash");
+        //Console->Print("Newcash would be more than dynamic maxcash, setting to maxcash");
         mCash = (u32)Config->GetOptionInt("max_cash");
     }
     else if(nCash > MAXCASH)
     {
-        Console->Print("Newcash would be more than hardcoded maxcash, setting to maxcash");
+        //Console->Print("Newcash would be more than hardcoded maxcash, setting to maxcash");
         mCash = MAXCASH;
     }
     else
     {
-        Console->Print("Allright, setting to new value");
+        //Console->Print("Allright, setting to new value");
         mCash = nCash;
     }
-    Console->Print("Returning mCash: %d", mCash);
+    //Console->Print("Returning mCash: %d", mCash);
     return mCash;
 }
 

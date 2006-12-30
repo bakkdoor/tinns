@@ -276,7 +276,7 @@ class PChar
 		inline u32 GetLocation() const { return mLocation; }
 
 		inline u32 GetCash() const { return mCash; }
-        u32 SetCash(u32 nCash);
+        u32 SetCash(u32 nCash);  // Does return the new cashvalue, NO udpmessage is sent out!!
 
 		inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
