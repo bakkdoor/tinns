@@ -96,6 +96,10 @@ class PMsgBuilder
   PMessage* BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType);
 
   PMessage* BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits);
+  PMessage* BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue);
+  PMessage* BuildCharUseQBSlotMsg2 (PClient* nClient, u16 nV1 = 100, u16 nV2 = 100, u16 nV3 = 100, u16 nV4 = 100, u16 nV5 = 100, u16 nV6 = 100, u16 nV7 = 0);
+  PMessage* BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot);
+  PMessage* BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1);
 };
 
 #endif

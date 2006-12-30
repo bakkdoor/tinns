@@ -1207,3 +1207,14 @@ Namikon; 30.12.2006 08:11 GMT+1
 	Since hacking is not working yet, (we have to add item-usage first) make sure to set your own level to 50+, or you
 	wont get these doors open)
 - Disabled some debug outputs forgotten in the last release
+
+====================
+Namikon; 30.12.2006 19:41 GMT+1
+----------
+[rev. 71]
+<internal version: 0.1.18 Dev - 0.1.22 Dev>
+
+- Added handling class for item movement (QB<>Inv<>GoGu<>Ground), no real function yet, but its decoded
+- Added handling class for QuickBelt management. You can activate the flashlight in slot 0 now, and others can see it
+  The functions are prepared to handle any item that exists, but we dont have items working until now.
+- Removed Debug output from sql.cpp

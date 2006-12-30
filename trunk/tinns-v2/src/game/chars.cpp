@@ -72,6 +72,7 @@ PChar::PChar()
 
 	mBodyEffect = 0;
 	mBodyEffectDensity = 0;
+	mItemInHand = 0;
 
 	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
 

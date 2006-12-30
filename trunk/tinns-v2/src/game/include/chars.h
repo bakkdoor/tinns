@@ -185,6 +185,8 @@ class PChar
 
 		PGenrepList* mGenrepList; // Character's GR list
 
+		u16 mItemInHand; // ItemID of current item "in hand"
+
 		struct PCharCoordinates {
 		    u16 mY;     // Y-Position in world
         u16 mZ;     // Z-Position in world
@@ -262,6 +264,10 @@ class PChar
 		void GetRealLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs);
 		void GetCurrentLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs);
 		inline void GetBodyEffect(u8 &nEffect, u8 &nDensity) { nEffect = mBodyEffect; nDensity = mBodyEffectDensity; }
+
+		inline u16 GetItemInHand() { return mItemInHand; }
+        inline void SetItemInHand(u16 nItem) { mItemInHand = nItem; }
+
 		void GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness);
 		inline u8 GetSpeedOverride() { return mSpeedOverride; }
 		inline u32 GetBaseModel();
@@ -285,7 +291,6 @@ class PChar
 
         inline bool IsJailed() { return mJailed; };
         inline bool IsShunned() { return mShunned; };
-
 
         inline s8 GetSoullight() const { return mSoullight; }
         u8 GetMainRank();

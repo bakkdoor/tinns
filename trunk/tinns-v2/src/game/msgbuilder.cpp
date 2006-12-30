@@ -43,7 +43,18 @@ PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
   nChar->GetCurrentBodyColor(nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness);
 
   PMessage* tmpMsg = new PMessage(80);
-  //tmpMsg->Fill(0);
+
+    u16 ItemVal1 = 0;
+    u16 item_inuse = nChar->GetItemInHand();
+    if(item_inuse > 0)
+    {
+        const PDefItems *def = GameDefs->GetItemsDef(item_inuse);
+        if(def != NULL)
+            ItemVal1 = (u16)def->GetValue1();
+        else
+            Console->Print("%s Unable to get itemdata for itemID %d", Console->ColorText(RED, BLACK, "[ERROR]"), item_inuse);
+    }
+
 
   //nClient->IncreaseUDP_ID(); // This must be done outside
 
@@ -57,10 +68,11 @@ PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
 	*tmpMsg << (u16)nClient->GetLocalID();
 	*tmpMsg << (u32)nChar->GetID();
 
-	*tmpMsg << (u8)0x00; // 0x40 if current faction epic done (master), | 0x80 to display [afk] | 0x20 if LE in
+	*tmpMsg << (u8)0x60; // 0x40 if current faction epic done (master), | 0x80 to display [afk] | 0x20 if LE in
 	*tmpMsg << (u8)((nChar->GetSpeedOverride() == 255) ? 10 : nChar->GetSpeedOverride()); // move speed, reset by client (and for him only) when getting fall damage
 	*tmpMsg << (u8)0x08; // ??? something to do with speed ?
-	*tmpMsg << (u16)0x0000;// WeaponID of the weapon in hand
+	//*tmpMsg << (u16)0x0000;// WeaponID of the weapon in hand
+	*tmpMsg << (u16)ItemVal1;
 	*tmpMsg << (u8)0x01; // ???
 	*tmpMsg << (u8)0x01; // ???
 	*tmpMsg << (u8)(128 + nChar->GetSoullight());
@@ -1571,6 +1583,111 @@ PMessage* PMsgBuilder::BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits)
     *tmpMsg << (u16)nClient->GetTransactionID();
 	*tmpMsg << (u8)0x04; // ??
 	*tmpMsg << nCredits;
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue)
+{
+    PMessage* tmpMsg = new PMessage(15);
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x09; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x23; // ??
+	*tmpMsg << nValue; // ??
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseQBSlotMsg2 (PClient* nClient, u16 nV1, u16 nV2, u16 nV3, u16 nV4, u16 nV5, u16 nV6, u16 nV7)
+{
+    PMessage* tmpMsg = new PMessage(28);
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x16; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x22; // ??
+	*tmpMsg << nV1;
+	*tmpMsg << nV2;
+	*tmpMsg << nV3;
+	*tmpMsg << nV4;
+	*tmpMsg << nV5;
+	*tmpMsg << nV6;
+	*tmpMsg << nV7;
+/*	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x64; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
+*/
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot)
+{
+    PMessage* tmpMsg = new PMessage(19);
+    nClient->IncreaseUDP_ID();
+    nClient->IncreaseTransactionID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x0D; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25; // ??
+	*tmpMsg << (u8)0x13; // ??
+    *tmpMsg << (u16)nClient->GetTransactionID();
+	*tmpMsg << (u8)0x0B; // ??
+	*tmpMsg << nSlot; // ??
+	*tmpMsg << (u8)0x00; // ??
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1)
+{
+    PMessage* tmpMsg = new PMessage(16);
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x0a; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x2f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x02; // ??
+	*tmpMsg << (u8)0x02; // ??
+    *tmpMsg << nValue1;
 
 	return tmpMsg;
 }

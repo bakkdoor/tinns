@@ -581,7 +581,7 @@ int PMySQL::GetAptLocation(int loc)
 
     sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
 
-Console->Print("Q: %s", query);
+//Console->Print("Q: %s", query);
     result = GameResQuery(query);
     if(!result)
     {

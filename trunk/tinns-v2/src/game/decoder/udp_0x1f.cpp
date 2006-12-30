@@ -40,6 +40,8 @@
 #include "udp_chat.h"
 #include "udp_useobject.h"
 #include "udp_appartment.h"
+#include "udp_quickaccessbelt.h"
+#include "udp_itemmove.h"
 
 /**** PUdp0x1f ****/
 
@@ -72,16 +74,16 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
       nextAnalyser = new PUdpChatLocal(mDecodeData);
       break;
     }
-    /* case 0x1e:  // Inventory item move
+    case 0x1e:  // item move QB<>INV<>GND
     {
-      nextAnalyser = new PUdpXXXX(mDecodeData);
+      nextAnalyser = new PUdpItemMove(mDecodeData);
       break;
     }
     case 0x1f: // Slot use
     {
-      nextAnalyser = new PUdpXXXX(mDecodeData);
+      nextAnalyser = new PUdpItemSlotUse(mDecodeData);
       break;
-    } */
+    }
     case 0x22:
     {
       nextAnalyser = new PUdpCharExitChair(mDecodeData);
