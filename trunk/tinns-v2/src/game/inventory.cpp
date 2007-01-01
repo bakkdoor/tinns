@@ -26,8 +26,8 @@
 
 	MODIFIED: 10 Jul 2006 Hammag
 	REASON: - creation : Quick and dirty main inventory (backpack) management
-	
-	
+
+
 */
 
 #include "main.h"
@@ -46,11 +46,11 @@ PInventoryEntry::PInventoryEntry(PItem* nItem, u8 X, u8 Y, u32 nInvID, bool SetD
 bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
 {
   std::string query, queryv;
-    
+
   if (mInvID)
   {
     query = "UPDATE inventory SET";
-    
+
     query += Ssprintf(" inv_charid='%u',inv_loc='%u',inv_x='%u',inv_y='%u'", CharID, InvLoc, mPosX, mPosY);
     query += Ssprintf(",inv_itemid='%u',inv_qty='%u'", mItem->GetItemID(), mItem->GetStackSize());
     //query += Ssprintf(",inv_type='%u'", 0); // ???
@@ -60,7 +60,7 @@ bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
     query += Ssprintf(",inv_hand='%u'", (mItem->Quality).Handling);
     query += Ssprintf(",inv_rng='%u'", (mItem->Quality).Range);
     query += Ssprintf(",inv_maxdur='%u'", (mItem->Quality).MaxDuration);
-      
+
     query += Ssprintf(" WHERE inv_id='%u' LIMIT 1;", mInvID);
   }
   else
@@ -70,7 +70,7 @@ bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
 
     query += ",inv_itemid,inv_qty,inv_type";
     queryv += Ssprintf(",'%u','%u','%u'", mItem->GetItemID(), mItem->GetStackSize(), 0);
-    
+
     query += ",inv_curdur";
     queryv += Ssprintf(",'%u'", (mItem->Quality).CurDuration);
     query += ",inv_dmg";
@@ -83,10 +83,10 @@ bool PInventoryEntry::SQLSave(u32 CharID, u32 InvLoc)
     queryv += Ssprintf(",'%u'", (mItem->Quality).Range);
     query += ",inv_maxdur";
     queryv += Ssprintf(",'%u'", (mItem->Quality).MaxDuration);
-        
+
     query = query + queryv + ");";
   }
-  
+
   if ( MySQL->GameQuery(query.c_str()) )
   {
       Console->Print(RED, BLACK, "PInventoryEntry::SQLSave could not add/update some inventory item in the database");
@@ -108,11 +108,11 @@ if (gDevDebug) Console->Print(GREEN, BLACK, "New item %d added to inventory DB",
 bool PInventoryEntry::SQLDelete()
 {
   std::string query;
-    
+
   if (mInvID)
   {
     query = Ssprintf("DELETE FROM inventory WHERE inv_id='%u' LIMIT1", mInvID);
-    
+
     if ( MySQL->GameQuery(query.c_str()) )
     {
       Console->Print(RED, BLACK, "PInventoryEntry::SQLDelete could not delete some inventory item from the database");
@@ -127,7 +127,7 @@ if (gDevDebug) Console->Print(GREEN, BLACK, "Item %d deleted from inventory DB",
       mInvID = 0;
       mDirtyFlag = false;
       return true;
-    }    
+    }
   }
   else
   {
@@ -135,13 +135,15 @@ if (gDevDebug) Console->Print(GREEN, BLACK, "Item %d deleted from inventory DB",
     return true;
   }
 }
-    
+
 /* --- PInventory class --- */
 
 PInventory::PInventory ()
 {
   mRows=0;
   AddRow();
+  for(int x = 0; x < 11; x++)
+    mQuickAccessBelt[x] = 0;
 }
 
 PInventory::~PInventory ()
@@ -149,14 +151,14 @@ PInventory::~PInventory ()
   int i;
   for( i = 0; i < mRows; i++)
     delete mInvSpace[i];
-  
+
   std::multimap< u32, PInventoryEntry*>::iterator tmpIter;
   for(tmpIter = mInvContent.begin(); tmpIter != mInvContent.end(); tmpIter++)
   {
     delete tmpIter->second->mItem;
     delete tmpIter->second;
   }
-    
+
 }
 
 void PInventory::AddRow()
@@ -169,14 +171,14 @@ void PInventory::AddRow()
 bool PInventory::IsInvSpaceAvailable(u8 PosX, u8 PosY, u8 SizeX, u8 SizeY)
 {
   u8 h, v;
-  
+
   for (v = 0; (v < SizeY) && (PosY+v < mRows) ; v++) // what is over existing rows is free
   {
     for (h = 0; h < SizeX; h++)
     {
       if(PosX+h >= INV_WIDTH) // what is over max col is not free
         return false;
-        
+
       if((*mInvSpace[PosY+v])[PosX+h])
         return false;
     }
@@ -187,17 +189,17 @@ bool PInventory::IsInvSpaceAvailable(u8 PosX, u8 PosY, u8 SizeX, u8 SizeY)
 void PInventory::SetInvSpaceUsed(u8 PosX, u8 PosY, u8 SizeX, u8 SizeY, bool Value)
 {
   u8 h, v;
-  
+
   while (PosY+SizeY > mRows) // add new rows when needed
     AddRow();
-      
+
   for (v = 0; (v < SizeY) && (PosY+v < mRows) ; v++)
   {
     for (h = 0; (h < SizeX) && (PosX+h < INV_WIDTH); h++)
       (*mInvSpace[PosY+v])[PosX+h] = Value;
-  } 
+  }
 }
-        
+
 bool PInventory::SQLLoad(u32 CharID)
 {
     MYSQL_RES *result;
@@ -272,9 +274,9 @@ bool PInventory::PutItem(PItem* NewItem, u32 nInvID, u8 nPosX, u8 nPosY, bool Se
   3 - - - add to stack
   4 - - - if no new stack remains, update LastPutXY & return true
   5 - find an empty space
-  6 -   
+  6 -
   x - put in new space, update LastPutXY & return true
-  
+
   */
 
   if (NewItem->GetItemID() == 0)
@@ -282,12 +284,12 @@ bool PInventory::PutItem(PItem* NewItem, u32 nInvID, u8 nPosX, u8 nPosY, bool Se
    Console->Print(RED, BLACK, "PPInventory::PutItem: invalid item : ID 0");
    return false;
   }
-    
+
   u8 x = 0, y = 0;
   bool Found = false;
   u8 SizeX = NewItem->GetSizeX();
   u8 SizeY = NewItem->GetSizeY();
-  
+
   if ((nPosX < 255) && (nPosY < 255)) // if pos specified, try this pos then another one if not free
   {
     if (IsInvSpaceAvailable(nPosX, nPosY, SizeX, SizeY))
@@ -323,7 +325,7 @@ bool PInventory::PutItem(PItem* NewItem, u32 nInvID, u8 nPosX, u8 nPosY, bool Se
   mLastInsertY = y;
   mInvContent.insert(std::make_pair(NewItem->GetItemID(), NewEntry));
 
-  /* --- degug only ---   
+  /* --- degug only ---
   Console->Print(GREEN, BLACK, "PPInventory::PutItem: added item %d at pos (%d,%d)", NewItem->GetItemID(), x, y);
   std::multimap< u32, PInventoryEntry*>::iterator tmpIter;
   PInventoryEntry* tmpEntry;
@@ -334,7 +336,7 @@ bool PInventory::PutItem(PItem* NewItem, u32 nInvID, u8 nPosX, u8 nPosY, bool Se
     tmpItem = tmpEntry->mItem;
     Console->Print(GREEN, BLACK, "(%d,%d) (%d x %d) Item %d (%s)", tmpEntry->mPosX, tmpEntry->mPosY, tmpItem->GetSizeX(), tmpItem->GetSizeY(), tmpItem->GetItemID(), (GameDefs->GetItemsDef(tmpItem->GetItemID())->GetName()).c_str());
   }
-  
+
   std::string tmpS;
   for (y=0 ; y < mRows; y++)
   {
@@ -347,28 +349,65 @@ bool PInventory::PutItem(PItem* NewItem, u32 nInvID, u8 nPosX, u8 nPosY, bool Se
   }
   Console->Print(GREEN, BLACK, "------------------------------------");
  ---            --- */
-  
+
   return true;
 }
 /* --- not implemented yet
 bool PInventory::CheckItem(u32 ItemID, u8 StackSize)
 {
-  
+
 }
 
 PItem *PInventory::GetItem(u32 ItemID, u8 StackSize)
 {
-  
+
 }
 
 PItem *PInventory::GetItemByPos(u8 nPosX, u8 nPosY, u8 StackSize)
 {
-  
+
 }
 
 bool PInventory::MoveItem(u8 oPosX, u8 oPosY, u8 dPosX, u8 dPosY)
 {
-  
+
 }
 */
-        
+bool PInventory::QB_IsFree(u8 nSlot)
+{
+    if(nSlot > 9)
+        return false;
+
+//    if (gDevDebug) Console->Print("Checking QBSlot %d. Content: %d", nSlot, mQuickAccessBelt[nSlot]);
+    if(mQuickAccessBelt[nSlot] == 0)
+        return true;
+    else
+        return false;
+}
+
+void PInventory::QB_SetSlot(u8 nSlot, u16 nItemID)
+{
+    if(nSlot > 9)
+        return;
+//    if (gDevDebug) Console->Print("Setting QBSlot %d. Newcontent: %d Oldcontent: %d", nSlot, nItemID, mQuickAccessBelt[nSlot]);
+    mQuickAccessBelt[nSlot] = nItemID;
+}
+
+u16 PInventory::QB_GetSlot(u8 nSlot)
+{
+    if(nSlot > 9)
+        return 0;
+//    if (gDevDebug) Console->Print("Getting QBSlot %d. Content: %d", nSlot, mQuickAccessBelt[nSlot]);
+    return mQuickAccessBelt[nSlot];
+}
+
+void PInventory::QB_Move(u8 nSlotSRC, u8 nSlotDST)
+{
+    if(nSlotSRC > 9 || nSlotDST > 9)
+        return;
+
+//    if (gDevDebug) Console->Print("Moving QBSlot %d [%d] to %d [%d]", nSlotSRC, mQuickAccessBelt[nSlotSRC], nSlotDST, mQuickAccessBelt[nSlotDST]);
+    mQuickAccessBelt[nSlotDST] = mQuickAccessBelt[nSlotSRC];
+    mQuickAccessBelt[nSlotSRC] = 0;
+//    if (gDevDebug) Console->Print("Moving done. %d [%d] %d [%d]", nSlotSRC, mQuickAccessBelt[nSlotSRC], nSlotDST, mQuickAccessBelt[nSlotDST]);
+}

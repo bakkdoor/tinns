@@ -26,8 +26,8 @@
 
 	MODIFIED: 10 Jul 2006 Hammag
 	REASON: - creation
-	
-	
+
+
 */
 
 #ifndef INVENTORY_H
@@ -49,7 +49,7 @@
 	// 4 = loot? or Box?
 	// 5 = NPC trading
 	// 18 = GoGo
-										
+
 		What is inventory::inv_type ?
 		No storage place in DB for constructor-character id + other (see item.h)
 */
@@ -62,15 +62,15 @@ class PInventoryEntry
     u8  mPosY;
     u32 mInvID;
     bool mDirtyFlag;
-    
+
     PInventoryEntry(PItem* nItem, u8 X, u8 Y, u32 nInvID = 0, bool SetDirty = true);
-    
+
     bool SQLSave(u32 CharID, u32 InvLoc);
     bool SQLDelete();
-    
+
   friend class PInventory;
 };
- 
+
 class PInventory
 {
    private:
@@ -94,6 +94,7 @@ class PInventory
     // the following choice of containers can (should) be improved later
     std::multimap< u32, PInventoryEntry*> mInvContent;
     std::vector< std::vector<bool>* > mInvSpace; //mInvSpace(1, std::vector<bool>(INV_WIDTH,0))
+    u16 mQuickAccessBelt[10]; // 10 Slots, dont think we need to do this dynamic.. do we?
     int mRows;
     u8 mLastInsertX;
     u8 mLastInsertY;
@@ -111,6 +112,11 @@ class PInventory
     //PItem *GetItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItemByPos(u8 nPosX, u8 nPosY, u8 StackSize = 1);
     //bool MoveItem(u8 oPosX, u8 oPosY, u8 dPosX, u8 dPosY);
+
+    bool QB_IsFree(u8 nSlot);
+    void QB_SetSlot(u8 nSlot, u16 nItemID);
+    u16 QB_GetSlot(u8 nSlot);
+    void QB_Move(u8 nSlotSRC, u8 nSlotDST);
 };
 
 #endif

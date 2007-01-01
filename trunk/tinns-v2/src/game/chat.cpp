@@ -214,6 +214,25 @@ void PChat::sendGM(PClient* author, char* text, bool debugOut)
     }
 }
 
+void PChat::sendGMAdmin(PClient* author, char* text, bool debugOut)
+{
+    if(author->GetAccount()->GetLevel() >= PAL_GM) // Only send GM> chat when user is an Gamemaster or higher
+    {
+        // send the message to ALL users online
+        for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+        {
+            if(author != it->second) // if its not the client, that send the message to the server
+            {
+                if(it->second) // only send if the client is existing!
+                {
+                    PClient* receiver = it->second;
+                    send(receiver, CHAT_GMADMIN, Database->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                }
+            }
+        }
+    }
+}
+
 void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
 {
     if(author->GetAccount()->GetLevel() >= PAL_ADMIN) // Only send ADMIN> chat when user is an serveradmin
@@ -830,6 +849,9 @@ bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickNam
       } else if(cmpr(Channel, CHAT_ADMIN) == true) {
            TargetChannel[0] = CHAT_ADMIN[0];
            TargetChannel[1] = CHAT_ADMIN[1];
+      } else if(cmpr(Channel, CHAT_GMADMIN) == true) {
+           TargetChannel[0] = CHAT_GMADMIN[0];
+           TargetChannel[1] = CHAT_GMADMIN[1];
       } else if(cmpr(Channel, CHAT_GM) == true) {
            TargetChannel[0] = CHAT_GM[0];
            TargetChannel[1] = CHAT_GM[1];
@@ -837,7 +859,6 @@ bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickNam
          Console->Print("SendChat error: Channel %#x unknown", Channel);
          return false;
       }
-
 
     ConnectionTCP *Socket = receiver->getTCPConn();
 
@@ -1091,6 +1112,11 @@ bool PChat::HandleGameChat(PClient *Client, const u8 *Packet)
         else if(*(u32*)Channel == CHANNEL_ADMIN) {
              //Console->Print("Admin Chat: %s", ChatText);
              sendAdmin(Client, ChatText, false);
+             // "ADMIN> %s: %s", PlayerName, ChatText
+        }
+        else if(*(u32*)Channel == CHANNEL_GMADMIN) {
+             //Console->Print("Admin Chat: %s", ChatText);
+             sendGMAdmin(Client, ChatText, false);
              // "ADMIN> %s: %s", PlayerName, ChatText
         }
         else if(*(u32*)Channel == CHANNEL_GMCHAT) {

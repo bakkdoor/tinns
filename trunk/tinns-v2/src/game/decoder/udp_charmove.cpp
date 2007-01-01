@@ -22,11 +22,11 @@
 /*
 
 	udp_charmove.cpp - decoder classes for UDP char movement messages
-  
+
 	CREATION: 5 Sep 2006 Hammag
 
 	MODIFIED:
-	REASON: - 
+	REASON: -
 
 */
 
@@ -40,12 +40,12 @@
 PUdpCharPosUpdate::PUdpCharPosUpdate(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x7f";
-} 
+}
 
 PUdpMsgAnalyser* PUdpCharPosUpdate::Analyse()
 {
   mDecodeData->mName << "=Char position update";
-  
+
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 5);
   *nMsg >> mNewY;
@@ -54,14 +54,14 @@ PUdpMsgAnalyser* PUdpCharPosUpdate::Analyse()
   *nMsg >> mNewUD;
   *nMsg >> mNewLR;
   *nMsg >> mNewAct;
-    
+
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpCharPosUpdate::DoAction()
-{ 
+{
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
   bool IsRealMove = false;
@@ -91,7 +91,7 @@ bool PUdpCharPosUpdate::DoAction()
 
   PMessage* tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg(nClient);
   ClientManager->UDPBroadcast(tmpMsg, nClient);
-  
+
   tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
   ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
 
@@ -109,35 +109,35 @@ bool PUdpCharPosUpdate::DoAction()
   }
 
 //if(IsRealMove)
-//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
+//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
-        
+
 /**** PUdpCharAttitudeUpdate ****/
 
 PUdpCharAttitudeUpdate::PUdpCharAttitudeUpdate(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x20";
-} 
+}
 
 PUdpMsgAnalyser* PUdpCharAttitudeUpdate::Analyse()
 {
   mDecodeData->mName << "=Char attitude update";
-  
+
   mNewAct = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start+5);
 //Console->Print"Char %d Action update: 0x%02x", mDecodeData->mClient->GetID(), mNewAct);
-  
+
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpCharAttitudeUpdate::DoAction()
 {
     mDecodeData->mClient->GetChar()->Coords.mAct = mNewAct;
-    
+
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }
@@ -148,20 +148,20 @@ bool PUdpCharAttitudeUpdate::DoAction()
 PUdpCharSitting::PUdpCharSitting(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x80";
-} 
+}
 
 PUdpMsgAnalyser* PUdpCharSitting::Analyse()
 {
   mDecodeData->mName << "=Char sitting";
-  
-  PMessage* nMsg = mDecodeData->mMessage;    
+
+  PMessage* nMsg = mDecodeData->mMessage;
   //u16 LocalID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+2);
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 5);
   *nMsg >> mChairItemID;
   *nMsg >> mChairItemType;
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -169,11 +169,11 @@ bool PUdpCharSitting::DoAction() // this message is repeated x times/sec ... is 
 {
 //Console->Print("Sitting on chair %d (%x)", mChairItemID, mChairItemID);
 //PChar* nChar = mDecodeData->mClient->GetChar();
-//Console->Print("Char %d position : X(0x%x) Y(0x%x) Z(0x%x) U/D(0x%x) L/R(0x%x) Action(0x%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
-//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct); 
+//Console->Print("Char %d position : X(0x%x) Y(0x%x) Z(0x%x) U/D(0x%x) L/R(0x%x) Action(0x%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
+//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
 //mDecodeData->mTraceDump = true;
     PMessage* tmpMsg = MsgBuilder->BuildCharSittingMsg(mDecodeData->mClient, mChairItemID);
-    ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);    
+    ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }
@@ -183,13 +183,13 @@ bool PUdpCharSitting::DoAction() // this message is repeated x times/sec ... is 
 PUdpCharExitChair::PUdpCharExitChair(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x22";
-} 
+}
 
 PUdpMsgAnalyser* PUdpCharExitChair::Analyse()
 {
   mDecodeData->mName << "=Char exiting chair";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -202,14 +202,14 @@ bool PUdpCharExitChair::DoAction()
   {
     Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(nClient->GetLocalID(), ChairInUse);
     tChar->SetChairInUse(0);
-    
+
     PMessage* tmpMsg = MsgBuilder->BuildCharExitChairMsg(nClient);
     ClientManager->UDPBroadcast(tmpMsg, nClient);
 
 if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->GetLocalID(), ChairInUse);
   }
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true; 
+  return true;
 }
 
 /**** PUdpCharJump ****/
@@ -217,13 +217,13 @@ if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->Get
 PUdpCharJump::PUdpCharJump(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x02";
-} 
+}
 
 PUdpMsgAnalyser* PUdpCharJump::Analyse()
 {
   mDecodeData->mName << "=Char jumping";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -231,8 +231,40 @@ bool PUdpCharJump::DoAction()
 {
     /*PMessage* tmpMsg = MsgBuilder->BuildCharJumpingMsg(mDecodeData->mClient);
     ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);*/
-        
+
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-if (gDevDebug) Console->Print("Char %d juming. Need server's broadcast answer format !!!", mDecodeData->mClient->GetID()); 
+if (gDevDebug) Console->Print("Char %d juming. Need server's broadcast answer format !!!", mDecodeData->mClient->GetID());
+    return true;
+}
+
+
+/**** PUdpCharTargeting ****/
+
+PUdpCharTargeting::PUdpCharTargeting(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x2d";
+}
+
+PUdpMsgAnalyser* PUdpCharTargeting::Analyse()
+{
+  mDecodeData->mName << "=Targeting char";
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+
+  return this;
+}
+
+bool PUdpCharTargeting::DoAction()
+{
+    PClient* nClient = mDecodeData->mClient;
+    PChar* tChar = nClient->GetChar();
+    u16 CharID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start + 2);
+    u8 strangeval1 = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 4);
+    u8 strangeval2 = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 5);
+    u8 strangeval3 = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 6);
+
+    tChar->SetLookingAt(CharID);
+
+    if (gDevDebug) Console->Print("Char %d targeting char %d. // %d %d %d", mDecodeData->mClient->GetID(), strangeval1, strangeval2, strangeval3);
+    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

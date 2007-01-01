@@ -42,6 +42,7 @@
 #include "udp_appartment.h"
 #include "udp_quickaccessbelt.h"
 #include "udp_itemmove.h"
+#include "udp_hack.h"
 
 /**** PUdp0x1f ****/
 
@@ -59,6 +60,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
 
   switch(MsgType)
   {
+    case 0x00: // Hack announcement
+    {
+      nextAnalyser = new PUdpHackInit(mDecodeData);
+      break;
+    }
     case 0x02:
     {
       nextAnalyser = new PUdpCharJump(mDecodeData);
@@ -84,6 +90,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
       nextAnalyser = new PUdpItemSlotUse(mDecodeData);
       break;
     }
+    case 0x20: // Start hackgame
+    {
+      nextAnalyser = new PUdpHackStart(mDecodeData);
+      break;
+    }
     case 0x22:
     {
       nextAnalyser = new PUdpCharExitChair(mDecodeData);
@@ -102,6 +113,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         mDecodeData->mTraceUnknownMsg = true;
       }
       break;
+    }
+    case 0x27:
+    {
+        nextAnalyser = new PUdpCloseItemContainer(mDecodeData);
+        break;
     }
     case 0x33:
     {
@@ -169,6 +185,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     default:
     {
       mDecodeData->mUnknownType = MsgType;
+      mDecodeData->mTraceUnknownMsg = true;
       break;
     }
   }

@@ -1218,3 +1218,17 @@ Namikon; 30.12.2006 19:41 GMT+1
 - Added handling class for QuickBelt management. You can activate the flashlight in slot 0 now, and others can see it
   The functions are prepared to handle any item that exists, but we dont have items working until now.
 - Removed Debug output from sql.cpp
+
+====================
+Namikon; 01.01.2007 23:32 GMT+1
+----------
+[rev. 72]
+<internal version: 0.1.22 Dev - 0.1.24 Dev>
+
+**** Happy new year!! ****
+
+- Item movement within quickbelt works
+- Added hacktool to QB to test hacking
+- Added the last missing staffchar (GM>)
+- Added decoder for inithack and starthack messages
+- A few more changes i cannot remember

@@ -21,11 +21,11 @@
 
 /*
 	udp_0x13.cpp - decoder classes for UDP 0x13 messages
-  
+
 	CREATION: 31 Aug 2006 Hammag
 
 	MODIFIED:
-	REASON: - 
+	REASON: -
 */
 
 #include "main.h"
@@ -52,7 +52,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
 {
   PMessage* TmpMsg = mDecodeData->mMessage;
   PUdpMsgAnalyser* nextAnalyser = NULL;
-  
+
   if (! mDecodeData->mHandling0x13Sub) // First decoding pass
   {
 //Console->Print(" --- New 0x13 msg");
@@ -61,7 +61,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
   	(*TmpMsg) >> (mDecodeData->mClientState->UDP.mServerPacketNum); //PID
   	mDecodeData->Sub0x13StartNext = 0;
   }
-  
+
   if(TmpMsg->EOM())
   {
 Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Emptied 0x13 msg handling !!!");
@@ -80,7 +80,7 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Emptied 0x13 msg handling !!!")
     mDecodeData->Sub0x13Start = TmpMsg->GetNextByteOffset();
     u8 PSize = TmpMsg->U8Data(mDecodeData->Sub0x13Start);
     u16 EndOffset = mDecodeData->Sub0x13StartNext = mDecodeData->Sub0x13Start + 1 + PSize;
-    
+
     if (EndOffset >= TmpMsg->GetSize())
     {
       mDecodeData->mHandling0x13Sub = false;
@@ -100,12 +100,12 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
       mDecodeData->mHandling0x13Sub = true;
     }
 
-    mDecodeData->mState = DECODE_MORE;    
+    mDecodeData->mState = DECODE_MORE;
     u8 MsgType = TmpMsg->U8Data(mDecodeData->Sub0x13Start + 1);
     /*u16 PSeq = 0; // This will have to be handled to detected missing granted-delivery messages
 		if (MsgType == 0x03)
 			PSeq = *(u16*)&Buf[Offset+2];*/
-//Console->Print("0x13 Type: %d", MsgType);    
+//Console->Print("0x13 Type: %d", MsgType);
     switch(MsgType)
     {
       case 0x03:
@@ -115,25 +115,25 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
         switch(MsgSubType)
         {
           case 0x01: // Out of order
-          {        
+          {
             nextAnalyser = new PUdpOOO(mDecodeData);
             break;
           }
           case 0x08: // Client zoning completed (!!! does not happen on login)
-          {        
+          {
             nextAnalyser = new PUdpEndOfZoning(mDecodeData);
             break;
           }
           case 0x1f:
-          {        
+          {
             nextAnalyser = new PUdp0x1f(mDecodeData);
             break;
           }
           case 0x22:
-          {        
+          {
             nextAnalyser = new PUdp0x22(mDecodeData);
             break;
-          }   
+          }
           default:
           {
             mDecodeData->mUnknownType = MsgSubType;
@@ -145,21 +145,21 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
             break;
           }*/
         }
-        break;         
+        break;
       }
-      
+
       case 0x0b: // Ping
       {
         nextAnalyser = new PUdpPing(mDecodeData);
         break;
       }
-      
+
       case 0x0c: // Baseline
       {
         nextAnalyser = new PUdpSync2(mDecodeData);
         break;
       }
-      
+
       case 0x20: // Char move
       {
         mDecodeData->mName << "/0x20";
@@ -168,17 +168,17 @@ mDecodeData->mTraceUnknownMsg = false; // temp stop being bugged with unknown mo
         switch(MsgSubType)
         {
           case 0x20:
-          {        
+          {
             nextAnalyser = new PUdpCharAttitudeUpdate(mDecodeData);
             break;
           }
           case 0x7f:
-          {        
+          {
             nextAnalyser = new PUdpCharPosUpdate(mDecodeData);
             break;
           }
           case 0x80:
-          {        
+          {
             nextAnalyser = new PUdpCharSitting(mDecodeData);
             break;
           }
@@ -191,13 +191,13 @@ mDecodeData->mTraceUnknownMsg = false; // temp stop being bugged with unknown mo
         break;
       }
 
-      case 0x27: // sent when char sit. Same occurence but less info than 0x13/0x20/0x80       
+      case 0x27: // sent when char sit. Same occurence but less info than 0x13/0x20/0x80
       {
         mDecodeData->mUnknownType = MsgType;
         nextAnalyser = new PUdpMsgIgnore(mDecodeData); // Silently ignore this message
         break;
       }
-            
+
       case 0x2a: // "Packet0"
       {
         nextAnalyser = new PUdpPacket0(mDecodeData);
@@ -206,35 +206,34 @@ mDecodeData->mTraceUnknownMsg = false; // temp stop being bugged with unknown mo
 
       case 0x2d: // sent when targeting another char
       {
-        mDecodeData->mUnknownType = MsgType;
-//mDecodeData->mTraceDump = true;
+        nextAnalyser = new PUdpCharTargeting(mDecodeData);
         break;
       }
-           
+
       case 0x32: // Vhc move
       {
         nextAnalyser = new PUdpVhcMove(mDecodeData);
         break;
       }
-     
+
       default:
       {
         mDecodeData->mUnknownType = MsgType;
         break;
       }
-                        
+
       /*default: // Temporary
       {
         nextAnalyser = new PUdp0x13Old(mDecodeData);
         break;
-      }*/     
+      }*/
     }
-    
+
     if (! nextAnalyser)
     {
       nextAnalyser = new PUdpMsgUnknown(mDecodeData);
     }
-    
+
   }
   return nextAnalyser;
 }

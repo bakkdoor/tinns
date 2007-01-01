@@ -54,26 +54,42 @@ bool PUdpItemSlotUse::DoAction()
     PChar* tChar = nClient->GetChar();
     u8 SlotNumber = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
 
-    Console->Print("Client trying to activate item in slot %d. ***not managed yet, except flashlight***", SlotNumber);
+    Console->Print("Client trying to activate item in slot %d.", SlotNumber);
 
-    u16 ItemVal1; // TODO: Load this value from items def, depending on current item in QB Slot!!!
-    u16 item_inuse = tChar->GetItemInHand();
-    if(item_inuse == 0)
+    u16 ItemVal1 = 0;
+    u16 qb_item = tChar->GetInventory()->QB_GetSlot(SlotNumber);
+    u16 active_item = tChar->GetItemInHand();
+    // Case 1: No item active, select slot X
+    // Ex: active_item = 0
+    // Act: Activate Slot X
+
+    // Case 2: Slot X active, press same slot again
+    // Ex: active_item = 28, qb_item = 28
+    // Act: Deactivate Slot X
+
+    // Case 3: Slot X active, press other slot Y
+    // Ex: active_item = 28, qb_item = 35
+    // Act: Activate Slot Y
+
+    if((active_item == 0) || (qb_item != active_item))
     {
-        tChar->SetItemInHand(81); // Temp solution for FlashLight
-        item_inuse = 81; // Temp solution for FlashLight
-        const PDefItems *def = GameDefs->GetItemsDef(item_inuse);
+        if(qb_item == 0) // Slot is empty, unequip current item in use
+            return true;
+
+        const PDefItems *def = GameDefs->GetItemsDef(qb_item);  // Search for this itemID in items.def
         if(def != NULL)
         {
             ItemVal1 = (u16)def->GetValue1();
         }
         else
         {
-            Console->Print("ERROR: Unable to get itemdata for itemID %d", item_inuse);
+            Console->Print("ERROR: Unable to get itemdata for itemID %d", qb_item);
             return false;
         }
+        // Done, now set this itemnumber as "item in hand"
+        tChar->SetItemInHand(qb_item);
     }
-    else
+    else // Should only match for case 2 ( qb_item == active_item ), but better us a generic else here
     {
         tChar->SetItemInHand(0);
         ItemVal1 = 0;

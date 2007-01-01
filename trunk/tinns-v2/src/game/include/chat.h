@@ -92,6 +92,7 @@ class PChat
             void sendTeam70(PClient* author, char* text, bool debugOut=false);
             void sendAdmin(PClient* author, char* text, bool debugOut=false);
             void sendGM(PClient* author, char* text, bool debugOut=false);
+            void sendGMAdmin(PClient* author, char* text, bool debugOut=false);
 
             void sendBroadcast(char* text, bool debugOut=false);
             void sendOOCBroadcast(char* text, bool debugOut=false);
@@ -133,6 +134,7 @@ static const u32 CHANNEL_CUS_TEAM_30 = 0x00200005;          // Custom -> Searchi
 static const u32 CHANNEL_CUS_TEAM_50 = 0x00400005;          // Custom -> Searching Team ~50
 static const u32 CHANNEL_CUS_TEAM_70 = 0x00800005;          // Custom -> Searching Team ~70
 static const u32 CHANNEL_ADMIN = 0x000000FF;                // Admin chat
+static const u32 CHANNEL_GMADMIN = 0x000000FE;                // Admin chat
 static const u32 CHANNEL_GMCHAT = 0x000000FD;               // GameMaster chat
 /*
 ####################
@@ -165,6 +167,7 @@ static const u8 CHAT_TEAM30[] = {0x05, 0x0D};
 static const u8 CHAT_TEAM50[] = {0x05, 0x0E};
 static const u8 CHAT_TEAM70[] = {0x05, 0x0F};
 static const u8 CHAT_ADMIN[] = {0xFF, 0x10};
+static const u8 CHAT_GMADMIN[] = {0xFE, 0x10};
 static const u8 CHAT_GM[] = {0xFD, 0x10};
 
 /*

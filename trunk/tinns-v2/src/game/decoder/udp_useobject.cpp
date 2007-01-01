@@ -398,6 +398,13 @@ bool PUdpUseObject::DoAction()
                         break;
                     }
                     case 1: //Itemcontainer
+                    {
+                        // TODO: Add check if container is already open
+                        tmpMsg = MsgBuilder->BuildCharOpenContainerMsg(nClient, mRawItemID);
+                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+                        break;
+                    }
                     case 4: //Trader
                     case 5: //Mineral
                     case 8: //Hackterminal
@@ -432,3 +439,26 @@ bool PUdpUseObject::DoAction()
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }
+
+/**** PUdpCloseItemContainer ****/
+
+PUdpCloseItemContainer::PUdpCloseItemContainer(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+    nDecodeData->mName << "/0x27";
+}
+
+PUdpMsgAnalyser* PUdpCloseItemContainer::Analyse()
+{
+    mDecodeData->mName << "=Closing item container";
+
+    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+    return this;
+}
+
+bool PUdpCloseItemContainer::DoAction()
+{
+    // TODO: free container that is currently in use by localchar
+    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+    return true;
+}
+

@@ -187,6 +187,9 @@ class PChar
 
 		u16 mItemInHand; // ItemID of current item "in hand"
 
+		u16 mLookingAt;  // Zone charID of currently targeted player
+        std::time_t mLookAtTimer; // Lifetimer of lookat var
+
 		struct PCharCoordinates {
 		    u16 mY;     // Y-Position in world
         u16 mZ;     // Z-Position in world
@@ -254,6 +257,10 @@ class PChar
         inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
         inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
 
+        inline void SetLookingAt(u16 nCharID) { mLookingAt = nCharID; mLookAtTimer = std::time(NULL) + 1; };
+        inline u16 GetLookingAt() { if(mLookAtTimer < std::time(NULL)) return mLookingAt; else return 0; };
+
+        inline PInventory *GetInventory() { return &mInventory; }
 		inline u32 GetID() const { return mID; }
 		inline u32 GetAccount() const { return mAccount; }
 		inline const std::string &GetName() const { return mName; }

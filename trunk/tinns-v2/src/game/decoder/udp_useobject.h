@@ -22,11 +22,11 @@
 /*
 
 	udp_useobject.h - decoder classes for object use related messages
-  
+
 	CREATION: 17 Sep 2006 Hammag
 
 	MODIFIED:
-	REASON: - 
+	REASON: -
 
 */
 
@@ -39,7 +39,7 @@ class PUdpUseObject : public PUdpMsgAnalyser
     u32 mRawItemID;
 
     void OldHandler(); // Temp during migration only
-    
+
   public:
     PUdpUseObject(PMsgDecodeData* nDecodeData);
     //~PUdpUseObject();
@@ -47,4 +47,14 @@ class PUdpUseObject : public PUdpMsgAnalyser
     bool DoAction();
 };
 
+class PUdpCloseItemContainer : public PUdpMsgAnalyser
+{
+  private:
+
+  public:
+    PUdpCloseItemContainer(PMsgDecodeData* nDecodeData);
+    //~PUdpCloseItemContainer();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
 #endif

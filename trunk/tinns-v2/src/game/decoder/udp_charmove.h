@@ -22,11 +22,11 @@
 /*
 
 	udp_charmove.h - decoder classes for UDP char movement messages
-  
+
 	CREATION: 5 Sep 2006 Hammag
 
 	MODIFIED:
-	REASON: - 
+	REASON: -
 
 */
 
@@ -67,7 +67,7 @@ class PUdpCharSitting : public PUdpMsgAnalyser
   private:
     u16 mChairItemID; // u16 or u32 ???
     u16 mChairItemType;
-    
+
   public:
     PUdpCharSitting(PMsgDecodeData* nDecodeData);
     //~PUdpCharMoves();
@@ -76,7 +76,7 @@ class PUdpCharSitting : public PUdpMsgAnalyser
 };
 
 class PUdpCharExitChair : public PUdpMsgAnalyser
-{ 
+{
   public:
     PUdpCharExitChair(PMsgDecodeData* nDecodeData);
     //~PUdpCharExitChair();
@@ -85,7 +85,7 @@ class PUdpCharExitChair : public PUdpMsgAnalyser
 };
 
 class PUdpCharJump : public PUdpMsgAnalyser
-{ 
+{
   public:
     PUdpCharJump(PMsgDecodeData* nDecodeData);
     //~PUdpCharJump();
@@ -93,4 +93,12 @@ class PUdpCharJump : public PUdpMsgAnalyser
     bool DoAction();
 };
 
+class PUdpCharTargeting : public PUdpMsgAnalyser
+{
+  public:
+    PUdpCharTargeting(PMsgDecodeData* nDecodeData);
+    //~PUdpCharTargeting();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
 #endif

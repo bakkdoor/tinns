@@ -383,6 +383,7 @@ PMessage* PMsgBuilder::BuildPacket0Msg (PClient* nClient)
 	*tmpMsg << (u32)0x00000000;
 	*tmpMsg << (u32)0x00000000;
 
+
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
   return tmpMsg;
 }
@@ -615,8 +616,8 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   SectionMsg << (u16)0x01; // Backpack items nb  // section content at offset 3
 
   SectionMsg << (u16)0x07; // data size of item
-  SectionMsg << (u8)0x00; // ?
-  SectionMsg << (u8)0x04; // pos X
+  SectionMsg << (u8)0x00; // Spare on inventory
+  SectionMsg << (u8)0x00; // pos X
   SectionMsg << (u8)0x00; // pos Y
   SectionMsg << (u16)0x0051; // item id (torch)
   SectionMsg << (u8)0x00;  // type
@@ -663,14 +664,33 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   // ---- Section 6 ----
   *BaselineMsg << (u8)0x06; // section id
 
-  SectionMsg << (u8)0x01; // QB/Armor/Implants items nb  // section content at offset 3
+  SectionMsg << (u8)0x03; // QB/Armor/Implants items nb  // section content at offset 3
 
-  SectionMsg << (u16)0x06; // data size of item
-  SectionMsg << (u8)0x00; // pos (X) in inv (QB slot 0)
-  SectionMsg << (u8)0x00; // pos Y (0)
-  SectionMsg << (u16)0x0051; // item id (torch)
-  SectionMsg << (u16)0x01;  // Qty ... strange size ... and where is Type ??? High byte ?
+// THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== BEGIN
+  SectionMsg << (u16)0x06;     // Size of item
+  SectionMsg << (u16)0x00;     // Location: Quickbelt slot 0
+  SectionMsg << (u16)0x0051;   // ItemID: 81, Flashlight
+  SectionMsg << (u8)0x01;      // Datatype
+  SectionMsg << (u8)0x00;      // Data
 
+  SectionMsg << (u16)0x06;     // Size of item
+  SectionMsg << (u16)0x01;     // Location: Quickbelt slot 0
+  SectionMsg << (u16)0x0055;   // ItemID: 81, Flashlight
+  SectionMsg << (u8)0x01;      // Datatype
+  SectionMsg << (u8)0x00;      // Data
+
+
+  SectionMsg << (u16)0x08;      // Size of item
+  SectionMsg << (u16)0x1a;      // Location: Brain #1
+  SectionMsg << (u16)0x08fc;    // ItemID: Law enforcer
+  SectionMsg << (u8)0x02;       // Datatype. 02: Item Duration information follows
+  SectionMsg << (u8)0x02;       // SubDatatype02: Full itemdetails follow
+  SectionMsg << (u8)0x2a;       // Current duration
+  SectionMsg << (u8)0x2a;       // Max duration
+
+  nChar->GetInventory()->QB_SetSlot(0, 81); // Add Flashlight to QB slot 1
+  nChar->GetInventory()->QB_SetSlot(1, 85); // Add Flashlight to QB slot 1
+// THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== END
   /*
   	StatsBuffer[len+3] = 0;	//Number of items
   	plen = 4;
@@ -801,6 +821,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   SectionMsg << (u8)0x00;
 
   SectionMsg << (u16)nClient->GetTransactionID(); // ??
+  //SectionMsg << (u32)0x00000000;
   SectionMsg << (u32)0x00000000;
   SectionMsg << (u32)0x00000000; // Epic status ?
   SectionMsg << (u16)nSkin;
@@ -1688,6 +1709,79 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1)
 	*tmpMsg << (u8)0x02; // ??
 	*tmpMsg << (u8)0x02; // ??
     *tmpMsg << nValue1;
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID)
+{
+// "Header"
+// 13 7f 00 d7 b5 0f 03 7f 00 1f 01 00 26 00 70 01 00 00 64 00 00
+// Nc  UDP  SESS  Ln Cs  UDP  Cs ChrID Cs |.Cont.ID.| |.Cont.| 0x00: Empty 0x08: Filled
+
+// Item SubHeader
+// 03 00
+// Len
+
+// Item Data
+// u8   - bytes to follow for THIS item
+// u16  - ItemID (items.def)
+// u8   - DataType
+
+    PMessage* tmpMsg = new PMessage(24);
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x14; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x26; // ??
+	*tmpMsg << nContainerID;
+    *tmpMsg << (u8)0x00; // Always the same on item containers?
+    *tmpMsg << (u8)0x64; // Always the same on item containers?
+    *tmpMsg << (u8)0x00; // Always the same on item containers?
+    *tmpMsg << (u8)0x08; // 0x08 when container is filled, 0x00 when not? At least it works..
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)0x02;
+    *tmpMsg << (u8)0x06;
+    *tmpMsg << (u8)0x29;
+
+	return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt)
+{
+// 13 01 01 C6 E3 14 03 01 01 1F 01 00 25 13 BE F8 14 02 06 00 03 03 00 01 00 00
+    PMessage* tmpMsg = new PMessage(24);
+    nClient->IncreaseUDP_ID();
+    nClient->IncreaseTransactionID();
+
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u16)nClient->GetSessionID();
+	*tmpMsg << (u8)0x14; // Message length
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)nClient->GetUDP_ID();
+	*tmpMsg << (u8)0x1f;
+	*tmpMsg << (u16)nClient->GetLocalID();
+	*tmpMsg << (u8)0x25;
+	*tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetTransactionID();
+	*tmpMsg << (u8)0x14; // ItemMove Answer
+	*tmpMsg << nSource;
+	*tmpMsg << nSrcX;
+	*tmpMsg << nSrcY;
+	*tmpMsg << nDestination;
+	*tmpMsg << nDestX;
+	*tmpMsg << nDestY;
+	*tmpMsg << nItemCnt;
+	*tmpMsg << (u8)0x00; // ??
+	*tmpMsg << (u8)0x00; // ??
 
 	return tmpMsg;
 }
