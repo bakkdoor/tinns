@@ -32,43 +32,32 @@ void PCommands::doCmddebug()
         Chat->send(source, CHAT_DIRECT, "Usage", "@debug [loc[ation] | it[emid]] [0|1]");
         return;
     }
-    Console->Print("D1");
+
     if(IsArgNumeric(1) == true)
     {
-        Console->Print("D2");
         if(GetArgInt(1) == 0)
         {
-            Console->Print("D3");
             nHow = 0;
         }
         else
         {
-            Console->Print("D4");
             nHow = 1;
         }
-        Console->Print("D5");
     }
     else
     {
-        Console->Print("D6");
         char tmp[10];
-        Console->Print("D7");
         if(GetArgText(1, tmp, 10))
         {
-            Console->Print("D8");
             if(strncmp(tmp, "loc", 3) == 0)
             {
-                Console->Print("D9");
                 nWhat = DBG_LOCATION;
                 DbgTarget = "location";
-                Console->Print("D10");
             }
             else if(strncmp(tmp, "it", 2) == 0)
             {
-                Console->Print("D11");
                 nWhat = DBG_ITEMID;
                 DbgTarget = "itemid";
-                Console->Print("D12");
             }
         }
     }

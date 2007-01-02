@@ -44,6 +44,7 @@
 PCommands::PCommands()
 {
     FlushArgs();
+    mWOID = 2147487000;
 }
 
 PCommands::~PCommands()
@@ -289,6 +290,10 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     else if(strcmp(Command, "takemoney") == 0)
     {
         doCmdtakemoney(); // Testcommand for various testings.
+    }
+    else if(strcmp(Command, "spawnactor") == 0)
+    {
+        doCmdspawnactor(); // Spawns actor next to player
     }
 
     // Else: unknown command. Ignore

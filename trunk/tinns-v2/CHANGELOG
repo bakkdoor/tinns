@@ -1232,3 +1232,23 @@ Namikon; 01.01.2007 23:32 GMT+1
 - Added the last missing staffchar (GM>)
 - Added decoder for inithack and starthack messages
 - A few more changes i cannot remember
+
+====================
+Namikon; 02.01.2007 20:52 GMT+1
+----------
+[rev. 73]
+<internal version: 0.1.25 Dev>
+
+- Added new command @spawnactor
+  Usage: @spawnactor <actorID> <functionType>
+   - ActorID can be found in models/pak_models.ini
+   - FunctionType defines the type of the actor.
+     This can be almost everything, from item containers to
+     apartmentlift accesspanels
+   This command spawns and static worldactor next to your current
+   position. Everyone who is within the range of UDP broadcast
+   can see / "use" the new actor. It isnt saved to sql yet, nor is it
+   managed. (You cant spawn an itemcontainer and open it)
+   
+Thanks to Sting for this release! We where working on hack-stuff (doors, hackboxes,..)
+when he found the required information to make this possible.

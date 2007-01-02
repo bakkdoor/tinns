@@ -1785,3 +1785,47 @@ PMessage* PMsgBuilder::BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX,
 
 	return tmpMsg;
 }
+
+PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
+{
+    PMessage* tmpMsg = new PMessage(14);
+
+	*tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; // UDP ID placeholder
+	*tmpMsg << (u16)0x0000; // SessionID placeholder
+	*tmpMsg << (u8)0x08;    // Len (static, always 0x08
+	*tmpMsg << (u8)0x03;
+	*tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
+	*tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
+    *tmpMsg << (u32)nWOID;  // WorldobjectID
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 nFunctionID, u32 nWOID)
+{
+    PChar *nChar = nClient->GetChar();
+
+    PMessage* tmpMsg = new PMessage(29);
+    *tmpMsg << (u8)0x13;
+	*tmpMsg << (u16)0x0000; // UDP placeholder
+	*tmpMsg << (u16)0x0000; // Session placeholder
+	*tmpMsg << (u8)0x16;    // Message length
+	*tmpMsg << (u8)0x03;    // 0x03 commandset
+	*tmpMsg << (u16)0x0000; // UDP placeholder
+	*tmpMsg << (u8)0x1b;    // Subcommandset
+    *tmpMsg << (u32)nWOID;  // WorldobjectID
+
+	*tmpMsg << (u8)0x19;    // Positiondata follows
+	*tmpMsg << (u16)((nChar->Coords).mY + 768);
+	*tmpMsg << (u16)((nChar->Coords).mZ + 768);
+	*tmpMsg << (u16)((nChar->Coords).mX + 768);
+
+	*tmpMsg << (u8)0x80;    // Rotation X
+	*tmpMsg << (u8)0x80;    // Rotation Y
+	*tmpMsg << (u8)0xc2;    // Rotation Z
+	*tmpMsg << nActorID;
+	*tmpMsg << nFunctionID;
+
+	return tmpMsg;
+}

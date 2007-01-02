@@ -122,6 +122,7 @@ const char* CommandsTemplate[][2] = {
     {"teleport", "50"},     // Warp targetplayer XX to zone YY
     {"givemoney", "50"},     // Warp targetplayer XX to zone YY
     {"takemoney", "50"},     // Warp targetplayer XX to zone YY
+    {"spawnactor", "50"},     // Spawn given actor next to player
 
     {"", ""} // do not change this line (end mark)
 };
