@@ -81,6 +81,7 @@
 #include "clientmanager.h"
 #include "msgbuilder.h"
 #include "worlds.h"
+#include "worldactors.h"
 
 using namespace std;
 

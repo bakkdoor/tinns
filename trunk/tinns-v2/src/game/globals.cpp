@@ -72,6 +72,7 @@ ServerSocket *ServerSock = 0;
 PMsgBuilder *MsgBuilder = 0;
 PWorlds *Worlds = 0;
 PAppartements* Appartements = 0;
+PWorldActors* WorldActors = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -141,6 +142,8 @@ bool InitTinNS()
 
   Worlds = new PWorlds();
   Worlds->LoadWorlds();
+
+    WorldActors = new PWorldActors();
 
   Appartements = new PAppartements;
 

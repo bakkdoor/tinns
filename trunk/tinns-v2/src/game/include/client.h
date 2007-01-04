@@ -106,6 +106,8 @@ class PClient
 		//int[4] m_IP;
 
         //*******
+        bool mActorRemoveMode;
+        //*******
         bool mAwaitingWarpto;
         u16 mTargetX;
         u16 mTargetY;
@@ -128,6 +130,9 @@ class PClient
 		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
 
 		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
+
+        inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
+        inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
 
 		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added

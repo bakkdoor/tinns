@@ -70,6 +70,18 @@ bool PUdpUseObject::DoAction()
     tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
     mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
 
+    if(nClient->IsInRemoveActorMode() == true)
+    {
+        if(WorldActors->IsDynamicActor(mRawItemID) == true)
+        {
+            WorldActors->DelWorldActor(nClient, mRawItemID);
+            mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+            return true;
+        }
+        else
+            Chat->send(nClient, CHAT_DIRECT, "System", "This is not an dynamic worldactor. To remove it please type @remove <rawID>");
+    }
+
     if (gDevDebug)
     {
         Console->Print("Char at y=%f (0x%04x) z=%f (0x%04x) x=%f (0x%04x)", (f32)(tChar->Coords.mY - 32000), tChar->Coords.mY, (f32)(tChar->Coords.mZ - 32000), tChar->Coords.mZ, (f32)(tChar->Coords.mX - 32000), tChar->Coords.mX);

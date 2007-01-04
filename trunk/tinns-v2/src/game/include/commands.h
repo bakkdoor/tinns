@@ -48,11 +48,6 @@ class PCommands
         int ArgC;                   // Nr of args in array (To perform checks only, ArgV is terminated!)
         bool DumbMade;              // Set TRUE if dumb is made
 
-        // This is only a Temp Solution until we have a management system that takes care about
-        // WorldObject ID's
-        u32 mWOID;
-        // ====================================
-
         PClient* GetClientByID(int charid);
         PClient* GetClientByNick(const char *nick);
 

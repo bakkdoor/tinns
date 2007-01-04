@@ -22,7 +22,7 @@
 /*
 
 	udp_zoning.cpp - decoder classes for UDP Zoning messages
-  
+
 	CREATION: 6 Sep 2006 Hammag
 
 	MODIFIED: 15 Dec 2006 Hammag
@@ -40,33 +40,33 @@
 PUdpZoning1::PUdpZoning1(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x0d";
-} 
+}
 
 PUdpMsgAnalyser* PUdpZoning1::Analyse()
 {
   mDecodeData->mName << "=Zoning phase 1";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpZoning1::DoAction()
 {
   PMessage* cMsg = mDecodeData->mMessage;
-  
+
   u32 newLocation = cMsg->U32Data(mDecodeData->Sub0x13Start+11);
   mDecodeData->mClient->ChangeCharLocation(newLocation);
-  
+
 //Console->Print("Zoning Stage 1: New location: %d", newLocation);
-  
-  u16 nData = cMsg->U32Data(mDecodeData->Sub0x13Start+15);    
+
+  u16 nData = cMsg->U32Data(mDecodeData->Sub0x13Start+15);
 
   PMessage* tmpMsg = MsgBuilder->BuildZoning1Msg(mDecodeData->mClient, nData);
   mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
-  
+
 //Console->Print("Zoning Stage 1: packet sent");
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true; 
+  return true;
 }
 
 /**** PUdpZoning2 ****/
@@ -74,27 +74,27 @@ bool PUdpZoning1::DoAction()
 PUdpZoning2::PUdpZoning2(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x03";
-} 
+}
 
 PUdpMsgAnalyser* PUdpZoning2::Analyse()
 {
   mDecodeData->mName << "=Zoning phase 2";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpZoning2::DoAction()
-{    
-//Console->Print("Zoning Stage 2: Sending Ready packet");    
+{
+//Console->Print("Zoning Stage 2: Sending Ready packet");
     PMessage* tmpMsg = MsgBuilder->BuildZoningTCPReadyMsg();
     mDecodeData->mClient->getTCPConn()->SendMessage(tmpMsg);
-    
+
 //Console->Print("Zoning Stage 2: Sending Zone information");
     PUdpSync0::GetToSync1(mDecodeData);
 
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true; 
+    return true;
 }
 
 /**** PUdpGenrepZoning ****/
@@ -102,13 +102,13 @@ bool PUdpZoning2::DoAction()
 PUdpGenrepZoning::PUdpGenrepZoning(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x04";
-} 
+}
 
 PUdpMsgAnalyser* PUdpGenrepZoning::Analyse()
 {
   mDecodeData->mName << "=Genrep Zoning";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -116,21 +116,21 @@ bool PUdpGenrepZoning::DoAction()
 {
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
-  
+
   //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not 32 ???
   u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
-  
+
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
-	
+
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
   nClient->ChangeCharLocation(newLocation);
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
-if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData);	
+if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData);
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -140,13 +140,13 @@ if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", 
 PUdpAptGRZoning::PUdpAptGRZoning(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x03";
-} 
+}
 
 PUdpMsgAnalyser* PUdpAptGRZoning::Analyse()
 {
   mDecodeData->mName << "=Genrep Apt Zoning";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -154,14 +154,14 @@ bool PUdpAptGRZoning::DoAction()
 {
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
-  
+
   //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not u32 ???
   u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
-  
+
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
-	
+
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
   if (! nClient->ChangeCharLocation(100000 + nClient->GetChar()->GetBaseApartment()))
     Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), 100000 + nClient->GetChar()->GetBaseApartment(), newLocation);
@@ -169,7 +169,7 @@ bool PUdpAptGRZoning::DoAction()
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
-if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);	
+if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -179,32 +179,40 @@ if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (loca
 PUdpAddGenrepToList::PUdpAddGenrepToList(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x02";
-} 
+}
 
 PUdpMsgAnalyser* PUdpAddGenrepToList::Analyse()
 {
   mDecodeData->mName << "=Add Genrep to list";
-  
+
   PMessage* nMsg = mDecodeData->mMessage;
-  // LocalID @offset 10 
+  // LocalID @offset 10
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 12);
   *nMsg >> mLocation;
   *nMsg >> mEntity;
-  
+
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpAddGenrepToList::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
-  
+
 //Console->Print("Client[%d]: Adding Genrep (location %d - entity %d)", nClient->GetID(), mLocation, mEntity);
 
-  nClient->GetChar()->AddGenrep(mLocation, mEntity);
-  PMessage* tmpMsg = MsgBuilder->BuildGenrepAddToListMsg(nClient, mLocation, mEntity);
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  if(mLocation == 1086 && mEntity == 1111)
+  {
+      PMessage* tmpMsg = MsgBuilder->BuildTextIniMsg (nClient, 6, 160);
+      nClient->getUDPConn()->SendMessage(tmpMsg);
+  }
+  else
+  {
+      nClient->GetChar()->AddGenrep(mLocation, mEntity);
+      PMessage* tmpMsg = MsgBuilder->BuildGenrepAddToListMsg(nClient, mLocation, mEntity);
+      nClient->getUDPConn()->SendMessage(tmpMsg);
+  }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
@@ -215,12 +223,12 @@ bool PUdpAddGenrepToList::DoAction()
 PUdpAppartmentAccess::PUdpAppartmentAccess(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x38";
-} 
+}
 
 PUdpMsgAnalyser* PUdpAppartmentAccess::Analyse()
 {
   mDecodeData->mName << "=Try acces appartment";
-  
+
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 9);
   mAppartmentPlace = nMsg->U16Data(mDecodeData->Sub0x13Start + 9);
@@ -228,7 +236,7 @@ PUdpMsgAnalyser* PUdpAppartmentAccess::Analyse()
   // NO SIZE ????? DO SIZE CHECK !
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
@@ -238,9 +246,9 @@ bool PUdpAppartmentAccess::DoAction()
   u32 AppLoc, Location, Entity;
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
-  
+
   Location = nChar->GetLocation();
-if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);  
+if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);
   if ((Location > 100000) && (!strcmp ("Exit", mPassword)))
   {
     AppLoc = MySQL->GetAptLocation(Location);
@@ -248,7 +256,7 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
     if(nAppPlace)
     {
       Location = nAppPlace->GetExitWorldID();
-      Entity = nAppPlace->GetExitWorldEntity();     
+      Entity = nAppPlace->GetExitWorldEntity();
     }
     else
     {
@@ -271,15 +279,15 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
     }
     else
       tmpMsg = NULL;
-      
+
     mDecodeData->mTraceDump = true;
   }
-  
+
   if (tmpMsg)
     nClient->getUDPConn()->SendMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true; 
+  return true;
 }
 
 /**** PUdpEndOfZoning ****/
@@ -287,19 +295,19 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
 PUdpEndOfZoning::PUdpEndOfZoning(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   nDecodeData->mName << "/0x08";
-} 
+}
 
 PUdpMsgAnalyser* PUdpEndOfZoning::Analyse()
 {
   mDecodeData->mName << "=End of zoning";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-  
+
   return this;
 }
 
 bool PUdpEndOfZoning::DoAction()
 {
-// Nothing implemented yet    
+// Nothing implemented yet
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true; 
+    return true;
 }

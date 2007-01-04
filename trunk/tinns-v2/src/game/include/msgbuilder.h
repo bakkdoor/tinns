@@ -58,8 +58,8 @@ class PMsgBuilder
   PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID);
   PMessage* BuildCharShowGlowCircleMsg (PClient* nClient);
   PMessage* BuildCharVanishMsg (PClient* nClient);
-  PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);
-  PMessage* BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 nFunctionID, u32 nWOID);
+  //PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);
+  //PMessage* BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 nFunctionID, u32 nWOID);
 
   // Following methods for unicast messages DO include UDP_ID increment and
   // UDP_ID / SessionID setting when needed (at least for now)

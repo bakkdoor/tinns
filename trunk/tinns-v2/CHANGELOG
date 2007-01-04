@@ -1252,3 +1252,23 @@ Namikon; 02.01.2007 20:52 GMT+1
    
 Thanks to Sting for this release! We where working on hack-stuff (doors, hackboxes,..)
 when he found the required information to make this possible.
+
+====================
+Namikon; 04.01.2007 16:15 GMT+1
+----------
+[rev. 74]
+<internal version: 0.1.26 Dev>
+
+- WorldActor management class added.
+	Spawned actors now stay in that zone as long until someone removes them.
+	
+	To remove spawned worldactors, the @remove command has been improved:
+	Type "@remove actor" to set your client into "REMOVE ACTOR" mode (You'll get
+	an ingame notice about this)
+	Then simply click on any dynamic worldactors to remove them. To leave this remove mode,
+	type "@remove actor" again. (And again you'll get a notice about that)
+	
+	Note: You cannot remove static worldactors (those who are in the .dat files) with this.
+	      It is possible to let them disappear (type @remove <rawID>) but they'll respawn when you re-zone.
+	      
+IMPORTANT: This release requires an database update! Make sure you have the latest mysql table availeable.

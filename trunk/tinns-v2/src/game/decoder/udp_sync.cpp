@@ -207,6 +207,9 @@ bool PUdpSync2::DoAction()
     nbSent = ClientManager->UDPBroadcast(HelloMsg, nClient);
 //Console->Print(GREEN, BLACK, "Client %d: Hello message sent to %d chars", Client->GetIndex(), nbSent);
 
+    // Send worldactors to client
+    WorldActors->InitWorld(nClient);
+
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
   }

@@ -25,8 +25,8 @@
 	main.h - main include file, contains all needed includes and important definitions
 
 	MODIFIED: 30 Aug 2006 Hammag
-	REASON: - created       
-	  
+	REASON: - created
+
 */
 
 #ifndef MAIN_H
@@ -81,6 +81,7 @@
 #include "commands.h"
 #include "clientmanager.h"
 #include "msgbuilder.h"
+#include "worldactors.h"
 
 using namespace std;
 

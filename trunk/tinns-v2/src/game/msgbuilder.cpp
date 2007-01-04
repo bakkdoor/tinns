@@ -354,6 +354,7 @@ PMessage* PMsgBuilder::BuildPacket0Msg (PClient* nClient)
   PChar* nChar = nClient->GetChar();
   nClient->IncreaseUDP_ID();
 
+    nClient->CharIsAwaitingWarpto(); // Update location
 	*tmpMsg << (u8)0x13;
 	*tmpMsg << (u16)nClient->GetUDP_ID();
 	*tmpMsg << (u16)nClient->GetSessionID();
@@ -664,7 +665,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   // ---- Section 6 ----
   *BaselineMsg << (u8)0x06; // section id
 
-  SectionMsg << (u8)0x03; // QB/Armor/Implants items nb  // section content at offset 3
+  SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
 
 // THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== BEGIN
   SectionMsg << (u16)0x06;     // Size of item
@@ -679,6 +680,12 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
   SectionMsg << (u8)0x01;      // Datatype
   SectionMsg << (u8)0x00;      // Data
 
+  SectionMsg << (u16)0x06;     // Size of item
+  SectionMsg << (u16)0x02;     // Location: Quickbelt slot 0
+  SectionMsg << (u16)0x176F;   // ItemID: 81, Flashlight
+  SectionMsg << (u8)0x01;      // Datatype
+  SectionMsg << (u8)0x00;      // Data
+
 
   SectionMsg << (u16)0x08;      // Size of item
   SectionMsg << (u16)0x1a;      // Location: Brain #1
@@ -690,6 +697,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
 
   nChar->GetInventory()->QB_SetSlot(0, 81); // Add Flashlight to QB slot 1
   nChar->GetInventory()->QB_SetSlot(1, 85); // Add Flashlight to QB slot 1
+  nChar->GetInventory()->QB_SetSlot(2, 5999); // Add Flashlight to QB slot 1
 // THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== END
   /*
   	StatsBuffer[len+3] = 0;	//Number of items
@@ -1786,7 +1794,7 @@ PMessage* PMsgBuilder::BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX,
 	return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
+/*PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
 {
     PMessage* tmpMsg = new PMessage(14);
 
@@ -1800,12 +1808,10 @@ PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
     *tmpMsg << (u32)nWOID;  // WorldobjectID
 
     return tmpMsg;
-}
+}*/
 
-PMessage* PMsgBuilder::BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 nFunctionID, u32 nWOID)
+/*PMessage* PMsgBuilder::BuiltSpawnObjectMsg (u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotX)
 {
-    PChar *nChar = nClient->GetChar();
-
     PMessage* tmpMsg = new PMessage(29);
     *tmpMsg << (u8)0x13;
 	*tmpMsg << (u16)0x0000; // UDP placeholder
@@ -1814,18 +1820,18 @@ PMessage* PMsgBuilder::BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 
 	*tmpMsg << (u8)0x03;    // 0x03 commandset
 	*tmpMsg << (u16)0x0000; // UDP placeholder
 	*tmpMsg << (u8)0x1b;    // Subcommandset
-    *tmpMsg << (u32)nWOID;  // WorldobjectID
+    *tmpMsg << nWOID;  // WorldobjectID
 
 	*tmpMsg << (u8)0x19;    // Positiondata follows
-	*tmpMsg << (u16)((nChar->Coords).mY + 768);
-	*tmpMsg << (u16)((nChar->Coords).mZ + 768);
-	*tmpMsg << (u16)((nChar->Coords).mX + 768);
+	*tmpMsg << nPosY;
+	*tmpMsg << nPosZ;
+	*tmpMsg << nPosX;
 
-	*tmpMsg << (u8)0x80;    // Rotation X
-	*tmpMsg << (u8)0x80;    // Rotation Y
-	*tmpMsg << (u8)0xc2;    // Rotation Z
+	*tmpMsg << nRotY;    // Rotation X
+	*tmpMsg << nRotZ;    // Rotation Y
+	*tmpMsg << nRotX;    // Rotation Z
 	*tmpMsg << nActorID;
 	*tmpMsg << nFunctionID;
 
 	return tmpMsg;
-}
+}*/

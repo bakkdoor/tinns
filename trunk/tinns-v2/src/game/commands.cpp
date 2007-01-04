@@ -40,11 +40,11 @@
 #include "client.h"
 #include "msgbuilder.h"
 #include "worlds.h"
+#include "worldactors.h"
 
 PCommands::PCommands()
 {
     FlushArgs();
-    mWOID = 2147487000;
 }
 
 PCommands::~PCommands()

@@ -57,7 +57,7 @@
 	  REASON: - added item.h
     MODIFIED: 26 Jul 2006 Hammag
 	  REASON: - removed	#define GAME_PORT which is not used anymore (now in config file)
-	  
+
 */
 
 #ifndef MAIN_H
@@ -98,6 +98,7 @@
 #include "zoning.h"
 #include "item.h"
 #include "inventory.h"
+#include "worldactors.h"
 
 #include "chat.h"
 #include "commands.h"

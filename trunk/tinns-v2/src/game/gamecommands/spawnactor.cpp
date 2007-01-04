@@ -35,6 +35,43 @@ void PCommands::doCmdspawnactor()
 
     u16 tmpActorID = (u16)GetArgInt(1);
     u16 tmpFunctionID = (u16)GetArgInt(2);
+    u16 tmpOption1 = 0;
+    u16 tmpOption2 = 0;
+    u16 tmpOption3 = 0;
+
+    if(ArgC > 2)
+    {
+        if(IsArgNumeric(3) == false)
+        {
+            SyntaxError = true;
+        }
+        else
+        {
+            tmpOption1 = (u16)GetArgInt(3);
+            if(ArgC > 3)
+            {
+                if(IsArgNumeric(4) == false)
+                {
+                    SyntaxError = true;
+                }
+                else
+                {
+                    tmpOption1 = (u16)GetArgInt(4);
+                    if(ArgC > 4)
+                    {
+                        if(IsArgNumeric(4) == false)
+                        {
+                            SyntaxError = true;
+                        }
+                        else
+                        {
+                            tmpOption1 = (u16)GetArgInt(5);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     if(tmpActorID == 0)
     {
@@ -43,11 +80,12 @@ void PCommands::doCmdspawnactor()
 
     if(SyntaxError == true)
     {
-        Chat->send(source, CHAT_DIRECT, "Usage", "@spawnactor <actorID> <functionID>");
+        Chat->send(source, CHAT_DIRECT, "Usage", "@spawnactor <actorID> <functionID> [<option1> <option2> <option3>]");
         return;
     }
 
-    PMessage* tmpMsg = MsgBuilder->BuiltSpawnObjectMsg(source, tmpActorID, tmpFunctionID, mWOID++);
-    ClientManager->UDPBroadcast(tmpMsg, source);
-    tmpMsg = NULL;
+    WorldActors->AddWorldActor(source, tmpActorID, tmpFunctionID, tmpOption1, tmpOption2, tmpOption3);
+    //PMessage* tmpMsg = MsgBuilder->BuiltSpawnObjectMsg(source, tmpActorID, tmpFunctionID, mWOID++);
+    //ClientManager->UDPBroadcast(tmpMsg, source);
+    //tmpMsg = NULL;
 }

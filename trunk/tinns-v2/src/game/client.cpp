@@ -58,6 +58,7 @@ PClient::PClient(int Index)
     mTargetY = 0;
     mTargetZ = 0;
     //********
+    mActorRemoveMode = false;
 }
 
 PClient::~PClient()
@@ -311,10 +312,10 @@ bool PClient::CharIsAwaitingWarpto()
     {
 
         // Position update doesnt work. Uncomment&Change function if ever required again
-//        mAwaitingWarpto = false;
-//            (GetChar()->Coords).mX = mTargetX;
-//            (GetChar()->Coords).mY = mTargetY;
-//            (GetChar()->Coords).mZ = mTargetZ;
+        mAwaitingWarpto = false;
+            (GetChar()->Coords).mX = mTargetX;
+            (GetChar()->Coords).mY = mTargetY;
+            (GetChar()->Coords).mZ = mTargetZ;
         return true;
 //        PMessage* tmpMsg_posupdate;
 //
