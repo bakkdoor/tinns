@@ -105,6 +105,7 @@ class PMsgBuilder
 
   PMessage* BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID); // TEMP Solution! Need to change this when we have an itemsystem
   PMessage* BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt);
+  PMessage* BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, u8 nHackDifficult);
 };
 
 #endif

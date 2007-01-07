@@ -651,15 +651,15 @@ void PNPCManager::Update()
             PNPCWorld* tWorld = it->second;
             if(ClientManager->IsWorldInUse(tWorld->mWorldID) == true)
             {
-                if(lastdebug < std::time(NULL))
-                    if(gDevDebug) Console->Print("[DEBUG] World is in use, poking management class to update itself");
+                //if(lastdebug < std::time(NULL))
+                //    if(gDevDebug) Console->Print("[DEBUG] World is in use, poking management class to update itself");
                 // World is in use. Now send "dirty" npcs or alive messages
                 tWorld->Update();
             }
             else
             {
-                if(lastdebug < std::time(NULL))
-                    if(gDevDebug) Console->Print("[DEBUG] World not in use. Checking lifetimer...");
+                //if(lastdebug < std::time(NULL))
+                //    if(gDevDebug) Console->Print("[DEBUG] World not in use. Checking lifetimer...");
 
                 if((tWorld->mCreation + ZONE_RESET_AFTER) <= std::time(NULL))
                 //if(tWorld->mCreation <= std::time(NULL))
@@ -673,8 +673,8 @@ void PNPCManager::Update()
                 {
                     // Keep LastAliveMessage up to date until someone enters zone
                     tWorld->mLastAliveMsg = std::time(NULL);
-                    if(lastdebug < std::time(NULL))
-                        if(gDevDebug) Console->Print("[DEBUG] World still within ZONE_RESET timeout");
+                  //  if(lastdebug < std::time(NULL))
+                  //      if(gDevDebug) Console->Print("[DEBUG] World still within ZONE_RESET timeout");
                 }
             }
         }

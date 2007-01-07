@@ -156,7 +156,7 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
         }
         else                                            // We dont have this msg? Add it!
         {
-            Console->Print("Added UDP ID %d to messagebuffer", tmpUDPID);
+            //Console->Print("Added UDP ID %d to messagebuffer", tmpUDPID);
             UDPMessages.insert(std::make_pair(tmpUDPID, tWorkMsg));
             mLastUDPID++;
         }

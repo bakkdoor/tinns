@@ -1314,3 +1314,14 @@ Huge update!
 *Note* Due the massive update of sourcecode, its likely that i forgot some debug outputs (You'll see D1, D2,.. or whatever else senseless text
 on the console). If you find something, tell me please over forum or bugtracker. But i will remove all outputs when i find some in the next
 releases
+
+====================
+Namikon; 07.01.2007 21:52 GMT+1
+----------
+[rev. 76]
+<internal version: 0.1.36 Dev>
+
+- Added hacking ability to hackbuttons (Both static and dynamic worldactors)
+  Itemcontainers will follow when we have a management class for them
+- Removed several debug outputs, and changed others
+- Fixed an typo in command remove

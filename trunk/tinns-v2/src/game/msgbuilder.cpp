@@ -1795,6 +1795,30 @@ PMessage* PMsgBuilder::BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX,
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, u8 nHackDifficult)
+{
+    PMessage* tmpMsg = new PMessage(22);
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+    *tmpMsg << (u8)0x10;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1F;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x28;
+    *tmpMsg << nWorldObjID;
+    *tmpMsg << nHackDifficult;
+    *tmpMsg << (u8)0x28;
+    *tmpMsg << (u8)0x5C;
+    *tmpMsg << (u8)0xCF;
+    *tmpMsg << (u8)0x3E;
+
+    return tmpMsg;
+}
+
 /*PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
 {
     PMessage* tmpMsg = new PMessage(14);

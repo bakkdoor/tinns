@@ -60,7 +60,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
 
   switch(MsgType)
   {
-    case 0x00: // Hack announcement
+    case 0x00: // Hack announcement?
     {
       nextAnalyser = new PUdpHackInit(mDecodeData);
       break;
@@ -119,6 +119,17 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         nextAnalyser = new PUdpCloseItemContainer(mDecodeData);
         break;
     }
+    case 0x29:
+    {
+        nextAnalyser = new PUdpHackSuccess(mDecodeData);
+        break;
+    }
+    case 0x2C:
+    {
+        nextAnalyser = new PUdpHackFail(mDecodeData);
+        break;
+    }
+
     case 0x33:
     {
       nextAnalyser = new PUdpChatListAdd(mDecodeData);

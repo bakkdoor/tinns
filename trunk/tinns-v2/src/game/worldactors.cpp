@@ -134,7 +134,7 @@ void PWorldActors::InitWorld(PClient* nClient)
     char query[100];
 
     sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d", tZone);
-    if (gDevDebug) Console->Print("DEBUG: Executing query: %s", query);
+    //if (gDevDebug) Console->Print("DEBUG: Executing query: %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
@@ -204,7 +204,7 @@ void PWorldActors::InitWorld(PClient* nClient)
             *tmpActorSpawn << tFuncID;
             if((tmpActorSpawn->GetSize() + 23) >= (tmpActorSpawn->GetMaxSize() - tmpActorSpawn->GetSize()))
             {
-                if (gDevDebug) Console->Print("DEBUG: Message is full, sending part-msg");
+                //if (gDevDebug) Console->Print("DEBUG: Message is full, sending part-msg");
                 tmpActorSpawn->U16Data(0x01) = nClient->GetUDP_ID();  // Set final UDP ID
                 tmpActorSpawn->U16Data(0x03) = nClient->GetSessionID();  // Set final SessionID
                 nClient->getUDPConn()->SendMessage(tmpActorSpawn);
@@ -215,7 +215,7 @@ void PWorldActors::InitWorld(PClient* nClient)
                 *tmpActorSpawn << (u8)0x13;
                 *tmpActorSpawn << (u16)0x0000; // Placeholder
                 *tmpActorSpawn << (u16)0x0000; // Placeholder
-                if (gDevDebug) Console->Print("DEBUG: Done. Starting over!");
+                //if (gDevDebug) Console->Print("DEBUG: Done. Starting over!");
             }
         }
         else
@@ -243,19 +243,19 @@ u32 PWorldActors::AddWorldActor(PClient* nClient, u16 nActorID, u16 nFuncID, u16
     u16 tPosZ = tChar->Coords.mZ + 768;
     u16 tLoc = tChar->GetLocation();
 
-    if (gDevDebug) Console->Print("DEBUG: Adding worldactor %d function %d to world %d", nActorID, nFuncID, tLoc);
+    //if (gDevDebug) Console->Print("DEBUG: Adding worldactor %d function %d to world %d", nActorID, nFuncID, tLoc);
     return AddWorldActor(tLoc, nActorID, nFuncID, tPosX, tPosY, tPosZ, (u8)194, (u8)128, (u8)128, nOpt1, nOpt2, nOpt3);
 }
 
 u32 PWorldActors::AddWorldActor(u32 nWorldID, u16 nActorID, u16 nFuncID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ, u16 nOpt1, u16 nOpt2, u16 nOpt3)
 {
-    if (gDevDebug) Console->Print("DEBUG: Adding worldactor: Getting next free WorldActorID");
+    if (gDevDebug) Console->Print("DEBUG: Adding new worldactor: ActorModel: %d, Function: %d, Option1: %d", nActorID, nFuncID, nOpt1);
     u32 tNextWAID = GetNextFreeWAID(); // Grab next free WorldActorID
-    if (gDevDebug) Console->Print("DEBUG: Next ID will be: %d", tNextWAID);
+    //if (gDevDebug) Console->Print("DEBUG: Next ID will be: %d", tNextWAID);
 
     char query[512];
     snprintf(query, 512, "INSERT INTO `world_actors`(wa_actor_id,wa_actor_map,wa_actor_model,wa_actor_type,wa_posX,wa_posY,wa_posZ,wa_rotX,wa_rotY,wa_rotZ,wa_option1,wa_option2,wa_option3)VALUES('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d')",tNextWAID, nWorldID, nActorID, nFuncID, nPosX, nPosY, nPosZ, nRotX, nRotY, nRotZ, nOpt1, nOpt2, nOpt3);
-    if (gDevDebug) Console->Print("DEBUG: Executing SQL query %s", query);
+    //if (gDevDebug) Console->Print("DEBUG: Executing SQL query %s", query);
     if ( MySQL->GameQuery(query) )
     {
         Console->Print(RED, BLACK, "WorldActors::AddWorldActor could not add worldactor to database");
@@ -264,7 +264,7 @@ u32 PWorldActors::AddWorldActor(u32 nWorldID, u16 nActorID, u16 nFuncID, u16 nPo
         MySQL->ShowGameSQLError();
         return 0;
     }
-    if (gDevDebug) Console->Print("DEBUG: Successfully added WorldActor to Database");
+    //if (gDevDebug) Console->Print("DEBUG: Successfully added WorldActor to Database");
 
     // Now spawn the actor right away!
     SpawnWA(nWorldID, nActorID, nFuncID, tNextWAID, nPosX, nPosY, nPosZ, nRotX, nRotY, nRotX);
@@ -276,13 +276,18 @@ void PWorldActors::DelWorldActor(PClient* nClient, u32 nWAid)
 {
     char query[200];
     u16 tLoc = nClient->GetChar()->GetLocation();
-    if (gDevDebug) Console->Print("DEBUG: Received request to remove worldactor %d from world %d", nWAid, tLoc);
+    if (gDevDebug) Console->Print("DEBUG: Removing worldactor %d from world %d", nWAid, tLoc);
 
     sprintf(query, "DELETE FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", tLoc, nWAid);
-    if (gDevDebug) Console->Print("DEBUG: Executing query %s", query);
+    //if (gDevDebug) Console->Print("DEBUG: Executing query %s", query);
     if(MySQL->GameQuery(query))
-        Console->Print("Error while deleting worldactorID %d in world %d", nWAid, tLoc);
-
+    {
+        Console->Print(RED, BLACK, "PWorldActors::DelWorldActor could not delete WorldActor");
+        Console->Print("Query was:");
+        Console->Print("%s", query);
+        MySQL->ShowGameSQLError();
+        return;
+    }
     VanishWA(tLoc, nWAid);
 }
 
@@ -385,7 +390,7 @@ bool PWorldActors::IsDynamicActor(u32 nWAid)
     MySQL->FreeGameSQLResult(result);
     return false;
 }
-
+/* Not needed. Better re-spawn the actor
 bool PWorldActors::EditWorldActor(u32 nWorldID, int nOption1, int nOption2, int nOption3)
 {
     if(IsDynamicActor(nWorldID) == false) // Make sure we really have this actor in DB
@@ -423,7 +428,7 @@ bool PWorldActors::EditWorldActor(u32 nWorldID, int nOption1, int nOption2, int 
     }
     return true;
 }
-
+*/
 int PWorldActors::GetWorldActorFunctionID(u32 nWAid)
 {
     MYSQL_RES *result = NULL;

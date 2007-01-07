@@ -165,7 +165,8 @@ class PWorldActors
         // Check if actorID is dynamic
         bool IsDynamicActor(u32 nWAid);
 
-        bool EditWorldActor(u32 nWorldID, int nOption1 = -1, int nOption2 = -1, int nOption3 = -1);
+        // Not needed. Better re-spawn the actor
+        //bool EditWorldActor(u32 nWorldID, int nOption1 = -1, int nOption2 = -1, int nOption3 = -1);
 
         int GetWorldActorFunctionID(u32 nWAid);
 

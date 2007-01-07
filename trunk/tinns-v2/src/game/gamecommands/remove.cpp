@@ -51,7 +51,7 @@ void PCommands::doCmdremove()
         return;
     }
 
-    if(IsArgNumeric(1)
+    if(IsArgNumeric(1) == true)
     {
         u32 tTest = GetArgInt(1);
         if(WorldActors->IsDynamicActor(tTest) == true)
