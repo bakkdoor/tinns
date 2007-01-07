@@ -35,11 +35,12 @@ void ConnectionUDP::UpdateMessageBuffer()
         if((int)it->first < (int)(mLastUDPID - MAX_RETENTION))
         {
             erasednum++;
+            delete it->second;
             UDPMessages.erase(it);
         }
     }
-//    if(erasednum > 0)
-//        Console->Print("[udpmanager] Done updating messagequeue, %d entries deleted", erasednum);
+    if(erasednum > 0)
+        Console->Print("[UpdateMessageBuffer] Done updating messagequeue, %d entries deleted", erasednum);
 }
 
 void ConnectionUDP::ResetMessageBuffer()
@@ -48,7 +49,11 @@ void ConnectionUDP::ResetMessageBuffer()
     {
         Console->Print("%s MessageQueue got erased but UDP_ID is still >0", Console->ColorText(RED, BLACK, "[WARNING]"));
     }
-    UDPMessages.clear();
+    for(PMessageMap::iterator it=UDPMessages.begin(); it!=UDPMessages.end(); it++)
+    {
+        delete it->second;
+        UDPMessages.erase(it);
+    }
     mLastUDPID = 0;
 //    Console->Print("[udpmanager] Erased messagebuffer");
 }
@@ -77,10 +82,10 @@ void ConnectionUDP::ReSendUDPMessage(u16 nUDP_ID)
             }
             Console->Print("Trying to cancel OOO notice by sending dummy packet");
             PMessage* tmpMsg = new PMessage(14);
-            u16 tmpSessionID = mLastUDPID + 37917;
+            //u16 tmpSessionID = mLastUDPID + SESSION_UDP_OFFSET;
             *tmpMsg << (u8)0x13;
-            *tmpMsg << mLastUDPID;
-            *tmpMsg << tmpSessionID;
+            *tmpMsg << nUDP_ID;
+            *tmpMsg << (u16)(nUDP_ID + SESSION_UDP_OFFSET);
             *tmpMsg << (u8)0x08;
             *tmpMsg << (u8)0x03;
             *tmpMsg << nUDP_ID;
@@ -94,12 +99,17 @@ void ConnectionUDP::ReSendUDPMessage(u16 nUDP_ID)
             Console->Print("[OOO-Buster] ReSending UDP packet with ID %d", nUDP_ID);
             // Build new message, including the missing UDP packets as content
             u16 MsgSize = it->second->GetSize();
-            PMessage* tmpMsg = new PMessage(MsgSize);
-            tmpMsg = it->second;
-            tmpMsg->SetNextByteOffset(1);
-            // The packet is sent unchanged, except the first UDP and Session ID
-            *tmpMsg << mUDP_ID;
-            *tmpMsg << mSessionID;
+            PMessage* tmpMsg = new PMessage(MsgSize + 5); // Create new message
+            *tmpMsg << (u8)0x13;
+            *tmpMsg << nUDP_ID;
+            *tmpMsg << (u16)(nUDP_ID + SESSION_UDP_OFFSET);
+//            *tmpMsg << mUDP_ID;
+//            *tmpMsg << mSessionID;
+//            *tmpMsg << *it->second; // This should work, but it doesnt! Causes segfault after sending a few packets
+            for(int x = 0; x < MsgSize; x++)
+            {
+                *tmpMsg << it->second->U8Data(x);
+            }
             SendMessage(tmpMsg, true);  // Add message to outgoing VIP queue
         }
     }
@@ -110,57 +120,46 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
     if (!nMsg)
         return;
 
-    // Check if message is 0x03 commandset. If not, dont add message
-    if(nMsg->U8Data(6) == 0x03) // Since we only add single messages here and no multiframe, we can check for pos 6
+    if(nMsg->U8Data(0) != 0x13) return; // Only add real UDP messages here
+//  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25 26 27 28
+// 13 07 00 F2 00 05 03 02 00 11 11 05 03 03 00 11 11 05 03 04 00 11 11 05 03 05 00 11 11 05 03 06 00 11 11 05 03 07 00 11 11
+
+    // Grab submessages from packet, check if message is 0x03 commandset. If not, dont add message
+    PMessage* tWorkMsg = NULL;
+
+    u16 tCurPos = 5;
+    u8 tSubMsgLen = 0;
+    u16 tmpUDPID = 0;
+    PMessageMap::const_iterator it = NULL;
+    //nMsg->Dump();
+    while(tCurPos < (nMsg->GetSize() - 1)) // Loop while we still have more frames. (-1: GetSize starts at 1, pos pointer at 0)
     {
-        u16 tmpUDPID = nMsg->U16Data(1);
-        PMessageMap::const_iterator it = UDPMessages.find(tmpUDPID);
-        int tmpOffset = tmpUDPID - mLastUDPID;
-        if(it->second)
+        //Console->Print("tCurPos = %d  nMsg->GetSize = %d", tCurPos, nMsg->GetSize());
+        tSubMsgLen = nMsg->U8Data(tCurPos) + 1;          // Get the lenght of the frame, and add the lenght byte
+        if(nMsg->U8Data(tCurPos+1) != 0x03)
+        {
+            //Console->Print("Ignoring UDP message, no 0x03 commandset");
+            tCurPos += tSubMsgLen;                       // Set pointer to the end of this frame
+            continue;                                    // Skip if frame is not an 0x03 commandset
+        }
+        //Console->Print("MsgLen: %d", tSubMsgLen);
+        tWorkMsg = nMsg->GetChunk(tCurPos, tSubMsgLen); // get the frame.
+        //Console->Print("Msg:");
+        //tWorkMsg->Dump();
+        tmpUDPID = nMsg->U16Data(tCurPos + 2);                     // Get the UDP ID of this frame
+        //Console->Print("UDP ID: %d", tmpUDPID);
+        it = UDPMessages.find(tmpUDPID);                 // Try to find the UDP ID in the queue
+        if(it->second)                                   // If we already have this UDP msg, print error
         {
             Console->Print("%s Packet *NOT* added to history buffer, UdpID %d already sent! (This may cause an OOO)", Console->ColorText(RED, BLACK, "[WARNING]"), tmpUDPID);
+            nMsg->Dump();
         }
-        else
+        else                                            // We dont have this msg? Add it!
         {
-            if(tmpOffset > 1)    // Check if UDP_ID got increased correctly. If not, add missing UDP_IDs and add original packet after
-            {
-                Console->Print("%s UdpID is out of order, expected %d, got %d (%d too high)!", Console->ColorText(RED, BLACK, "[WARNING]"), mLastUDPID + 1, tmpUDPID, tmpOffset - 1);
-                Console->Print("Adding %d fake Udp messages to history buffer...", tmpOffset);
-                while(tmpOffset > 1)  // Add as many packets until tmpOffset is 1 again. This one packet is added after
-                {
-                    mLastUDPID++;
-                    u16 tmpSessionID = mLastUDPID + 37917;
-
-                    PMessage* tmpMsg = new PMessage(14);
-                    *tmpMsg << (u8)0x13;
-                    *tmpMsg << mLastUDPID;
-                    *tmpMsg << tmpSessionID;
-                    *tmpMsg << (u8)0x08;
-                    *tmpMsg << (u8)0x03;
-                    *tmpMsg << mLastUDPID;
-                    *tmpMsg << (u8)0x1F;
-                    *tmpMsg << (u16)0xFFFF;     // Should do nothing, CharID 65535 should never exist
-                    *tmpMsg << (u16)0x3C01;     // This value IS wrong way, so that nothing can happen at all
-
-                    UDPMessages.insert(std::make_pair(mLastUDPID, tmpMsg));
-                    tmpOffset--;
-
-                    Console->Print("Added fake Udp message with ID %d to history buffer. New offset is: %d (Remaining fake packets to add: %d)", mLastUDPID, tmpOffset, (tmpOffset - 1));
-                }
-            }
-            else if(tmpOffset < 1)
-            {
-                // If we're honest, this cant happen. But well, better cover even the worst of all cases
-                Console->Print("%s Sending 0x03 commandset without preincreased UDP_ID!", Console->ColorText(YELLOW, BLACK, "[WARNING]"));
-                return;
-            }
-
-            // Insert new message. The UDP_ID is stored as index-value, so be able to search for it
-            PMessage* tmpMsg = new PMessage(nMsg->GetSize());
-            tmpMsg = nMsg;
-            UDPMessages.insert(std::make_pair(tmpUDPID, tmpMsg));
-            mLastUDPID++;       // Could also be mLastUDPID = tmpUDPID, but its a bit more "safer" to just increment it
-            //Console->Print("Added Udp message with ID %d to queue", mLastUDPID);
+            Console->Print("Added UDP ID %d to messagebuffer", tmpUDPID);
+            UDPMessages.insert(std::make_pair(tmpUDPID, tWorkMsg));
+            mLastUDPID++;
         }
+        tCurPos += tSubMsgLen;                      // Set pointer to the end of this frame
     }
 }

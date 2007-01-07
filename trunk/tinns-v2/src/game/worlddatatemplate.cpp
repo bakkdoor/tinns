@@ -24,7 +24,7 @@
 
 	MODIFIED: 04 Oct 2006 Hammag
 	REASON: - creation
-	
+
 */
 
 
@@ -72,26 +72,26 @@ if (gDevDebug) Console->Print("Loading %s", nFilename.c_str());
       }
       return true;
     }
-      
+
     case -1:
     {
       if (!nTestAccesOnly)
         Console->Print("%s Can't read file %s", Console->ColorText(RED, BLACK, "[Error]"), nFilename.c_str());
       break;
     }
-    
+
     case -2:
     {
       Console->Print("%s Bad data", Console->ColorText(RED, BLACK, "[Error]"));
       break;
     }
-      
+
     case -3:
     {
       Console->Print("%s Unexpected end of file", Console->ColorText(RED, BLACK, "[Error]"));
       break;
     }
-    
+
     default:
       Console->Print("%s Unknown error %d",Console->ColorText(RED, BLACK, "[Error]"), LoadResult);
   }
@@ -104,12 +104,12 @@ u32 PWorldDataTemplate::AddFurnitureItem(PFurnitureItemTemplate* nItem)
   {
     if(mFurnitureItems.insert(std::make_pair(nItem->GetID(), nItem)).second)
     {
-if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem->GetID());  
+if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem->GetID());
       return nItem->GetID();
     }
     else
     {
-      Console->Print(RED, BLACK, "Duplicate furniture item ID %d !!! Not added to world template", nItem->GetID());      
+      Console->Print(RED, BLACK, "Duplicate furniture item ID %d !!! Not added to world template", nItem->GetID());
     }
   }
   return 0;
@@ -135,7 +135,7 @@ if (gDevDebug) Console->Print("Door %d added to world template", nDoor->GetID())
     }
     else
     {
-      Console->Print(RED, BLACK, "Duplicate Door ID %d !!! Not added to world template", nDoor->GetID());      
+      Console->Print(RED, BLACK, "Duplicate Door ID %d !!! Not added to world template", nDoor->GetID());
     }
   }
   return 0;
@@ -158,14 +158,14 @@ void PWorldDataTemplate::SetLinkedObjects()
   u32 minObjID;
   u16 fnctType;
   u16 tGROrder = 0;
-  
+
   for (PFurnitureItemsMap::iterator it = mFurnitureItems.begin(); it != mFurnitureItems.end(); it++)
   {
     fnctType = it->second->GetFunctionType();
     if ((fnctType==11) || (fnctType==12) || (fnctType==13) ||(fnctType==23)) // if function is apt entry button, door access if, hack button or money button
     {
       it->second->GetPos(&xI, &yI, &zI);
-//Console->Print("Button pos: %0.0f %0.0f %0.0f", xI, yI, zI);      
+//Console->Print("Button pos: %0.0f %0.0f %0.0f", xI, yI, zI);
       minD2 = 1e9;
       minObjID = 0;
       for (PDoorsMap::iterator dit = mDoors.begin(); dit != mDoors.end(); dit++)
@@ -192,7 +192,7 @@ if (gDevDebug) Console->Print("%s Found triggered door %d (%s) for button %d (%s
       }
       else
       {
-        Console->Print("%s No triggered door found for button %d (%s)", Console->ColorText(YELLOW, BLACK, "[Warning]"), it->first, it->second->GetName().c_str());        
+        Console->Print("%s No triggered door found for button %d (%s)", Console->ColorText(YELLOW, BLACK, "[Warning]"), it->first, it->second->GetName().c_str());
       }
     }
     else if (fnctType==6) // if function is genrep

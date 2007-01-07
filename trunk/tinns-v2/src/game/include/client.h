@@ -113,6 +113,7 @@ class PClient
         u16 mTargetY;
         u16 mTargetZ;
         //*******
+        bool mAcceptNPCUpdates;
 
 	protected :
 	public :
@@ -121,6 +122,9 @@ class PClient
 
         inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
         void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+
+        inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
+        inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
 
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
@@ -139,7 +143,7 @@ class PClient
 
 /*
             inline u16 GetUDP_ID() const { return mUDP_ID; }
-            inline u16 GetSessionID() const { return 37917 + mUDP_ID ; }
+            inline u16 GetSessionID() const { return SESSION_UDP_OFFSET + mUDP_ID ; }
             inline u16 GetTransactionID() {return mTransactionID; }
             void SetUDP_ID(int id);
             inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }

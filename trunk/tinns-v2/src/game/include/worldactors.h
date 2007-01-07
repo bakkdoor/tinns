@@ -30,12 +30,82 @@
 
 */
 
+/*
+Current known WorldActors:
+
+- Furniture
+1       Door
+2       Wooden Door
+3       Tech Door
+5       Lift
+6       Shutter
+9       Airlock
+10      Chair
+11      Wooden Chair
+12      Bench
+13      Table
+14      Recreation Unit
+
+- Interactions
+21      Gen rep
+22      Go Guardian
+99      Outfitter
+23/29   Venture Warp
+90      City Com
+98      Home term
+104     Home term
+160-195 Hack term
+900     Carport Term
+
+- Cabinets
+150     Cabinet
+101     Secure Cabinet
+105     Safe
+106     High Security Safe
+
+- Hack Boxes
+700     Light Weapon Box
+703     Medium
+720     Ammo Box
+740     Armour Box
+750     Equipment Box
+780     Psi Box
+
+- Containers
+134     Old Bag
+120     Trashcan
+125     Old Bag
+126     Mutant Cooking Pot
+127     Rotten Box
+128     Rusty Box
+133     Steel Box
+130     Bunch of Bones
+136     Dead Technician (Loot)
+137     Corpse (Loot)
+
+- Others
+131     Pile of Stones
+8       Rock
+510     Tree Trunk
+790     Burning Barrel
+800     Explosive Barrel
+
+- Costs
+15      Pay 20nc
+16      Pay 50nc
+17      Pay 100nc
+18      Pay 150nc
+19      Pay 200nc
+20      Pay 500nc
+
+*/
+
+
 #ifndef WORLDACTORS_H
 #define WORLDACTORS_H
 
 // Start from this offset (00 00 80 00)
 #define DYNACTORIDSTART 8388608
-#define DummyValue 20202
 
 class PWorldActors
 {
@@ -94,6 +164,25 @@ class PWorldActors
 
         // Check if actorID is dynamic
         bool IsDynamicActor(u32 nWAid);
+
+        bool EditWorldActor(u32 nWorldID, int nOption1 = -1, int nOption2 = -1, int nOption3 = -1);
+
+        int GetWorldActorFunctionID(u32 nWAid);
+
+        void GetFrontPos(u32 nWAID, u16* mX, u16* mY, u16* mZ); // For chairs
+        int GetLinkedObjectID(u32 nWAID); // OptionValue 1 is used for linked object!
+
+        // Check if given functionID does exist
+        bool IsValidWAFunction(int nFunctionID);
+
+        // Checks if this functionID required an linked object or not
+        bool RequiresLinkedObject(int nFunctionID);
+
+        // Checks if the given worldobjectID is valid for this type of functionID
+        bool IsValidLinkedObject(PClient *nClient, u16 nOption1, int nFunctionID);
+
+        // Checks for double actor-IDs and deletes them from DB
+        void DoActorCheck();
 };
 
 #endif

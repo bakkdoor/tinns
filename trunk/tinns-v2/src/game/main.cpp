@@ -88,6 +88,7 @@ int main()
 	while(1)
 	{
 	  ServerSock->update();
+        NPCManager->Update();
 		Server->Update();
 		Database->Update();
 		GameServer->Update();

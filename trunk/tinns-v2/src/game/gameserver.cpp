@@ -886,8 +886,11 @@ bool PGameServer::HandleGame(PClient *Client, PGameState *State)
 
     } while(MsgDecoder->MoreSubMsg());
   }
+
   if (NewMsg)
+  {
     delete NewMsg;
+  }
 
 	return (true);
 }

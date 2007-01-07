@@ -20,41 +20,36 @@
 */
 
 /*
+	udp_0x08.cpp - decoder classes for UDP 0x08 messages
 
-	udp_OOO.cpp - decoder classe for UDP Out Of Order message
-
-	CREATION: 5 Sep 2006 Hammag
+	CREATION: 05 Jan 2007 Namikon
 
 	MODIFIED:
 	REASON: -
-
 */
 
 #include "main.h"
-#include "udp_OOO.h"
+#include "udp_0x08.h"
 
-/**** PUdpOOO ****/
 
-PUdpOOO::PUdpOOO(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+PUdp0x08::PUdp0x08(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-  nDecodeData->mName << "/0x01";
+  nDecodeData->mName << "/0x08";
 }
 
-PUdpMsgAnalyser* PUdpOOO::Analyse()
+PUdpMsgAnalyser* PUdp0x08::Analyse()
 {
-  mDecodeData->mName << "=Out Of Order";
-  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+    mDecodeData->mName << "=Client crash";
+    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 
-  return this;
+    return this;
 }
 
-bool PUdpOOO::DoAction()
+bool PUdp0x08::DoAction()
 {
-    u16 MissingUDP_ID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+5);
-
-    mDecodeData->mClient->getUDPConn()->ReSendUDPMessage(MissingUDP_ID);
-    //Console->Print("%s Out of Order packet received ! (Client is missing UDPID %d) ***not managed yet***", Console->ColorText(YELLOW, BLACK, "[Notice]"), MissingUDP_ID);
-
+    // Client crashed, close connection from our side
+    GameServer->ClientDisconnected(mDecodeData->mClient);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+
     return true;
 }

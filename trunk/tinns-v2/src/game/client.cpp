@@ -59,6 +59,7 @@ PClient::PClient(int Index)
     mTargetZ = 0;
     //********
     mActorRemoveMode = false;
+    mAcceptNPCUpdates = false;
 }
 
 PClient::~PClient()
@@ -153,6 +154,7 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
 {
   if(Worlds->IsValidWorld(nLocation))
   {
+    mAcceptNPCUpdates = false; // Zone changed, reject NPC updates till initial NPC spawn
     PChar* tChar = GetChar();
     u32 CurrentLocation = tChar->GetLocation();
     if ((CurrentLocation == nLocation) && !DoForce)

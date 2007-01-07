@@ -84,7 +84,28 @@ void PCommands::doCmdspawnactor()
         return;
     }
 
-    WorldActors->AddWorldActor(source, tmpActorID, tmpFunctionID, tmpOption1, tmpOption2, tmpOption3);
+    if(WorldActors->IsValidWAFunction(tmpFunctionID) == true)
+    {
+        if(WorldActors->RequiresLinkedObject(tmpFunctionID == true))
+        {
+            if(WorldActors->IsValidLinkedObject(source, tmpOption1, tmpFunctionID) == false)
+            {
+                if(tmpOption1 == 0)
+                    Chat->send(source, CHAT_DIRECT, "System", "Error: This functionID requires an linked object");
+                else if(tmpOption1 == 18)
+                    Chat->send(source, CHAT_DIRECT, "System", "Error: Invalid destination world");
+                else
+                    Chat->send(source, CHAT_DIRECT, "System", "Error: Invalid worldobjectID to link to");
+                return;
+            }
+        }
+        WorldActors->AddWorldActor(source, tmpActorID, tmpFunctionID, tmpOption1, tmpOption2, tmpOption3);
+    }
+    else
+    {
+        Chat->send(source, CHAT_DIRECT, "System", "Error: This is an invalid function ID");
+        return;
+    }
     //PMessage* tmpMsg = MsgBuilder->BuiltSpawnObjectMsg(source, tmpActorID, tmpFunctionID, mWOID++);
     //ClientManager->UDPBroadcast(tmpMsg, source);
     //tmpMsg = NULL;

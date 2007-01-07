@@ -186,7 +186,6 @@ bool PUdpSync2::DoAction()
 
 //Console->Print(GREEN, BLACK, "Baseline: ----------- chunk %d/%d", ChunkID+1, ChunksNum);
 //ChunkMsg->Dump();
-
       delete ChunkBuffer;
       nClient->getUDPConn()->SendMessage(ChunkMsg);
     }
@@ -209,6 +208,9 @@ bool PUdpSync2::DoAction()
 
     // Send worldactors to client
     WorldActors->InitWorld(nClient);
+
+    // Send NPC information to client
+    NPCManager->InitPlayer(nClient);
 
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;

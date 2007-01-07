@@ -101,7 +101,7 @@ const char* CommandsTemplate[][2] = {
     {"speed", "0"},
     {"color", "0"},
     {"brightness", "0"},
-    {"remove", "100"},
+    {"remove", "50"},
     {"rehash", "100"},
     {"uptime", "0"},
     {"version", "0"},

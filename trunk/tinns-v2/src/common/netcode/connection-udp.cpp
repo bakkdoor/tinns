@@ -120,7 +120,7 @@ ConnectionUDP::ConnectionUDP(int sockfd, int port, int remoteadress, int remotep
     mSendBufferMsg = NULL;
 
 	mUDP_ID = 0;
-	mSessionID = 37917;
+	mSessionID = SESSION_UDP_OFFSET;
     mLastUDPID = 0;
     mTransactionID = 0;
 }
@@ -234,8 +234,10 @@ bool ConnectionUDP::update()
             else
             {
                 tmpMsg = mQueueOut.front();
+
+                // We ignore VIP packets for now. They are only meant to OOO packets
+                InsertUDPMessage(tmpMsg);
             }
-//            InsertUDPMessage(tmpMsg);
             //int numBytes = send(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0);
             int numBytes = sendto(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0, (struct sockaddr *)&mRemoteAddr, sizeof(struct sockaddr));
             if(numBytes > 0)

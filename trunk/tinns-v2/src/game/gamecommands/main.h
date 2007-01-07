@@ -82,6 +82,7 @@
 #include "msgbuilder.h"
 #include "worlds.h"
 #include "worldactors.h"
+#include "npc.h"
 
 using namespace std;
 

@@ -64,6 +64,8 @@ bool PUdpUseObject::DoAction()
     char DbgMessage[128];
     PMessage* tmpMsg;
 
+    bool tHandleDynamicActor = false;
+
     /*PMessage* cMsg = mDecodeData->mMessage;
     u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
 
@@ -102,7 +104,13 @@ bool PUdpUseObject::DoAction()
 
     PWorld* CurrentWorld = Worlds->GetWorld(tChar->GetLocation());
 
-    if (mRawItemID & 1023) // non-furniture objects
+    if(WorldActors->IsDynamicActor(mRawItemID) == true)
+    {
+        tHandleDynamicActor = true;
+        Console->Print("Dynamic actor found, processing...");
+    }
+
+    if (mRawItemID & 1023 && tHandleDynamicActor == false) // non-furniture objects
     {
         if (mRawItemID > 0x80) // maybe door
         {
@@ -138,10 +146,39 @@ bool PUdpUseObject::DoAction()
     }
     else // furniture objects
     {
-        ItemID = mRawItemID/1024 -1;
+        const PFurnitureItemTemplate* tFurnitureTemplate = NULL;
+        const PDefWorldModel* tFurnitureModel = NULL;
+        if(tHandleDynamicActor == false)
+        {
+            // We have an STATIC ACTOR, which means we DONT KNOW the FUNCTION VALUE from pak_worldmodel.def yet
+            // (the setentry one). So we need to get it over the .dat file:
 
-        const PFurnitureItemTemplate* tFurnitureTemplate = CurrentWorld->GetFurnitureItemTemplate(ItemID);
-        const PDefWorldModel* tFurnitureModel = CurrentWorld->GetFurnitureItemModel(ItemID);
+            // Dat files have smaller IDs
+            ItemID = mRawItemID/1024 -1;
+
+            // Now grab the template from .dat file
+            tFurnitureTemplate = CurrentWorld->GetFurnitureItemTemplate(ItemID);
+
+            // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc
+            tFurnitureModel = CurrentWorld->GetFurnitureItemModel(ItemID);
+        }
+        else
+        {
+            // We have an DYNAMIC ACTOR, which means we DO KNOW the FUNCTION VALUE (stored in SQL).
+
+            // First, assign the RawID to the "real" itemID, which is used for several objects to identify them clientside
+            ItemID = mRawItemID;
+
+            // Now get the get the function value:
+            int tFunctionVal = WorldActors->GetWorldActorFunctionID(mRawItemID);
+
+            // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc
+            tFurnitureModel = GameDefs->GetWorldModelDef(tFunctionVal);
+
+            // Print it!
+            Console->Print("Processing dynmic actor %d with Functionvalue %d", mRawItemID, tFunctionVal);
+        }
+
         if (tFurnitureModel) // valid active furniture (else invalid or passive furniture)
         {
             if(nClient->GetDebugMode(DBG_ITEMID))
@@ -162,9 +199,16 @@ bool PUdpUseObject::DoAction()
                         CurrentWorld->CharLeaveChair(nClient->GetLocalID(), ChairInUse);
                     }
                     tChar->SetChairInUse(ItemID);
-
-                    tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
-                    (tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
+                    if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
+                    {
+                        tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
+                        (tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
+                    }
+                    else
+                    {
+                        WorldActors->GetFrontPos(mRawItemID, &(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
+                        //(tChar->Coords).mLR = WorldActors->GetFrontLR();
+                    }
 
                     tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
                     ClientManager->UDPBroadcast(tmpMsg, nClient);
@@ -183,7 +227,6 @@ bool PUdpUseObject::DoAction()
                     Console->Print("Item function type: %d value: %d", tFurnitureModel->GetFunctionType(), tFurnitureModel->GetFunctionValue());
                 switch(tFurnitureModel->GetFunctionType())
                 {
-
                     case 6: //Respawn Station (GenRep)
                     {
                         u32 nLocation = tChar->GetLocation();
@@ -197,7 +240,16 @@ bool PUdpUseObject::DoAction()
                         {
                             //nEntity = MySQL->GetWorldItemOption(mRawItemID/256, nLocation, 1);
                             // This is a kind of nearly-not-hardcoded-hack ...
-                            int nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
+                            int nEntityInt = 0;
+                            if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
+                            {
+                                nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
+                            }
+                            else
+                            {
+                                nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), WorldActors->GetLinkedObjectID(mRawItemID));
+                            }
+
                             nEntity = (nEntityInt < 0 ? 0xffff : (u16)nEntityInt);
                         }
 
@@ -320,15 +372,31 @@ bool PUdpUseObject::DoAction()
                     {
                         if (Appartements->CanFreelyEnter(tChar, tChar->GetLocation()))
                         {
-                            if (tFurnitureTemplate->GetLinkedObjectID())
+                            if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
                             {
-                                tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
-                                ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                if (tFurnitureTemplate->GetLinkedObjectID())
+                                {
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
                             }
                             else
                             {
-                                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                if (WorldActors->GetLinkedObjectID(mRawItemID))
+                                {
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+WorldActors->GetLinkedObjectID(mRawItemID), CurrentWorld->GetDoor(WorldActors->GetLinkedObjectID(mRawItemID))->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
                             }
                         }
                         else
@@ -342,39 +410,81 @@ bool PUdpUseObject::DoAction()
 
                     case 12: //Standard Button
                     {
-                        if (tFurnitureTemplate->GetLinkedObjectID())
+                        if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
                         {
-                            tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
-                            ClientManager->UDPBroadcast(tmpMsg, nClient);
-                        }
-                        else
-                        {
-                            tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-                            nClient->getUDPConn()->SendMessage(tmpMsg);
-                        }
-                        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-                        break;
-                    }
-                    case 13: //Hack Button
-                    {
-                        if (tFurnitureTemplate->GetLinkedObjectID())
-                        {
-                            if(nClient->GetAccount()->GetLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
+                            if (tFurnitureTemplate->GetLinkedObjectID())
                             {
                                 tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
                                 ClientManager->UDPBroadcast(tmpMsg, nClient);
                             }
                             else
                             {
-                                tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 106); // Damn, locked!
+                                tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
                                 nClient->getUDPConn()->SendMessage(tmpMsg);
                             }
-
                         }
                         else
                         {
-                            tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                            nClient->getUDPConn()->SendMessage(tmpMsg);
+                            if (WorldActors->GetLinkedObjectID(mRawItemID))
+                            {
+                                tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+WorldActors->GetLinkedObjectID(mRawItemID), CurrentWorld->GetDoor(WorldActors->GetLinkedObjectID(mRawItemID))->IsDoubleDoor());
+                                ClientManager->UDPBroadcast(tmpMsg, nClient);
+                            }
+                            else
+                            {
+                                tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
+                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                            }
+                        }
+                        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+                        break;
+                    }
+                    case 13: //Hack Button
+                    {
+                        if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
+                        {
+                            if (tFurnitureTemplate->GetLinkedObjectID())
+                            {
+                                if(nClient->GetAccount()->GetLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
+                                {
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 106); // Damn, locked!
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
+
+                            }
+                            else
+                            {
+                                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
+                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                            }
+                        }
+                        else
+                        {
+                            u32 linkobjID = WorldActors->GetLinkedObjectID(mRawItemID);
+                            if (linkobjID)
+                            {
+                                if(nClient->GetAccount()->GetLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
+                                {
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+linkobjID, CurrentWorld->GetDoor(linkobjID)->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 106); // Damn, locked!
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
+
+                            }
+                            else
+                            {
+                                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
+                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                            }
                         }
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
@@ -382,30 +492,62 @@ bool PUdpUseObject::DoAction()
 
                     case 23: //EINTRITTSGELD BUTTON
                     {
-                        if (tFurnitureTemplate->GetLinkedObjectID())
+                        if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
                         {
-                            u32 OldCash = tChar->GetCash();
-                            u32 DoorFee = (u32)tFurnitureModel->GetFunctionValue();
-                            if(OldCash >= DoorFee)
+                            if (tFurnitureTemplate->GetLinkedObjectID())
                             {
-                                u32 NewCash = tChar->SetCash(OldCash - DoorFee);
-                                PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(nClient, NewCash);
-                                nClient->getUDPConn()->SendMessage(tmpMsg_cash);
-                                tmpMsg_cash = NULL;
-                                tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
-                                ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                u32 OldCash = tChar->GetCash();
+                                u32 DoorFee = (u32)tFurnitureModel->GetFunctionValue();
+                                if(OldCash >= DoorFee)
+                                {
+                                    u32 NewCash = tChar->SetCash(OldCash - DoorFee);
+                                    PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(nClient, NewCash);
+                                    nClient->getUDPConn()->SendMessage(tmpMsg_cash);
+                                    tmpMsg_cash = NULL;
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 12);  // You dont have enough money!
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
                             }
                             else
                             {
-                                tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 12);  // You dont have enough money!
+                                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
                                 nClient->getUDPConn()->SendMessage(tmpMsg);
                             }
                         }
                         else
                         {
-                            tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                            nClient->getUDPConn()->SendMessage(tmpMsg);
+                            u32 linkobjID = WorldActors->GetLinkedObjectID(mRawItemID);
+                            if (linkobjID)
+                            {
+                                u32 OldCash = tChar->GetCash();
+                                u32 DoorFee = (u32)tFurnitureModel->GetFunctionValue();
+                                if(OldCash >= DoorFee)
+                                {
+                                    u32 NewCash = tChar->SetCash(OldCash - DoorFee);
+                                    PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(nClient, NewCash);
+                                    nClient->getUDPConn()->SendMessage(tmpMsg_cash);
+                                    tmpMsg_cash = NULL;
+                                    tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+linkobjID, CurrentWorld->GetDoor(linkobjID)->IsDoubleDoor());
+                                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                                }
+                                else
+                                {
+                                    tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 12);  // You dont have enough money!
+                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                }
+                            }
+                            else
+                            {
+                                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
+                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                            }
                         }
+
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }

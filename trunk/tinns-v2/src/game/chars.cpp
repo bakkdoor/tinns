@@ -311,7 +311,10 @@ bool PChar::SQLLoad(int CharID) {
     result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
-        //Console->Print(RED, BLACK, "Unable to load data from MySQL DB!");
+        Console->Print(RED, BLACK, "PChar::SQLLoad could not load Chardata from the database");
+        Console->Print("Query was:");
+        Console->Print("%s", query);
+        MySQL->ShowGameSQLError();
         return false;
     }
     while((row = mysql_fetch_row(result)))

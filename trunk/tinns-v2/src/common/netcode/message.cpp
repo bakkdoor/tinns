@@ -45,20 +45,21 @@ int PMessage::smMsgCount = 0;
 void PMessage::CheckMsgCount()
 {
   static int MaxMsgCount = 0;
- 
+
   if (smMsgCount > MaxMsgCount)
   {
     Console->Print("%s Max In-use messages number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), smMsgCount, smMsgCount-MaxMsgCount);
     MaxMsgCount = smMsgCount;
   }
 }
-                
+
 PMessage::PMessage(u16 nRequestedSize)
 {
   GetMsgBuffer(nRequestedSize);
   mUsedSize = 0;
   mNextByteOffset = 0;
   ++smMsgCount;
+  //Console->Print("Created msgnum %d", smMsgCount);
 }
 
 
@@ -77,14 +78,14 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
   }
   mMaxSize = smMsgSizes[mPoolId];
 //Console->Print("Using Pool n° %d (size %d)", mPoolId, smMsgSizes[mPoolId]);
-  
+
   if ((mData = smMsgPoolHead[mPoolId]) == NULL)
   {
 //Console->Print("Pool Empty, creating new buffers");
     mData = new PMsgData[MESSAGE_ALLOC_NB];
     for (int i = 0; i < MESSAGE_ALLOC_NB; i++)
       mData[i].mBuffer = new u8[mMaxSize];
-      
+
     if (MESSAGE_ALLOC_NB > 1)
     {
       smMsgPoolHead[mPoolId] = mData + 1;
@@ -99,7 +100,7 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
   }
 //Console->Print("Buffer allocated 0x%08x", mData);
 }
- 
+
 void PMessage::ReleaseMsgBuffer()
 {
   mData->mNextMsgData = smMsgPoolHead[mPoolId];
@@ -109,7 +110,7 @@ void PMessage::ReleaseMsgBuffer()
 
 void PMessage::CheckAndExtend(u16 nRequestedSize) // This is SIZE checked, not max OFFSET
 {
-//Console->Print("Checking size: max %d, req %d", mMaxSize, nRequestedSize);          
+//Console->Print("Checking size: max %d, req %d", mMaxSize, nRequestedSize);
   if (nRequestedSize > mMaxSize)
   {
 //Console->Print("Extension needed (max %d, req %d)", mMaxSize, nRequestedSize);
@@ -166,7 +167,7 @@ PMessage& PMessage::Write(const void* nData, u16 nLength)
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
   return *this;
-}          
+}
 
 PMessage& PMessage::operator << (PMessage& nMessage)
 {
@@ -195,7 +196,7 @@ PMessage& PMessage::operator << (u8 nU8)
 {
   u16 tmpOffset = mNextByteOffset+1;
   if (tmpOffset > mMaxSize)
-    CheckAndExtend(tmpOffset);          
+    CheckAndExtend(tmpOffset);
   mData->mBuffer[mNextByteOffset] = nU8;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
@@ -206,9 +207,9 @@ PMessage& PMessage::operator << (u16 nU16)
 {
   u16 tmpOffset = mNextByteOffset+2;
   if (tmpOffset > mMaxSize)
-    CheckAndExtend(tmpOffset);          
+    CheckAndExtend(tmpOffset);
   *(u16*)(mData->mBuffer + mNextByteOffset) = nU16;
-  mNextByteOffset = tmpOffset;        
+  mNextByteOffset = tmpOffset;
   UpdateUsedSize();
   return *this;
 }
@@ -217,22 +218,22 @@ PMessage& PMessage::operator << (u32 nU32)
 {
   u16 tmpOffset = mNextByteOffset+4;
   if (tmpOffset > mMaxSize)
-    CheckAndExtend(tmpOffset);          
-  *(u32*)(mData->mBuffer + mNextByteOffset) = nU32;   
+    CheckAndExtend(tmpOffset);
+  *(u32*)(mData->mBuffer + mNextByteOffset) = nU32;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
-  return *this;         
+  return *this;
 }
 
 PMessage& PMessage::operator << (f32 nF32)
 {
   u16 tmpOffset = mNextByteOffset+4;
   if (tmpOffset > mMaxSize)
-    CheckAndExtend(tmpOffset);          
-  *(f32*)(mData->mBuffer + mNextByteOffset) = nF32;   
+    CheckAndExtend(tmpOffset);
+  *(f32*)(mData->mBuffer + mNextByteOffset) = nF32;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
-  return *this;         
+  return *this;
 }
 
 // Mixt methods
@@ -286,13 +287,13 @@ PMessage& PMessage::operator = (PMessage& nMessage)
   {
 //Console->Print("Adjusting buffer before message copy: old pool %d => new pool %d", mPoolId, nMessage.mPoolId);
     ReleaseMsgBuffer();
-    GetMsgBuffer(nMessage.mMaxSize);           
+    GetMsgBuffer(nMessage.mMaxSize);
   }
-  
+
   mUsedSize = nMessage.mNextByteOffset;
   mNextByteOffset = nMessage.mNextByteOffset;
   memcpy((void*)(mData->mBuffer), (void*)(nMessage.mData->mBuffer), (size_t)mMaxSize);
-  
+
   return *this;
 }
 
@@ -303,11 +304,11 @@ PMessage* PMessage::GetChunk(u16 StartOffset, u16 ChunkSize, u16 ChunkNumber)
   if (ReqStartOffset >= mUsedSize)
     return NULL;
   u16 RealChunkSize = (ChunkSize < mUsedSize - ReqStartOffset) ? ChunkSize : mUsedSize - ReqStartOffset;
-  
+
   PMessage* MsgChunk = new PMessage(RealChunkSize);
   memcpy((void*)(MsgChunk->mData->mBuffer), (void*)(mData->mBuffer + ReqStartOffset), (size_t)RealChunkSize);
   MsgChunk->mUsedSize = RealChunkSize;
-  
+
   return MsgChunk;
 }
 
@@ -321,7 +322,7 @@ PMessage& PMessage::operator >> (std::string& nString) //read up to null or EOM
     if (*(StringStart + i) == 0)
       break;
   }
-  
+
   if (mNextByteOffset + i >= mUsedSize)
   {
     i = mUsedSize - mNextByteOffset +1;
@@ -334,7 +335,7 @@ PMessage& PMessage::operator >> (std::string& nString) //read up to null or EOM
     FinalStringStart = (char*)StringStart;
     mNextByteOffset = mNextByteOffset + i + 1;
   }
-  
+
   nString.append(FinalStringStart);
   return *this;
 }
@@ -377,9 +378,9 @@ void PMessage::ListPools()
 {
   PMsgData* iBuff;
   int n;
-  
+
   Console->Print("--- Free buffers pool ---");
-  
+
   for (int i = 0; i < MESSAGE_SIZES_NB; i++)
   {
     iBuff = smMsgPoolHead[i];
@@ -400,9 +401,9 @@ void PMessage::DumpPools()
 {
   PMsgData* iBuff;
   int n;
-  
+
   Console->Print("--- Free buffers pool ---");
-  
+
   for (int i = 0; i < MESSAGE_SIZES_NB; i++)
   {
     if ((iBuff = smMsgPoolHead[i]) != NULL)
@@ -427,7 +428,7 @@ void PMessage::Dump()
   std::string sAsciiDump;
   int i, j;
   char* tmpBuff = GetMessageData();
-  
+
   Console->Print("--- Message data (MsgData 0x%08x) ---", mData);
   Console->Print("Buffer from pool %d (max size %d), used 0x%04hx (%d) , data at 0x%08x", mPoolId, smMsgSizes[mPoolId], mUsedSize, mUsedSize, tmpBuff);
   for (i = 0; i < mUsedSize; i += 16)
@@ -452,7 +453,7 @@ void PMessage::DumpHead(char* nComment)
 {
 
   char* tmpBuff = GetMessageData();
-  
+
   Console->Print("%s T:%02hx UID:%04hx UHID:%04hx Fnct:%02hx Seq:%04hx Cmd:%02hx Cmd2:%02hx Cmd3:%02hx",
       nComment, (u8)tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], (u8)tmpBuff[6], *(u16*)&tmpBuff[7], (u8)tmpBuff[9], (u8)tmpBuff[10], (u8)tmpBuff[12] );
 

@@ -27,7 +27,6 @@ void PCommands::doCmdremove()
     {
         SyntaxError = true;
     }
-
     if(SyntaxError == true)
     {
         Chat->send(source, CHAT_DIRECT, "Usage", "@remove actor/<raw item id>");
@@ -49,21 +48,35 @@ void PCommands::doCmdremove()
             source->SetRemoveActorMode(false);
             Chat->send(source, CHAT_DIRECT, "System", "REMOVE ACTOR mode disabled");
         }
-    return;
+        return;
     }
 
-    u32 TargetID;
-    char delStr[128];
-    PMessage* tmpMsg;
+    if(IsArgNumeric(1)
+    {
+        u32 tTest = GetArgInt(1);
+        if(WorldActors->IsDynamicActor(tTest) == true)
+        {
+            Chat->send(source, CHAT_DIRECT, "System", "You cannot remove dynamic actors over their ID!");
+            return;
+        }
+        u32 TargetID;
+        char delStr[128];
+        PMessage* tmpMsg;
 
-    TargetID = (u32)(atoi(tmp_v1) & 0xffffffff);
-    tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(source, TargetID, 5);
+        TargetID = (u32)(atoi(tmp_v1) & 0xffffffff);
+        tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(source, TargetID, 5);
 
-    ClientManager->UDPBroadcast(tmpMsg, source);
-    tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(source, TargetID, 9);
+        ClientManager->UDPBroadcast(tmpMsg, source);
+        tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(source, TargetID, 9);
 
-    ClientManager->UDPBroadcast(tmpMsg, source);
-    snprintf(delStr, 127, "Item %d removed.", TargetID);
-    delStr[127] = '\0';
-    Chat->send(source, CHAT_DIRECT, "System", delStr);
+        ClientManager->UDPBroadcast(tmpMsg, source);
+        snprintf(delStr, 127, "Item %d removed.", TargetID);
+        delStr[127] = '\0';
+        Chat->send(source, CHAT_DIRECT, "System", delStr);
+    }
+    else
+    {
+        Chat->send(source, CHAT_DIRECT, "System", "Invalid argument given");
+        return;
+    }
 }

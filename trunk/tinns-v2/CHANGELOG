@@ -1272,3 +1272,45 @@ Namikon; 04.01.2007 16:15 GMT+1
 	      It is possible to let them disappear (type @remove <rawID>) but they'll respawn when you re-zone.
 	      
 IMPORTANT: This release requires an database update! Make sure you have the latest mysql table availeable.
+
+====================
+Namikon; 07.01.2007 19:40 GMT+1
+----------
+[rev. 75]
+<internal version: 0.1.27 Dev - 0.1.35 Dev>
+
+Huge update!
+
+- Changed default level for @remove from 100 to 50, since we can now also remove dynamic actors with it
+- Added security check to @remove command: You cannot remove Dynamic actors over their IDs anymore.
+  Remove them with @remove actor command
+- UDPManager rewritten. Was almost completely wrong, dunno what happend with me when i first wrote it :P
+  However, it works now. The last 20 UDP messages with 0x03 commandset are saved, and get resend uppon
+  OOO notice from the client.
+  The manager also watches the outgoing UDP IDs. With his, it was possible to fix an udp increment bug in the zoning process.
+- Messages in the VIP queue arent parsed over the udpmanager. We'll have to rename this later on (or add a new queue)
+- The UDP/SessionID offset is now defined in connection-udp.h
+- NPC subsystem added. (Yeah ^^)
+  All NPCs that are in npc_spawns database spawn and stay in their world. We dont have an AI, so dont expect NPCs to
+  do *anything* yet. (Same goes for traders or copbots) But everything is prepared
+- Added function "IsWorldInUse" to clientmanager. In first line required for NPC manager, to check if a world is in use or not
+- Reformatted several files for better readability.
+- Extended dynamic worldactor management:
+   - Spawned worldactors are functional now. (Eg: Spawn a chair and sit on it) (Function is not 100% tested, it *could* procude an segfault, report it
+     if the server crashes for you on a certain actorID)
+   - Only valid worldmodel templates are accepted now while spawning actors
+   - If given worldmodel template needs an linked object (For example an door) you have to add the doorID in the @spawnactor command (example below)
+   - On serverstart and every initworld, the database is checked for duplicate worldactor IDs. If some are found, they get deleted
+   - Another check is done when an worldactor is spawned. If (for any reason) an invalid worldactorset is in the Database,
+     it is ignored uppon spawning. (invalid means, that the actor points to an invalid object, for example door or world)
+- Added detailed output for SQL errors (Prints not only "ERROR" or just returns nothing, instead a full errormessage is written to console)
+- MsgBuilder:
+	- Baselinepacket changed, monsters are now "red"
+	- Fixed increase_udp issue in BuildZoning1Msg
+- Added new decoder:
+	- 0x08: This small (only 1 byte) "packet" is only sent when the client exits abnormal (crash, sometimes on alt+f4)
+	  Does nothing else than closing the connection serverside.
+	  
+*Note* Due the massive update of sourcecode, its likely that i forgot some debug outputs (You'll see D1, D2,.. or whatever else senseless text
+on the console). If you find something, tell me please over forum or bugtracker. But i will remove all outputs when i find some in the next
+releases

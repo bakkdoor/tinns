@@ -54,6 +54,7 @@ extern class PWorldActors* WorldActors;
 
 //multiuser chat
 extern class PClientManager *ClientManager;
+extern class PNPCManager* NPCManager;
 extern class PChat *Chat;
 extern class PCommands *GameCommands;
 

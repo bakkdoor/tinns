@@ -111,6 +111,7 @@ class PCommands
             void doCmdgivemoney();
             void doCmdtakemoney();
             void doCmdspawnactor();
+            void doCmdeditactor();
 
             void doCmdtest();
         /// ------- End commandset -------

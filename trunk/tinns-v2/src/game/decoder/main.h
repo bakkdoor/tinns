@@ -82,6 +82,7 @@
 #include "clientmanager.h"
 #include "msgbuilder.h"
 #include "worldactors.h"
+#include "npc.h"
 
 using namespace std;
 

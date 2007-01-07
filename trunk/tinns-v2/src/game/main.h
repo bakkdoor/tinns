@@ -99,6 +99,7 @@
 #include "item.h"
 #include "inventory.h"
 #include "worldactors.h"
+#include "npc.h"
 
 #include "chat.h"
 #include "commands.h"

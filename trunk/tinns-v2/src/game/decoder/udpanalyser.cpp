@@ -23,7 +23,7 @@
 
 	udpanalyser.cpp - Analyser class top (used only by PUdpMsgDecoder)
   Also includes the PUdpMsgUnknown derived class
-  
+
 	CREATION: 23 Aug 2006 Hammag
 
 	MODIFIED: 30 Aug 2006 Hammag
@@ -37,6 +37,7 @@
 
 #include "udp_sync.h"
 #include "udp_0x13.h"
+#include "udp_0x08.h"
 
 /**** PUdpMsgAnalyser ****/
 
@@ -58,11 +59,11 @@ PUdpMsgAnalyser* PUdpMsgAnalyser::Analyse()
 {
   PUdpMsgAnalyser* nextAnalyser;
   u8 MsgType;
-  
+
   mDecodeData->mState = DECODE_MORE;
 //mDecodeData->mTraceKnownMsg = true; // Don't want to trace all known messages
 mDecodeData->mTraceUnknownMsg = true; // Want to show all unknown messages
-	  
+
   *(mDecodeData->mMessage) >> MsgType;
   switch(MsgType)
   {
@@ -75,6 +76,11 @@ mDecodeData->mTraceUnknownMsg = true; // Want to show all unknown messages
     {
       nextAnalyser = new PUdpSync1(mDecodeData);
       break;
+    }
+    case 0x08:
+    {
+        nextAnalyser = new PUdp0x08(mDecodeData);
+        break;
     }
     case 0x13:
     {
@@ -102,12 +108,12 @@ bool PUdpMsgAnalyser::DoAction()
 PUdpMsgUnknown::PUdpMsgUnknown(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   char hexstr[16];
-  
+
   nDecodeData->mState = DECODE_UNKNOWN;
   snprintf(hexstr, 16, "/0x%02x", mDecodeData->mUnknownType);
   mDecodeData->mName << hexstr;
   nDecodeData->mName << "=Unknown";
-} 
+}
 
 /*PUdpMsgUnknown::~PUdpMsgUnknown()
 {
@@ -123,12 +129,12 @@ PUdpMsgUnknown::PUdpMsgUnknown(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nD
 PUdpMsgIgnore::PUdpMsgIgnore(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
   char hexstr[16];
-  
+
   nDecodeData->mState = DECODE_FINISHED;
   snprintf(hexstr, 16, "/0x%02x", mDecodeData->mUnknownType);
   mDecodeData->mName << hexstr;
   nDecodeData->mName << "=Ignore";
-} 
+}
 
 /*PUdpMsgUnknown::~PUdpMsgUnknown()
 {
