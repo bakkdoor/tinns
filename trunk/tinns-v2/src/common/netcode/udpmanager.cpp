@@ -130,7 +130,6 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
     u16 tCurPos = 5;
     u8 tSubMsgLen = 0;
     u16 tmpUDPID = 0;
-    PMessageMap::const_iterator it = NULL;
     //nMsg->Dump();
     while(tCurPos < (nMsg->GetSize() - 1)) // Loop while we still have more frames. (-1: GetSize starts at 1, pos pointer at 0)
     {
@@ -148,7 +147,7 @@ void ConnectionUDP::InsertUDPMessage(PMessage* nMsg)
         //tWorkMsg->Dump();
         tmpUDPID = nMsg->U16Data(tCurPos + 2);                     // Get the UDP ID of this frame
         //Console->Print("UDP ID: %d", tmpUDPID);
-        it = UDPMessages.find(tmpUDPID);                 // Try to find the UDP ID in the queue
+        PMessageMap::const_iterator it = UDPMessages.find(tmpUDPID);                 // Try to find the UDP ID in the queue
         if(it->second)                                   // If we already have this UDP msg, print error
         {
             Console->Print("%s Packet *NOT* added to history buffer, UdpID %d already sent! (This may cause an OOO)", Console->ColorText(RED, BLACK, "[WARNING]"), tmpUDPID);
