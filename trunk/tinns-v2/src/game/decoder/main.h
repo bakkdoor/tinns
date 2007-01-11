@@ -83,6 +83,7 @@
 #include "msgbuilder.h"
 #include "worldactors.h"
 #include "npc.h"
+#include "terminal.h"
 
 using namespace std;
 

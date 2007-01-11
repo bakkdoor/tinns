@@ -40,6 +40,7 @@
 #include "udp_charmove.h"
 #include "udp_packet0.h"
 #include "udp_vhc.h"
+#include "udp_0x2b.h"
 
 /**** PUdp0x13 ****/
 
@@ -132,6 +133,11 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
           case 0x22:
           {
             nextAnalyser = new PUdp0x22(mDecodeData);
+            break;
+          }
+          case 0x2b: // Citycom (General Terminal?)
+          {
+            nextAnalyser = new PUdp0x2b(mDecodeData);
             break;
           }
           default:

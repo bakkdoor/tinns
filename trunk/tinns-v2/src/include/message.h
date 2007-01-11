@@ -52,24 +52,24 @@ class PMessage
         static const u16 smMsgSizes[MESSAGE_SIZES_NB];
         static PMsgData* smMsgPoolHead[MESSAGE_SIZES_NB];
         static int smMsgCount; //Used to trace unreleased messages with CheckMsgCount()
-        
+
         u8 mPoolId;
         u16 mMaxSize;
         PMsgData* mData;
         u16 mUsedSize;
         u16 mNextByteOffset;
-        
+
         void GetMsgBuffer(u16 nRequestedSize = 0); // the requested size is just a hint to avoid internal reaffectation of buffer
         void ReleaseMsgBuffer();
         void CheckAndExtend(u16 nRequestedSize);  // This is SIZE checked, not max OFFSET
         inline void UpdateUsedSize() { if (mNextByteOffset > mUsedSize) mUsedSize = mNextByteOffset; }
-        
+
     public:
         static void CheckMsgCount(); //To be used in a place where no new message should remain between calls
-        
+
         PMessage(u16 nRequestedSize = 0); // max size will be extended as needed in later write accesses (up to max configured size)
         inline ~PMessage() { ReleaseMsgBuffer(); --smMsgCount; }
-         
+
         void SetNextByteOffset(u16 nPos);
         inline void SetNextByteAtEnd() { mNextByteOffset = mUsedSize; }
         inline u16 GetNextByteOffset() { return mNextByteOffset; }
@@ -93,36 +93,36 @@ class PMessage
         PMessage& operator << (f32 nF32);
 
       // Mixt methods
-      
+
         //The next 3 methods do NOT update NextByteOffset, but DO increase message size (UsedSize ans MaxSize) as needed by nOffset.
         u8& U8Data(u16 nOffset);
         u16& U16Data(u16 nOffset);
         u32& U32Data(u16 nOffset);
         f32& F32Data(u16 nOffset);
-        
+
         //     *** didn't managed to overload [] operator :-/
         inline u8& operator [] (u16 nOffset) { return U8Data(nOffset); }
         //inline u16& operator [] (u16 nOffset) { return U16Data(nOffset); }
         //u32& operator [] (u16 nOffset);
-        
+
         // Really makes a different message instance, with all data copied (no data shared)
         PMessage& operator = (PMessage& nMessage);
-        
+
       // Reading methods
         // ChunkNumber count from 0, return NULL for empty chunk (ie StartOffset is over UsedSize). NextByteOffset NOT updated
         PMessage* GetChunk(u16 StartOffset, u16 ChunkSize, u16 ChunkNumber = 0);
-        
+
         // Return pointer to the START of message data.
-        inline char* const GetMessageData() {return (char*) (mData->mBuffer); }    
-        
+        inline char* const GetMessageData() {return (char*) (mData->mBuffer); }
+
         //Following methods do NOT extend message or Used, and return 0/empty string if over UsedSize
         PMessage& operator >> (std::string& nString); //read up to null or EOM
         PMessage& operator >> (u8& nU8);
         inline PMessage& operator >> (char& nChar) { return (*this >> (u8&) nChar);}
         PMessage& operator >> (u16& nU16);
-        PMessage& operator >> (u32& nU32);       
+        PMessage& operator >> (u32& nU32);
         PMessage& operator >> (f32& nF32);
-        
+
         // info/debug methods
         void ListPools();
         void DumpPools();

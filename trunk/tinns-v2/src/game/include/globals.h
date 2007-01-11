@@ -50,6 +50,7 @@ extern class PMsgBuilder *MsgBuilder;
 extern class PWorlds *Worlds;
 extern class PAppartements* Appartements;
 extern class PWorldActors* WorldActors;
+extern class PTerminal* Terminal;
 //extern class gmMachine machine;   // Virtual Machine instance
 
 //multiuser chat

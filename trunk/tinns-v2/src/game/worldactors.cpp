@@ -108,7 +108,8 @@ u32 PWorldActors::GetNextFreeWAID()
     u32 newWAid;
     if(mysql_num_rows(result) == 1)
     {
-        newWAid = std::atoi(row[wa_actor_id] + 1);
+        newWAid = std::atoi(row[wa_actor_id]);
+        newWAid++;
     }
     else
     {
@@ -532,6 +533,9 @@ int PWorldActors::GetLinkedObjectID(u32 nWAID)
 
 bool PWorldActors::IsValidWAFunction(int nFunctionID)
 {
+    if(nFunctionID == 0) // Special case for "unuseable" objects. 0 means "just stay in the world and do nothing"
+        return true;
+
     // Check if given WO function is a valid one
     const PDefWorldModel* tFurnitureModel = GameDefs->GetWorldModelDef(nFunctionID);
     if(tFurnitureModel == NULL)

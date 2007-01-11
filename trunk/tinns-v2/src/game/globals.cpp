@@ -54,6 +54,7 @@
 #include "worlds.h"
 #include "appartements.h"
 #include "npc.h"
+#include "terminal.h"
 
 #include "version.h"
 const char ServerVersion[] = TINNS_GAME_VERSION;
@@ -75,6 +76,7 @@ PWorlds *Worlds = 0;
 PAppartements* Appartements = 0;
 PWorldActors* WorldActors = 0;
 PNPCManager* NPCManager = 0;
+PTerminal* Terminal = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -164,12 +166,15 @@ bool InitTinNS()
     GameCommands = new PCommands();
 
     ISC = new PISC();
+    Terminal = new PTerminal();
 
     return true;
 }
 
 void Shutdown()
 {
+    if(Terminal)
+        delete Terminal;
     if(WorldActors)
         delete WorldActors;
     if(NPCManager)

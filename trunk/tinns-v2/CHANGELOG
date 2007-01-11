@@ -1325,3 +1325,25 @@ Namikon; 07.01.2007 21:52 GMT+1
   Itemcontainers will follow when we have a management class for them
 - Removed several debug outputs, and changed others
 - Fixed an typo in command remove
+
+====================
+Namikon; 08.01.2007 15:47 GMT+1
+----------
+[rev. 77]
+<internal version: 0.1.36 Dev>
+
+Fixed compiler error:
+In member function 'void ConnectionUDP::InsertUDPMessage(PMessage*)':
+udpmanager.cpp:133: error: conversion from 'int' to non-scalar type 'std::_Rb_tree_const_iterator >' requested
+on some systems
+
+====================
+Namikon; 11.01.2007 19:31 GMT+1
+----------
+[rev. 78-79]
+<internal version: 0.1.37 Dev>
+
+- Added up-to-date SQL dump to SVN. (But better use the newest neoX db!)
+- Fixed bug in worldactors that caused the following problems:
+> Spawned actors where removed uppon next serverstart/re-zone
+> Only one actor in a zone at once
