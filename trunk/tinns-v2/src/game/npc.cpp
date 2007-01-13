@@ -137,7 +137,7 @@ PNPC::PNPC(int nSQLID)
     mTarget = 0;
     mDirty = false; // No need to send instand update
 
-    if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
+    //if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
     mID = nSQLID;
     if(SQL_Load() == false)  // Try to load NPC contents
         mSuccess = false;
@@ -171,7 +171,7 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
 {
     PMessage* npc_initmsg = new PMessage(256);
     PNPC* tNPC;
-    if (gDevDebug) Console->Print("Starting to assemble NPC message");
+    //if (gDevDebug) Console->Print("Starting to assemble NPC message");
 
     *npc_initmsg << (u8)0x13; // Begin UDP message
     *npc_initmsg << (u16)0x0000; // Placeholder for UDP ID
@@ -180,7 +180,7 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
     // Loop all NPCs in world
     for(PNPCMap::iterator it=mNPCs.begin(); it != mNPCs.end(); it++)
     {
-        if (gDevDebug) Console->Print("Got first NPC");
+        //if (gDevDebug) Console->Print("Got first NPC");
         if(!it->second) // Got an error and NPC doesnt exist? Skip this one
             continue;
 
@@ -191,12 +191,12 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
 
         // Calculate messagesize
         u8 tMsgLen = 29 + tNPC->mName.size() + tAngleStr.size();
-        if (gDevDebug) Console->Print("MsgLen will be %d bytes ", tMsgLen);
+        //if (gDevDebug) Console->Print("MsgLen will be %d bytes ", tMsgLen);
         // Check for customname
         bool tUseCustomName = false;
         if(tNPC->mCustomName.size() > 1)
         {
-            if (gDevDebug) Console->Print("NPC has an custom attached name, adding!");
+            //if (gDevDebug) Console->Print("NPC has an custom attached name, adding!");
             // NPC has customname, add to size
             tMsgLen += tNPC->mCustomName.size();
             tMsgLen++; // the 0x00 is not counted in .size() !
@@ -204,10 +204,10 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
         }
 
         // Check if messagebuffer is full
-        if (gDevDebug) Console->Print("LEN: %d MAX: %d INUSE: %d", tMsgLen, npc_initmsg->GetMaxSize(), npc_initmsg->GetSize());
+        //if (gDevDebug) Console->Print("LEN: %d MAX: %d INUSE: %d", tMsgLen, npc_initmsg->GetMaxSize(), npc_initmsg->GetSize());
         if((int)tMsgLen > (npc_initmsg->GetMaxSize() - npc_initmsg->GetSize()))
         {
-            if (gDevDebug) Console->Print("The messagequeue is full. Sending it");
+            //if (gDevDebug) Console->Print("The messagequeue is full. Sending it");
             // It is full. Now set final UDP/Session ID's and send packet
             npc_initmsg->U16Data(0x01) = nClient->GetUDP_ID();      // Set final UDP ID
             npc_initmsg->U16Data(0x03) = nClient->GetSessionID();   // Set final SessionID
@@ -217,27 +217,26 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
                 nClient->getUDPConn()->SendMessage(npc_initmsg);
             else
                 delete npc_initmsg;
-            if (gDevDebug) Console->Print("Message sent. Trying to dump");
+            //if (gDevDebug) Console->Print("Message sent. Trying to dump");
             //if (gDevDebug) (*npc_initmsg).Dump();
 
             // Clear messagebuffer and ReInit for next NPCs
-            if (gDevDebug) Console->Print("Packet is in queue now, removing link to list");
+            //if (gDevDebug) Console->Print("Packet is in queue now, removing link to list");
             npc_initmsg = NULL;
-            if (gDevDebug) Console->Print("And getting a new msg");
+            //if (gDevDebug) Console->Print("And getting a new msg");
             npc_initmsg = new PMessage(256);
 
-            if (gDevDebug) Console->Print("Preparing new message block");
+            //if (gDevDebug) Console->Print("Preparing new message block");
 
             *npc_initmsg << (u8)0x13; // Begin UDP message
             *npc_initmsg << (u16)0x0000; // Placeholder for UDP ID
             *npc_initmsg << (u16)0x0000; // Placeholder for Session ID
-            if (gDevDebug) Console->Print("And starting over");
+            //if (gDevDebug) Console->Print("And starting over");
         }
         else
         {
             nClient->IncreaseUDP_ID();
 
-            // Remove messagelenght from remaining bytes buffer
             *npc_initmsg << (u8)tMsgLen;
             *npc_initmsg << (u8)0x03;
             *npc_initmsg << (u16)nClient->GetUDP_ID();
@@ -251,11 +250,11 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
             *npc_initmsg << (u16)tNPC->mPosY;
             *npc_initmsg << (u16)tNPC->mPosZ;
             *npc_initmsg << (u16)tNPC->mPosX;
-            *npc_initmsg << (u8)0x00; // ??
+            *npc_initmsg << (u8)0x00; // Was always 0x00 in all logs
             *npc_initmsg << (u8)0x57; // ??
             *npc_initmsg << (u8)0x00; // ??
-            *npc_initmsg << (u8)0x6E; // ??
-            *npc_initmsg << (u8)0x00; // ??
+            *npc_initmsg << (u8)0x6E; // Clan/FactionID
+            *npc_initmsg << (u8)0x00; // Clan/FactionID
             *npc_initmsg << tNPC->mName.c_str();
             *npc_initmsg << tAngleStr.c_str();
             if(tUseCustomName == true)
@@ -265,10 +264,10 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
         // Remove link to NPC instance
         tNPC = NULL;
     }
-    if (gDevDebug) Console->Print("Done with mainloop. Now lets check if we have a message waiting...");
+    //if (gDevDebug) Console->Print("Done with mainloop. Now lets check if we have a message waiting...");
     if(npc_initmsg->GetSize() > 5) // Check if we really have an packet and not only the header
     {
-        if (gDevDebug) Console->Print("Message is waiting! Trying to send...");
+        //if (gDevDebug) Console->Print("Message is waiting! Trying to send...");
         // It is full. Now set final UDP/Session ID's and send packet
         npc_initmsg->U16Data(0x01) = nClient->GetUDP_ID();      // Set final UDP ID
         npc_initmsg->U16Data(0x03) = nClient->GetSessionID();   // Set final SessionID
@@ -279,25 +278,25 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
         else
             delete npc_initmsg;
 
-        if (gDevDebug) Console->Print("Done. Now dumping packet");
+        //if (gDevDebug) Console->Print("Done. Now dumping packet");
         //if (gDevDebug) (*npc_initmsg).Dump();
     }
     else
     {
-        if (gDevDebug) Console->Print("No messages waiting to be send, removing message from memory");
+        //if (gDevDebug) Console->Print("No messages waiting to be send, removing message from memory");
         delete npc_initmsg;
     }
     // Free message
-    if (gDevDebug) Console->Print("Done. Removing link to list");
+    //if (gDevDebug) Console->Print("Done. Removing link to list");
     npc_initmsg = NULL;
     //delete npc_initmsg;
-    if (gDevDebug) Console->Print("Allowing client to accept NPC updates");
+    //if (gDevDebug) Console->Print("Allowing client to accept NPC updates");
     nClient->SetAcceptNPCUpdates(true);
 }
 
 void PNPCWorld::MSG_SendAlive(PClient* nClient)
 {
-    if(gDevDebug) Console->Print("[DEBUG] Sending NPC alive msg");
+    if(gDevDebug) Console->Print("[PNPCWorld::MSG_SendAlive] Sending NPC alive msg");
 
     PMessage* tmpNPCUpdate = new PMessage(256);
     *tmpNPCUpdate << (u8)0x13;
@@ -348,7 +347,7 @@ void PNPCWorld::MSG_SendAlive(PClient* nClient)
 */
             if((int)tMsgLen > (tmpNPCUpdate->GetMaxSize() - tmpNPCUpdate->GetSize()))
             {
-                if (gDevDebug) Console->Print("DEBUG: Sending part-message");
+                //if (gDevDebug) Console->Print("DEBUG: Sending part-message");
 
                 // Check if broad or unicast
                 if(nClient == NULL)
@@ -410,7 +409,7 @@ void PNPCWorld::MSG_SendAlive(PClient* nClient)
 
 PNPCWorld::PNPCWorld(u16 nWorldID)
 {
-    if(gDevDebug) Console->Print("[DEBUG] New world got initialized! Now starting to add NPCs. (WorldID %d)", nWorldID);
+    //if(gDevDebug) Console->Print("[DEBUG] New world got initialized! Now starting to add NPCs. (WorldID %d)", nWorldID);
     mCreation = std::time(NULL);
     //mSuccessfullInit = false;
     MYSQL_RES *result = NULL;
@@ -418,7 +417,7 @@ PNPCWorld::PNPCWorld(u16 nWorldID)
     char query[100];
 
     sprintf(query, "SELECT * FROM `npc_spawns` WHERE `npc_location` = %d", nWorldID);
-    if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
+    //if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
@@ -431,10 +430,10 @@ PNPCWorld::PNPCWorld(u16 nWorldID)
     if(mysql_num_rows(result) == 0) // No NPCs found
     {
         MySQL->FreeGameSQLResult(result);
-        if(gDevDebug) Console->Print("[DEBUG] No NPCs for this world found");
+        //if(gDevDebug) Console->Print("[NPC] No NPCs for this world found");
         return;
     }
-    if(gDevDebug) Console->Print("[DEBUG] Found NPCs, now adding!");
+    //if(gDevDebug) Console->Print("[DEBUG] Found NPCs, now adding!");
     PNPC* tmpNpc = NULL;
     u32 tRawID = 0;
     int tSQLID = 0;
@@ -445,13 +444,13 @@ PNPCWorld::PNPCWorld(u16 nWorldID)
         tmpNpc = new PNPC(tSQLID);
         if(tmpNpc->mSuccess == true)
         {
-            if(gDevDebug) Console->Print("[DEBUG] NPC init successfull, adding to list");
+            //if(gDevDebug) Console->Print("[DEBUG] NPC init successfull, adding to list");
             mNPCs.insert(std::make_pair(tRawID, tmpNpc));
             tmpNpc = NULL;
         }
         else
         {
-            if(gDevDebug) Console->Print("[DEBUG] NPC init failed, removing link");
+            //if(gDevDebug) Console->Print("[DEBUG] NPC init failed, removing link");
             delete tmpNpc;
         }
     }

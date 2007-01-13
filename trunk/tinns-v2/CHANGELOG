@@ -1347,3 +1347,14 @@ Namikon; 11.01.2007 19:31 GMT+1
 - Fixed bug in worldactors that caused the following problems:
 > Spawned actors where removed uppon next serverstart/re-zone
 > Only one actor in a zone at once
+- Added first steps for ingame terminal handling
+
+====================
+Namikon; 13.01.2007 10:57 GMT+1
+----------
+[rev. 80]
+<internal version: 0.1.38 Dev>
+
+- Added a few comments in npc.cpp and removed most debug outputs
+- Splitted up terminal.cpp into 5 files (All stuff in one file will get too big later)
+- Moved TryAccess handling for terminal stuff to PTerminal class

@@ -22,26 +22,15 @@
 
 
 /*
-	terminal.h - Management class for Terminal actions (Citycom, keys, vehicledepot, ...)
+	terminal_servermessage.cpp - Management class for Terminal actions (Citycom, keys, vehicledepot, ...)
+	> Sub-File for terminal "ServerMessage" command
 
-	MODIFIED: 08 Jan 2007 Namikon
+	MODIFIED: 12 Jan 2007 Namikon
 	REASON: - Created
 
 */
 
-#ifndef TERMINAL_H
-#define TERMINAL_H
+#include "main.h"
+#include "terminal.h"
 
-class PTerminal
-{
-    private:
-        void SendNewMailNotice(PClient* nClient, u8 nNewMails = 0);
-        void SendTryAccessAnswer(PClient* nClient, char *nArea, bool nAllowed);
-
-    public:
-        // Check accesslevel of Player for various Terminal actions
-        void CheckAccess(PClient* nClient, char *nArea, u16 nCmdNr, char *nOption1, char *nOption2, char *nOption3);
-        u8 GetNewEmailCount(PClient* nClient);
-};
-
-#endif
+//Todo: Add Stuff here
