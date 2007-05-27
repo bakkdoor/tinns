@@ -21,12 +21,12 @@
 
 /*
 
-	udp_vhc.h - decoder classes for UDP vehicle related messages
+	udp_appartment.h - decoder classes for Navray apt location request messages
 
 	CREATION: 23 Dec 2006 Namikon
 
-	MODIFIED:
-	REASON: -
+	MODIFIED: 13 may 2007 Hammag
+	REASON: corrected this header
 
 */
 

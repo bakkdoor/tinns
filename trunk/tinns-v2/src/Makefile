@@ -155,7 +155,7 @@ clean:
 	rm -rf $(CLEAN_DIRS)
 
 cleaner: clean 
-	find . \( -size 0 -o -name .depend \) -type f -print | xargs rm -f
+	find . \( -size 0 -o -name .depend -o -name .no_msg_stop \) -type f -print | xargs rm -f
 	find . -name .dep -type d -print | xargs rm -Rf
 	rm -f $(CLEANER_FILES)
 	rm -rf $(CLEANER_DIRS)

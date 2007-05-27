@@ -1358,3 +1358,26 @@ Namikon; 13.01.2007 10:57 GMT+1
 - Added a few comments in npc.cpp and removed most debug outputs
 - Splitted up terminal.cpp into 5 files (All stuff in one file will get too big later)
 - Moved TryAccess handling for terminal stuff to PTerminal class
+
+====================
+Hammag; 27.05.2007 12:15 GMT+2
+----------
+[rev. 81]
+
+<General changes>
+ - Minor internal changes
+ 
+[MAKEFILE]
+- Makefile, dev_tools/Makefile, setsvnrev: Disabled the use of getsvnrev.
+  If someone has no SVN, and got sources from tarball, he can compile with the included svnversion.h
+  If he does coding, he needs SVN to commit changes, so there's no need for getsvnrev.
+  If he's doing coding and hasn't SVN, and got sources from tarball, then he won't have .svn files
+    needed by getsvnrev at hand.
+  As I don't see the use of getsvnrev, I disabled it. If it is really needed sometimes,I can add
+    a local option to enable it on a case by case basis.
+  Anyway, if someone submits code changes without having be given write access to SVN, he must submit
+    them to a tinNS dev who has access, so code review, testing and SVN management will be done properly.
+- Other minor change on files cleanup 
+
+[GAME]
+- game/decoder/udp_appartment.* : minor correction on files info
