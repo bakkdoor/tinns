@@ -40,6 +40,7 @@
 
 const u16 PMessage::smMsgSizes[] = {MESSAGE_SIZES_LIST};
 PMsgData* PMessage::smMsgPoolHead[] = {MESSAGE_POOL_INIT};
+int PMessage::smMsgPoolCount[] = {MESSAGE_POOL_COUNT_INIT};
 int PMessage::smMsgCount = 0;
 
 void PMessage::CheckMsgCount()
@@ -73,7 +74,7 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
   }
   if (mPoolId == MESSAGE_SIZES_NB)
   {
-    Console->Print(RED, BLACK, "PMessage::GetDataBuffer: requested size %d too large. Aborting", nRequestedSize);
+    Console->Print(RED, BLACK, "[PANIC] PMessage::GetDataBuffer: requested size %d too large. Aborting", nRequestedSize);
     exit(-1);
   }
   mMaxSize = smMsgSizes[mPoolId];
@@ -93,11 +94,14 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
         mData[i].mNextMsgData = mData + i + 1;
       mData[MESSAGE_ALLOC_NB-1].mNextMsgData = NULL;
     }
+    
+    smMsgPoolCount[mPoolId] += MESSAGE_ALLOC_NB;
   }
   else
   {
     smMsgPoolHead[mPoolId] = mData->mNextMsgData;
   }
+
 //Console->Print("Buffer allocated 0x%08x", mData);
 }
 
@@ -390,10 +394,10 @@ void PMessage::ListPools()
       ++n;
       iBuff = iBuff->mNextMsgData;
     }
-    if (n > 0)
-      Console->Print("\tBuffer pool %d (size %d): %d free buffers", i, smMsgSizes[i], n);
-    else
-      Console->Print("\tBuffer pool %d (size %d): Empty", i, smMsgSizes[i]);
+    //if (n > 0)
+      Console->Print("\tBuffer pool %d (size %d): %d used - %d free buffers", i, smMsgSizes[i], smMsgPoolCount[i]-n, n);
+    //else
+    //  Console->Print("\tBuffer pool %d (size %d): Empty", i, smMsgSizes[i]);
   }
 }
 
@@ -402,7 +406,7 @@ void PMessage::DumpPools()
   PMsgData* iBuff;
   int n;
 
-  Console->Print("--- Free buffers pool ---");
+  Console->Print("--- Buffers pool ---");
 
   for (int i = 0; i < MESSAGE_SIZES_NB; i++)
   {

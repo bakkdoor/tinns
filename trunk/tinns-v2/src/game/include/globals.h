@@ -42,10 +42,12 @@ extern class PConfig *Config;
 extern class PConfig *CmdAccess;
 
 extern class PGameDefs *GameDefs;
-extern class PDatabase *Database;
 extern class PFileSystem *Filesystem;
 extern class PServer *Server;
+
 extern class PGameServer *GameServer;
+extern class PChars *Chars;
+
 extern class PMsgBuilder *MsgBuilder;
 extern class PWorlds *Worlds;
 extern class PAppartements* Appartements;

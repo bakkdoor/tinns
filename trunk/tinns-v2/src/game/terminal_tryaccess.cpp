@@ -145,7 +145,7 @@ DCBUpdateManifesto
 DCBWarpRequestRunnerToWorld
 */
     bool tAllowed = false;
-    int nAccessLevel = nClient->GetAccount()->GetLevel();
+    int nAccessLevel = nClient->GetAccountLevel();
 
     // Start
     if (!strcmp ("DCBLinker", nArea)) //Initial GM check for HELP menu

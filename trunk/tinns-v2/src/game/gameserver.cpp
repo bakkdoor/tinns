@@ -106,8 +106,8 @@ PGameServer::PGameServer()
 
 PGameServer::~PGameServer()
 {
-    ServerSock->closeServer();
-    delete MsgDecoder;
+  ServerSock->closeServer();
+  delete MsgDecoder;
 }
 
 void PGameServer::Start()
@@ -121,7 +121,7 @@ void PGameServer::Start()
 	}
 	else
 	{
-        Console->LPrint(RED, BLACK, "Failed");
+    Console->LPrint(RED, BLACK, "Failed");
 	}
 	Console->LClose();
 	ServerSock->settimeout(0, 10000);
@@ -147,7 +147,7 @@ void PGameServer::SetGameTime(u32 newtime)
 {
 	if (clock_gettime(CLOCK_REALTIME, &mStartTime))
 	{
-	  Console->Print(RED, BLACK, "Horloge unavailable !!!");
+	  Console->Print(RED, BLACK, "[ERROR] Clock unavailable !!!");
 	  perror("clock_gettime CLOCK_REALTIME");
 	  mStartTime.tv_sec = 0;
     mStartTime.tv_nsec = 0;
@@ -191,7 +191,7 @@ void PGameServer::Update()
 		int clid = Server->NewClient();
 		if (clid != -1)
 		{
-			Console->Print(GREEN, BLACK, "Gameserver: client [%i] connected", clid);
+			Console->Print(GREEN, BLACK, "[Info] Gameserver: client [%i] connected", clid);
 			PClient *Client = Server->GetClient(clid);
 
 			ConnectionTCP* tcpConn = ServerSock->getTCPConnection();
@@ -212,7 +212,7 @@ void PGameServer::Update()
 		}
 		else
 		{
-			Console->Print("Gameserver: Client connection refused (server full?)");
+			Console->Print(YELLOW, BLACK, "[Notice] Gameserver: Client connection refused (server full?)");
 		}
 	}
 
@@ -247,7 +247,7 @@ bool PGameServer::HandleHandshake(PGameState *State, const u8 *Packet, int Packe
 			}
 			else
 			{
-				Console->Print("Gameserver protocol error (GS_HANDSHAKE0): invalid packet [%04x]", *(u16*)&Packet[3]);
+				Console->Print(YELLOW, BLACK, "[Notice] Gameserver protocol error (GS_HANDSHAKE0): invalid packet [%04x]", *(u16*)&Packet[3]);
 				return (false);
 			}
 
@@ -272,34 +272,53 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 		const u8 *Key = &Packet[5];		// password key
 		u16 ULen = *(u16*)&Packet[16];		// username length
 		u16 PLen = *(u16*)&Packet[18];		// password length
-		char *UserID = (char*)&Packet[20];	// account name
+		char *UserName = (char*)&Packet[20];	// account name
 		const u8 *PW = &Packet[20+ULen];	// encoded password
-		PAccount *Account = Database->GetAccounts()->Authenticate(UserID, PW, PLen, Key);
-		bool Failed = false;
-
-		if (Account)
+		
+		// Safety controls
+		if(15 + ULen + PLen > PacketSize)
 		{
-			Console->Print("Gameserver: User '%s' logged in", UserID);
-			if (Account->GetLevel() == PAL_BANNED)
+		  Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_AUTHENTICATE): Exessive internal size fields");
+      return false;		  
+		}
+		if(strnlen(UserName, ULen) == ULen)
+		{
+		  Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_AUTHENTICATE): non-terminated username field");
+      return false;	
+		}
+		
+		bool Failed = false;
+		
+		PAccount Account(UserName);
+		if(Account.GetID() == 0)
+		{
+		  Console->Print(YELLOW, BLACK, "[Info] Gameserver: Unknown user %s", UserName);
+		  Failed = true;
+		}
+		else if(!Account.Authenticate(PW, PLen, Key))
+		{
+		  Console->Print(YELLOW, BLACK, "[Info] Gameserver: User '%s': authentication failed", UserName);
+		  Failed = true;
+		}
+
+		if (!Failed)
+		{
+			Console->Print(GREEN, BLACK, "[Info] Gameserver: User '%s' authentication successful", UserName);
+			if (Account.GetLevel() == PAL_BANNED)
 			{
-				Console->Print("User %s is banned, connection refused", UserID);
+				Console->Print(YELLOW, BLACK, "[Info] User %s is banned, connection refused", UserName);
 				// TODO: ban ip for an adjustable time span?
 				Failed = true; // player is banned
 			}
 
-			if (Account->GetLevel() == PAL_UNREGPLAYER || Account->GetLevel() == PAL_REGPLAYER)
+			if (Account.GetLevel() == PAL_UNREGPLAYER || Account.GetLevel() == PAL_REGPLAYER)
 			{
 				if (Server->GetNumClients() > Server->GetMaxClients())
 				{
-					Console->Print("Server full, refusing connection from user '%s'", UserID);
+					Console->Print(YELLOW, BLACK, "[Info] Server full, refusing connection from user '%s'", UserName);
 					Failed = true;	// server full
 				}
 			}
-		}
-		else
-		{
-			Console->Print("Gameserver: User '%s': authentication failed", UserID);
-			Failed = true;	// auth failed
 		}
 
 		if (Failed)
@@ -311,79 +330,105 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 			Socket->write(AUTHFAILED, 15);
 			FinalizeClientDelayed(Client, State);
 			State->TCP.mState=PGameState::TCP::GS_UNKNOWN;
+			Console->Print(YELLOW, BLACK, "[Info] Gameserver: User '%s' login refused", UserName);
 		}
 		else
 		{
-			Client->LoggedIn(Account);
+			Client->LoggedIn(&Account);
 			u8 AUTHOK[28] = {0xfe, 0x19, 0x00, 0x83, 0x81, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
 					 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 					 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-			*(u32*)&AUTHOK[5] = Account->GetID();
+			*(u32*)&AUTHOK[5] = Account.GetID();
 			Socket->write(AUTHOK, 28);
 			State->TCP.mState = PGameState::TCP::GS_GAMEDATA;
+			Console->Print(GREEN, BLACK, "[Info] Gameserver: User '%s' logged in", UserName);
 		}
 	}
-	else
-	if(PacketSize > 29 && *(u16*)&Packet[3] == 0x0183)
+	else if(PacketSize > 29 && *(u16*)&Packet[3] == 0x0183)
 	{
 		// authentication method #2, sent when game starts
 		const u8 *Key = &Packet[13];		// password key
 		u16 PLen = *(u16*)&Packet[25];		// password length
 		u16 ULen = *(u16*)&Packet[27];		// username length
-		char *UserID = (char*)&Packet[29];	// account name
+		char *UserName = (char*)&Packet[29];	// account name
 		const u8 *PW = &Packet[29+ULen];	// encoded password
-		PAccount *Account = Database->GetAccounts()->Authenticate(UserID, PW, PLen, Key);
-		bool Failed = false;
-
-		if (Account)
+		
+		// Safety controls
+		if(24 + ULen + PLen > PacketSize)
 		{
-			/***************************************///NEW
-			//Console->Print("inside : handleautenticate2");
-			//PrintPacket((u8*)Packet,PacketSize);
+		  Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_AUTHENTICATE): Exessive internal size fields");
+      return false;		  
+		}
+		if(strnlen(UserName, ULen) == ULen)
+		{
+		  Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_AUTHENTICATE): non-terminated username field");
+      return false;	
+		}
+		
+		bool Failed = false;
+		
+		PAccount Account(UserName);
+		if(Account.GetID() == 0)
+		{
+		  Console->Print(YELLOW, BLACK, "[Info] Gameserver: Unknown user %s", UserName);
+		  Failed = true;
+		}
+		else if(!Account.Authenticate(PW, PLen, Key))
+		{
+		  Console->Print(YELLOW, BLACK, "[Info] Gameserver: User '%s': authentication failed", UserName);
+		  Failed = true;
+		}
 
-			int value = *(u32*)&Packet[21];//i think here we must read u32 instead of u8
-			PChar *Char = Database->GetChar(Account->GetChar(value));
-
-			Client->SetCharID(Char->GetID());
-			/*************************************///END NEW
-
-			if (Account->GetLevel() == PAL_BANNED)
+		if (!Failed)
+		{
+			if (Account.GetLevel() == PAL_BANNED)
 			{
-				Console->Print("User %s is banned, connection refused", UserID);
+				Console->Print(YELLOW, BLACK, "[Info] User %s is banned, connection refused", UserName);
 				// TODO: ban ip for an adjustable time span?
 				Failed = true; // player is banned
 			}
 
-			if (Account->GetLevel() == PAL_UNREGPLAYER || Account->GetLevel() == PAL_REGPLAYER)
+			if (Account.GetLevel() == PAL_UNREGPLAYER || Account.GetLevel() == PAL_REGPLAYER)
 			{
 				if(Server->GetNumClients() > (Server->GetMaxClients() - Server->GetGMSlots()))
 				{
-					Console->Print("Server full, refusing connection from regular user '%s'", UserID);
+					Console->Print(YELLOW, BLACK, "[Info] Server full, refusing connection from regular user '%s'", UserName);
 					Failed = true;	// server full for non-GM users
 				}
 			}
-			else if (Config->GetOptionInt("require_validation") == 1 && Account->GetLevel() == PAL_UNREGPLAYER)
+			else if (Config->GetOptionInt("require_validation") == 1 && Account.GetLevel() == PAL_UNREGPLAYER)
 			{
-					Console->Print("Rejecting connection from regular user '%s', account not activated yet", UserID);
+					Console->Print(YELLOW, BLACK, "[Info] Rejecting connection from regular user '%s', account not activated yet", UserName);
 					Failed = true;
 			}
 			else if (Server->GetNumClients() > Server->GetMaxClients())
 			{
-					Console->Print("Server full, refusing connection from privileged user '%s'", UserID);
+					Console->Print(YELLOW, BLACK, "[Info] Server full, refusing connection from privileged user '%s'", UserName);
 					Failed = true;	// server full even for GM users
 			}
 		}
-		else
-		{
-			Console->Print("Gameserver: User '%s': authentication failed", UserID);
-			Failed = true;	// auth failed
-		}
+    
+    
+    if (!Failed)
+    {
+			int value = *(u32*)&Packet[21];//i think here we must read u32 instead of u8
+			u32 CharID = Account.GetCharIdBySlot(value);
 
+			if(Chars->LoadChar(CharID))
+			{
+			  Client->SetCharID(CharID);
+		  }
+		  else
+		  {
+		    Failed = true;
+		  }
+		}
+			
 		if (Failed)	// something strange happened
 			FinalizeClientDelayed(Client, State);
 		else
 		{
-			Client->LoggedIn(Account);
+			Client->LoggedIn(&Account);
 			/*u8 AUTHOK[28]={0xfe, 0x19, 0x00, 0x83, 0x81, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
 					 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 					 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -391,14 +436,13 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 			Socket->Write(AUTHOK, 28);*/
 			//Client->SetRemoteUDPAddr(*(u32*)&Packet[5], *(u16*)&Packet[9]);
 			State->TCP.mState = PGameState::TCP::GS_GETSTATUS;
-			Console->Print("Gameserver: User '%s' entered game (%08x:%04x)", UserID, *(u32*)&Packet[5], *(u16*)&Packet[9]);
+			Console->Print("Gameserver: User '%s' entered game (%08x:%04x)", UserName, *(u32*)&Packet[5], *(u16*)&Packet[9]);
 			Client->SetRemoteUDPPort(*(int*)&Packet[9]);
 		}
 	}
 	else
 	{
-		Console->Print(RED, BLACK, "Gameserver protocol error (GS_AUTHENTICATE): invalid packet [%04x]", *(u16*)&Packet[3]);
-
+		Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_AUTHENTICATE): invalid packet [%04x]", *(u16*)&Packet[3]);
 		return (false);
 	}
 
@@ -417,7 +461,7 @@ bool PGameServer::HandleGameData(PClient *Client, PGameState *State, const u8 *P
 	}
 	else
 	{
-		Console->Print(RED, BLACK, "Gameserver protocol error (GS_GAMEDATA): invalid packet [%04x]", *(u16*)&Packet[3]);
+		Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_GAMEDATA): invalid packet [%04x]", *(u16*)&Packet[3]);
 		return (false);
 	}
 
@@ -426,9 +470,9 @@ bool PGameServer::HandleGameData(PClient *Client, PGameState *State, const u8 *P
 
 bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u8 *Packet)
 {
-	PAccount *Account = Client->GetAccount();
+	PAccount Account(Client->GetAccountID());
 
-	if (!Account)
+	if (!Account.GetID())
 		return false;
 
 	ConnectionTCP *Socket = Client->getTCPConn();
@@ -440,39 +484,18 @@ bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u
 		u16 Unknown2;
 	} CharList;
 
-	struct PCharEntry
-	{
-		u32 CharID;
-		u16 Type;
-		u16 Color0;
-		u16 Unknown1;
-		u8 Head;
-		u8 Torso;
-		u8 Legs;
-		u32 Location;
-		u8 NameLen;
-		u8 Unknown3;
-		u8 Unknown4;
-		u8 Unknown5;
-		u8 Unknown6;
-		u8 Unknown7;
-		u8 Unknown8;
-		u8 Unknown9;
-		u8 Unknown10;
-		u8 Unknown11;
-		u8 Unknown12;
-		std::string Name;
-	} CharEntry[4];
+	PCharProfile CharEntry[MAX_CHARS_PER_ACCOUNT];
 
 	const int CHARBASESIZE = 28;
 
 	if (*(u16*)&Packet[3] == 0x8284)
 	{
-		CharList.NumSlots = 4;
+		CharList.NumSlots = MAX_CHARS_PER_ACCOUNT;
 		int NameLengths = 0;
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < MAX_CHARS_PER_ACCOUNT; i++)
 		{
+		  CharEntry[i].CharID = 0;
 			CharEntry[i].Type = 0;
 			CharEntry[i].Color0 = 0;
 			CharEntry[i].Location = 1;
@@ -490,23 +513,16 @@ bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u
 			CharEntry[i].Unknown10 = 0;
 			CharEntry[i].Unknown11 = 0;
 			CharEntry[i].Unknown12 = 0;
-			PChar *Char = Database->GetChar(Account->GetChar(i));
 
-			if (Char)
+			CharEntry[i].in_use = false;
+	  }		
+		
+	  Chars->GetCharProfiles(Account.GetID(), CharEntry, MAX_CHARS_PER_ACCOUNT);
+
+    for (int i = 0; i < MAX_CHARS_PER_ACCOUNT; i++)
+		{
+			if (CharEntry[i].in_use)
 			{
-			  CharEntry[i].CharID = Char->GetID();
-				CharEntry[i].Type = Char->GetType();
-				// CharEntry[i].Color0 = 0;
-				CharEntry[i].Location = Char->GetLocation();
-				// CharEntry[i].Unknown1 = 0;
-				u32 tSkin, tHead, tTorso, tLegs;
-				Char->GetRealLook(tSkin, tHead, tTorso, tLegs);
-			  CharEntry[i].Head = tHead;
-			  CharEntry[i].Torso = tTorso;
-			  CharEntry[i].Legs = tLegs;
-				CharEntry[i].NameLen = Char->GetName().length()+1;
-				CharEntry[i].Name = Char->GetName();
-
 				NameLengths += CharEntry[i].NameLen;
 			}
 			else
@@ -517,7 +533,7 @@ bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u
 		}
 
 		u8 PacketHeader[5] = {0xfe, 0x00, 0x00, 0x83, 0x85};
-		*(u16*)&PacketHeader[1] = sizeof(u16) * 3 + (4 * CHARBASESIZE) + NameLengths + 2;
+		*(u16*)&PacketHeader[1] = sizeof(u16) * 3 + (MAX_CHARS_PER_ACCOUNT * CHARBASESIZE) + NameLengths + 2;
 		Socket->write(PacketHeader, 5);
 
 		CharList.Unknown1 = 0x0000;
@@ -526,7 +542,7 @@ bool PGameServer::HandleRequestChars(PClient *Client, PGameState *State, const u
 		Socket->write(CharList.NumSlots);
 		Socket->write(CharList.Unknown2);
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < MAX_CHARS_PER_ACCOUNT; i++)
 		{
 			Socket->write(CharEntry[i].CharID);
 			Socket->write(CharEntry[i].Type);
@@ -594,12 +610,17 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 						ValidString = true;
 						break;
 					}
-
+        
+        const char *Name = (char*)&Packet[30];
+        /*if (ValidString)
+        {
+          ValidString = PChar::IsUsernameWellFormed(Name);
+        }*/
+         
 				if (!ValidString)
 					return (false);
 
-				const char *Name = (char*)&Packet[30];
-				PChar *Char = Database->GetChar(Name);
+				PChar *Char = Chars->GetChar(Name);
 
 				if (!Char)
 					Answer[5] = 1;	// ok
@@ -612,39 +633,41 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 			case 3: // delete char
 			{
-				PAccount *Acc = Client->GetAccount();
+			  PAccount Acc(Client->GetAccountID());
 				u8 Num = Packet[PacketSize-1];
 
-				if (Acc)
+				if (Acc.GetID())
 				{
-					u32 CharID = Acc->GetChar(Num);
-					Acc->RemoveChar(Num);
+					u32 CharID = Acc.GetCharIdBySlot(Num);
 
-					if (CharID != 0)
+          // Also check that char is out of game
+					if ((CharID != 0) && (Chars->GetChar(CharID) == NULL))
 					{
 						char query[100];
 						sprintf(query, "DELETE FROM characters WHERE c_id = %d LIMIT 1", CharID);
 						if(MySQL->GameQuery(query))
-							Console->Print("Char %d not removed!", CharID);
+							Console->Print(RED, BLACK, "[Notice] Char %d not deleted!", CharID);
 						else
 						{
-						  Console->Print("Char %d removed!", CharID);
+						  Console->Print(GREEN, BLACK, "[Info] Char %d deleted!", CharID);
 
 						  sprintf(query, "DELETE FROM buddy_list WHERE bud_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
-							  Console->Print("Char %d's buddy list not removed!", CharID);
+							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's buddy list not removed!", CharID);
 
 						  sprintf(query, "DELETE FROM genrep WHERE g_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
-							  Console->Print("Char %d's genrep list not removed!", CharID);
+							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's genrep list not removed!", CharID);
 
 						  sprintf(query, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
-							  Console->Print("Char %d's inventory not removed!", CharID);
+							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's inventory not removed!", CharID);
 
 							Appartements->DeleteCharAppartements(CharID);
 					  }
 					}
+					else
+					  return false;
 				}
 				return (true);
 			}
@@ -672,19 +695,18 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 				Answer[5] = 2;	// return error if char creation fails
 
 				// check for already used char name - should not happen though
-				PChar *Char = Database->GetChar(TempName);
+				PChar *Char = Chars->GetChar(TempName);
 				if (!Char)
 				{
-					PAccount *Acc = Client->GetAccount();
-
-					PChar *c = Database->CreateChar(Acc->GetID(), TempName, Gender, Profession, Faction,
-					     Head, Torso, Legs, NZSNb, (const char*)&Packet[64+NameLen], Slot);
-
-					if (c)
+					PAccount Acc(Client->GetAccountID());
+					PChar* nChar = new PChar();
+					
+					if(nChar->CreateNewChar(Acc.GetID(), TempName, Gender, Profession, Faction,
+					     Head, Torso, Legs, NZSNb, (const char*)&Packet[64+NameLen], Slot))
 					{
-						Acc->AddChar(c->GetID());
 						Answer[5] = 1;	// return success
 					}
+					delete nChar;
 				}
 
 				Socket->write(Answer, 10);
@@ -694,7 +716,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 	}
 	else
 	{
-		Console->Print(RED, BLACK, "Gameserver protocol error (GS_CHARLIST): invalid packet [%04x]", *(u16*)&Packet[3]);
+		Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_CHARLIST): invalid packet [%04x]", *(u16*)&Packet[3]);
 
 		return (false);
 	}
@@ -715,7 +737,7 @@ bool PGameServer::HandleGetStatus(PClient *Client, PGameState *State, const u8 *
 	}
 	else
 	{
-		Console->Print(RED, BLACK, "Gameserver protocol error (GS_GETSTATUS): invalid packet [%04x]", *(u16*)&Packet[3]);
+		Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_GETSTATUS): invalid packet [%04x]", *(u16*)&Packet[3]);
 
 		return (false);
 	}
@@ -781,11 +803,11 @@ IP = IPStringToDWord(IPServerString.c_str());
 //Console->Print("IP-2 %d", IP);
 		*(u32*)&GameInfo[13] = IP;
 		*(u16*)&GameInfo[17] = Port;
-		Console->Print("Using UDP %s:%d on server", IPServerString.c_str(), Port);
+		Console->Print(GREEN, BLACK, "[Info] Using UDP %s:%d on server", IPServerString.c_str(), Port);
 
-		*(u32*)&GameInfo[5] = Client->GetAccount()->GetID();
-		*(u32*)&GameInfo[9] = Client->GetCharID(); // NEW : SOLVED ? was TODO : charid
-		Console->Print("Serving char id :%d", Client->GetCharID()); //NEW
+		*(u32*)&GameInfo[5] = Client->GetAccountID();
+		*(u32*)&GameInfo[9] = Client->GetCharID();
+		Console->Print(GREEN, BLACK, "[Info] Serving char id :%d", Client->GetCharID());
 
 		Socket->write(GameInfo, 31);
 		Socket->flushSendBuffer();
@@ -816,7 +838,7 @@ IP = IPStringToDWord(IPServerString.c_str());
     {
         if(Config->GetOptionInt("broadcast_new_hidestaff") == 1)
         {
-            if(Client->GetAccount()->GetLevel() > PAL_REGPLAYER)
+            if(Client->GetAccountLevel() > PAL_REGPLAYER)
                 SendBC = false;
             else
                 SendBC = true;
@@ -828,7 +850,7 @@ IP = IPStringToDWord(IPServerString.c_str());
     }
     if(SendBC == true)
     {
-        std::string playerName = Database->GetChar(Client->GetCharID())->GetName();
+        std::string playerName = Chars->GetChar(Client->GetCharID())->GetName();
         std::string serverName = Config->GetOption("server_name");
         std::string helloMessage = "Hello " + playerName + "! Welcome to " + serverName + " - A TinNS Neocron Server.";
         char* message = (char*) helloMessage.c_str();
@@ -839,7 +861,7 @@ IP = IPStringToDWord(IPServerString.c_str());
 	}
 	else
 	{
-		Console->Print(RED, BLACK, "Gameserver protocol error (GS_GAMEINFO): invalid packet [%04x]", *(u16*)&Packet[3]);
+		Console->Print(RED, BLACK, "[Notice] Gameserver protocol error (GS_GAMEINFO): invalid packet [%04x]", *(u16*)&Packet[3]);
 		return (false);
 	}
 
@@ -984,11 +1006,11 @@ void PGameServer::UDPStreamClosed(PClient *Client)
 
 void PGameServer::FinalizeClient(PClient *Client, PGameState *State)
 {
-	Console->Print(RED, BLACK, "Gameserver: client %s disconnected", Client->GetAddress());
+	Console->Print(GREEN, BLACK, "[Info] Gameserver: client %s disconnected", Client->GetAddress());
 
     // Isnt working somehow. I assume that mID and mAccount is deleted already.
     // Mark char as Offline
-	//PChar *Char = Database->GetChar(Client->GetCharID());
+	//PChar *Char = Chars->GetChar(Client->GetCharID());
     //Char->SetOnlineStatus(false);
 
     // delete client from clientmanager list => Do it before we remove network access
@@ -1003,6 +1025,6 @@ void PGameServer::FinalizeClient(PClient *Client, PGameState *State)
 
 void PGameServer::FinalizeClientDelayed(PClient *Client, PGameState *State)
 {
-	Console->Print("Gameserver: client %s is about to be disconnected", Client->GetAddress());
+	Console->Print(GREEN, BLACK, "[Info] Gameserver: client %s is about to be disconnected", Client->GetAddress());
 	State->TCP.mWaitSend = true;
 }

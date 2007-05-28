@@ -62,77 +62,6 @@
 class PChar
 {
 	private :
-	// SQL Layout
-        enum
-        {
-            c_id,
-            c_name,
-            c_str_lvl,
-            c_str_pts,
-            c_int_lvl,
-            c_int_pts,
-            c_dex_lvl,
-            c_dex_pts,
-            c_con_lvl,
-            c_con_pts,
-            c_psi_lvl,
-            c_psi_pts,
-            a_id,
-            c_class,
-            c_profession,
-            c_sex,
-            c_location,
-            c_mc,
-            c_hc,
-            c_tra,
-            c_pc,
-            c_rc,
-            c_tc,
-            c_vhc,
-            c_agl,
-            c_rep,
-            c_rec,
-            c_rcl,
-            c_atl,
-            c_end,
-            c_for,
-            c_fir,
-            c_enr,
-            c_xrr,
-            c_por,
-            c_hlt, // In SQL, this is STILL c_htl. Maxx hasnt changed it yet
-            c_hck,
-            c_brt,
-            c_psu,
-            c_wep,
-            c_cst,
-            c_res,
-            c_imp,
-            c_ppu,
-            c_apu,
-            c_mst,
-            c_ppw,
-            c_psr,
-            c_wpw,
-            c_apt,
-            c_cash,
-            c_head,
-            c_torso,
-            c_legs,
-            c_str_xp,
-            c_int_xp,
-            c_dex_xp,
-            c_psi_xp,
-            c_con_xp,
-            c_pos_x,
-            c_pos_y,
-            c_pos_z,
-            c_angle_ud,
-            c_angle_lr,
-            c_faction,
-            c_slot
-        };
-
 		u32 mID;
 		u32 mAccount;
 		u8 mSlot;
@@ -142,27 +71,27 @@ class PChar
 		//u32 mType; // Removed that and only keep GetType()
 		u32 mProfession;
 		u32 mFaction;
-        u32 mRealHead;  // Base Skin elements, in complement of (computed) mType
-        u32 mRealTorso; // " Head shouldn't be changeable, except in case of surgery !!!
-        u32 mRealLegs;  // "
-        u32 mSkin;  // Current Skin elements. *** Not saved in DB atm ***
-        u32 mHead;  // "
-        u32 mTorso; // "
-        u32 mLegs;  // "
-        u8 mHeadColor;  // "
-        u8 mTorsoColor; // "
-        u8 mLegsColor;  // "
-        u8 mHeadDarkness;  // " // 0=Bright, 255=dark
-        u8 mTorsoDarkness; // "
-        u8 mLegsDarkness;  // "
-		            // Skin scale factor setting remain to discover, provided they are somewhere for player chars ...
+    u32 mRealHead;  // Base Skin elements, in complement of (computed) mType
+    u32 mRealTorso; // " Head shouldn't be changeable, except in case of surgery !!!
+    u32 mRealLegs;  // "
+    u32 mSkin;  // Current Skin elements. *** Not saved in DB atm ***
+    u32 mHead;  // "
+    u32 mTorso; // "
+    u32 mLegs;  // "
+    u8 mHeadColor;  // "
+    u8 mTorsoColor; // "
+    u8 mLegsColor;  // "
+    u8 mHeadDarkness;  // " // 0=Bright, 255=dark
+    u8 mTorsoDarkness; // "
+    u8 mLegsDarkness;  // "
+       // Skin scale factor setting remain to discover, provided they are somewhere for player chars ...
 
 		bool mLocationLeased; // temp until char on-demand load/unload
 		u32 mLocation;
 		u32 mCash;
 		u32 mStartApt; // set same as PrimaryApt atm
 		u32 mPrimaryApt;
-        u32 mChairInUse; // not saved in DB atm
+    u32 mChairInUse; // not saved in DB atm
 
 		u16 mHealth;
 		u16 mMana;
@@ -217,10 +146,10 @@ class PChar
     bool mIsOnline;
 		bool mDirtyFlag;
 
-        bool mShunned;
-        bool mJailed;
-
-        class PInventory mInventory;
+    bool mShunned;
+    bool mJailed;
+  
+    class PInventory mInventory;
 
 	protected :
 		friend class PChars;
@@ -234,33 +163,33 @@ class PChar
 		//inline void SetType(u32 Type) { mType = Type; } // Removed. Type is computed from Gender & Profession (??? is it not Gender + Class ???)
 		inline void SetFaction(u32 Faction) { mFaction = Faction; }
 		//inline void SetModel(u32 Model) { mModel = Model; } // Inhibited for the moment. Base model is deduced from from Gender & Class (Profession)
-        void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);
-        void SetBaseSkills();
-        void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
-        void SetBaseInventory();
+    void SetRealLook(u32 nHead, u32 nTorso, u32 nLegs);
+    void SetBaseSkills();
+    void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
+    void SetBaseInventory();
 
-        void FillinCharDetails(u8 *Packet);
-        bool SQLCreate();
+    void FillinCharDetails(u8 *Packet);
+    bool SQLCreate();
 
 	public :
 		PChar();
 		~PChar();
 
-        PSkillHandler *Skill;
-        PCharCoordinates Coords;
+    PSkillHandler *Skill;
+    PCharCoordinates Coords;
 
-        void SetCurrentLook(u32 nSkin, u32 nHead = 0, u32 nTorso = 0, u32 nLegs = 0);
-        void SetCurrentLookFromCharType(u32 nType);
-        void ResetCurrentLook();
+    void SetCurrentLook(u32 nSkin, u32 nHead = 0, u32 nTorso = 0, u32 nLegs = 0);
+    void SetCurrentLookFromCharType(u32 nType);
+    void ResetCurrentLook();
 
-        void SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness = 0, u8 nTorsoDarkness = 0, u8 nLegsDarkness = 0);
-        inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
-        inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
+    void SetCurrentBodyColor(u8 nHeadColor, u8 nTorsoColor, u8 nLegsColor, u8 nHeadDarkness = 0, u8 nTorsoDarkness = 0, u8 nLegsDarkness = 0);
+    inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
+    inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
 
-        inline void SetLookingAt(u16 nCharID) { mLookingAt = nCharID; mLookAtTimer = std::time(NULL) + 1; };
-        inline u16 GetLookingAt() { if(mLookAtTimer < std::time(NULL)) return mLookingAt; else return 0; };
+    inline void SetLookingAt(u16 nCharID) { mLookingAt = nCharID; mLookAtTimer = std::time(NULL) + 1; };
+    inline u16 GetLookingAt() { if(mLookAtTimer < std::time(NULL)) return mLookingAt; else return 0; };
 
-        inline PInventory *GetInventory() { return &mInventory; }
+    inline PInventory *GetInventory() { return &mInventory; }
 		inline u32 GetID() const { return mID; }
 		inline u32 GetAccount() const { return mAccount; }
 		inline const std::string &GetName() const { return mName; }
@@ -273,12 +202,12 @@ class PChar
 		inline void GetBodyEffect(u8 &nEffect, u8 &nDensity) { nEffect = mBodyEffect; nDensity = mBodyEffectDensity; }
 
 		inline u16 GetItemInHand() { return mItemInHand; }
-        inline void SetItemInHand(u16 nItem) { mItemInHand = nItem; }
+    inline void SetItemInHand(u16 nItem) { mItemInHand = nItem; }
 
 		void GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness);
 		inline u8 GetSpeedOverride() { return mSpeedOverride; }
 		inline u32 GetBaseModel();
-        inline u32 GetProfession() const { return mProfession; }
+    inline u32 GetProfession() const { return mProfession; }
 		inline u16 GetMaxHealth() { return mHealth; }
 		inline u16 GetMaxMana() { return mMana; }
 		inline u16 GetMaxStamina() { return mStamina; }
@@ -289,18 +218,18 @@ class PChar
 		inline u32 GetLocation() const { return mLocation; }
 
 		inline u32 GetCash() const { return mCash; }
-        u32 SetCash(u32 nCash);  // Does return the new cashvalue, NO udpmessage is sent out!!
+    u32 SetCash(u32 nCash);  // Does return the new cashvalue, NO udpmessage is sent out!!
 
 		inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
-        inline void SetJail(bool val) { mJailed = val; };
-        inline void SetShun(bool val) { mShunned = val; };
+    inline void SetJail(bool val) { mJailed = val; };
+    inline void SetShun(bool val) { mShunned = val; };
 
-        inline bool IsJailed() { return mJailed; };
-        inline bool IsShunned() { return mShunned; };
+    inline bool IsJailed() { return mJailed; };
+    inline bool IsShunned() { return mShunned; };
 
-        inline s8 GetSoullight() const { return mSoullight; }
-        u8 GetMainRank();
+    inline s8 GetSoullight() const { return mSoullight; }
+    u8 GetMainRank();
 		inline u8 GetCombatRank() const { return mCombatRank; }
 		inline u8 GetSynaptic() const { return mSynaptic; }
 		inline bool IsDead() const { return mIsDead; }
@@ -310,21 +239,21 @@ class PChar
 		inline void SetActiveChannels(u32 nChannels) { mActiveChatChannels = nChannels; }
 		inline u32 GetActiveChannels() { return mActiveChatChannels; }
 
-        inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
-        inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
-        inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
-        inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
-        inline u8 GetBuddyCount() { return mBuddyList->Count(); }
-        inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
+    inline bool AddBuddy(u32 nBuddyCharID) { return mBuddyList->AddChar(nBuddyCharID); }
+    inline bool RemoveBuddy(u32 nBuddyCharID) { return mBuddyList->RemoveChar(nBuddyCharID); }
+    inline u16 GetBuddyListDataSize() { return mBuddyList->GetListDataSize(); }
+    inline const void* GetBuddyListData() { return mBuddyList->GetListData(); }
+    inline u8 GetBuddyCount() { return mBuddyList->Count(); }
+    inline bool IsBuddy(u32 CharID) { return mBuddyList->IsInBuddy(CharID); };
 
-        inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
-        inline u16 GetGenrepListDataSize() { return mGenrepList->GetListDataSize(); }
-        inline const void* GetGenrepListData() { return mGenrepList->GetListData(); }
-        inline u8 GetGenrepCount() { return mGenrepList->Count(); }
+    inline bool AddGenrep(u16 nWorldID, u16 nStationID) { return mGenrepList->AddGenrep(nWorldID, nStationID); }
+    inline u16 GetGenrepListDataSize() { return mGenrepList->GetListDataSize(); }
+    inline const void* GetGenrepListData() { return mGenrepList->GetListData(); }
+    inline u8 GetGenrepCount() { return mGenrepList->Count(); }
 
 		inline bool IsDirty() const { return mDirtyFlag; }
-        inline bool IsOnline() { return mIsOnline; }
-        void SetOnlineStatus(bool IsOnline);
+    inline bool IsOnline() { return mIsOnline; }
+    void SetOnlineStatus(bool IsOnline);
 
 		bool CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
         u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
@@ -344,6 +273,31 @@ class PChar
 
 };
 
+struct PCharProfile
+{
+	u32 CharID;
+	u16 Type;
+	u16 Color0;
+	u16 Unknown1;
+	u8 Head;
+	u8 Torso;
+	u8 Legs;
+	u32 Location;
+	u8 NameLen;
+	u8 Unknown3;
+	u8 Unknown4;
+	u8 Unknown5;
+	u8 Unknown6;
+	u8 Unknown7;
+	u8 Unknown8;
+	u8 Unknown9;
+	u8 Unknown10;
+	u8 Unknown11;
+	u8 Unknown12;
+	std::string Name;
+	bool in_use;
+};
+	
 class PChars
 {
 	private :
@@ -354,21 +308,24 @@ class PChars
 		std::time_t mAutoSavePeriod;
 		std::time_t mLastSave;
 
-
 	public :
 		PChars();
 		~PChars();
 
-		void SQLLoad();
+		//void SQLLoad(); // TO BE REMOVED
+		bool LoadChar(u32 CharID);
+    bool AddChar(PChar* nChar);
+    PChar* RemoveChar(u32 CharID);
+
+		PChar* GetChar(u32 CharID) const;
+		PChar* GetChar(const std::string &Name) const;
+		//PChar* CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+    //  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 
 		void SQLSave();
-
-		PChar *GetChar(u32 CharID) const;
-		PChar *GetChar(const std::string &Name) const;
-		PChar *CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
-      u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
-
 		void Update();
+		
+		int GetCharProfiles(const u32 AccountID, PCharProfile* CharSlotsArray, const u8 ArraySize); // return effective entries nb
 };
 
 #endif

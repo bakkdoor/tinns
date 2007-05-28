@@ -41,7 +41,8 @@
 
 PClient::PClient(int Index)
 {
-	mAccount = 0;
+	mAccountID = 0;
+	mAccountLevel = 0;
 	mIndex = Index;
 	mCharID = 0;
 	mConnection = PCC_NONE;
@@ -200,7 +201,7 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
 
 void PClient::GameDisconnect()
 {
-	mAccount = 0;
+	mAccountID = 0;
 
 	if(m_TCPConnection)
 	{
@@ -224,7 +225,7 @@ void PClient::GameDisconnect()
       if (res)
         Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) saved before disconnect.", tChar->GetID(), mIndex);
       else
-        Console->Print(RED, BLACK, "GameDisconnect: Char %i (Client %i) saved before disconnect FAILED.", tChar->GetID(), mIndex);
+        Console->Print(RED, BLACK, "GameDisconnect: Char %i (Client %i) saving before disconnect and FAILED.", tChar->GetID(), mIndex);
     }
     else
     {
@@ -252,6 +253,10 @@ void PClient::GameDisconnect()
       Worlds->ReleaseWorld(tChar->GetLocation());
       tChar->SetLocationLeased(false);
     }
+    
+    Chars->RemoveChar(mCharID);
+    delete tChar;
+    mCharID = 0;
   }
   else
   {
@@ -263,9 +268,10 @@ void PClient::GameDisconnect()
 	mConnection = PCC_NONE;
 }
 
-void PClient::LoggedIn(PAccount *Account)
+void PClient::RefreshAccountInfo(PAccount *Account)
 {
-	mAccount = Account;
+	mAccountID = Account->GetID();
+	mAccountLevel = Account->GetLevel();
 }
 
 void PClient::Update()
@@ -305,7 +311,14 @@ void PClient::Update()
 
 PChar* PClient::GetChar() const
 {
-  return Database->GetChar(mCharID);
+  if(mCharID)
+  {
+    return Chars->GetChar(mCharID);
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 bool PClient::CharIsAwaitingWarpto()

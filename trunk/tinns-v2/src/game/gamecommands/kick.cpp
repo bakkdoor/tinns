@@ -52,10 +52,10 @@ void PCommands::doCmdkick()
     }
 
     // Make sure only people with a higher level than victim can kick victim
-    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    if(source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
-        snprintf(tmpMsg, 199, "Cant kick %s, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        snprintf(tmpMsg, 199, "Cant kick %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
         tmpMsg[199] = '\0';
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;
@@ -63,15 +63,16 @@ void PCommands::doCmdkick()
 
 // *************** Checks done, proceed with command
     int final_bantime = std::time(NULL) + 60;               // Ban 60 seconds (Anti-Rejoin)
-    target->GetAccount()->SetBannedStatus(final_bantime);
-    target->GetAccount()->SQLSave();
+    PAccount Acc(target->GetAccountID());
+    Acc.SetBannedUntilTime(final_bantime);
+    Acc.Save();
 
     InitCharVanish(target);
     GameServer->ClientDisconnected(target);                 // Kick
 
-    Console->Print("%s %s (Lv %d) kicked %s (Lv %d)", Console->ColorText(YELLOW, BLACK, "[GameCommand]"), Database->GetChar(source->GetCharID())->GetName().c_str(), source->GetAccount()->GetLevel(), Database->GetChar(target->GetCharID())->GetName().c_str(), target->GetAccount()->GetLevel());
+    Console->Print("%s %s (Lv %d) kicked %s (Lv %d)", Console->ColorText(YELLOW, BLACK, "[GameCommand]"), Chars->GetChar(source->GetCharID())->GetName().c_str(), source->GetAccountLevel(), Chars->GetChar(target->GetCharID())->GetName().c_str(), target->GetAccountLevel());
     char successmsg[100];
-    snprintf(successmsg, 99, "Kicked %s", Database->GetChar(target->GetCharID())->GetName().c_str());
+    snprintf(successmsg, 99, "Kicked %s", Chars->GetChar(target->GetCharID())->GetName().c_str());
     successmsg[99] = '\0';
     Chat->send(source, CHAT_DIRECT, "System", successmsg);
 }

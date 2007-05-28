@@ -40,6 +40,9 @@
 #ifdef _MSC_VER
 	#pragma once
 #endif
+
+#include "regex++.h"
+
 /*
 0 = unregistered user
 1 = Registered user
@@ -57,15 +60,8 @@
 #define PAL_GM 50
 #define PAL_ADMIN 100
 
-/*enum PAccountLevel
-{
-	PAL_BANNED = -1,
-	PAL_UNREGPLAYER = 0,
-	PAL_REGPLAYER = 1,
-	PAL_VOLUNTEER = 30,
-	PAL_GM = 50,
-	PAL_ADMIN = 100
-};*/
+// Max number of char slots per account
+#define MAX_CHARS_PER_ACCOUNT  4
 
 /*
 0 = Offline
@@ -79,105 +75,64 @@ enum PAccountStatus
     PAS_ONLINE = 1,
     PAS_BANNED = 2
 };
-
+  
 class PAccount
 {
 	private :
-        // SQL Layout
-        enum {
-            a_id,
-            a_username,
-            a_password,
-            a_priv,
-            a_status,
-            a_bandate
-        };
-		enum { MAXCHARSPERACC = 4 };
-		u32 mID;
-		std::string mName;
-		std::string mPassword;
+    // SQL Layout
+    enum {
+        a_id,
+        a_username,
+        a_password,
+        a_priv,
+        a_status,
+        a_bandate
+    };
+    
+    // static members
+	  static RegEx* mUsernameRegexFilter;
+	  static RegEx* mPasswordRegexFilter;
+	  
+	  // instance members
+	  u32 mID;
+	  std::string mName;
+	  std::string mPassword;
+    int mLevel;
+    PAccountStatus mStatus;
+    std::time_t mBannedUntil;
 
-		int mLevel;
-		PAccountStatus mStatus;
-
-		u32 mChars[MAXCHARSPERACC];
-		bool mConsoleAllowed;
-		bool mDirty;
-		bool mAdminDebug;
-
-	protected :
-		friend class PAccounts;
-		void SetID(u32 ID);
-		void SetName(const std::string &Name);
-		void SetPassword(const std::string &Pass);
-
-		//void SetLevel(PAccountLevel Level);
-		void SetStatus(PAccountStatus Status);
-
-		void SetConsoleAllowed(bool Allowed);
-		inline void SetDirtyFlag() { mDirty = true; }
-		inline void ClearDirtyFlag() { mDirty = false; }
+    bool LoadFromQuery(char* query);
+    
 	public :
-		PAccount();
-
+	  PAccount();
+	  PAccount(const u32 AccountId);
+	  PAccount(const char *Username);
+	  
+	  static void SetUsernameRegexFilter(const char* RegexStr);
+		static void SetPasswordRegexFilter(const char* RegexStr);
+		static bool IsUsernameWellFormed(const char *Username);
+		static bool IsPasswordWellFormed(const char *Password);
+		
 		inline u32 GetID() const { return mID; }
+		bool SetName(const std::string &Pass);
 		inline const std::string &GetName() const { return mName; }
+		bool SetPassword(const std::string &Pass);
 		inline const std::string &GetPassword() const { return mPassword; }
-
+    bool SetLevel(int newLevel);
 		inline int GetLevel() const { return mLevel; }
-		void SetLevel(int newLevel);
-
-		inline PAccountStatus GetStatus() const { return mStatus; }
-
 		std::string GetLevelString() const;
-		inline bool IsConsoleAllowed() const { return mConsoleAllowed; }
-		inline bool IsDirty() const { return mDirty; }
+    bool SetStatus(PAccountStatus Status);
+		inline PAccountStatus GetStatus() const { return mStatus; }
+		bool SetBannedUntilTime(std::time_t BannedUntil);
+    inline bool IsBanned() const { return (mBannedUntil > std::time(NULL)); }
 
-		//inline bool IsAdminDebug() const { return mAdminDebug; }
-		//inline void SetAdminDebug( bool ShowDebugMessages ) { mAdminDebug = ShowDebugMessages; }
+		bool Authenticate(const u8* PasswordData, int PassLen, const u8 *Key);
+		bool Authenticate(const char *Password) const;
+		    
+		bool Create();
+    bool Save(bool CreateMode = false);
 
-		void SetBannedStatus(int banneduntil);
-
-		bool AddChar(u32 CharID);
-		void RemoveChar(u32 CharID);
-		void RemoveChar(int CharIndex);
-		u32 GetChar(int Num) const;
-
-		/*void Save(TiXmlElement *Node);*/
-		void SQLSave();
-};
-
-class PAccounts
-{
-	private :
-        // SQL Layout
-        enum {
-            a_id,
-            a_username,
-            a_password,
-            a_priv,
-            a_status,
-            a_bandate
-        };
-		typedef std::map<u32, PAccount*> AccountMap;
-		AccountMap mAccounts;
-		u32 mLastID;
-	public :
-		PAccounts();
-		~PAccounts();
-
-		//PAccount *Authenticate(const char *User, const u8* Password, int PassLen, const u8 *Key, bool UseAutoAccounts=false);
-		PAccount *Authenticate(const char *User, const u8* Password, int PassLen, const u8 *Key);
-		PAccount *Authenticate(const char *User, const char *Password) const;
-		//void Load();
-		bool SQLLoad();
-		void RehashAccountData();
-		//void Update();
-        void SQLUpdate();
-
-		PAccount *GetAccount(u32 AccountID) const;
-		PAccount *GetAccount(const std::string &Name) const;
-		//PAccount *CreateAccount(const std::string &Name, const std::string &Password);
+    u32 GetCharIdBySlot(const u32 SlotId);
 };
 
 #endif

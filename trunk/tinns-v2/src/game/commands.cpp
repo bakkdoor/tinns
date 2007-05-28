@@ -199,10 +199,10 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdremove();
     }
-    else if(strcmp(Command, "rehash") == 0)
+/*    else if(strcmp(Command, "rehash") == 0)
     {
         doCmdrehash();
-    }
+    }*/
     else if(strcmp(Command, "uptime") == 0)
     {
         doCmduptime();
@@ -301,7 +301,7 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
 
 bool PCommands::CheckPermission()
 {
-    if(CmdAccess->GetOptionInt(Command) > source->GetAccount()->GetLevel())
+    if(CmdAccess->GetOptionInt(Command) > source->GetAccountLevel())
         return false;
     else
         return true;
@@ -309,7 +309,7 @@ bool PCommands::CheckPermission()
 
 bool PCommands::IsAdmin()
 {
-    if(source->GetAccount()->GetLevel() >= PAL_ADMIN)
+    if(source->GetAccountLevel() >= PAL_ADMIN)
         return true;
     else
         return false;
@@ -421,7 +421,7 @@ PClient* PCommands::GetClientByNick(const char *nick)
         if(it->second)
         {
             PClient* target = it->second;
-            if(!strcasecmp(Database->GetChar(target->GetCharID())->GetName().c_str(), nick))
+            if(!strcasecmp(Chars->GetChar(target->GetCharID())->GetName().c_str(), nick))
                 return it->second;
         }
     }

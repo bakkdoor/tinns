@@ -50,6 +50,77 @@
 #include "worlds.h"
 #include "appartements.h"
 
+// SQL Layout
+enum
+{
+    c_id,
+    c_name,
+    c_str_lvl,
+    c_str_pts,
+    c_int_lvl,
+    c_int_pts,
+    c_dex_lvl,
+    c_dex_pts,
+    c_con_lvl,
+    c_con_pts,
+    c_psi_lvl,
+    c_psi_pts,
+    a_id,
+    c_class,
+    c_profession,
+    c_sex,
+    c_location,
+    c_mc,
+    c_hc,
+    c_tra,
+    c_pc,
+    c_rc,
+    c_tc,
+    c_vhc,
+    c_agl,
+    c_rep,
+    c_rec,
+    c_rcl,
+    c_atl,
+    c_end,
+    c_for,
+    c_fir,
+    c_enr,
+    c_xrr,
+    c_por,
+    c_hlt, // In SQL, this is STILL c_htl. Maxx hasnt changed it yet
+    c_hck,
+    c_brt,
+    c_psu,
+    c_wep,
+    c_cst,
+    c_res,
+    c_imp,
+    c_ppu,
+    c_apu,
+    c_mst,
+    c_ppw,
+    c_psr,
+    c_wpw,
+    c_apt,
+    c_cash,
+    c_head,
+    c_torso,
+    c_legs,
+    c_str_xp,
+    c_int_xp,
+    c_dex_xp,
+    c_psi_xp,
+    c_con_xp,
+    c_pos_x,
+    c_pos_y,
+    c_pos_z,
+    c_angle_ud,
+    c_angle_lr,
+    c_faction,
+    c_slot
+};
+        
 PChar::PChar()
 {
 	mID = 0;
@@ -320,7 +391,8 @@ bool PChar::SQLLoad(int CharID) {
     while((row = mysql_fetch_row(result)))
     {
         SetID(CharID);
-        SetName(row[1]);
+        SetName(row[c_name]);
+        SetAccount(std::atoi(row[a_id]));
 
         // Gender
         int genvalue = std::atoi(row[c_sex]);
@@ -372,6 +444,7 @@ bool PChar::SQLLoad(int CharID) {
         int locvalue = std::atoi(row[c_location]);
         mLocation = static_cast<u32>(locvalue);
 
+//This assumption is not so good ... hardcoding jailed state linked with location ...
         if(mLocation == 550 || mLocation == 551)
             mJailed = true;
 
@@ -514,7 +587,9 @@ bool PChar::SQLCreate() // Specific method for creation in order to avoid existe
     queryv += Ssprintf(",'%u'", mLocation);
     query += ",c_cash";
     queryv += Ssprintf(",'%u'", mCash);
-
+    query += ",c_slot";
+    queryv += Ssprintf(",'%u'", mSlot);    
+    
     query = query + queryv + ");";
 
     if ( MySQL->GameQuery(query.c_str()) )
@@ -571,6 +646,7 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
     }
     else
     {
+      Console->Print(YELLOW, BLACK, "New char %s (id %d) : creation aborted", mName.c_str(), mID);
       if (mID)
       {
         SQLDelete();
@@ -624,6 +700,7 @@ bool PChar::SQLSave()
     query += Ssprintf(",c_class='%u'", mClass);
     query += Ssprintf(",c_sex='%u'", mGender);
     query += Ssprintf(",c_profession='%u'", mProfession);
+    query += Ssprintf(",c_slot='%u'", mSlot);
     // query += Ssprintf(",c_model='%u'", mModel);
     // query += Ssprintf(",c_type='%u'", mType);
     */
@@ -949,7 +1026,7 @@ PChars::~PChars()
 		delete i->second;
 }
 
-void PChars::SQLLoad()
+/*void PChars::SQLLoad()
 {
     Console->Print("Loading player chars...");
     int nChars = 0;
@@ -970,8 +1047,8 @@ void PChars::SQLLoad()
     {
         int AccId = 0;
         AccId = std::atoi(row[2]);
-        PAccount *Account = Database->GetAccount(AccId);
-        if(Account)
+        PAccount Account(AccId);
+        if(Account.GetID())
         {
             PChar *info = new PChar();
             int CharID = std::atoi(row[0]);
@@ -1006,6 +1083,59 @@ void PChars::SQLLoad()
     MySQL->FreeGameSQLResult(result);
     Console->Print("%s Loaded %i player chars", Console->ColorText(GREEN, BLACK, "[Success]"), nChars);
 	  mLastSave = std::time(NULL);
+}*/
+
+bool PChars::LoadChar(u32 CharID)
+{
+  if(!CharID)
+    return false;
+    
+  PChar *nChar = new PChar();
+  if(nChar->SQLLoad(CharID))
+  {
+    nChar->SetDirtyFlag(false);
+    return AddChar(nChar);
+  }
+  else
+  {
+    Console->Print(RED, BLACK, "Could not load char id %d from database", CharID);
+    return false;
+  }    
+}
+
+bool PChars::AddChar(PChar* nChar)
+{
+  if(!nChar)
+    return false;
+    
+  mLastID = max(mLastID, nChar->GetID());
+  if(mChars.insert(std::make_pair(nChar->GetID(), nChar)).second)
+  {
+    if (gDevDebug)
+      Console->Print("%s Char: %s (id %d) added", Console->ColorText(GREEN, BLACK, "[Debug]"),nChar->GetName().c_str() ,nChar->GetID());
+    return true;
+  }
+  else
+  {
+    Console->Print(RED, BLACK, "[Bug] Trying to load char twice : %s (id %d)", nChar->GetName().c_str(), nChar->GetID());
+    return false;
+  }
+}
+
+PChar* PChars::RemoveChar(u32 CharID)
+{
+  PChar* Result = NULL;
+  
+	CharMap::iterator i = mChars.find(CharID);
+	if(i != mChars.end())
+	{
+		Result = i->second;
+		mChars.erase(i);
+    if (gDevDebug)
+      Console->Print("%s Char: %s (id %d) removed", Console->ColorText(GREEN, BLACK, "[Debug]"),Result->GetName().c_str() ,Result->GetID());
+	}
+	
+	return Result;
 }
 
 void PChars::SQLSave()
@@ -1025,7 +1155,7 @@ Console->Print("%i characters saved", nChars);
     return;
 }
 
-PChar *PChars::GetChar(u32 CharID) const
+PChar* PChars::GetChar(u32 CharID) const
 {
 	PChar *Result = 0;
 	CharMap::const_iterator i = mChars.find(CharID);
@@ -1035,7 +1165,7 @@ PChar *PChars::GetChar(u32 CharID) const
 	return Result;
 }
 
-PChar *PChars::GetChar(const std::string &Name) const
+PChar* PChars::GetChar(const std::string &Name) const
 {
 	PChar *Result = 0;
 	for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
@@ -1075,20 +1205,85 @@ if (gDevDebug) Console->Print("Autosave done.");
 	}
 }
 
-PChar *PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
+/*PChar* PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
   u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
 {
+  bool Result = false;
 	PChar* nChar = new PChar();
+	
 	if (nChar->CreateNewChar(Account, Name, Gender, Profession, Faction, Head, Torso, Legs, NZSNb, NonZeroSubskills, Slot))
   {
     mChars.insert(std::make_pair(nChar->GetID(), nChar));
     if (mLastID < nChar->GetID())
       mLastID = nChar->GetID(); // just in case it is needed somewhere. To be removed later with all LastID.
-    return nChar;
+    Result = true;
   }
-  else
+
+  delete nChar;
+  return Result;
+}*/
+
+//MAX_CHARS_PER_ACCOUNT
+int PChars::GetCharProfiles(const u32 AccountID, PCharProfile* CharSlotsArray, const u8 ArraySize)
+{
+  char query[256];
+  int EntriesNb = 0;
+  
+  MYSQL_ROW row = 0;
+  MYSQL_RES *result = 0;
+  
+  sprintf(query, "SELECT * FROM characters WHERE a_id = %d ORDER BY c_slot ASC", AccountID);
+
+  result = MySQL->GameResQuery(query);
+  if(result == NULL)
   {
-    delete nChar;
-    return NULL;
+      Console->Print(RED, BLACK, "Failed to load CharacterData from SQL");
+      MySQL->ShowGameSQLError();
+      return 0;
   }
+
+  //EntriesNb = mysql_num_rows(result);
+  int SlotID;
+  u32 CharID;
+  PChar* tmpChar = new PChar();
+  
+  while((row = mysql_fetch_row(result)))
+  {
+    SlotID = std::atoi(row[c_slot]);
+    CharID = std::atoi(row[c_id]);
+    if((SlotID >= 0) && (SlotID < ArraySize))
+    {
+      if(!CharSlotsArray[SlotID].in_use)
+      {
+        tmpChar->SetID(CharID);
+        tmpChar->SetGender(std::atoi(row[c_sex]));
+        tmpChar->SetProfession(std::atoi(row[c_profession]));
+        
+        CharSlotsArray[SlotID].CharID = CharID;
+				CharSlotsArray[SlotID].Type = tmpChar->GetType();
+				CharSlotsArray[SlotID].Location = static_cast<u32> (std::atoi(row[c_location]));
+			  CharSlotsArray[SlotID].Head = std::atoi(row[c_head]);
+			  CharSlotsArray[SlotID].Torso = std::atoi(row[c_torso]);
+			  CharSlotsArray[SlotID].Legs = std::atoi(row[c_legs]);
+				CharSlotsArray[SlotID].Name = row[c_name];
+				CharSlotsArray[SlotID].NameLen = CharSlotsArray[SlotID].Name.length()+1;
+
+        CharSlotsArray[SlotID].in_use = true;
+        ++EntriesNb;
+      }
+      else
+      {
+        Console->Print(YELLOW, BLACK, "[Warning]Character %d using slot %d already used by char %d - Ignored", \
+          CharID, SlotID, CharSlotsArray[SlotID].CharID);
+      }
+    }
+    else
+    {
+      Console->Print(YELLOW, BLACK, "[Warning]Character %d using invialid slot %d - Ignored", CharID, SlotID);
+    }
+  }
+  
+  delete tmpChar;
+  MySQL->FreeGameSQLResult(result);
+  return EntriesNb;  
 }

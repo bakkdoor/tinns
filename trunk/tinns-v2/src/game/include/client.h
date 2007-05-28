@@ -87,7 +87,8 @@ class PClient
     ConnectionTCP* m_TCPConnection;
 		ConnectionUDP* m_UDPConnection;
 
-		PAccount *mAccount;
+		u32 mAccountID;
+		int mAccountLevel;
 		int mIndex;
 		u32 mCharID;
 
@@ -105,26 +106,26 @@ class PClient
     int m_ZoneID;
 		//int[4] m_IP;
 
-        //*******
-        bool mActorRemoveMode;
-        //*******
-        bool mAwaitingWarpto;
-        u16 mTargetX;
-        u16 mTargetY;
-        u16 mTargetZ;
-        //*******
-        bool mAcceptNPCUpdates;
+    //*******
+    bool mActorRemoveMode;
+    //*******
+    bool mAwaitingWarpto;
+    u16 mTargetX;
+    u16 mTargetY;
+    u16 mTargetZ;
+    //*******
+    bool mAcceptNPCUpdates;
 
 	protected :
 	public :
 		PClient(int Index);
 		~PClient();
 
-        inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
-        void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+    inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
+    void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
 
-        inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
-        inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
+    inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
+    inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
 
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
@@ -135,8 +136,8 @@ class PClient
 
 		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 
-        inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
-        inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
+    inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
+    inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
 
 		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
@@ -176,25 +177,27 @@ class PClient
 
 		inline int GetConnection() const { return mConnection; }
 		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
-		inline PAccount *GetAccount() const { return mAccount; }
+		inline u32 GetAccountID() const { return mAccountID; }
+		inline int GetAccountLevel() const { return mAccountLevel; }
 
 		void GameDisconnect();
 
-		void LoggedIn(PAccount *Account);
+    void RefreshAccountInfo(PAccount* Account);
+		inline void LoggedIn(PAccount* Account) { RefreshAccountInfo(Account); }
 		void Update();
 
 		// new multiuser-chat implementation //
 		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
 		//inline int*	getIP() const { return (int*) m_IP; }
 
-        inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
-        {
-            mAwaitingWarpto = yesno;
-            mTargetX = NewX;
-            mTargetY = NewY;
-            mTargetZ = NewZ;
-        }
-        bool CharIsAwaitingWarpto();
+    inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
+    {
+        mAwaitingWarpto = yesno;
+        mTargetX = NewX;
+        mTargetY = NewY;
+        mTargetZ = NewZ;
+    }
+    bool CharIsAwaitingWarpto();
 
 
 		// used for dynamic ingame testing

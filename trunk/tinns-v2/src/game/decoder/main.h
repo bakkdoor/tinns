@@ -67,7 +67,6 @@
 #include "chars.h"
 #include "accounts.h"
 #include "defs.h"
-#include "database.h"
 #include "client.h"
 #include "server.h"
 #include "misc.h"

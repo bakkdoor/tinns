@@ -51,17 +51,17 @@ void PCommands::doCmdrecall()
         return;
     }
     // Check accountlevel (Only higher's can perform commands on lower's)
-    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    if(source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
-        snprintf(tmpMsg, 199, "Cant warp %s to you, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        snprintf(tmpMsg, 199, "Cant warp %s to you, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
         tmpMsg[199] = '\0';
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;
     }
 
     // Warp target player to GM/Admin
-    int destZone = Database->GetChar(source->GetCharID())->GetLocation();
+    int destZone = Chars->GetChar(source->GetCharID())->GetLocation();
     if (!Worlds->IsValidWorld(destZone))
     {
         Console->Print("%s Can't change location, destZone '%d' is invalid for some reason", Console->ColorText(RED, BLACK, "[PANIC]"), destZone);

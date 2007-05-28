@@ -445,7 +445,7 @@ bool PUdpUseObject::DoAction()
                         {
                             if (tFurnitureTemplate->GetLinkedObjectID())
                             {
-                                if(nClient->GetAccount()->GetLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
+                                if(nClient->GetAccountLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
                                 {
                                     tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
                                     ClientManager->UDPBroadcast(tmpMsg, nClient);
@@ -468,7 +468,7 @@ bool PUdpUseObject::DoAction()
                             u32 linkobjID = WorldActors->GetLinkedObjectID(mRawItemID);
                             if (linkobjID)
                             {
-                                if(nClient->GetAccount()->GetLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
+                                if(nClient->GetAccountLevel() >= PAL_GM) // Allow GameMasters and higher to just bypass HackButtons
                                 {
                                     tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+linkobjID, CurrentWorld->GetDoor(linkobjID)->IsDoubleDoor());
                                     ClientManager->UDPBroadcast(tmpMsg, nClient);

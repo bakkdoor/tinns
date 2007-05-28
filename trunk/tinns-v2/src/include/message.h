@@ -35,6 +35,7 @@
 
 #define MESSAGE_SIZES_LIST 32, 64, 128, 256, 512, 1024, 4096
 #define MESSAGE_POOL_INIT NULL, NULL, NULL, NULL, NULL, NULL, NULL
+#define MESSAGE_POOL_COUNT_INIT 0, 0, 0, 0, 0, 0, 0
 #define MESSAGE_SIZES_NB 7
 #define MESSAGE_ALLOC_NB 4
 
@@ -51,6 +52,7 @@ class PMessage
     private:
         static const u16 smMsgSizes[MESSAGE_SIZES_NB];
         static PMsgData* smMsgPoolHead[MESSAGE_SIZES_NB];
+        static int smMsgPoolCount[MESSAGE_SIZES_NB];
         static int smMsgCount; //Used to trace unreleased messages with CheckMsgCount()
 
         u8 mPoolId;
@@ -124,8 +126,8 @@ class PMessage
         PMessage& operator >> (f32& nF32);
 
         // info/debug methods
-        void ListPools();
-        void DumpPools();
+        static void ListPools();
+        static void DumpPools();
         void Dump();
         void DumpHead(char* nComment = "");
 };

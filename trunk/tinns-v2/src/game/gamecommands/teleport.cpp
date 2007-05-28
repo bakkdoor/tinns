@@ -56,10 +56,10 @@ void PCommands::doCmdteleport()
         return;
     }
     // Check accountlevel (Only higher's can perform commands on lower's)
-    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    if(source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
-        snprintf(tmpMsg, 199, "Cant teleport %s, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        snprintf(tmpMsg, 199, "Cant teleport %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
         tmpMsg[199] = '\0';
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;

@@ -74,7 +74,7 @@ void SendZone(PClient *Client, u32 loc)
 	//TODO : FIX case for worldroute and 5 missing id 505
   std::string worldName;
 	ConnectionTCP *Socket = Client->getTCPConn();
-	//PChar *Char = Database->GetChar(Client->GetCharID());
+	//PChar *Char = Chars->GetChar(Client->GetCharID());
 
 	Socket->SetTimeOutValue(0xffff);
   

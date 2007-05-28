@@ -60,19 +60,21 @@ void PCommands::doCmdsetlevel()
         Chat->send(source, CHAT_DIRECT, "System", "No such player");
         return;
     }
-    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    if(source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
-        snprintf(tmpMsg, 199, "Cant set new level for %s, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        snprintf(tmpMsg, 199, "Cant set new level for %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
         tmpMsg[199] = '\0';
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;
     }
 
-    target->GetAccount()->SetLevel(destLevel);
+    PAccount Acc(target->GetAccountID());
+    Acc.SetLevel(destLevel);
+    Acc.Save();
+    
     char tmpMsg[60], tmpMsg2[60];
-
-    snprintf(tmpMsg, 59, "Set level for player %s to %d", Database->GetChar(target->GetCharID())->GetName().c_str(), destLevel);
+    snprintf(tmpMsg, 59, "Set level for player %s to %d", Chars->GetChar(target->GetCharID())->GetName().c_str(), destLevel);
     snprintf(tmpMsg2, 59, "**POOF** Your new accesslevel is now %d", destLevel);
 
     tmpMsg[59] = '\0';

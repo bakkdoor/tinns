@@ -67,7 +67,7 @@ PServer *Server = 0;
 PConfig *Config = 0;
 PConfig *CmdAccess = 0;
 PGameDefs *GameDefs = 0;
-PDatabase *Database = 0;
+PChars *Chars = 0;
 PFileSystem *Filesystem = 0;
 PGameServer *GameServer = 0;
 ServerSocket *ServerSock = 0;
@@ -151,8 +151,7 @@ bool InitTinNS()
     NPCManager = new PNPCManager();
     Appartements = new PAppartements;
 
-    Database = new PDatabase();
-    Database->Init();
+    Chars = new PChars();
 
     ServerSock = new ServerSocket();
     Server = new PServer();
@@ -201,8 +200,8 @@ void Shutdown()
         Worlds->Shutdown();
         delete Worlds;
     }
-    if(Database)
-        delete Database;
+    if(Chars)
+        delete Chars;
     if(MySQL)
         delete MySQL;
     if(Config)

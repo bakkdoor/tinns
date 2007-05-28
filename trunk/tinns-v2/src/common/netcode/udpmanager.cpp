@@ -39,8 +39,10 @@ void ConnectionUDP::UpdateMessageBuffer()
             UDPMessages.erase(it);
         }
     }
+    /* // Debug output
     if(erasednum > 0)
         Console->Print("[UpdateMessageBuffer] Done updating messagequeue, %d entries deleted", erasednum);
+    */
 }
 
 void ConnectionUDP::ResetMessageBuffer()

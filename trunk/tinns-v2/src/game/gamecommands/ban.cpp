@@ -50,10 +50,10 @@ void PCommands::doCmdban()
         Chat->send(source, CHAT_DIRECT, "System", "No such player");
         return;
     }
-    if(source->GetAccount()->GetLevel() <= target->GetAccount()->GetLevel())
+    if(source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
-        snprintf(tmpMsg, 199, "Cant ban %s, target level is higher or equal to yours!", Database->GetChar(target->GetCharID())->GetName().c_str());
+        snprintf(tmpMsg, 199, "Cant ban %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
         tmpMsg[199] = '\0';
         Chat->send(source, CHAT_DIRECT, "System", tmpMsg);
         return;
@@ -74,19 +74,19 @@ void PCommands::doCmdban()
     int timevalue = atoi(tmp_atoi);
     int time_to_ban = 0;
 
-    if(strcmp(timefactor, "s") == 0 || strcmp(timefactor, "S") == 0 )
+    if(strcasecmp(timefactor, "s") == 0 )
     {
         time_to_ban = timevalue;
     }
-    else if(strcmp(timefactor, "m") == 0 || strcmp(timefactor, "M") == 0 )
+    else if(strcasecmp(timefactor, "m") == 0 )
     {
         time_to_ban = timevalue * 60;
     }
-    else if(strcmp(timefactor, "h") == 0 || strcmp(timefactor, "H") == 0 )
+    else if(strcasecmp(timefactor, "h") == 0 )
     {
         time_to_ban = timevalue * 60 * 60;
     }
-    else if(strcmp(timefactor, "d") == 0 || strcmp(timefactor, "D") == 0 )
+    else if(strcasecmp(timefactor, "d") == 0 )
     {
         time_to_ban = timevalue * 60 * 60 * 24;
     }
@@ -95,9 +95,11 @@ void PCommands::doCmdban()
         Chat->send(source, CHAT_DIRECT, "Usage", "@ban <charID or nickname> <xS(econds)>/<xM(inutes)>/<xH(ours)>/<xD(ays)>");
         return;
     }
+    
     int final_bantime = std::time(NULL) + time_to_ban;
-    target->GetAccount()->SetBannedStatus(final_bantime);
-    target->GetAccount()->SQLSave();
+    PAccount Acc(target->GetAccountID());
+    Acc.SetBannedUntilTime(final_bantime);
+    Acc.Save();
 
     InitCharVanish(target);
 

@@ -68,7 +68,6 @@ void signal_handler(int signal)
 
 int main()
 {
-    std::time_t TimeTrigger = std::time(NULL) + 60; // First rehash 1 Minute after serverstart
     // Connect signal with handlerfunction
     signal(SIGINT, signal_handler);
 
@@ -88,25 +87,14 @@ int main()
 	while(1)
 	{
 	  ServerSock->update();
-        NPCManager->Update();
+    NPCManager->Update();
 		Server->Update();
-		Database->Update();
+		Chars->Update();
 		GameServer->Update();
 		PMessage::CheckMsgCount(); // Memory leak check
 		MySQL->Update(); // Memory leak check	and MySQL keepalive
 		ISC->Update();
 		Console->Update();
-
-		if(std::time(NULL) > TimeTrigger)
-		{
-		    if (gDevDebug) Console->Print("[Debug] Rehashing...");
-            Database->Rehash();
-            TimeTrigger = std::time(NULL) + 30; // Next rehash in 30 seconds
-		}
-
-		// in release mode, we just relinquish our remaining time slice to other processes
-		//SleepEx(0, true);
-		//sched_yield();
 	}
 
 	return 0;

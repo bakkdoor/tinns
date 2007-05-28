@@ -39,7 +39,7 @@ void PCommands::doCmd_dev_h()
         }
     }
 
-    if(source->GetAccount()->GetLevel() < PAL_ADMIN)
+    if(source->GetAccountLevel() < PAL_ADMIN)
         return;
 
     u8 val1, val2;

@@ -137,7 +137,7 @@ bool PUdpChatListAdd::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   std::string AddedChar = mAddedCharname;
-  PChar* tChar = Database->GetChar(AddedChar);
+  PChar* tChar = Chars->GetChar(AddedChar);
   u32 AddedCharID = (tChar ? tChar->GetID() : 0);
   bool AddResult = false;
   

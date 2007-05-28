@@ -36,6 +36,8 @@
 	MODIFIED: 03 Oct 2006 Hammag
 	REASON: - Fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
 
+	MODIFIED: 27 May 2007 Hammag
+	REASON: - Full changes for on-demand account access (no more memory-resident account data)
 */
 
 
@@ -54,105 +56,166 @@ a_status:
 2 = Banned
 */
 #include "main.h"
+#include "accounts.h"
 
+/** Static members **/
+RegEx* PAccount::mUsernameRegexFilter = NULL;
+RegEx* PAccount::mPasswordRegexFilter = NULL;
+
+void PAccount::SetUsernameRegexFilter(const char* RegexStr)
+{
+  if(mUsernameRegexFilter)
+  {
+    delete mUsernameRegexFilter;
+  }
+  
+  if(RegexStr)
+  {
+    mUsernameRegexFilter = new RegEx(RegexStr);
+  }
+}
+
+void PAccount::SetPasswordRegexFilter(const char* RegexStr)
+{
+  if(mPasswordRegexFilter)
+  {
+    delete mPasswordRegexFilter;
+  }
+  
+  if(RegexStr)
+  {
+    mPasswordRegexFilter = new RegEx(RegexStr);
+  }  
+}
+
+bool PAccount::IsUsernameWellFormed(const char *Username)
+{
+  if(mUsernameRegexFilter)
+  {
+    return mUsernameRegexFilter->Search(Username);
+  }
+  else
+    return true;
+}
+
+bool PAccount::IsPasswordWellFormed(const char *Password)
+{
+  if(mPasswordRegexFilter)
+  {
+    return mPasswordRegexFilter->Search(Password);
+  }
+  else
+    return true;
+}
+
+/** Instance members **/	    
 PAccount::PAccount()
 {
 	mID = 0;
-	for(int i=0; i<MAXCHARSPERACC; i++)
-		mChars[i] = 0;
 	mLevel = PAL_BANNED;
-	mConsoleAllowed = false;
-	mDirty = false;
-	mAdminDebug = false;
+  mStatus = PAS_OFFLINE;
+  mBannedUntil = 0;
 }
 
-bool PAccount::AddChar(u32 CharID)
+PAccount::PAccount(const u32 AccountId)
 {
-	for(int i=0; i<MAXCHARSPERACC; i++)
-	{
-		if(mChars[i]==0)
-		{
-			mChars[i]=CharID;
-if (gDevDebug) Console->Print("Added char %d to in-mem account %d", CharID, mID);
-			return true;
-		}
-	}
-
-	return false;
+  char query[256];
+  mID = 0;
+  sprintf(query, "SELECT * FROM accounts WHERE a_id = %d LIMIT 1;", AccountId);
+  LoadFromQuery(query);
 }
 
-void PAccount::RemoveChar(u32 CharID)
+PAccount::PAccount(const char *Username)
 {
-	for(int i=0; i<MAXCHARSPERACC; i++)
-	{
-		if(mChars[i]==CharID)
-		{
-			mChars[i]=0;
-			break;
-		}
-	}
+  char query[256];
+  mID = 0;
+  if(IsUsernameWellFormed(Username)) {
+    sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s' LIMIT 1;", Username);
+    LoadFromQuery(query);
+  }
 }
 
-void PAccount::RemoveChar(int CharIndex)
+bool PAccount::LoadFromQuery(char* query)
 {
-	if(CharIndex < 0 || CharIndex >= MAXCHARSPERACC)
-		return;
+  MYSQL_ROW row = 0;
+  MYSQL_RES *result = 0;
+  
+  bool FinalResult = false;
 
-	mChars[CharIndex]=0;
+  result = MySQL->InfoResQuery(query);
+  if(result == NULL)
+  {
+      Console->Print(RED, BLACK, "Failed to load AccountData from SQL");
+      MySQL->ShowInfoSQLError();
+      return false;
+  }
+
+  if((row = mysql_fetch_row(result)))
+  {
+    mID = std::atoi(row[a_id]);
+    mName = row[a_username];
+    mPassword = row[a_password];
+
+    mBannedUntil = std::atoi(row[a_bandate]);
+    if(mBannedUntil > std::time(NULL))
+    {
+      mStatus = PAS_BANNED;
+      mLevel = PAL_BANNED;
+    }
+    else
+    {
+      mStatus = PAS_OFFLINE;
+      mLevel = std::atoi(row[a_priv]);
+    }
+
+    FinalResult = true;
+  }
+  else
+  {
+Console->Print(YELLOW, BLACK, "Failed to load AccountData from SQL; Nothing to load...");
+  }
+  
+  MySQL->FreeInfoSQLResult(result);
+  return FinalResult;
 }
 
-u32 PAccount::GetChar(int Num) const
+bool PAccount::SetName(const std::string &Username)
 {
-	if(Num < 0 || Num >= MAXCHARSPERACC)
-		return 0;
-
-	return mChars[Num];
+  if(IsUsernameWellFormed(Username.c_str()))
+  {
+    mName = Username;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
-void PAccount::SetID(u32 ID)
+bool PAccount::SetPassword(const std::string &Password)
 {
-	if(ID != mID)
-		SetDirtyFlag();
-	mID = ID;
+  if(IsPasswordWellFormed(Password.c_str()))
+  {
+    mPassword = Password;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
-void PAccount::SetName(const std::string &Name)
+bool PAccount::SetLevel(int newLevel)
 {
-	if(/*std::*/strcasecmp(mName.c_str(), Name.c_str()))
-		SetDirtyFlag();
-
-	mName = Name;
-}
-
-void PAccount::SetPassword(const std::string &Pass)
-{
-	if(mPassword != Pass)
-		SetDirtyFlag();
-	mPassword = Pass;
-}
-
-void PAccount::SetLevel(int Level)
-{
-	if(mLevel != Level)
-		SetDirtyFlag();
-
-	mLevel = Level;
-}
-
-void PAccount::SetStatus(PAccountStatus Status)
-{
-    if(mStatus != Status)
-        SetDirtyFlag();
-
-    mStatus = Status;
-}
-
-void PAccount::SetConsoleAllowed(bool Allowed)
-{
-	if(Allowed != mConsoleAllowed)
-		SetDirtyFlag();
-
-	mConsoleAllowed = Allowed;
+  if((newLevel >= PAL_BANNED) && (newLevel <= PAL_ADMIN))
+  {
+    mLevel = newLevel;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 std::string PAccount::GetLevelString() const
@@ -170,332 +233,150 @@ std::string PAccount::GetLevelString() const
 	return "custom";
 }
 
-void PAccount::SQLSave()
+bool PAccount::SetStatus(PAccountStatus Status)
 {
-    char query[1024];
-    sprintf(query, "UPDATE accounts SET a_username = '%s', a_password = '%s', a_priv = %d, a_status = %d WHERE a_id = %d LIMIT 1;", GetName().c_str(), GetPassword().c_str(), mLevel, mStatus, GetID());
-    if(MySQL->InfoQuery(query))
-    {
-        //Console->Print("Failed to update Account %d", GetID());
-        MySQL->ShowInfoSQLError();
-        return;
-    }
+  mStatus = Status;
+  return true;
 }
 
-void PAccount::SetBannedStatus(int banneduntil)
+bool PAccount::SetBannedUntilTime(std::time_t BannedUntil)
 {
-  int status;
-  char query[255];
-
-  if(banneduntil == 0)
+  if ((BannedUntil == 0) || (BannedUntil > std::time(NULL)))
   {
-    status = 0;
+    mBannedUntil = BannedUntil;
+    return true;
   }
   else
   {
-    status = 2;
-  }
-
-  sprintf(query, "UPDATE accounts SET a_status = %d, a_bandate = %d WHERE a_id = %d", status, banneduntil, mID);
-  if(MySQL->InfoQuery(query))
-  {
-      Console->Print(RED, BLACK, "Error, cant update banned status for Account %d", mID);
+    return false;
   }
 }
 
-// ===========================================================================
-
-PAccounts::PAccounts()
+bool PAccount::Authenticate(const u8* PasswordData, int PassLen, const u8 *Key)
 {
-	mLastID = 1;
-}
-
-PAccounts::~PAccounts()
-{
-	SQLUpdate();	// just to be sure
-	for(AccountMap::iterator i=mAccounts.begin(); i!=mAccounts.end(); i++)
-		delete i->second;
-}
-
-void PAccounts::RehashAccountData()
-{
-    MYSQL_ROW row = 0;
-    MYSQL_RES *result = 0;
-    result = MySQL->InfoResQuery("SELECT * FROM accounts");
-    if(result == NULL)
-    {
-        if (gDevDebug) Console->Print(RED, BLACK, "[Rehash] Unable to reload AccountData");
-        MySQL->ShowInfoSQLError();
-        return;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        if (gDevDebug) Console->Print(RED, BLACK, "[Rehash] No AccountData found in infoserver Database! Skipping rehash...");
-        MySQL->FreeInfoSQLResult(result);
-        return;
-    }
-
-    // Now loop through all Account entries
-    while((row = mysql_fetch_row(result)))
-    {
-        bool bUpdate = false;
-
-        PAccount *Acc = 0;
-
-        // Search for account ID
-        AccountMap::const_iterator i = mAccounts.find(std::atoi(row[a_id]));
-        if(i != mAccounts.end())
-        {
-            // AccountID found? Ok, so we only have to update the dataset
-            Acc = i->second;
-            bUpdate = true;
-        }
-        else
-        {
-            // AccountID not found? Allright, then add a new one
-            Acc = new PAccount();
-            bUpdate = false;
-        }
-
-        if(bUpdate == false)
-        {
-            // Only set Login details when this is a new account
-            Acc->SetID(std::atoi(row[a_id]));
-            Acc->SetName(row[a_username]);
-        }
-        if(Acc->GetStatus() == PAS_OFFLINE || bUpdate == false)
-        {
-            // Add stuff here that needs to be updated when account is either
-            // a new one or account is offline.
-            // Since i dunno if PAS_OFFLINE really tells us if player is on/off
-            // nothing is in here. Maybe we could add a change of the loginname
-            // later, but i think it should remain static once created.
-        }
-
-        Acc->SetPassword(row[a_password]);
-
-        int a_status = 0;
-        bool IsStillBanned = false;
-
-        //int banneduntil = std::atoi(row[a_bandate]);
-        int banneduntil = 0;
-        int now = time(0);
-
-        if(now < banneduntil)
-        {
-            IsStillBanned = true;
-        }
-        else if(now >= banneduntil)
-        {
-            IsStillBanned = false;
-            Acc->SetBannedStatus(0);
-        }
-
-        if(a_status == 2 && IsStillBanned == true)
-        {
-            Acc->SetLevel(PAL_BANNED);
-            Acc->SetStatus(PAS_BANNED);
-        }
-        else
-        {
-            int a_priv_tmp = std::atoi(row[a_priv]);
-            Acc->SetLevel(a_priv_tmp);
-        }
-
-        if(bUpdate == false) // This is not an update, so add account to list
-            mAccounts.insert(std::make_pair(Acc->GetID(), Acc)).second;
-    }
-    MySQL->FreeInfoSQLResult(result);
-}
-
-bool PAccounts::SQLLoad()
-{
-  Console->Print("Loading accounts from MySQL database...");
-    MYSQL_ROW row = 0;
-    MYSQL_RES *result = 0;
-    int nAcc=0;
-    bool HasAdminAcc = false;
-
-    result = MySQL->InfoResQuery("SELECT * FROM accounts");
-    if(result == NULL)
-    {
-        Console->Print(RED, BLACK, "Failed to load AccountData from SQL");
-        MySQL->ShowInfoSQLError();
-        return false;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        Console->Print(RED, BLACK, "Failed to load AccountData from SQL; Nothing to load...");
-        return false;
-    }
-
-    while((row = mysql_fetch_row(result)))
-    {
-        PAccount *info = new PAccount();
-        info->SetID(std::atoi(row[a_id]));
-        info->SetName(row[a_username]);
-        info->SetPassword(row[a_password]);
-
-        //int a_status = std::atoi(row[a_status]);
-        int a_status = 0;
-        bool IsStillBanned = false;
-
-        //int banneduntil = std::atoi(row[a_bandate]);
-        int banneduntil = 0;
-        int now = time(0);
-
-        if(now < banneduntil)
-        {
-            IsStillBanned = true;
-        }
-        else if(now >= banneduntil)
-        {
-            IsStillBanned = false;
-            info->SetBannedStatus(0);
-        }
-
-        if(a_status == 2 && IsStillBanned == true)
-        {
-            info->SetLevel(PAL_BANNED);
-            info->SetStatus(PAS_BANNED);
-        }
-        else
-        {
-            int a_priv_tmp = std::atoi(row[a_priv]);
-            info->SetLevel(a_priv_tmp);
-        }
-        info->SetStatus(PAS_OFFLINE);
-
-        mAccounts.insert(std::make_pair(info->GetID(), info)).second;
-        ++nAcc;
-        mLastID = max(mLastID, info->GetID());
-        if(info->GetLevel() == PAL_ADMIN)
-        {
-            HasAdminAcc = true;
-        }
-    }
-    MySQL->FreeInfoSQLResult(result);
-    Console->Print("%s Loaded %i accounts", Console->ColorText(GREEN, BLACK, "[Success]"), nAcc);
-	if(!HasAdminAcc)
-	{
-		Console->Print(YELLOW, BLACK, "Warning: No admin account in database");
-	}
-
-  return 0;
-}
-
-//PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key, bool UseAutoAccounts)
-PAccount *PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key)
-{
-    //Console->Print("D3");
-	PAccount *Account = 0;
 	char Pass[128];
 	Pass[0]=0;
-	PAccount *Acc = 0;
+	
+	if(mID == 0) // User doesn't exist and that hasn't been checked !
+	{
+	  Console->Print(RED, BLACK, "[Bug]: user %s doesn't exist and was not checked by code !", mName.c_str());
+	  return false;
+	}
+	
 	if(PassLen < 128)
 	{
 		if(Key[0]>7) // TODO: >7 correct?
 		{
 			for(int i=0; i<PassLen; i+=2)
-				Pass[i>>1] = (char)(((Password[i]&0xf0)>>4)
-					+((Password[i+1]&0x0f)<<4)-Key[0]);
+				Pass[i>>1] = (char)(((PasswordData[i]&0xf0)>>4)
+					+((PasswordData[i+1]&0x0f)<<4)-Key[0]);
 			Pass[PassLen>>1]=0;
 		} else
 		{
 			for(int i=0; i<PassLen; i++)
-				Pass[i] = (char)(Password[i]-Key[0]);
+				Pass[i] = (char)(PasswordData[i]-Key[0]);
 			Pass[PassLen]=0;
 		}
 
-		Acc = GetAccount(User);
-		if(Acc)
-		{
-			if(Acc->GetPassword() == Pass)
-				Account = Acc;
-			else
-				Console->Print("User %s entered wrong password", User);
-		} else
-			Console->Print("Unknown user %s", User);
-	} else
-		Console->Print("Accounts: malformed auth data");
-
-	return Account;
-}
-
-PAccount *PAccounts::Authenticate(const char *User, const char *Password) const
-{
-	PAccount *Account = 0;
-	PAccount *Acc = GetAccount(User);
-	if(Acc)
-	{
-		if(Acc->GetPassword() == Password)
-			Account = Acc;
-		else
-			Console->Print("User %s entered wrong password", User);
-	} else
-		Console->Print("Unknown user %s", User);
-
-	return Account;
-}
-
-PAccount *PAccounts::GetAccount(u32 AccountID) const
-{
-	PAccount *Result = 0;
-	AccountMap::const_iterator i = mAccounts.find(AccountID);
-	if(i != mAccounts.end())
-		Result = i->second;
-
-	return Result;
-}
-
-PAccount *PAccounts::GetAccount(const std::string &Name) const
-{
-	PAccount *Result = 0;
-	for(AccountMap::const_iterator i=mAccounts.begin(); i!=mAccounts.end(); i++)
-	{
-		if(!/*std::*/strcasecmp(i->second->GetName().c_str(), Name.c_str()))
-		{
-			Result = i->second;
-			break;
-		}
+		return(mPassword == Pass);
 	}
-	return Result;
+	else
+	{
+		Console->Print(RED, BLACK, "[Error]: user %s : malformed auth data (size=%d)", mName.c_str(), PassLen);
+		return false;
+	}
 }
 
-void PAccounts::SQLUpdate()
+bool PAccount::Authenticate(const char *Password) const
 {
-    Console->Print("Updating account database...");
-    MYSQL_ROW row;
-    MYSQL_RES *result;
-    int NumUpd=0;
-//    int nAcc=0;
-//    bool HasAdminAcc = false;
-    int id = 0;
+	if(mID == 0) // User doesn't exist and that hasn't been checked !
+	{
+	  Console->Print(RED, BLACK, "[Bug]: user %s doesn't exist and was not checked by code !", mName.c_str());
+	  return false;
+	}
+	
+	return(mPassword == Password);
+}
 
-    result = MySQL->InfoResQuery("SELECT * FROM accounts");
-    if(result == NULL) {
-        Console->Print(RED, BLACK, "Failed to update AccountData from SQL");
+bool PAccount::Create()
+{
+  if(Save(true)) {
+    mID = MySQL->GetLastInfoInsertId();
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool PAccount::Save(bool CreateMode)
+{
+  std::string Query;
+  Query = CreateMode ? "INSERT INTO" : "UPDATE";
+  Query += "accounts SET ";
+  Query += Ssprintf(" accounts SET a_username='%s', a_password = '%s'", mName.c_str(), mPassword.c_str());
+  Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
+  if(!CreateMode )
+  {
+    Query += Ssprintf(" WHERE a_id = %d LIMIT 1", mID);
+  }
+
+  if(MySQL->InfoQuery(Query.c_str()))
+  {
+      Console->Print(RED, BLACK, "[Error] Failed to %s account %s (id %d)", CreateMode ? "create" : "update", mName.c_str(), mID);
+      MySQL->ShowInfoSQLError();
+      return false;
+  }
+  return true;
+}
+
+u32 PAccount::GetCharIdBySlot(const u32 SlotId)
+{
+  char query[256];
+  u32 CharId = 0;
+  
+  MYSQL_ROW row = 0;
+  MYSQL_RES *result = 0;
+  
+  sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d AND c_slot = %d LIMIT 1;", mID, SlotId);  
+
+  result = MySQL->GameResQuery(query);
+  if(result == NULL)
+  {
+      Console->Print(RED, BLACK, "Failed to load CharacterData from SQL");
+      MySQL->ShowGameSQLError();
+      return 0;
+  }
+
+  if((row = mysql_fetch_row(result)))
+  {
+    CharId = std::atoi(row[0]);
+  }
+  
+  MySQL->FreeGameSQLResult(result);
+  
+  /*** Temporary workaround to cope with DB where c_slot is not set ***/
+  if(!CharId)
+  {
+    sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d ORDER BY c_slot ASC, c_id ASC LIMIT %d, 1;", mID, SlotId);
+  
+    result = MySQL->GameResQuery(query);
+    if(result == NULL)
+    {
+        Console->Print(RED, BLACK, "Failed to load CharacterData from SQL");
         MySQL->ShowGameSQLError();
-        return;
+        return 0;
     }
-
-    if(mysql_num_rows(result) == 0)
+    
+    if((row = mysql_fetch_row(result)))
     {
-        Console->Print(RED, BLACK, "Failed to update AccountData from SQL; No Account Data!");
-        return;
+      CharId = std::atoi(row[0]);
     }
-
-    while((row = mysql_fetch_row(result)))
-    {
-        id = std::atoi(row[a_id]);
-        AccountMap::const_iterator i = mAccounts.find(id);
-        if(i!=mAccounts.end() && i->second->IsDirty())
-        {
-            i->second->SQLSave();
-            ++NumUpd;
-        }
-    }
-    Console->Print("Update done, %i accounts updated", NumUpd);
+    
+    MySQL->FreeGameSQLResult(result);    
+  }
+  /*** End of workaround ***/
+  
+  return CharId;
 }

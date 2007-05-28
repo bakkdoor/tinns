@@ -415,12 +415,13 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
     return -1;
 }
 
-int PMySQL::GetWorldDoorType(unsigned int ID, int Location)
+int PMySQL::GetWorldDoorType(unsigned int ID, int Location) /* To be removed */
 {
     char query[2048];
     MYSQL_RES *result;
     MYSQL_ROW row;
 
+Console->Print(RED, BLACK, "PMySQL::GetWorldDoorType: DATABASE MUST NOT BE USED ANYMORE FOR DOORS INFO !!!");
     if (Location > 100000)
     {
       //int nAppLoc = GetAptLocation(Location);

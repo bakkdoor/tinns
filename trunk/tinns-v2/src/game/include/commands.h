@@ -88,7 +88,7 @@ class PCommands
             void doCmdcolor();
             void doCmdbrightness();
             void doCmdremove();
-            void doCmdrehash();
+            // void doCmdrehash(); Removed
             void doCmduptime();
             void doCmdversion();
             void doCmdkick();

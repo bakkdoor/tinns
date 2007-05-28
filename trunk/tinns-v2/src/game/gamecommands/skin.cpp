@@ -39,7 +39,7 @@ Usage:  @skin #<chardef idx>
     }
 
     u32 Skinval1, Skinval2, Skinval3, Skinval4;
-    PChar *SkinChar = Database->GetChar(source->GetCharID());
+    PChar *SkinChar = Chars->GetChar(source->GetCharID());
     std::stringstream SkinChat;
     char SkinStr[128];
 

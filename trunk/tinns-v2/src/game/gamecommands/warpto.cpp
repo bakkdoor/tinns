@@ -53,7 +53,7 @@ void PCommands::doCmdwarpto()
 
     int destZone = 0;
     // Warp GM/Admin to target player
-    destZone = Database->GetChar(target->GetCharID())->GetLocation();
+    destZone = Chars->GetChar(target->GetCharID())->GetLocation();
     /*if (gDevDebug)*/ Console->Print("%s Warping %d to location of %d (> %d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), source->GetCharID(), target->GetCharID(), destZone);
     if (!Worlds->IsValidWorld(destZone))
     {

@@ -1381,3 +1381,37 @@ Hammag; 27.05.2007 12:15 GMT+2
 
 [GAME]
 - game/decoder/udp_appartment.* : minor correction on files info
+
+====================
+Hammag; 28.05.2007 23:15 GMT+2
+----------
+[rev. 82]
+
+<General changes>
+ - Major change to account management and character loading:
+    Accounts are not stored in-mem anymore, and database is queried when needed instead.
+    Chars are loaded when needed, and unloaded when not neaded anymore.
+ - New Gameserver Database version (6)
+ - Various fixes.
+
+[DATABASE]
+ - GameDB5.zip has been replaced by GameDB6.zip holding the full gameserver dump to be used
+  to get a fresh new DB needed by this revision of TinNS
+ - GameDB5_to_GameDB6.sql can also be applied to migrate from version 5 to 6 of gameserver DB
+ - infoserver DB is not changed (i.e. version 2)
+
+[GAME]
+More than 50 files changed.
+ - in addition to the changes stated above, Char creation and charslot assignement is now
+    fixed.
+    **** PLEASE MANUALLY FIX THE SLOT NUM OF EXISTING CHARS OR RECREATE THE CHARS ****
+    (Server will complain in logs and won't be hurt by muliple SLOT 0 chars anyway)
+ - @rehash command has been removed as not used anymore
+ - database.cpp and inclide/database.h have been deleted along with PDatabase class
+ - PAccounts class has been removed
+
+[NETCODE]
+ - Fixed mem leak in ConnectionUDP:
+    PMessage held in UDP backlog not being released in object destructor
+ - The static member PMessage::ListPools() can now be used anywhere to get a view of
+    message buffer pools use (in use / free buffers)

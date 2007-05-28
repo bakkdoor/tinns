@@ -155,6 +155,11 @@ ConnectionUDP::~ConnectionUDP()
         delete mVIPQueueOut.front();
         mVIPQueueOut.pop();
     }
+    for(PMessageMap::iterator it=UDPMessages.begin(); it!=UDPMessages.end(); it++)
+    {
+        delete it->second;
+        UDPMessages.erase(it);
+    }
 }
 
 
