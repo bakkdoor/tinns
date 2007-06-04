@@ -98,12 +98,9 @@ void PChat::sendBuddy(PClient* author, char* text, bool debugOut)
     {
         if(author != it->second && authorChar->IsBuddy(it->second->GetCharID()) == true)
         {
-            if(it->second) // only send if the client is existing!
-            {
-                PClient* receiver = it->second;
-                //Console->Print("DEBUG: Buddychat - Sending msg to %s", Chars->GetChar(receiver->GetCharID())->GetName().c_str());
-                send(receiver, CHAT_BUDDY, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
-            }
+            PClient* receiver = it->second;
+            //Console->Print("DEBUG: Buddychat - Sending msg to %s", Chars->GetChar(receiver->GetCharID())->GetName().c_str());
+            send(receiver, CHAT_BUDDY, authorChar->GetName().c_str(), text, debugOut);
         }
     }
 }
@@ -118,10 +115,11 @@ void PChat::sendConnectedList(PClient* receiver, bool debugOut)
     // send the list of currently connected players to receiver
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-		char counterText[5];
-		sprintf(counterText, "%d", counter);
+  		  char counterText[5];
+  		  sprintf(counterText, "%d", counter);
 
-        send(receiver, CHAT_DIRECT, Chars->GetChar(it->second->GetCharID())->GetName().c_str(), counterText, debugOut);
+        PChar* receiverChar = Chars->GetChar(it->second->GetCharID());
+        send(receiver, CHAT_DIRECT, (receiverChar ? receiverChar->GetName().c_str() : "*"), counterText, debugOut);
 
         counter++;
     }
@@ -136,13 +134,14 @@ void PChat::sendFrak(PClient* author, char* text, bool debugOut)
 
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Chars->GetChar(it->second->GetCharID())->GetFaction() == FID)
+        if(author != it->second) // if its not the client, that send the message to the server
         {
-            if(it->second) // only send if the client is existing!
+            PClient* receiver = it->second;
+            PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+            if(receiverChar && (receiverChar->GetFaction() == FID))
             {
-                PClient* receiver = it->second;
                 if(chanEnabled(receiver, C_FRAK) == true)
-                    send(receiver, CHAT_FRAK, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                    send(receiver, CHAT_FRAK, authorChar->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -156,13 +155,14 @@ void PChat::sendZone(PClient* author, char* text, bool debugOut)
 
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(author != it->second && Chars->GetChar(it->second->GetCharID())->GetLocation() == ZID)
+        if(author != it->second) // if its not the client, that send the message to the server
         {
-            if(it->second) // only send if the client is existing!
+            PClient* receiver = it->second;
+            PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+            if(receiverChar && (receiverChar->GetLocation() == ZID))
             {
-                PClient* receiver = it->second;
                 if(chanEnabled(receiver, C_ZONE) == true)
-                    send(receiver, CHAT_ZONE, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                    send(receiver, CHAT_ZONE, authorChar->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -178,16 +178,15 @@ void PChat::sendLocal(PClient* author, char* text, bool debugOut)
     {
         if(author != it->second) // if its not the client, that send the message to the server
         {
-            if(author != it->second && Chars->GetChar(it->second->GetCharID())->GetLocation() == ZID)
-//            if(it->second) // only send if the client is existing!
+            PClient* receiver = it->second;
+            PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+            if(receiverChar && (receiverChar->GetLocation() == ZID))
             {
-                PClient* receiver = it->second;
-                PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
                 u16 distance = DistanceApprox((authorChar->Coords).mX, (authorChar->Coords).mY, (authorChar->Coords).mZ, (receiverChar->Coords).mX, (receiverChar->Coords).mY, (receiverChar->Coords).mZ);
                 if(distance < LOCALCHAT_MAXDISTANCE)
                 {
                     //sendLocalchat(receiver, author, text, debugOut); // Doesnt work!
-                    send(receiver, CHAT_LOCAL, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                    send(receiver, CHAT_LOCAL, authorChar->GetName().c_str(), text, debugOut);
                 }
             }
         }
@@ -285,19 +284,19 @@ void PChat::sendClan(PClient* author, char* text, bool debugOut)
         NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS SUPERGLOBAL TILL THEN
     **/
     // send the message to all clients that have same ClanID
-//    PChar* authorChar = Chars->GetChar(author->GetCharID());
+    PChar* authorChar = Chars->GetChar(author->GetCharID());
 
 //    int ClanID = authorChar->getClanID(); // get clanID of author
 
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-//        if(author != it->second && Chars->GetChar(it->second->GetCharID())->getClanID() == ClanID) // if its not the client, that send the message to the server and if it has the same clan id
         if(author != it->second)
         {
-            if(it->second) // only send if the client is existing!
+            PClient* receiver = it->second;
+            PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+            if(receiverChar /*&& (receiverChar->getClanID() == ClanID)*/)
             {
-                PClient* receiver = it->second;
-                send(receiver, CHAT_CLAN, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                send(receiver, CHAT_CLAN, authorChar->GetName().c_str(), text, debugOut);
             }
         }
     }
@@ -311,23 +310,22 @@ void PChat::sendTeam(PClient* author, char* text, bool debugOut)
     **/
     // send the message to all clients that have same TeamID
 
-    //PChar* authorChar = Chars->GetChar(author->GetCharID());
+    PChar* authorChar = Chars->GetChar(author->GetCharID());
 
     //int TeamID = authorChar->getTeamID(); // get TeamID of author
 
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        //if(author != it->second && Chars->GetChar(it->second->GetCharID())->getTeamID() == TeamID) // if its not the client, that send the message to the server and if it has the same team id
         if(author != it->second)
         {
-            if(it->second) // only send if the client is existing!
+            PClient* receiver = it->second;
+            PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+            if(receiverChar /*&& (receiverChar->getTeamID() == TeamID)*/)
             {
-                PClient* receiver = it->second;
-                send(receiver, CHAT_TEAM, Chars->GetChar(author->GetCharID())->GetName().c_str(), text, debugOut);
+                send(receiver, CHAT_TEAM, authorChar->GetName().c_str(), text, debugOut);
             }
         }
     }
-
 }
 
 void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut)
@@ -335,10 +333,11 @@ void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool 
     bool tmpTargetOnline = false;
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
-        if(it->second && it->second->GetCharID() == destination) // only send if the client is existing and the target of the direct
+        PClient* receiver = it->second;
+        PChar* receiverChar = Chars->GetChar(receiver->GetCharID());
+        if(receiverChar && (receiver->GetCharID() == destination))       
         {
             tmpTargetOnline = true;
-            PClient* receiver = it->second;
             sendDirect(author, receiver, text, debugOut);
         }
     }
@@ -754,8 +753,12 @@ void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
 bool PChat::chanEnabled(PClient* Client, u32 channel)
 {
     // Check if player has target channel enabled or disabled
-    u32 actChans = Chars->GetChar(Client->GetCharID())->GetActiveChannels();
-    u32 check = actChans&channel;
+    PChar* TargetChar = Chars->GetChar(Client->GetCharID());
+    if(!TargetChar)
+      return false;
+      
+    u32 actChans = TargetChar->GetActiveChannels();
+    u32 check = actChans & channel;
 
     if(check == channel)
         return true;

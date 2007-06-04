@@ -161,7 +161,6 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
     PMessage* tmpMsg;
     PClient* itClient;
     u16 Dapprox;
-    u16 CurrPos;
 
     for(PClientMap::iterator it=mClientList.begin(); it != mClientList.end(); it++)
     {
@@ -182,26 +181,12 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY
                     continue;
             }
 
-            tmpMsg = new PMessage(nMessage->GetMaxSize());
-            (*tmpMsg) = (*nMessage);
-
-            if ((tmpMsg->GetSize() > 9) && (tmpMsg->U8Data(0x00) == 0x13))
-            {
-                CurrPos = 5;
-                while (CurrPos < tmpMsg->GetSize()) // do UDP_ID mgt for each 0x03 subtype subpacket
-                {
-                    if (tmpMsg->U8Data(CurrPos + 1) == 0x03)
-                    {
-                        itClient->IncreaseUDP_ID();
-                        tmpMsg->U16Data(CurrPos + 2) = itClient->GetUDP_ID();
-                    }
-                    CurrPos = CurrPos + tmpMsg->U8Data(CurrPos) + 1;
-                }
-            }
-            tmpMsg->U16Data(0x01) = itClient->GetUDP_ID();
-            tmpMsg->U16Data(0x03) = itClient->GetSessionID();
-
-            itClient->getUDPConn()->SendMessage(tmpMsg);
+            /*tmpMsg = new PMessage(nMessage->GetMaxSize());
+            (*tmpMsg) = (*nMessage);*/
+            tmpMsg = new PMessage(*nMessage);
+            
+            itClient->FillInUDP_ID(tmpMsg);
+            itClient->SendUDPMessage(tmpMsg);
             ++msgCount;
         }
     }
@@ -229,7 +214,10 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxD
         return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist, skipVal);
     }
     else
-        return 0;
+    {
+      delete nMessage;
+      return 0;
+    }
 }
 
 int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
@@ -262,27 +250,21 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
 
             tmpMsg = MsgBuilder->BuildCharHelloMsg(itClient);
 
-            nClient->IncreaseUDP_ID();
-            tmpMsg->U16Data(0x01) = nClient->GetUDP_ID();
-            tmpMsg->U16Data(0x03) = nClient->GetSessionID();
-            tmpMsg->U16Data(0x07) = nClient->GetUDP_ID();
-
+            nClient->FillInUDP_ID(tmpMsg);
+            nClient->SendUDPMessage(tmpMsg);
             //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
             //tmpMsg->Dump();
-            nClient->getUDPConn()->SendMessage(tmpMsg);
 
             if (itChar->GetChairInUse())
             {
                 tmpMsg = MsgBuilder->BuildCharPosUpdateMsg (itClient);
-                nClient->getUDPConn()->SendMessage(tmpMsg);
+                nClient->FillInUDP_ID(tmpMsg);
+                nClient->SendUDPMessage(tmpMsg);
 
                 //Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
-                tmpMsg = MsgBuilder->BuildCharUseChairMsg(itClient, (itChar->GetChairInUse()+1)*1024);
-                nClient->IncreaseUDP_ID();
-                tmpMsg->U16Data(0x01) = nClient->GetUDP_ID();
-                tmpMsg->U16Data(0x03) = nClient->GetSessionID();
-                tmpMsg->U16Data(0x07) = nClient->GetUDP_ID();
-                nClient->getUDPConn()->SendMessage(tmpMsg);
+                /*tmpMsg = MsgBuilder->BuildCharUseChairMsg(itClient, (itChar->GetChairInUse()+1)*1024);
+                nClient->FillInUDP_ID(tmpMsg);
+                nClient->SendUDPMessage(tmpMsg);*/
             }
             ++msgCount;
         }

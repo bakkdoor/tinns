@@ -87,7 +87,7 @@ PUdpMsgAnalyser* PUdpZoning2::Analyse()
 bool PUdpZoning2::DoAction()
 {
 //Console->Print("Zoning Stage 2: Sending Ready packet");
-    PMessage* tmpMsg = MsgBuilder->BuildZoningTCPReadyMsg();
+    PMessage* tmpMsg = MsgBuilder->BuildZoningTCPReadyMsg(); // Not always sent (dongeon door 20)
     mDecodeData->mClient->getTCPConn()->SendMessage(tmpMsg);
 
 //Console->Print("Zoning Stage 2: Sending Zone information");

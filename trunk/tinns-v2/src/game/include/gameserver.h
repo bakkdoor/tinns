@@ -140,6 +140,8 @@ class PGameServer
 
 		u16 GetRandom(u16 MaxVal, u16 MinVal = 0); // u16 value between MinVal and MaxVal (inclusive) with max range 32768
 		f32 GetRandomFloat(); // f32 value between 0 and 1
+		
+		PGameState* GetClientState(PClient* nClient);
 };
 
 #endif

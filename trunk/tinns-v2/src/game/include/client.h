@@ -143,28 +143,31 @@ class PClient
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
 
 /*
-            inline u16 GetUDP_ID() const { return mUDP_ID; }
-            inline u16 GetSessionID() const { return SESSION_UDP_OFFSET + mUDP_ID ; }
-            inline u16 GetTransactionID() {return mTransactionID; }
-            void SetUDP_ID(int id);
-            inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
-            inline void ResetTransactionID() { mTransactionID = 10170; }
+    inline u16 GetUDP_ID() const { return mUDP_ID; }
+    inline u16 GetSessionID() const { return SESSION_UDP_OFFSET + mUDP_ID ; }
+    inline u16 GetTransactionID() {return mTransactionID; }
+    void SetUDP_ID(int id);
+    inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
+    inline void ResetTransactionID() { mTransactionID = 10170; }
 
-            inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
+    inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
 */
 
-            // All outgoing ID's and stuff is now part of the ConnectionUDP class itself!
-            // However, we still have full access to it through these functions
-            u16 GetUDP_ID();
-            void SetUDP_ID(int id);
-            void IncreaseUDP_ID();
+    // All outgoing ID's and stuff is now part of the ConnectionUDP class itself!
+    //    (which is not so good.... comment from Hammag)
+    // However, we still have full access to it through these functions
+    u16 GetUDP_ID();
+    void SetUDP_ID(int id);
+    void IncreaseUDP_ID();
 
-            u16 GetSessionID();
+    u16 GetSessionID();
 
-            u16 GetTransactionID();
-            void ResetTransactionID();
-            void IncreaseTransactionID(u8 nInc = 1);
+    u16 GetTransactionID();
+    void ResetTransactionID();
+    void IncreaseTransactionID(u8 nInc = 1);
 
+    void FillInUDP_ID(PMessage* nMessage);
+            
 // ************************************************************************ //
         // AccountLevel handling is part of accounts.cpp
 		//inline PClientLevel GetLevel() const { return mLevel; }
@@ -174,6 +177,9 @@ class PClient
 
     inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
     inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
+    
+    inline void SendTCPMessage(PMessage* nMessage) { if(m_TCPConnection) { m_TCPConnection->SendMessage(nMessage); } }
+    inline void SendUDPMessage(PMessage* nMessage, bool nVIP = false) { if(m_UDPConnection) { m_UDPConnection->SendMessage(nMessage, nVIP); } }
 
 		inline int GetConnection() const { return mConnection; }
 		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }

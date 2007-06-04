@@ -202,7 +202,7 @@ bool PUdpUseObject::DoAction()
                     if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
                     {
                         tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
-                        (tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
+                        //(tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
                     }
                     else
                     {
@@ -334,10 +334,12 @@ bool PUdpUseObject::DoAction()
                             u32 Location = nAppPlace->GetExitWorldID();
                             u16 Entity = nAppPlace->GetExitWorldEntity();
                             u8 SewerLevel = 0;
-                            //SewerLevel = nAppPlace->GetSewerLevel();
-                            //SewerLevel = (tFurnitureModel->GetFunctionType() == 18 ? 0 : 1);
+                            /*if((tFurnitureModel->GetFunctionType() == 20) && nAppPlace->GetSewerLevel())
+                            {
+                              SewerLevel = 1;
+                            }*/
 
-                            tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, 0); //mRawItemID
+                            tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, mRawItemID); //mRawItemID
                             nClient->getUDPConn()->SendMessage(tmpMsg);
                             if (gDevDebug)
                                 Console->Print("%s Client[%d] Char[%s] moving to zone %d, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());

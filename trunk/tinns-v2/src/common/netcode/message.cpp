@@ -63,6 +63,14 @@ PMessage::PMessage(u16 nRequestedSize)
   //Console->Print("Created msgnum %d", smMsgCount);
 }
 
+PMessage::PMessage(PMessage& nMessage)
+{
+  GetMsgBuffer(nMessage.mUsedSize);
+  mUsedSize = nMessage.mUsedSize;
+  mNextByteOffset = 0;
+  memcpy((void*)(mData->mBuffer), (void*)(nMessage.mData->mBuffer), (size_t)mUsedSize);
+  ++smMsgCount;
+}
 
 void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used larger unused buffer
 {
@@ -287,17 +295,19 @@ f32& PMessage::F32Data(u16 nOffset)
 
 PMessage& PMessage::operator = (PMessage& nMessage)
 {
-  if (mPoolId != nMessage.mPoolId)
-  {
-//Console->Print("Adjusting buffer before message copy: old pool %d => new pool %d", mPoolId, nMessage.mPoolId);
-    ReleaseMsgBuffer();
-    GetMsgBuffer(nMessage.mMaxSize);
+  if(&nMessage != this) {
+    if (mPoolId != nMessage.mPoolId)
+    {
+  //Console->Print("Adjusting buffer before message copy: old pool %d => new pool %d", mPoolId, nMessage.mPoolId);
+      ReleaseMsgBuffer();
+      GetMsgBuffer(nMessage.mMaxSize);
+    }
+  
+    mUsedSize = nMessage.mUsedSize;
+    mNextByteOffset = nMessage.mNextByteOffset;
+    memcpy((void*)(mData->mBuffer), (void*)(nMessage.mData->mBuffer), (size_t)mMaxSize);
   }
-
-  mUsedSize = nMessage.mNextByteOffset;
-  mNextByteOffset = nMessage.mNextByteOffset;
-  memcpy((void*)(mData->mBuffer), (void*)(nMessage.mData->mBuffer), (size_t)mMaxSize);
-
+  
   return *this;
 }
 

@@ -1415,3 +1415,29 @@ More than 50 files changed.
     PMessage held in UDP backlog not being released in object destructor
  - The static member PMessage::ListPools() can now be used anywhere to get a view of
     message buffer pools use (in use / free buffers)
+
+====================
+Hammag; 05.06.2007 01:30 GMT+2
+----------
+[rev. 83]
+
+<General changes>
+ - fixed a bug which might be the cause of the "multiuser+char creation crash"
+  (hopefully solved now)
+ - many improvements in char movement (now much more responsively seen by others)
+ - Sitting chars are now visible by later login-in chars
+ - internal changes to PClient
+
+[GAME]
+ - udp_charmove.* : PUdpCharAttitudeUpdate and PUdpCharSitting code is now taken
+    care of in PUdpCharPosUpdate.
+    These two classes are removed.
+ - msgbuilder.* : added MsgBuilder::BuildCharPosUpdate2Msg
+ - client.* : added PClient::FillInUDP_ID() to take care in one place of all UDP_ID
+    filling-in of USP packets
+    added PClient::SendTCPMessage() and PClient::SendUDPMessage(), which take care
+    of NULL TCP or UDP sockets.
+  - chars.* : added PChars::CharExist() to check for char existence by name
+  - chat.cpp : fixed a repeated bug that led to crash when some client was connected
+    without a char ingame (like in char selection, creation or deletion phase) and
+    some chat was sent to him (like when someone else was coming ingame)

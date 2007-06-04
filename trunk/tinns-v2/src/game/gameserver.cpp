@@ -193,7 +193,7 @@ void PGameServer::Update()
 		{
 			Console->Print(GREEN, BLACK, "[Info] Gameserver: client [%i] connected", clid);
 			PClient *Client = Server->GetClient(clid);
-
+if(Client->getTCPConn()) Console->Print(RED, BLACK, "WARNING: Client %d : TCP Socket NOT NULL before allocation.", Client->GetID());
 			ConnectionTCP* tcpConn = ServerSock->getTCPConnection();
 			Client->setTCPConnection(tcpConn);
 
@@ -215,6 +215,16 @@ void PGameServer::Update()
 			Console->Print(YELLOW, BLACK, "[Notice] Gameserver: Client connection refused (server full?)");
 		}
 	}
+
+/*** temp check ***/
+for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
+{
+  if(!it->second)
+  {
+    Console->Print(RED, BLACK, "PANIC: NULL Client found in ClientManager Clients Map.");  
+  }
+}
+/*** end temp check ***/
 
 	for (GameStateMap::iterator i = ClientStates.begin(); i != ClientStates.end();)
 	{
@@ -598,7 +608,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 			case 5: // validate name
 			{
-				if (PacketSize < 30)
+				if (PacketSize < 31)
 					return (false);
 
 				// check for valid name string
@@ -617,12 +627,15 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
           ValidString = PChar::IsUsernameWellFormed(Name);
         }*/
          
-				if (!ValidString)
-					return (false);
+				if (ValidString)
+				{
+				  if(Chars->CharExist(std::string(Name)))
+				  {
+				    ValidString = false;
+				  }
+				}
 
-				PChar *Char = Chars->GetChar(Name);
-
-				if (!Char)
+				if (ValidString)
 					Answer[5] = 1;	// ok
 				else
 					Answer[5] = 2;	// nope
@@ -931,6 +944,7 @@ bool PGameServer::ProcessClient(PClient *Client, PGameState *State)
 	}
 
 	ConnectionTCP *Socket = Client->getTCPConn();
+if(!Socket) Console->Print(RED, BLACK, "PANIC: Client %d : TCP Socket is NULL !!!", Client->GetID());
 	if (State->TCP.mWaitSend && Socket->getSendBufferSize() == 0)
 		return (false);
 
@@ -1027,4 +1041,14 @@ void PGameServer::FinalizeClientDelayed(PClient *Client, PGameState *State)
 {
 	Console->Print(GREEN, BLACK, "[Info] Gameserver: client %s is about to be disconnected", Client->GetAddress());
 	State->TCP.mWaitSend = true;
+}
+
+PGameState* PGameServer::GetClientState(PClient* nClient)
+{
+	GameStateMap::iterator node = ClientStates.find(nClient);
+
+	if (node == ClientStates.end())
+		return NULL;
+  else
+	  return node->second;
 }

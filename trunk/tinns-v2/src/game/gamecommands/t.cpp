@@ -24,7 +24,7 @@ void PCommands::doCmd_dev_t()
 {
     if(IsAdmin() == false)
         return;
-
+    
     char Arg1[30], Arg2[30];
 
     Arg1[0] = '\0';
@@ -43,29 +43,45 @@ void PCommands::doCmd_dev_t()
     u8 val2;
     char tmpStr[128];
     static PMessage* tmpMsg = NULL;
-
+    bool SetUDP_IDNeeded = true;
+    PChar* nChar = source->GetChar();
+    (nChar->Coords).mY += 20;
+    (nChar->Coords).mZ += 20;
+    (nChar->Coords).mX += 20;
+    
     if (!tmpMsg)
-      tmpMsg = MsgBuilder->BuildCharHelloMsg(source);
+    {
+      tmpMsg = MsgBuilder->BuildPacket0Msg(source);
+      //tmpMsg = MsgBuilder->BuildCharHelloMsg(source);
+      SetUDP_IDNeeded = false;
+    }
 
     if(Arg1[0] != '\0' && Arg2[0] != '\0')
     {
         val1 = atoi(Arg1);
         val2 = (u8)(atoi(Arg2) & 0xff);
-        tmpMsg->U8Data(16 + val1) = val2;
+        //tmpMsg->U8Data(16 + val1) = val2;
+        tmpMsg->U8Data(10 + val1) = val2;
         snprintf(tmpStr, 127, "Data #%d set to value 0x%02x", val1, val2);
     }
     else
     {
       if (tmpMsg)
         delete tmpMsg;
-      tmpMsg = MsgBuilder->BuildCharHelloMsg(source);
+      //tmpMsg = MsgBuilder->BuildCharHelloMsg(source);
+      tmpMsg = MsgBuilder->BuildPacket0Msg(source);
+      SetUDP_IDNeeded = false;
       snprintf(tmpStr, 127, "Data reset to normal values");
     }
 
     tmpStr[127] = '\0';
     Chat->send(source, CHAT_DIRECT, "System", tmpStr);
 
-    PMessage* SendMsg = new PMessage(tmpMsg->GetMaxSize());
-    (*SendMsg) = (*tmpMsg);
-    ClientManager->UDPBroadcast(SendMsg, source);
+    PMessage* SendMsg = new PMessage(*tmpMsg);
+    if(SetUDP_IDNeeded) {
+      source->FillInUDP_ID(SendMsg);
+    }
+    SendMsg->Dump();
+    //ClientManager->UDPBroadcast(SendMsg, source);
+    source->SendUDPMessage(SendMsg);
 }

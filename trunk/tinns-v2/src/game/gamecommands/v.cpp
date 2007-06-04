@@ -23,8 +23,8 @@
 void PCommands::doCmd_dev_v()
 {
     if(IsAdmin() == false)
-        return;
-
+      return;
+    
     char Arg1[30];
 
     Arg1[0] = '\0';
@@ -62,4 +62,5 @@ void PCommands::doCmd_dev_v()
     }
     tmpStr[127] = '\0';
     Chat->send(source, CHAT_DIRECT, "System", tmpStr);
+
 }

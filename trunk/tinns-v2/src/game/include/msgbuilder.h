@@ -50,6 +50,7 @@ class PMsgBuilder
   PMessage* BuildCharHelloMsg(PClient* nClient);
   PMessage* BuildCharHealthUpdateMsg (PClient* nClient);
   PMessage* BuildCharPosUpdateMsg (PClient* nClient);
+  PMessage* BuildCharPosUpdate2Msg (PClient* nClient, u8 InfoBitfield = 0x7f);
   PMessage* BuildCharSittingMsg (PClient* nClient, u16 nData);
   PMessage* BuildCharExitChairMsg (PClient* nClient);
   PMessage* BuildCharJumpingMsg (PClient* nClient);

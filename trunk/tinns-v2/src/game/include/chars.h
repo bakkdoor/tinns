@@ -126,6 +126,7 @@ class PChar
         u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
         u8 mLR;     // Compass direction (S..E..N..W..S [0-45-90-135-180])
         u8 mAct;    // Last user action state
+        u8 mUnknown;// sometime sent by client with value != 0 (usual case)
         // mAct:
             // 0x00 NC has no focus (player alt+tab'ed out)
             // 0x20 Char does nothing     00100000
@@ -139,7 +140,7 @@ class PChar
 
             inline PCharCoordinates()
             {
-                mX = mY = mZ = mUD = mLR = mAct = 0;
+                mX = mY = mZ = mUD = mLR = mAct = mUnknown = 0;
             }
 		};
 
@@ -319,6 +320,7 @@ class PChars
 
 		PChar* GetChar(u32 CharID) const;
 		PChar* GetChar(const std::string &Name) const;
+		bool CharExist(const std::string &Name) const;
 		//PChar* CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
     //  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 

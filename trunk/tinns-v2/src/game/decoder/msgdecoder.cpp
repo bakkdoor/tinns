@@ -62,6 +62,7 @@ void PUdpMsgDecoder::Init(PMessage* nMessage, PClient* nClient)
     delete mCurrentAnalyser;
     mCurrentAnalyser = NULL;
   }
+
 }
   
 PUdpMsgDecoder::PUdpMsgDecoder()

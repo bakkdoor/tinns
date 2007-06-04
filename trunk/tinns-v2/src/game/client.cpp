@@ -61,6 +61,8 @@ PClient::PClient(int Index)
     //********
     mActorRemoveMode = false;
     mAcceptNPCUpdates = false;
+    
+    testval8=1;
 }
 
 PClient::~PClient()
@@ -137,6 +139,26 @@ void PClient::IncreaseTransactionID(u8 nInc)
         Console->Print("%s Unable to increase UDP TransactionID, UDP ConnectionClass is not yet initialized!", Console->ColorText(RED, BLACK, "[WARNING]"));
 }
 
+void PClient::FillInUDP_ID(PMessage* nMessage)
+{
+  u16 CurrPos;
+  
+  if ((nMessage->GetSize() > 9) && (nMessage->U8Data(0x00) == 0x13))
+  {
+      CurrPos = 5;
+      while (CurrPos < nMessage->GetSize()) // do UDP_ID mgt for each 0x03 subtype subpacket
+      {
+          if (nMessage->U8Data(CurrPos + 1) == 0x03)
+          {
+              IncreaseUDP_ID();
+              nMessage->U16Data(CurrPos + 2) = GetUDP_ID();
+          }
+          CurrPos = CurrPos + nMessage->U8Data(CurrPos) + 1;
+      }
+  }
+  nMessage->U16Data(0x01) = GetUDP_ID();
+  nMessage->U16Data(0x03) = GetSessionID();
+}
 
 /// ******************************************************
 

@@ -36,40 +36,19 @@
 class PUdpCharPosUpdate : public PUdpMsgAnalyser
 {
   private:
+    u8 mInfoBitfield;
     u16 mNewY;
     u16 mNewZ;
     u16 mNewX;
     u8 mNewUD;
     u8 mNewLR;
     u8 mNewAct;
-
-  public:
-    PUdpCharPosUpdate(PMsgDecodeData* nDecodeData);
-    //~PUdpCharMoves();
-    PUdpMsgAnalyser* Analyse();
-    bool DoAction();
-};
-
-class PUdpCharAttitudeUpdate : public PUdpMsgAnalyser
-{
-  private:
-    u8 mNewAct;
-
-  public:
-    PUdpCharAttitudeUpdate(PMsgDecodeData* nDecodeData);
-    //~PUdpCharMoves();
-    PUdpMsgAnalyser* Analyse();
-    bool DoAction();
-};
-
-class PUdpCharSitting : public PUdpMsgAnalyser
-{
-  private:
+    u8 mNewUnknown;
     u16 mChairItemID; // u16 or u32 ???
     u16 mChairItemType;
 
   public:
-    PUdpCharSitting(PMsgDecodeData* nDecodeData);
+    PUdpCharPosUpdate(PMsgDecodeData* nDecodeData);
     //~PUdpCharMoves();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();

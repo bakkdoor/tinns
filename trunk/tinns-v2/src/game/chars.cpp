@@ -1179,6 +1179,27 @@ PChar* PChars::GetChar(const std::string &Name) const
 	return Result;
 }
 
+bool PChars::CharExist(const std::string &Name) const
+{
+  char query[256];
+  int EntriesNb;
+  MYSQL_RES *result = 0;
+  
+  sprintf(query, "SELECT 1 FROM characters WHERE c_name = '%s' LIMIT 1;", Name.c_str());
+
+  result = MySQL->GameResQuery(query);
+  if(result == NULL)
+  {
+      Console->Print(RED, BLACK, "Failed to get CharacterData from SQL");
+      MySQL->ShowGameSQLError();
+      return true;
+  }
+
+  EntriesNb = mysql_num_rows(result);
+  MySQL->FreeGameSQLResult(result);
+  return(EntriesNb > 0);
+}
+
 void PChars::Update()
 {
 	std::time_t t = std::time(NULL); // changed to time() to have real time instead of cpu used time

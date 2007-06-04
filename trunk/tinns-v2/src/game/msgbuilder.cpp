@@ -95,10 +95,10 @@ PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
     *tmpMsg << (u8)nHeadDarkness; // (0=bright 255=dark)
     *tmpMsg << (u8)nTorsoDarkness;
     *tmpMsg << (u8)nLegsDarkness;
-    *tmpMsg << (u8)0x00; // ???
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)0x00; // ??? << not sure at all // eg: 0x3e
+    *tmpMsg << (u8)0x00; // eg: 0x03
+    *tmpMsg << (u8)0x00; // eg: 0xa3
+    *tmpMsg << (u8)0x00; // eg: 0x03
 
     //Name
     *tmpMsg << (u8) ((nChar->GetName()).length()+1);
@@ -171,9 +171,9 @@ PMessage* PMsgBuilder::BuildCharHealthUpdateMsg (PClient* nClient)
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x30;
-    *tmpMsg << (u8)0x64; //Head Heath (% ?) // Not right here
-    *tmpMsg << (u8)0x64; //Body Heath
-    *tmpMsg << (u8)0x64; //Feet Heath
+    *tmpMsg << (u8)0x64; //Head Heath =Head HP/(3 *0.45)(with max Head HP = 45% of total)
+    *tmpMsg << (u8)0x64; //Body Heath =Body HP/(3 *0.35)(for max 35% of total)
+    *tmpMsg << (u8)0x64; //Feet Heath =Feet HP/(3 *0.20)(for max 20% of total)
     *tmpMsg << (u8)0x01;
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
@@ -185,7 +185,11 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(32);
     PChar* nChar = nClient->GetChar();
-
+    u32 UsedChair = nChar->GetChairInUse();
+    if(UsedChair) {
+      UsedChair = (UsedChair + 1) * 1024;
+    }
+    
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
     *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
@@ -194,13 +198,82 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
     *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)((nChar->Coords).mY);
-    *tmpMsg << (u16)((nChar->Coords).mZ);
-    *tmpMsg << (u16)((nChar->Coords).mX);
+    if(UsedChair)
+    {
+      *tmpMsg << (u32)UsedChair;
+      *tmpMsg << (u16)0x0000;
+    }
+    else
+    {
+      *tmpMsg << (u16)((nChar->Coords).mY);
+      *tmpMsg << (u16)((nChar->Coords).mZ);
+      *tmpMsg << (u16)((nChar->Coords).mX);
+    }
     *tmpMsg << (u16)(31910+(nChar->Coords).mUD-50);  // Up - Mid - Down  mUD=(d6 - 80 - 2a) NeoX original offset: 31910
     *tmpMsg << (u16)(31820+(nChar->Coords).mLR*2-179); // Compass direction mLR=(S..E..N..W..S [0-45-90-135-179]) There still is a small buggy movement when slowly crossing the South axis from the right
-    *tmpMsg << (u8)((nChar->Coords).mAct);
-    *tmpMsg << (u8)0x00;
+    if(UsedChair)
+    {
+      *tmpMsg << (u8)0x00;
+      *tmpMsg << (u8)0x10;
+    }
+    else      
+    {
+      *tmpMsg << (u8)((nChar->Coords).mAct);
+      *tmpMsg << (u8)0x00;
+    }
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharPosUpdate2Msg (PClient* nClient, u8 InfoBitfield)
+{
+    PMessage* tmpMsg = new PMessage(32);
+    PChar* nChar = nClient->GetChar();
+    
+    if(InfoBitfield == 0x80)
+    {
+      Console->Print(RED, BLACK, "[ERROR] PMsgBuilder::BuildCharPosUpdate2Msg : using InfoBitfield=0x80 forbidden. Using 0x7f instead.");
+      InfoBitfield = 0x7f;
+    }
+    
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+    *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+    *tmpMsg << (u8)0x00; // Message length placeholder;
+    *tmpMsg << (u8)0x20;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)InfoBitfield;
+
+    if(InfoBitfield & 0x01) 
+    {
+      *tmpMsg << (u16)((nChar->Coords).mY);
+    }
+    if(InfoBitfield & 0x02)
+    {
+      *tmpMsg << (u16)((nChar->Coords).mZ);
+    }
+    if(InfoBitfield & 0x04)
+    {
+      *tmpMsg << (u16)((nChar->Coords).mX);
+    }
+    if(InfoBitfield & 0x08)
+    {
+      *tmpMsg << (u8)((nChar->Coords).mUD);
+    }
+    if(InfoBitfield & 0x10)
+    {
+      *tmpMsg << (u8)((nChar->Coords).mLR);
+    }
+    if(InfoBitfield & 0x20)
+    {
+      *tmpMsg << (u8)((nChar->Coords).mAct);
+    }
+    /*if(InfoBitfield & 0x40) // Not used (?)
+    {
+      *tmpMsg << (u8)((nChar->Coords).mUnknown);
+    }*/
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
@@ -1223,6 +1296,46 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
 
     return tmpMsg;
 }
+
+/*
+PMessage* PMsgBuilder::BuildChangeLocation2Msg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel, u32 nRawItemID)
+{
+    PMessage* tmpMsg = new PMessage(28);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+
+    if (nRawItemID)
+    {
+        *tmpMsg << (u8)0x06; // Sub message length;
+        *tmpMsg << (u8)0x2d; // Item use response;
+        *tmpMsg << (u32)nRawItemID;
+        *tmpMsg << (u8)0x0a; // Use allowed
+    }
+
+    *tmpMsg << (u8)0x0c; // Sub message length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x30;
+    *tmpMsg << (u8)0x04; // Accepted (?)
+    *tmpMsg << (u8)nLevel;
+    *tmpMsg << (u32)nLocation;
+    *tmpMsg << (u16)nEntity;
+
+
+//13 66 00 82 cd 0c
+//03 66 00 1f 01 00
+//30
+//34 41 20 4a 51
+
+//potential DAT actor model: id 0x186 (0) to 0x18f (9)
+    return tmpMsg;
+}*/
 
 PMessage* PMsgBuilder::BuildCharAptLocInfoMsg (PClient* nClient)
 {

@@ -39,23 +39,79 @@
 
 PUdpCharPosUpdate::PUdpCharPosUpdate(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-  nDecodeData->mName << "/0x7f";
+  nDecodeData->mName << "/0x20";
 }
 
 PUdpMsgAnalyser* PUdpCharPosUpdate::Analyse()
 {
   mDecodeData->mName << "=Char position update";
 
-  PMessage* nMsg = mDecodeData->mMessage;
-  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 5);
-  *nMsg >> mNewY;
-  *nMsg >> mNewZ;
-  *nMsg >> mNewX;
-  *nMsg >> mNewUD;
-  *nMsg >> mNewLR;
-  *nMsg >> mNewAct;
+//mDecodeData->mTraceUnknownMsg = true; // temp stop being bugged with unknown move msg
+//mDecodeData->mTraceKnownMsg = true;
 
-  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 4);
+  
+  *nMsg >> mInfoBitfield;
+//bitfield [C?AL UXZY] packet read from LSB
+//          8.21 8421
+//Console->Print(YELLOW, BLACK, "[DEBUG] PUdpCharPosUpdate: Bitfield value %02x", mInfoBitfield);  
+  if(mInfoBitfield & 0x80) // Sitting on chair
+  {
+    if(mInfoBitfield & 0x7f)
+    {
+      mDecodeData->mName << " + mixed bitfield (" << mInfoBitfield << ")";
+      mDecodeData->mState = DECODE_UNKNOWN | DECODE_FINISHED;
+Console->Print(YELLOW, BLACK, "[DEBUG] PUdpCharPosUpdate: Client %d sent Mixed field value %x", mDecodeData->mClient->GetID(), mInfoBitfield);
+    }
+    else
+    {
+      mDecodeData->mName << " (Char sitting)";
+
+      *nMsg >> mChairItemID;
+      *nMsg >> mChairItemType;      
+      mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+//mDecodeData->mTraceKnownMsg = true;
+//mDecodeData->mTraceDump = true;
+//Console->Print(YELLOW, BLACK, "[DEBUG] Sitting on chair %d (%x) type %d", mChairItemID, mChairItemID, mChairItemType);
+    }
+  }
+  else
+  {  
+    if(mInfoBitfield & 0x01) 
+    {
+      *nMsg >> mNewY;
+    }
+    if(mInfoBitfield & 0x02)
+    {
+      *nMsg >> mNewZ;
+    }
+    if(mInfoBitfield & 0x04)
+    {
+      *nMsg >> mNewX;
+    }
+    if(mInfoBitfield & 0x08)
+    {
+      *nMsg >> mNewUD;
+    }
+    if(mInfoBitfield & 0x10)
+    {
+      *nMsg >> mNewLR;
+    }
+    if(mInfoBitfield & 0x20)
+    {
+      *nMsg >> mNewAct;
+    }
+    if(mInfoBitfield & 0x40) // purpose unknown
+    {
+      *nMsg >> mNewUnknown;
+      if(gDevDebug && mNewUnknown) {
+        Console->Print(YELLOW, BLACK, "[DEBUG] PUdpCharPosUpdate: Client %d sent field 0x40 (in %x) value %x", mDecodeData->mClient->GetID(), mInfoBitfield, mNewUnknown);
+      }
+    }             
+    
+    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  }
 
   return this;
 }
@@ -64,50 +120,97 @@ bool PUdpCharPosUpdate::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
-  bool IsRealMove = false;
-
-  if ((nChar->Coords.mY != mNewY) || (nChar->Coords.mZ != mNewZ) || (nChar->Coords.mX != mNewX) || (nChar->Coords.mLR != mNewLR))
+  
+  if(mInfoBitfield & 0x80) // Sitting on chair
   {
-    nChar->Coords.mY = mNewY;
-    nChar->Coords.mZ = mNewZ;
-    nChar->Coords.mX = mNewX;
-    nChar->Coords.mLR = mNewLR;
-    nChar->SetDirtyFlag();
-    IsRealMove = true;
+    PMessage* tmpMsg;
+    tmpMsg = MsgBuilder->BuildCharSittingMsg(nClient, mChairItemID);
+    ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
+    tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
+    ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
   }
-  nChar->Coords.mUD = mNewUD;
-  nChar->Coords.mAct = mNewAct;
-        // movement byte mask:
-        // 0x00 NC has no focus (player alt+tab'ed out)
-        // 0x02 kneeing
-        // 0x20 Walk mode (= not run mode)
-        // 0x08 left step
-        // 0x10 right step
-        // 0x40 forward
-        // 0x80 backward
-        // bits:  00000000
-        //        BFWRL.K.
-//Console->Print("Char %d position update: X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
-
-  PMessage* tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg(nClient);
-  ClientManager->UDPBroadcast(tmpMsg, nClient);
-
-  tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
-  ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
-
-  if(IsRealMove && nClient->GetDebugMode(DBG_LOCATION))
+  else
   {
-    char DbgMessage[128];
-    f32 f[3];
-    u32 h[3];
-    f[0] = nChar->Coords.mY - 32000;
-    f[1] = nChar->Coords.mZ - 32000;
-    f[2] = nChar->Coords.mX - 32000;
-    memcpy(h, f, 3 * sizeof(u32));
-    snprintf(DbgMessage, 128, "position y:%0.1f (0x%08x) z:%0.1f (0x%08x) x:%0.1f (0x%08x)", f[0], h[0], f[1], h[1], f[2], h[2]);
-    Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
-  }
+    bool IsRealMove = false;
 
+    if((mInfoBitfield & 0x01) && (nChar->Coords.mY != mNewY))
+    {
+      nChar->Coords.mY = mNewY;
+      IsRealMove = true;
+    }
+    if((mInfoBitfield & 0x02) && (nChar->Coords.mZ != mNewZ))
+    {
+      nChar->Coords.mZ = mNewZ;
+      IsRealMove = true;
+    }
+    if((mInfoBitfield & 0x04) && (nChar->Coords.mX != mNewX))
+    {
+      nChar->Coords.mX = mNewX;
+      IsRealMove = true;
+    }
+    if(mInfoBitfield & 0x08)
+    {
+      nChar->Coords.mUD = mNewUD;
+      //IsRealMove = true;
+    }
+    if((mInfoBitfield & 0x10) && (nChar->Coords.mLR != mNewLR))
+    {
+      nChar->Coords.mLR = mNewLR;
+      IsRealMove = true;
+    }
+    if(mInfoBitfield & 0x20)
+    {
+      nChar->Coords.mAct = mNewAct;
+    }
+    if(mInfoBitfield & 0x20)
+    {
+      nChar->Coords.mUnknown = mNewUnknown;
+    }
+    // movement action byte mask:
+    // 0x00 NC has no focus (player alt+tab'ed out)
+    // 0x02 kneeing
+    // 0x20 Walk mode (= not run mode)
+    // 0x08 left step
+    // 0x10 right step
+    // 0x40 forward
+    // 0x80 backward
+    // bits:  00000000
+    //        BFWRL.K.
+
+    PMessage* tmpMsg;
+    if(mInfoBitfield == 0x7f)
+    {  
+      tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg(nClient);
+      ClientManager->UDPBroadcast(tmpMsg, nClient);
+    }
+    if(IsRealMove)
+    {
+      nChar->SetDirtyFlag();
+    }
+    /*if(IsRealMove)
+    if(mInfoBitfield == 0x7f)
+    {
+      tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
+      ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
+    }*/
+    
+    tmpMsg = MsgBuilder->BuildCharPosUpdate2Msg(nClient, mInfoBitfield);
+    ClientManager->UDPBroadcast(tmpMsg, nClient, 5000, true);
+    
+    if(IsRealMove && nClient->GetDebugMode(DBG_LOCATION))
+    {
+      char DbgMessage[128];
+      f32 f[3];
+//      u32 h[3];
+      f[0] = nChar->Coords.mY - 32000;
+      f[1] = nChar->Coords.mZ - 32000;
+      f[2] = nChar->Coords.mX - 32000;
+//      memcpy(h, f, 3 * sizeof(u32));
+//      snprintf(DbgMessage, 128, "position y:%0.1f (0x%08x) z:%0.1f (0x%08x) x:%0.1f (0x%08x)", f[0], h[0], f[1], h[1], f[2], h[2]);
+      snprintf(DbgMessage, 128, "position y:%0.1f z:%0.1f x:%0.1f lr:%d (Act=%x BF=%x)", f[0], f[1], f[2], nChar->Coords.mLR, nChar->Coords.mAct ,mInfoBitfield);
+      Chat->send(nClient, CHAT_GM, "Debug", DbgMessage);
+    }
+  }
 //if(IsRealMove)
 //Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
 
@@ -115,68 +218,6 @@ bool PUdpCharPosUpdate::DoAction()
   return true;
 }
 
-/**** PUdpCharAttitudeUpdate ****/
-
-PUdpCharAttitudeUpdate::PUdpCharAttitudeUpdate(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
-{
-  nDecodeData->mName << "/0x20";
-}
-
-PUdpMsgAnalyser* PUdpCharAttitudeUpdate::Analyse()
-{
-  mDecodeData->mName << "=Char attitude update";
-
-  mNewAct = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start+5);
-//Console->Print"Char %d Action update: 0x%02x", mDecodeData->mClient->GetID(), mNewAct);
-
-  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-
-  return this;
-}
-
-bool PUdpCharAttitudeUpdate::DoAction()
-{
-    mDecodeData->mClient->GetChar()->Coords.mAct = mNewAct;
-
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
-}
-
-
-/**** PUdpCharSitting ****/
-
-PUdpCharSitting::PUdpCharSitting(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
-{
-  nDecodeData->mName << "/0x80";
-}
-
-PUdpMsgAnalyser* PUdpCharSitting::Analyse()
-{
-  mDecodeData->mName << "=Char sitting";
-
-  PMessage* nMsg = mDecodeData->mMessage;
-  //u16 LocalID = mDecodeData->mMessage->U16Data(mDecodeData->Sub0x13Start+2);
-  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 5);
-  *nMsg >> mChairItemID;
-  *nMsg >> mChairItemType;
-
-  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-
-  return this;
-}
-
-bool PUdpCharSitting::DoAction() // this message is repeated x times/sec ... is answer usefull ? each time ?
-{
-//Console->Print("Sitting on chair %d (%x)", mChairItemID, mChairItemID);
-//PChar* nChar = mDecodeData->mClient->GetChar();
-//Console->Print("Char %d position : X(0x%x) Y(0x%x) Z(0x%x) U/D(0x%x) L/R(0x%x) Action(0x%#.2x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
-//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
-//mDecodeData->mTraceDump = true;
-    PMessage* tmpMsg = MsgBuilder->BuildCharSittingMsg(mDecodeData->mClient, mChairItemID);
-    ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
-}
 
 /**** PUdpCharExitChair ****/
 

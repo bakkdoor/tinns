@@ -70,6 +70,7 @@ class PMessage
         static void CheckMsgCount(); //To be used in a place where no new message should remain between calls
 
         PMessage(u16 nRequestedSize = 0); // max size will be extended as needed in later write accesses (up to max configured size)
+        PMessage(PMessage& nMessage); // creates a (size optimized, offset reset) copy of nMessage
         inline ~PMessage() { ReleaseMsgBuffer(); --smMsgCount; }
 
         void SetNextByteOffset(u16 nPos);

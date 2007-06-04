@@ -168,32 +168,7 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling
 
       case 0x20: // Char move
       {
-        mDecodeData->mName << "/0x20";
-        u8 MsgSubType = TmpMsg->U8Data(TmpMsg->GetNextByteOffset()+4);
-mDecodeData->mTraceUnknownMsg = false; // temp stop being bugged with unknown move msg
-        switch(MsgSubType)
-        {
-          case 0x20:
-          {
-            nextAnalyser = new PUdpCharAttitudeUpdate(mDecodeData);
-            break;
-          }
-          case 0x7f:
-          {
-            nextAnalyser = new PUdpCharPosUpdate(mDecodeData);
-            break;
-          }
-          case 0x80:
-          {
-            nextAnalyser = new PUdpCharSitting(mDecodeData);
-            break;
-          }
-          default:
-          {
-            mDecodeData->mUnknownType = MsgSubType;
-            break;
-          }
-        }
+        nextAnalyser = new PUdpCharPosUpdate(mDecodeData);
         break;
       }
 
