@@ -334,10 +334,10 @@ bool PUdpUseObject::DoAction()
                             u32 Location = nAppPlace->GetExitWorldID();
                             u16 Entity = nAppPlace->GetExitWorldEntity();
                             u8 SewerLevel = 0;
-                            /*if((tFurnitureModel->GetFunctionType() == 20) && nAppPlace->GetSewerLevel())
+                            if((tFurnitureModel->GetFunctionType() == 20) && nAppPlace->GetSewerLevel())
                             {
                               SewerLevel = 1;
-                            }*/
+                            }
 
                             tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, mRawItemID); //mRawItemID
                             nClient->getUDPConn()->SendMessage(tmpMsg);

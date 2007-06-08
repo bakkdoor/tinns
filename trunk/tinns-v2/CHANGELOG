@@ -1441,3 +1441,20 @@ Hammag; 05.06.2007 01:30 GMT+2
   - chat.cpp : fixed a repeated bug that led to crash when some client was connected
     without a char ingame (like in char selection, creation or deletion phase) and
     some chat was sent to him (like when someone else was coming ingame)
+
+====================
+Hammag; 09.06.2007 00:10 GMT+2
+----------
+[rev. 84]
+
+<General changes>
+ - fixed a bug causing the server to crash under some conditions
+ - fixed account management so that ingame account level setting doesn't need relog
+    to be effective
+
+[GAME]
+Started work on the type 0x20 zoning doors.
+Added decoder/udp_entityposreq.cpp decoder/udp_entityposreq.h
+
+[LIBS]
+connection-udp.cpp: Fixed a bug causing server to crash when resending packet.

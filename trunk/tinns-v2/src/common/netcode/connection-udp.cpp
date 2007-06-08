@@ -213,7 +213,7 @@ bool ConnectionUDP::update()
 {
     PMessage* tmpMsg;
     int numBytes;
-    bool gotVIPmsg = false;
+    bool gotVIPmsg;
 
     // send data from outgoing queue
     flushSendBuffer(); // manage old write compatibility
@@ -230,6 +230,7 @@ bool ConnectionUDP::update()
             //Console->Print("ConnectionUDP::update() - OUT Data avail");
 
             // First, take a look at the VIP Query. If not empty, send these packets first
+            gotVIPmsg = false;
             if(! mVIPQueueOut.empty())
             {
                 tmpMsg = mVIPQueueOut.front();
@@ -280,7 +281,7 @@ bool ConnectionUDP::update()
         //  Console->Print(YELLOW, BLACK, "ConnectionUDP::update() - %d messages remaining in Output Queue", mQueueOut.size());
     }
 
-    //check if data is available for this socket and if yes, read into a new PMessage and put it on incoming queue
+    //check if data is available from this socket and if yes, read into a new PMessage and put it on incoming queue
     if(mServerSocket->isDataAvailable(mSockfd))
     {
         //Console->Print("ConnectionUDP::update() - IN Data avail");

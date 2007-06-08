@@ -40,7 +40,7 @@
 
 #include <math.h>
 
-const u16 nonDiscardUseFlags = ufTouchable|ufUsable|ufChair|ufToolTarget ; // furniture always to kept even if function type = 0
+const u16 nonDiscardUseFlags = ufTouchable|ufUsable|ufChair|ufToolTarget ; // furniture always to keep even if function type = 0
 
 PWorldDatParser::PWorldDatParser()
 {

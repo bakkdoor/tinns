@@ -35,6 +35,7 @@
 
 #include "udp_reqinfo.h"
 #include "udp_zoning.h"
+#include "udp_entityposreq.h"
 
 /**** PUdp0x22 ****/
 
@@ -60,6 +61,11 @@ PUdpMsgAnalyser* PUdp0x22::Analyse()
       nextAnalyser = new PUdpReqInfo(mDecodeData);
       break;
     }
+    case 0x0b: // Entity position request
+    {
+      nextAnalyser = new PUdpEntityPosRequest(mDecodeData);
+      break;
+    } 
     case 0x0d: // Zoning phase 1
     {        
       nextAnalyser = new PUdpZoning1(mDecodeData);

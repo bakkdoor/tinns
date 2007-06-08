@@ -28,9 +28,14 @@ void PCommands::doCmd_dev_h()
   if(source->GetAccountLevel() < PAL_ADMIN)
     return;
 
+
+
+  PMessage* tmpMsg = MsgBuilder->BuildEntityPositionMsg(source, GetArgInt(1) & 0xffff, GetArgInt(2) & 0xffff, GetArgInt(3) & 0xffff);
+  source->SendUDPMessage(tmpMsg);
+/*
   u8 val1, val2, val3, val4;
   char tmpStr[128];
-
+  
   if(ArgC > 0)
   {
     val1 = (u8)(GetArgInt(1) & 0xff);
@@ -66,4 +71,5 @@ void PCommands::doCmd_dev_h()
     snprintf(tmpStr, 127, "Data set to values 0x%02x 0x%02x", val1, val2);
     tmpStr[127] = '\0';
     Chat->send(source, CHAT_DIRECT, "System", tmpStr);
+    */
 }

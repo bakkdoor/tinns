@@ -82,7 +82,8 @@ class PMsgBuilder
   PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity);
   PMessage* BuildAptLiftFailedMsg (PClient* nClient);
   PMessage* BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel = 0, u32 nRawItemID = 0);
-
+  PMessage* BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY, u16 pZ);
+  
   PMessage* BuildCharAptLocInfoMsg (PClient* nClient);
 
   PMessage* BuildSubskillIncMsg (PClient* nClient, u8 nSubskill, u16 nSkillPoints);

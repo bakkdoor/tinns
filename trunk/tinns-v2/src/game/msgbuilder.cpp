@@ -1044,9 +1044,9 @@ PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nData)
     nClient->IncreaseUDP_ID();
 
     *tmpMsg << (u8)0x17; // Message length place;
-    *tmpMsg << (u8)0x03; // from NeoX
+    *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x23; // from NeoX
+    *tmpMsg << (u8)0x23;
     *tmpMsg << (u8)0x04; // from NeoX
     *tmpMsg << (u32)0x00000000; // from NeoX
     *tmpMsg << (u32)0x00000000; // from NeoX
@@ -1292,50 +1292,34 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
     *tmpMsg << (u32)nLocation;
     *tmpMsg << (u16)nEntity;
 
-    //nClient->IncreaseUDP_ID(); // Why PostIncrement here??
-
     return tmpMsg;
 }
 
-/*
-PMessage* PMsgBuilder::BuildChangeLocation2Msg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel, u32 nRawItemID)
+/* RESP:
+0c Entity Position answer ???
+03 0e 00 23 0a 00 a4 72 d3 80 f1 74
+*/
+PMessage* PMsgBuilder::BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY, u16 pZ)
 {
-    PMessage* tmpMsg = new PMessage(28);
-
+    PMessage* tmpMsg = new PMessage(18);
     nClient->IncreaseUDP_ID();
 
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u16)nClient->GetSessionID();
-
-    if (nRawItemID)
-    {
-        *tmpMsg << (u8)0x06; // Sub message length;
-        *tmpMsg << (u8)0x2d; // Item use response;
-        *tmpMsg << (u32)nRawItemID;
-        *tmpMsg << (u8)0x0a; // Use allowed
-    }
-
-    *tmpMsg << (u8)0x0c; // Sub message length;
+    *tmpMsg << (u8)0x00; // Message length placeholder;
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x1f;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x30;
-    *tmpMsg << (u8)0x04; // Accepted (?)
-    *tmpMsg << (u8)nLevel;
-    *tmpMsg << (u32)nLocation;
-    *tmpMsg << (u16)nEntity;
+    *tmpMsg << (u8)0x23;
+    *tmpMsg << (u8)0x0a;
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u16)pY;
+    *tmpMsg << (u16)pZ;
+    *tmpMsg << (u16)pX;
 
-
-//13 66 00 82 cd 0c
-//03 66 00 1f 01 00
-//30
-//34 41 20 4a 51
-
-//potential DAT actor model: id 0x186 (0) to 0x18f (9)
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
     return tmpMsg;
-}*/
+}
 
 PMessage* PMsgBuilder::BuildCharAptLocInfoMsg (PClient* nClient)
 {
@@ -1699,9 +1683,10 @@ PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
     *tmpMsg << (u8)0x08;    // Len (static, always 0x08
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
-    *tmpMsg << (u8)0x1F;    // Command SHOW GLOWING CIRCLE (kinda ^^)
+    *tmpMsg << (u8)0x1f;    
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u16)0x013C;   // No idea yet...
+    *tmpMsg << (u8)0x3c; // Command SHOW GLOWING CIRCLE (kinda ^^)
+    *tmpMsg << (u8)0x01; // "on" ?
 
     return tmpMsg;
 }
@@ -1919,15 +1904,15 @@ PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, 
     *tmpMsg << (u8)0x10;
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x1F;
+    *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x28;
     *tmpMsg << nWorldObjID;
     *tmpMsg << nHackDifficult;
     *tmpMsg << (u8)0x28;
-    *tmpMsg << (u8)0x5C;
-    *tmpMsg << (u8)0xCF;
-    *tmpMsg << (u8)0x3E;
+    *tmpMsg << (u8)0x5c;
+    *tmpMsg << (u8)0xcf;
+    *tmpMsg << (u8)0x3e;
 
     return tmpMsg;
 }

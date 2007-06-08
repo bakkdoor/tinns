@@ -61,6 +61,7 @@ class PWorld
     inline const PFurnitureItemTemplate* GetFurnitureItemTemplate(u32 nItemID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetFurnitureItem(nItemID) : NULL) ; }
     const PDefWorldModel* GetFurnitureItemModel(u32 nItemID);
     inline const PDoorTemplate* GetDoor(u32 nDoorID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetDoor(nDoorID) : NULL ); }
+    inline bool getPositionItemPosition(u8 PosID, f32* pX, f32* pY, f32* pZ) { return ( mWorldDataTemplate ? mWorldDataTemplate->getPositionItemPosition(PosID, pX, pY, pZ) : false ); }
     
     bool CharUseChair(int CharLocalID, u32 nItemID);
     void CharLeaveChair(int CharLocalID, u32 nItemID);

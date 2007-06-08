@@ -38,6 +38,10 @@
 PWorldDataTemplate::PWorldDataTemplate()
 {
   mUseCount = 0;
+  for (int i = 0; i<10; ++i)
+  {
+    mPositionItems[i] = NULL;
+  }
 }
 
 PWorldDataTemplate::~PWorldDataTemplate()
@@ -105,6 +109,28 @@ u32 PWorldDataTemplate::AddFurnitureItem(PFurnitureItemTemplate* nItem)
     if(mFurnitureItems.insert(std::make_pair(nItem->GetID(), nItem)).second)
     {
 if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem->GetID());
+
+      if (nItem->GetFunctionType() == 21)
+      {
+        int v = nItem->GetFunctionValue();
+        if(mPositionItems[v])
+        {
+          Console->Print(RED, BLACK, "Same position %d for two position items ID %d and %d !!! Not added to world template", v, mPositionItems[v]->GetID(), nItem->GetID());
+        }
+        else
+        {
+          if((v >= 0) && (v < 10))
+          {
+            mPositionItems[v] = nItem;
+//Console->Print("Position entity %d (id 0x%x) added to world template", v, nItem->GetID());
+          }
+          else
+          {
+            Console->Print(RED, BLACK, "Invalid position %d for position item ID %d !!! Not added to world template", v, nItem->GetID());
+          }
+        }
+      }
+      
       return nItem->GetID();
     }
     else
@@ -122,6 +148,16 @@ const PFurnitureItemTemplate* PWorldDataTemplate::GetFurnitureItem(u32 ItemID)
 	  return NULL;
   else
     return it->second;
+}
+
+bool PWorldDataTemplate::getPositionItemPosition(u8 PosID, f32* pX, f32* pY, f32* pZ)
+{
+  if((PosID < 10) && mPositionItems[PosID])
+  {
+    mPositionItems[PosID]->GetPos(pX, pY, pZ) ;
+    return true;
+  }
+  return false;
 }
 
 u32 PWorldDataTemplate::AddDoor(PDoorTemplate* nDoor)

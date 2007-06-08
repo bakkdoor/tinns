@@ -43,6 +43,8 @@ class PWorldDataTemplate
     std::string mName; // relative path+filename without leading ./ or ./worlds/ nor .dat extension
     PFurnitureItemsMap mFurnitureItems;
     PDoorsMap mDoors;
+    PFurnitureItemTemplate* mPositionItems[10];
+    
     int mUseCount;
     
     void DatFileDataCleanup();
@@ -61,6 +63,7 @@ class PWorldDataTemplate
     
     u32 AddFurnitureItem(PFurnitureItemTemplate* nItem);
     const PFurnitureItemTemplate* GetFurnitureItem(u32 ItemID);
+    bool getPositionItemPosition(u8 PosID, f32* pX, f32* pY, f32* pZ);
     
     u32 AddDoor(PDoorTemplate* nDoor);
     const PDoorTemplate* GetDoor(u32 DoorID);
