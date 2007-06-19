@@ -113,24 +113,30 @@ if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem
       if (nItem->GetFunctionType() == 21)
       {
         int v = nItem->GetFunctionValue();
-        if(mPositionItems[v])
+        if((v >= 0) && (v < 10))
         {
-          Console->Print(RED, BLACK, "Same position %d for two position items ID %d and %d !!! Not added to world template", v, mPositionItems[v]->GetID(), nItem->GetID());
+          if(mPositionItems[v])
+          {
+            Console->Print("% Same position %d for two position items ID %d and %d. Only last one kept.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, mPositionItems[v]->GetID(), nItem->GetID());
+          }
+
+          mPositionItems[v] = nItem;
+/*
+Console->Print("Position entity %d (id 0x%x) added to world template", v, nItem->GetID());
+f32 fpX, fpY, fpZ;
+u16 pX, pY, pZ;
+nItem->GetPos(&fpX, &fpY, &fpZ);
+pX = (u16) (fpX + 32000);
+pY = (u16) (fpY + 32000);
+pZ = (u16) (fpZ + 32000);
+Console->Print("Position Y=%f (0x%04x) Z=%f (0x%04x) X=%f (0x%04x)", fpY, pY, fpZ, pZ, fpX, pX);
+*/
         }
         else
         {
-          if((v >= 0) && (v < 10))
-          {
-            mPositionItems[v] = nItem;
-//Console->Print("Position entity %d (id 0x%x) added to world template", v, nItem->GetID());
-          }
-          else
-          {
-            Console->Print(RED, BLACK, "Invalid position %d for position item ID %d !!! Not added to world template", v, nItem->GetID());
-          }
+          Console->Print("% Invalid position %d for position item ID %d. Position ignored.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, nItem->GetID());
         }
       }
-      
       return nItem->GetID();
     }
     else

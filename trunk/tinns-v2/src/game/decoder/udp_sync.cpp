@@ -123,6 +123,29 @@ bool PUdpSync1::DoAction()
 {
   if ((mDecodeData->mState & DECODE_ACTION_READY) && (mDecodeData->mClientState->UDP.mState == PGameState::UDP::GUS_SYNC1))
   {
+
+/*PMessage* tmpMsg = new PMessage(15);
+PClient* nClient = mDecodeData->mClient;
+
+nClient->IncreaseUDP_ID();
+
+*tmpMsg << (u8)0x13;
+*tmpMsg << (u16)nClient->GetUDP_ID();
+*tmpMsg << (u16)nClient->GetSessionID();
+*tmpMsg << (u8)0x0a; // Message length place;
+*tmpMsg << (u8)0x03;
+*tmpMsg << (u16)nClient->GetUDP_ID();
+*tmpMsg << (u8)0x23;
+*tmpMsg << (u8)0x0f;
+*tmpMsg << (u8)0x00; // ??
+*tmpMsg << (u8)0x03; // ??
+*tmpMsg << (u8)0x00; // ??
+*tmpMsg << (u8)0x01; // ??
+*tmpMsg << (u8)0x00; // ??
+
+(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);    
+nClient->SendUDPMessage(tmpMsg);*/
+    
     mDecodeData->mClientState->UDP.mState = PGameState::UDP::GUS_SYNC2;
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;

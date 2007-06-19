@@ -174,7 +174,7 @@ PMessage* PMsgBuilder::BuildCharHealthUpdateMsg (PClient* nClient)
     *tmpMsg << (u8)0x64; //Head Heath =Head HP/(3 *0.45)(with max Head HP = 45% of total)
     *tmpMsg << (u8)0x64; //Body Heath =Body HP/(3 *0.35)(for max 35% of total)
     *tmpMsg << (u8)0x64; //Feet Heath =Feet HP/(3 *0.20)(for max 20% of total)
-    *tmpMsg << (u8)0x01;
+    *tmpMsg << (u8)0x01; // Sta/Mana ?
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
@@ -1020,7 +1020,7 @@ PMessage* PMsgBuilder::BuildCharInfo3Msg (PClient* nClient)
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nData)
+PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown)
 {
     PMessage* tmpMsg = new PMessage(42);
 
@@ -1050,8 +1050,9 @@ PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nData)
     *tmpMsg << (u8)0x04; // from NeoX
     *tmpMsg << (u32)0x00000000; // from NeoX
     *tmpMsg << (u32)0x00000000; // from NeoX
-    *tmpMsg << (u16)0x0000; // from NeoX
-    *tmpMsg << (u16)nData; // from NeoX
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)nUnknown;
+    *tmpMsg << (u16)nEntity;
     *tmpMsg << (u16)0x0000; // from NeoX
     *tmpMsg << (u16)nClient->GetTransactionID(); // from NeoX
     *tmpMsg << (u16)0x0000; // from NeoX
@@ -1207,7 +1208,7 @@ PMessage* PMsgBuilder::BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity)
+PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType)
 {
     PMessage* tmpMsg = new PMessage(43);
 
@@ -1224,7 +1225,7 @@ PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x38;
     *tmpMsg << (u8)0x04; // Accepted (?)
-    *tmpMsg << (u8)0x00; // Sewer Level
+    *tmpMsg << (u8)nEntityType; // "Sewer Level"
     *tmpMsg << (u32)nLocation;
     *tmpMsg << (u16)nEntity;
 
@@ -1263,7 +1264,7 @@ PMessage* PMsgBuilder::BuildAptLiftFailedMsg (PClient* nClient)
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel, u32 nRawItemID)
+PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType, u32 nRawItemID)
 {
     PMessage* tmpMsg = new PMessage(28);
 
@@ -1288,7 +1289,7 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x38;
     *tmpMsg << (u8)0x04; // Accepted (?)
-    *tmpMsg << (u8)nLevel;
+    *tmpMsg << (u8)nEntityType;
     *tmpMsg << (u32)nLocation;
     *tmpMsg << (u16)nEntity;
 
@@ -1313,9 +1314,9 @@ PMessage* PMsgBuilder::BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY,
     *tmpMsg << (u8)0x23;
     *tmpMsg << (u8)0x0a;
     *tmpMsg << (u8)0x00;
-    *tmpMsg << (u16)pY;
-    *tmpMsg << (u16)pZ;
-    *tmpMsg << (u16)pX;
+    *tmpMsg << (u16)(pY + 768);
+    *tmpMsg << (u16)(pZ + 768);
+    *tmpMsg << (u16)(pX + 768);
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
     return tmpMsg;
@@ -1649,7 +1650,7 @@ PMessage* PMsgBuilder::BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, 
     *tmpMsg << (u8)0x38;
     *tmpMsg << (u8)0x01;
     *tmpMsg << (u32)nRawObjectID;
-    *tmpMsg << (u16)nAptPlace; // Entity ???
+    *tmpMsg << (u16)nAptPlace;
     *tmpMsg << (u16)0x0000;
     *tmpMsg << (u8)0x00;
 

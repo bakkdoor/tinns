@@ -34,7 +34,8 @@ It involves modification of:
     
 Other current work:
  - dynamic loading/unloading of chars, non mem-resident account info
- 
+
+==> revoir GR zoning/BuildZoning1Msg: arg Unknown value ?
 ----------------
         REASON: - Added command @skin to play with skins :-P
                   Usage:  @skin #<chardef idx>

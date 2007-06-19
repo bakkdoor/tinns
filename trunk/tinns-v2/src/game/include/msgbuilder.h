@@ -71,7 +71,7 @@ class PMsgBuilder
   PMessage* BuildBaselineMsg (PClient* nClient);
   PMessage* BuildCharInfo3Msg (PClient* nClient);
 
-  PMessage* BuildZoning1Msg (PClient* nClient, u16 nData);
+  PMessage* BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown = 0);
   PMessage* BuildZoningTCPReadyMsg ();
   PMessage* BuildZoning2Msg (PClient* nClient);
   PMessage* BuildGenrepZoningMsg (PClient* nClient, u32 nLocation, u16 nEntity);
@@ -79,9 +79,9 @@ class PMsgBuilder
   PMessage* BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation, u16 nEntity);
   PMessage* BuildGenrepDenyBrokenMsg (PClient* nClient);
 
-  PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity);
+  PMessage* BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType = 0);
   PMessage* BuildAptLiftFailedMsg (PClient* nClient);
-  PMessage* BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nLevel = 0, u32 nRawItemID = 0);
+  PMessage* BuildChangeLocationMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType = 0, u32 nRawItemID = 0);
   PMessage* BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY, u16 pZ);
   
   PMessage* BuildCharAptLocInfoMsg (PClient* nClient);

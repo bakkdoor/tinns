@@ -24,6 +24,7 @@ void PCommands::doCmdwarp()
 {
     int SpawnPointID = 0;
     int zoneID = 0;
+    int ZoningType = 0;
 
     bool SyntaxError = false;
     if(ArgC < 1)
@@ -50,6 +51,10 @@ void PCommands::doCmdwarp()
             if(IsArgNumeric(2) == true)
             {
                 SpawnPointID = GetArgInt(2);
+                if(ArgC > 2)
+                {
+                  ZoningType = 1;
+                }
             }
             else
             {
@@ -59,7 +64,7 @@ void PCommands::doCmdwarp()
     }
     if(SyntaxError == true)
     {
-        Chat->send(source, CHAT_DIRECT, "Usage", "@warp <zoneid> [<spawn location>]");
+        Chat->send(source, CHAT_DIRECT, "Usage", "@warp <zoneid> [<spawn location> [<use .def: 1>]]");
         return;
     }
 
@@ -75,7 +80,7 @@ void PCommands::doCmdwarp()
     {
         if (gDevDebug) Console->Print("IngameCommand: Warping player %d to zone %d (%s)", source->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
 
-        PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (source, zoneID, SpawnPointID);
+        PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (source, zoneID, SpawnPointID, ZoningType);
         source->getUDPConn()->SendMessage(tmpMsg);
     }
     else

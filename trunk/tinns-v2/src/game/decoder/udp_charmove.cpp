@@ -120,7 +120,7 @@ bool PUdpCharPosUpdate::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
-  
+
   if(mInfoBitfield & 0x80) // Sitting on chair
   {
     PMessage* tmpMsg;

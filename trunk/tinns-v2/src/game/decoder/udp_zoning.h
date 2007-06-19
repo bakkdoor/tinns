@@ -34,7 +34,11 @@
 #define UDPZONING_H
 
 class PUdpZoning1 : public PUdpMsgAnalyser
-{ 
+{
+  private:
+    u32 mNewLocation;
+    u16 mNewEntity;
+    u8 mUnknown;
   public:
     PUdpZoning1(PMsgDecodeData* nDecodeData);
     //~PUdpZoning1();

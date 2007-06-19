@@ -45,6 +45,22 @@ PUdpZoning1::PUdpZoning1(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeD
 PUdpMsgAnalyser* PUdpZoning1::Analyse()
 {
   mDecodeData->mName << "=Zoning phase 1";
+  
+  PMessage* cMsg = mDecodeData->mMessage;
+  u8 dumb8;
+  u16 dumb16;
+  //mUnknown = cMsg->U16Data(mDecodeData->Sub0x13Start+7);
+  //mNewLocation = cMsg->U32Data(mDecodeData->Sub0x13Start+11);
+  //mNewEntity = cMsg->U16Data(mDecodeData->Sub0x13Start+15);
+      
+  cMsg->SetNextByteOffset(mDecodeData->Sub0x13Start+7);
+  *cMsg >> dumb8; // u8 = 0x01 in NC1, other in NC2.2
+  *cMsg >> mUnknown; //u8
+  *cMsg >> dumb16; //u16 unkown use
+  *cMsg >> mNewLocation; //u32
+  *cMsg >> mNewEntity; //u16
+  //cMsg >> dumb16; //u16 0x0000
+//Console->Print("Zoning Stage 1: New location: %d, Entity %d, Unknown %d", mNewLocation, mNewEntity, (u16)mUnknown);
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 
   return this;
@@ -52,16 +68,11 @@ PUdpMsgAnalyser* PUdpZoning1::Analyse()
 
 bool PUdpZoning1::DoAction()
 {
-  PMessage* cMsg = mDecodeData->mMessage;
+  mDecodeData->mClient->ChangeCharLocation(mNewLocation);
 
-  u32 newLocation = cMsg->U32Data(mDecodeData->Sub0x13Start+11);
-  mDecodeData->mClient->ChangeCharLocation(newLocation);
+//Console->Print("Zoning Stage 1: New location: %d", mNewLocation);
 
-//Console->Print("Zoning Stage 1: New location: %d", newLocation);
-
-  u16 nData = cMsg->U32Data(mDecodeData->Sub0x13Start+15);
-
-  PMessage* tmpMsg = MsgBuilder->BuildZoning1Msg(mDecodeData->mClient, nData);
+  PMessage* tmpMsg = MsgBuilder->BuildZoning1Msg(mDecodeData->mClient, mNewEntity, mUnknown);
   mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
 
 //Console->Print("Zoning Stage 1: packet sent");

@@ -54,8 +54,9 @@ PUdpMsgAnalyser* PUdpEntityPosRequest::Analyse()
 
   if(mEntityID > 9)
   {
-    mDecodeData->mState = DECODE_ERROR | DECODE_FINISHED;
+    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
     mDecodeData->mErrorDetail = Ssprintf("Invalid position entity ID (%d)", mEntityID);
+    Console->Print("%s Client[%d] sent invalid position entity Id[%d]", Console->ColorText(YELLOW, BLACK, "[Notice]"), mDecodeData->mClient->GetID(), mEntityID);
     mDecodeData->mTraceDump = true;
   }
   else
@@ -76,24 +77,26 @@ bool PUdpEntityPosRequest::DoAction()
 
   if(currentWorld)
   {
-    if(currentWorld->getPositionItemPosition(mEntityID, &fpX, &fpY, &fpZ))
+    if((mEntityID < 10) &&currentWorld->getPositionItemPosition(mEntityID, &fpX, &fpY, &fpZ))
     {
       pX = (u16) (fpX + 32000);
       pY = (u16) (fpY + 32000);
       pZ = (u16) (fpZ + 32000);
 
-      PMessage* tmpMsg;
-      tmpMsg = MsgBuilder->BuildEntityPositionMsg(nClient, pX, pY, pZ);
-      nClient->SendUDPMessage(tmpMsg);
-      (nChar->Coords).mY=pY;
-      (nChar->Coords).mZ=pZ;
-      (nChar->Coords).mX=pX;
-if(gDevDebug) Console->Print(GREEN, BLACK, "Client %d - Sending pos for entity %d : X=%x Y=%x Z=%x", mDecodeData->mClient->GetID(), mEntityID, pX, pY, pZ);
+if(gDevDebug) Console->Print(GREEN, BLACK, "Client %d - Sending pos for entity %d : X=%d Y=%d Z=%d", mDecodeData->mClient->GetID(), mEntityID, pX, pY, pZ);
     }
     else
     {
-      Console->Print(RED, BLACK, "[Warning] PUdpEntityPosRequest - Could not get position for position entity %d", mEntityID);
+      fpX = fpY = fpZ = 0;
+      Console->Print("%s Client[%d] requested invalid position entity %d. Position reset.", Console->ColorText(YELLOW, BLACK, "[Notice]"), mDecodeData->mClient->GetID(), mEntityID);
     }
+    
+    PMessage* tmpMsg;
+    tmpMsg = MsgBuilder->BuildEntityPositionMsg(nClient, pX, pY, pZ);
+    nClient->SendUDPMessage(tmpMsg);
+    (nChar->Coords).mY=pY;
+    (nChar->Coords).mZ=pZ;
+    (nChar->Coords).mX=pX;
   }
   else
   {

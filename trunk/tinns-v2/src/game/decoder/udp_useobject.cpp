@@ -301,8 +301,8 @@ bool PUdpUseObject::DoAction()
                                 nClient->getUDPConn()->SendMessage(tmpMsg);
                                 if (gDevDebug)
                                     Console->Print("%s Client[%d] Char[%s] moving to zone %d (%s)", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
-                                /*if (gDevDebug)*/
-                                Console->Print("%s Location=%d Entity=%d Level=%d", Console->ColorText(GREEN, BLACK, "[Debug]"), Location, Entity, SewerLevel);
+                                if (gDevDebug)
+                                  Console->Print("%s Location=%d Entity=%d Level=%d", Console->ColorText(GREEN, BLACK, "[Debug]"), Location, Entity, SewerLevel);
                             }
                             else
                             {
@@ -334,7 +334,8 @@ bool PUdpUseObject::DoAction()
                             u32 Location = nAppPlace->GetExitWorldID();
                             u16 Entity = nAppPlace->GetExitWorldEntity();
                             u8 SewerLevel = 0;
-                            if((tFurnitureModel->GetFunctionType() == 20) && nAppPlace->GetSewerLevel())
+                            //if(((tFurnitureModel->GetFunctionType() == 20) && nAppPlace->GetSewerLevel()) || (tFurnitureModel->GetFunctionType() == 29))
+                            if((tFurnitureModel->GetFunctionType() == 20) || (tFurnitureModel->GetFunctionType() == 29))
                             {
                               SewerLevel = 1;
                             }
@@ -342,9 +343,11 @@ bool PUdpUseObject::DoAction()
                             tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, mRawItemID); //mRawItemID
                             nClient->getUDPConn()->SendMessage(tmpMsg);
                             if (gDevDebug)
+                            {
                                 Console->Print("%s Client[%d] Char[%s] moving to zone %d, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
-                            if (gDevDebug)
                                 Console->Print("%s Location=%d Entity=%d Level=%d", Console->ColorText(GREEN, BLACK, "[Debug]"), Location, Entity, SewerLevel);
+                                Console->Print("%s Function: %d - Sewer level in appplaces.def for this point: %d", Console->ColorText(GREEN, BLACK, "[Debug]"), tFurnitureModel->GetFunctionType(), nAppPlace->GetSewerLevel());
+                            }
                         }
                         else
                         {
