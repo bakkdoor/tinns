@@ -1460,7 +1460,7 @@ Added decoder/udp_entityposreq.cpp decoder/udp_entityposreq.h
 connection-udp.cpp: Fixed a bug causing server to crash when resending packet.
 
 ====================
-Hammag; 09.06.2007 00:10 GMT+2
+Hammag; 19.06.2007 21:10 GMT+2
 ----------
 [rev. 85]
 
@@ -1472,3 +1472,14 @@ Fixed zoning for "2nd type zoning" in sewers/caves and UG exits.
 There might remain some wrong zoning points in some case, as there seem to be some duplicate
 zoning spawn location in some zone data... but the "keep last spawn location" policy seem to work ok.
 Only spawn point issue when GRing in apt should remain.
+
+====================
+Hammag; 21.06.2007 01:45 GMT+2
+----------
+[rev. 86]
+
+<General changes>
+ - bug fix
+
+[GAME]
+decoder/udp_entityposreq.cpp: fixed a bug

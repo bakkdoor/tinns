@@ -87,7 +87,7 @@ if(gDevDebug) Console->Print(GREEN, BLACK, "Client %d - Sending pos for entity %
     }
     else
     {
-      fpX = fpY = fpZ = 0;
+      pX = pY = pZ = 0;
       Console->Print("%s Client[%d] requested invalid position entity %d. Position reset.", Console->ColorText(YELLOW, BLACK, "[Notice]"), mDecodeData->mClient->GetID(), mEntityID);
     }
     
