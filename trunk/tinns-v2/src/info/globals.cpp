@@ -41,7 +41,7 @@ PConsole *Console = 0;
 PServer *Server = 0;
 PConfig *Config = 0;
 PInfoServer *InfoServer = 0;
-PAccounts *Accounts = 0;
+//PAccounts *Accounts = 0;  // To be removed
 
 bool Init()
 {
@@ -74,26 +74,26 @@ bool Init()
 	
 	Config = new PConfig();
 	if(!Config->LoadOptions(InfoConfigTemplate, "./conf/infoserver.conf"))
-	    Shutdown();
+	    return false; //Shutdown();
   if(!AdditionnalConfigChecks())
-    Shutdown();
+    return false; //Shutdown();
 
 	ServerSock = new ServerSocket();
 	Server = new PServer();
 	
 	MySQL = new PMySQL();
     if(MySQL->Connect() == false)
-	    Shutdown();
+	    return false; //Shutdown();
 
 	InfoServer = new PInfoServer();
-	Accounts = new PAccounts();
+	//Accounts = new PAccounts(); // To be removed
 
 	return true;
 }
 
 void Shutdown()
 {
-    Server->Shutdown();
+  if(Server) Server->Shutdown();
 	if(InfoServer) delete InfoServer;
 	if(MySQL) delete MySQL;
 	if(Config) delete Config;

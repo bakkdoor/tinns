@@ -36,6 +36,7 @@
 #include "furnituretemplate.h"
 #include "worlddatatemplate.h"
 #include "worlds.h"
+#include "appartements.h"
 
 
 
@@ -62,8 +63,8 @@ bool PWorld::Load(u32 nWorldID)
 
     if (nWorldID > APT_BASE_WORLD_ID)
     {
-        //int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
-        int AptTmplID = MySQL->GetAptType(nWorldID);
+        //int AptTmplID = Appartements->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+        int AptTmplID = Appartements->GetAptType(nWorldID);
         if (!AptTmplID)
         {
             Console->Print("PWorld::Load - invalid apt %d", nWorldID - APT_BASE_WORLD_ID);
@@ -517,8 +518,8 @@ bool PWorlds::IsValidWorld(u32 nWorldID)
             return true;
         else //should better do a check using a PAppartements class object to get the world template
         {
-            //int AptTmplID = MySQL->GetAptType(nWorldID - APT_BASE_WORLD_ID);
-            int AptTmplID = MySQL->GetAptType(nWorldID);
+            //int AptTmplID = Appartements->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+            int AptTmplID = Appartements->GetAptType(nWorldID);
             if (!AptTmplID)
                 return false;
 

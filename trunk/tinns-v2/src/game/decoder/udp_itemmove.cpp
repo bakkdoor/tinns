@@ -81,8 +81,8 @@ bool PUdpItemMove::DoAction()
 // 4: Current open container/trashcan/box/w.e.
 // 18:GoGuardian
 
-    if (gDevDebug)
-    {
+    //if (gDevDebug)
+    //{
         if(src_loc == 1 && dst_loc == 2)
             Console->Print("Client trying to move %d items from ground to Quickaccessbelt slot %d", itemcnt, dst_x);
         else if(src_loc == 1 && dst_loc == 3)
@@ -99,7 +99,7 @@ bool PUdpItemMove::DoAction()
             Console->Print("Client trying to move %d items from Inventory to Quickaccessbelt slot %d", itemcnt, dst_x);
         else
             Console->Print("Client trying to move %d items from LOC: %d X: %d Y: %d to LOC: %d X: %d Y: %d", itemcnt, src_loc, src_x, src_y, dst_loc, dst_x, dst_y);
-    }
+    //}
 
     if(DoneAnalyzing == true && tmpMsg != NULL) // Send message if we got one
         nClient->getUDPConn()->SendMessage(tmpMsg);

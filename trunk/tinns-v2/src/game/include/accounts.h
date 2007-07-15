@@ -102,14 +102,15 @@ class PAccount
     std::time_t mBannedUntil;
 
     bool LoadFromQuery(char* query);
+    bool DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword);
     
 	public :
 	  PAccount();
 	  PAccount(const u32 AccountId);
 	  PAccount(const char *Username);
 	  
-	  static void SetUsernameRegexFilter(const char* RegexStr);
-		static void SetPasswordRegexFilter(const char* RegexStr);
+	  static bool SetUsernameRegexFilter(const char* RegexStr);
+		static bool SetPasswordRegexFilter(const char* RegexStr);
 		static bool IsUsernameWellFormed(const char *Username);
 		static bool IsPasswordWellFormed(const char *Password);
 		
@@ -117,6 +118,7 @@ class PAccount
 		bool SetName(const std::string &Pass);
 		inline const std::string &GetName() const { return mName; }
 		bool SetPassword(const std::string &Pass);
+		bool SetPasswordEncoded(const u8* PasswordData, int PassLen, const u8 *Key);
 		inline const std::string &GetPassword() const { return mPassword; }
     bool SetLevel(int newLevel);
 		inline int GetLevel() const { return mLevel; }
@@ -125,6 +127,7 @@ class PAccount
 		inline PAccountStatus GetStatus() const { return mStatus; }
 		bool SetBannedUntilTime(std::time_t BannedUntil);
     inline bool IsBanned() const { return (mBannedUntil > std::time(NULL)); }
+    std::string GetBannedTime() const;
 
 		bool Authenticate(const u8* PasswordData, int PassLen, const u8 *Key);
 		bool Authenticate(const char *Password) const;

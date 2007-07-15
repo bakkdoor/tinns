@@ -33,30 +33,53 @@
         REASON: - initial release by unknown
         MODIFIED: 23 Dec 2005 Namikon
         REASON: - Added GPL
+        MODIFIED: 07 Jan 2006 Namikon
+        REASON: - Started to replace XML with CFG files        
+        MODIFIED: 05 Aug 2006 Hammag
+        REASON: - changed LoadOptions() implementation.
+                  This should make addition of new options really easier, as well as config syntax error tracking
+                  See config.h for info
         MODIFIED: 27 Aug 2006 Hammag
         REASON: - Modified LoadOption() methode to make it generic,
-                    with a config template and the config file as arguments
-                - Removed method LoadOptions1() that wasn't implemented        
-        
+                    with an options template and the config file as arguments
+                - Removed the ConfigTemplate that was used for gameserver only.
+                - Removed old unused code
+        MODIFIED: 25 Jun 2007 Hammag
+        REASON: - Added include support
+                - Now use PCRE RegEx instead of "strtok", enabling rentrance and removing
+                  potential issues.
+                - Added GetOption & GetOptionInt with const std::string parameter
 */
 
 #ifndef CONFIG_H
 #define CONFIG_H
+
+#include "regex++.h"
 
 class PConfig
 {
 	private :
 		typedef std::map<std::string, std::string> OptionsMap;
 		OptionsMap mOptions;
+		RegEx* mOptValRegEx;
+		RegEx* mIncludeRegEx;
+		
+		bool LoadOptions(const char* nConfigTemplate[][2], const char* nConfigFile, int nDepth);
+		
 	public :
 		PConfig();
 		~PConfig();
 
-		bool LoadOptions(const char* nConfigTemplate[][2], const char* nConfigFile);
-		const std::string &GetOption(const char *Name) const;
-		int GetOptionInt(const char *Name) const;
+		inline bool LoadOptions(const char* nConfigTemplate[][2], const char* nConfigFile)
+		  { return LoadOptions(nConfigTemplate, nConfigFile, 0); }
+		inline const std::string &GetOption(const char *Name) const { return GetOption((std::string) Name); }
+		const std::string &GetOption(const std::string Name) const;
+		int GetOptionInt(const char *Name) const { return GetOptionInt((std::string) Name); }
+		int GetOptionInt(const std::string Name) const;
 };
 
+// Max nested includes
+#define CONFIG_MAXDEPTH 4
 
 /*
   The list of valid config options is now set in the array ConfigTemplate

@@ -35,15 +35,19 @@ class PChar;
 
 class PAppartements
 {
-      private:
-        
-      public:
-        PAppartements();
-        //~PAppartements();
-        
-        u32 CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 nFactionID);
-        void DeleteCharAppartements(u32 nCharID);
-        bool CanFreelyEnter(PChar* nChar, u32 nLocation);
+  private:
+    
+  public:
+    PAppartements();
+    //~PAppartements();
+    
+    u32 CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 nFactionID);
+    void DeleteCharAppartements(u32 nCharID);
+    bool CanFreelyEnter(PChar* nChar, u32 nLocation);
+    int GetAptID(unsigned int AptLoc, const u8 *pass);
+    int GetAptType(int AptID);
+    int GetAptOwner(int loc);
+    int GetAptLocation(int loc);
 };
 
 #endif

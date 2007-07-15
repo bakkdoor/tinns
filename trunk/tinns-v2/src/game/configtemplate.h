@@ -73,16 +73,18 @@ const char* GameConfigTemplate[][2] = {
   {"broadcast_new_hidestaff", "0"},
   {"max_cash", "20000000"},
   {"require_validation", "0"},
-
+  {"minlevel", "0"},
+  {"username_filter", "^[a-z][\\w\\-]{2,14}$"},
+  {"password_filter", "^[[:graph:]]{3,15}$"},
+  {"charname_filter", "^[a-z]+([\\-\\ ]?[a-z]+){0,2}$"},
+  {"clanname_filter", "^[a-z][\\w\\-\\ ]{2,14}$"},
+  
 // For futur use:
 //  {"max_chars_per_account", "4"},
 //  {"multiple_logins_per_account", "0"}, // 0=nobody, 1=gm+ only, 2=everybody
 //  {"multiple_ingames_per_account", "0"}, // 0=nobody, 1=gm+ only, 2=everybody (needs multiple logins ...)
 
 //  {"local_chat_range", "500"},
-
-//  {"account_name_regex", "[a-zA-Z0-9_-]{3-20}"}, // for account name sytnax control. Better be used in infoserver
-//  {"char_name_regex", "[a-zA-Z]\\([ -][a-zA-Z]\\)?\\([ -][a-zA-Z]\\)?"}, // for character name sytnax control. Default is "human-like" names in 3 parts max
 
   {"", ""} // do not change this line (end mark)
 };

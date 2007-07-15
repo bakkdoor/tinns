@@ -19,247 +19,443 @@
 	02110-1301, USA.
 */
 
+
+
+/*
+	accounts.cpp
+
+	MODIFIED: 25 Dec 2005 Namikon
+	REASON: - Added GPL
+	MODIFIED: 26 Dec 2005 Namikon
+	REASON: - Added SQLLoad to PAccounts. First step in adding MySQL support to accounts
+	MODIFIED: 01 Jan 2006 Namikon
+	REASON: - Changed FmtTxt() to sprintf(). It does... uhm, the same :D
+	MODIFIED: 06 Jan 2006 Namikon
+	REASON: - Removed the old XML loading functions, and changed the SQL ones to work with the Global Neopolis/TinNS Database
+          - Added SetBannedStatus(<unix timestamp>) to ban/unban an account (use SetBannedStatus(0) to unban a player)
+	MODIFIED: 03 Oct 2006 Hammag
+	REASON: - Fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
+
+	MODIFIED: 27 May 2007 Hammag
+	REASON: - Full changes for on-demand account access (no more memory-resident account data)
+*/
+
+
+/*
+NOTE ABOUT ACCESS LEVELS IN THE MYSQL DATABASE:
+a_priv:
+0 = unregistered user
+1 = Registered user
+30 = volunteer
+50 = GM
+100 = Admin
+
+a_status:
+0 = Offline
+1 = Online
+2 = Banned
+*/
 #include "main.h"
+#include "accounts.h"
 
-PAccounts::PAccounts()
+/** Static members **/
+RegEx* PAccount::mUsernameRegexFilter = NULL;
+RegEx* PAccount::mPasswordRegexFilter = NULL;
+
+bool PAccount::SetUsernameRegexFilter(const char* RegexStr)
 {
+  if(mUsernameRegexFilter)
+  {
+    delete mUsernameRegexFilter;
+    mUsernameRegexFilter = NULL;
+  }
+  
+  if(RegexStr)
+  {
+    try {
+      mUsernameRegexFilter = new RegEx(RegexStr, PCRE_CASELESS);
+    }
+    catch (...) {
+      return false;
+    }
+  }
+  return true;
 }
 
-PAccounts::~PAccounts()
+bool PAccount::SetPasswordRegexFilter(const char* RegexStr)
 {
+  if(mPasswordRegexFilter)
+  {
+    delete mPasswordRegexFilter;
+    mPasswordRegexFilter = NULL;
+  }
+  
+  if(RegexStr)
+  {
+    try {
+      mPasswordRegexFilter = new RegEx(RegexStr, PCRE_CASELESS);
+    }
+    catch (...) {
+      return false;
+    }
+  }
+  return true;
 }
 
-int PAccounts::Authenticate(const char *User, const u8 *Password, int PassLen, const u8 *Key, int *accID)
+bool PAccount::IsUsernameWellFormed(const char *Username)
 {
-    char query[1024];
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-    int RetVal = -99;
-    // ReturnValue values:
-    // 0: No error
-    // -1: Wrong/Unknown username
-    // -2: Wrong Password
-    // -3: Malformed Auth Data. Please relog
-    // -4: Database error, contact admin
-    // -5: No such account, Account created. Please relog
-    // -6: Could not create autoaccount, PW too short
-    // -7: Could not create autoaccount, Name too short
-    // -8: Could not create autoaccount, PW and Name too short
-    // -9: Duplicate entry for Username! Contact Admin
-    // -10: User is banned
-    // -11: Insufficient access rights
-    // -12: Account is not yet activated (accesslevel = 0)
-    // -99: General fault. Contact admin
+  if(mUsernameRegexFilter)
+  {
+    return mUsernameRegexFilter->Search(Username);
+  }
+  else
+    return true;
+}
+
+bool PAccount::IsPasswordWellFormed(const char *Password)
+{
+  if(mPasswordRegexFilter)
+  {
+    return mPasswordRegexFilter->Search(Password);
+  }
+  else
+    return true;
+}
+
+/** Instance members **/	    
+PAccount::PAccount()
+{
+	mID = 0;
+	mLevel = PAL_BANNED;
+  mStatus = PAS_OFFLINE;
+  mBannedUntil = 0;
+}
+
+PAccount::PAccount(const u32 AccountId)
+{
+  char query[256];
+  mID = 0;
+  sprintf(query, "SELECT * FROM accounts WHERE a_id = %d LIMIT 1;", AccountId);
+  LoadFromQuery(query);
+}
+
+PAccount::PAccount(const char *Username)
+{
+  char query[256];
+  mID = 0;
+  if(IsUsernameWellFormed(Username)) {
+    sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s' LIMIT 1;", Username);
+    LoadFromQuery(query);
+  }
+}
+
+bool PAccount::LoadFromQuery(char* query)
+{
+  MYSQL_ROW row = 0;
+  MYSQL_RES *result = 0;
+  
+  bool FinalResult = false;
+
+  //result = MySQL->InfoResQuery(query);
+  result = MySQL->ResQuery(query);
+  if(result == NULL)
+  {
+      Console->Print(RED, BLACK, "Failed to load AccountData from SQL");
+      //MySQL->ShowInfoSQLError();
+      MySQL->ShowSQLError();
+      return false;
+  }
+
+  if((row = mysql_fetch_row(result)))
+  {
+    mID = std::atoi(row[a_id]);
+    mName = row[a_username];
+    mPassword = row[a_password];
+
+    mBannedUntil = std::atoi(row[a_bandate]);
+    if(mBannedUntil > std::time(NULL))
+    {
+      mStatus = PAS_BANNED;
+      mLevel = PAL_BANNED;
+    }
+    else
+    {
+      mStatus = PAS_OFFLINE;
+      mLevel = std::atoi(row[a_priv]);
+    }
+
+    FinalResult = true;
+  }
+  else
+  {
+Console->Print(YELLOW, BLACK, "Failed to load AccountData from SQL; Nothing to load...");
+  }
+  
+  //MySQL->FreeInfoSQLResult(result);
+  MySQL->FreeSQLResult(result);
+  return FinalResult;
+}
+
+bool PAccount::SetName(const std::string &Username)
+{
+  if(IsUsernameWellFormed(Username.c_str()))
+  {
+    mName = Username;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool PAccount::SetPassword(const std::string &Password)
+{
+  if(IsPasswordWellFormed(Password.c_str()))
+  {
+    mPassword = Password;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool PAccount::SetPasswordEncoded(const u8* PasswordData, int PassLen, const u8* Key)
+{
 	char Pass[128];
-	Pass[0]=0;
-	if(PassLen < 128)
+	
+	if(DecodePassword(PasswordData, PassLen, Key, Pass))
+  {
+		return SetPassword((std::string)Pass);
+	}
+	else
+	{
+		Console->Print(RED, BLACK, "[Error]: user %s : malformed auth data (size=%d)", mName.c_str(), PassLen);
+		return false;
+	}
+}
+
+bool PAccount::SetLevel(int newLevel)
+{
+  if((newLevel >= PAL_BANNED) && (newLevel <= PAL_ADMIN))
+  {
+    mLevel = newLevel;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+std::string PAccount::GetLevelString() const
+{
+	switch(mLevel)
+	{
+		case PAL_BANNED : return "banned";
+		case PAL_UNREGPLAYER : return "unregplayer";
+		case PAL_REGPLAYER : return "regplayer";
+		case PAL_VOLUNTEER : return "volunteer";
+		case PAL_GM : return "gm";
+		case PAL_ADMIN : return "admin";
+	}
+
+	return "custom";
+}
+
+bool PAccount::SetStatus(PAccountStatus Status)
+{
+  mStatus = Status;
+  return true;
+}
+
+bool PAccount::SetBannedUntilTime(std::time_t BannedUntil)
+{
+  if ((BannedUntil == 0) || (BannedUntil > std::time(NULL)))
+  {
+    mBannedUntil = BannedUntil;
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool PAccount::DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword)
+{
+  ClearPassword[0] = 0;
+  
+  if(PassLen < 128)
 	{
 		if(Key[0]>7) // TODO: >7 correct?
 		{
 			for(int i=0; i<PassLen; i+=2)
-				Pass[i>>1] = (char)(((Password[i]&0xf0)>>4)
-					+((Password[i+1]&0x0f)<<4)-Key[0]);
-			Pass[PassLen>>1]=0;
+				ClearPassword[i>>1] = (char)(((PasswordData[i]&0xf0)>>4)
+					+((PasswordData[i+1]&0x0f)<<4)-Key[0]);
+			ClearPassword[PassLen>>1]=0;
 		}
 		else
 		{
 			for(int i=0; i<PassLen; i++)
-				Pass[i] = (char)(Password[i]-Key[0]);
-			Pass[PassLen]=0;
+				ClearPassword[i] = (char)(PasswordData[i]-Key[0]);
+			ClearPassword[PassLen]=0;
 		}
+		return true;
+	}
+	else
+	  return false;
+}
 
-    sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s'", User);
-    result = MySQL->ResQuery(query);
-    if(result == NULL) // SQL Error
-    {
-        Console->Print("MySQL Error, unable to execute Query %s", query);
-        MySQL->ShowSQLError();
-        return -4;
-    }
-    if(mysql_num_rows(result) == 0) // No Account found. Autoaccount or Donothing
-    {
-        if(Config->GetOptionInt("auto_accounts")) // Autoaccount
-        {
-            if(std::strlen(User) < 3 && std::strlen(Pass) < 4)
-            {
-                RetVal = -8;
-            }
-            else if(std::strlen(User) < 3)
-            {
-                RetVal = -7;
-            }
-            else if(std::strlen(Pass) < 4)
-            {
-                RetVal = -6;
-            }
-            else
-            {
-              sprintf(query, "INSERT INTO accounts (a_username, a_password, a_priv, a_status) VALUES ('%s', '%s', %d, %d)", User, Pass, 0, 0);
-              if(MySQL->Query(query))
-              {
-                  Console->Print("MySQL Error, unable to execute Query %s", query);
-                  MySQL->ShowSQLError();
-                  RetVal = -4;
-              }
-              else
-              {
-                  RetVal = -5;
-              }
-            }
-        }
-        else
-        {
-            RetVal = -1;
-        }
-    }
-    else if(mysql_num_rows(result) > 1) // Duplicate userentry error
-    {
-        RetVal = -9;
-    }
-    else if(mysql_num_rows(result) == 1) // Found account
-    {
-        row = mysql_fetch_row(result);
-        if(strcmp(row[a_password], Pass) != 0) // Username correct, password wrong
-        {
-            RetVal = -2;
-        }
-        else // Username & Password correct
-        {
-            if(atoi(row[a_status]) == 2)
-            {
-                RetVal = -10;
-            }
-            else
-            {
-                if(Config->GetOptionInt("minlevel") > atoi(row[a_priv])) // insufficient access rights
-                {
-                    RetVal = -11;
-                }
-                else if(Config->GetOptionInt("require_validation") == 1 && atoi(row[a_priv]) == 0)
-                {
-                    RetVal = -12;
-                }
-                else
-                {
-                    *accID = atoi(row[a_id]);
-                    RetVal = 0;
-                }
-            }
-        }
-    }
-    MySQL->FreeSQLResult(result);
+bool PAccount::Authenticate(const u8* PasswordData, int PassLen, const u8 *Key)
+{
+	char Pass[128];
+	
+	if(DecodePassword(PasswordData, PassLen, Key, Pass))
+  {
+		return Authenticate(Pass);
 	}
 	else
 	{
-		Console->Print("Accounts: malformed auth data");
-        RetVal = -3;
+		Console->Print(RED, BLACK, "[Error]: user %s : malformed auth data (size=%d)", mName.c_str(), PassLen);
+		return false;
 	}
-
-	return RetVal;
 }
 
-int PAccounts::GetAccesslevel(int AccountID)
+bool PAccount::Authenticate(const char *Password) const
 {
-    MYSQL_RES *result = 0;
-    MYSQL_ROW row = 0;
-    char query[255];
-
-    sprintf(query, "SELECT a_priv FROM accounts WHERE a_id = %d LIMIT 1", AccountID);
-    result = MySQL->ResQuery(query);
-    if(result == NULL)
-        return -100;
-
-    row = mysql_fetch_row(result);
-    MySQL->FreeSQLResult(result);
-    return atoi(row[0]);
+	if(mID == 0) // User doesn't exist and that hasn't been checked !
+	{
+	  Console->Print(RED, BLACK, "[Bug]: user %s doesn't exist and was not checked by code !", mName.c_str());
+	  return false;
+	}
+	
+	return(mPassword == Password);
 }
 
-std::string PAccounts::GetBannedTime(const char *username)
+bool PAccount::Create()
 {
-    MYSQL_RES *result;
-    MYSQL_ROW row = 0;
-    char query[255];
-    long banneduntil = 0;
-    unsigned long timediff = 0;
+  if(Save(true)) {
+    //mID = MySQL->GetLastInfoInsertId();
+    mID = MySQL->GetLastInsertId();
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 
-    sprintf(query, "SELECT a_bandate FROM accounts WHERE a_username = '%s' LIMIT 1", username);
-    result = MySQL->ResQuery(query);
+bool PAccount::Save(bool CreateMode)
+{
+  std::string Query;
+  Query = CreateMode ? "INSERT INTO" : "UPDATE";
+  Query += "accounts SET ";
+  Query += Ssprintf(" accounts SET a_username='%s', a_password = '%s'", mName.c_str(), mPassword.c_str());
+  Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
+  if(!CreateMode )
+  {
+    Query += Ssprintf(" WHERE a_id = %d LIMIT 1", mID);
+  }
+
+  //if(MySQL->InfoQuery(Query.c_str()))
+  if(MySQL->Query(Query.c_str()))
+  {
+      Console->Print(RED, BLACK, "[Error] Failed to %s account %s (id %d)", CreateMode ? "create" : "update", mName.c_str(), mID);
+      //MySQL->ShowInfoSQLError();
+      MySQL->ShowSQLError();
+      return false;
+  }
+  return true;
+}
+
+/*
+u32 PAccount::GetCharIdBySlot(const u32 SlotId)
+{
+  char query[256];
+  u32 CharId = 0;
+  
+  MYSQL_ROW row = 0;
+  MYSQL_RES *result = 0;
+  
+  sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d AND c_slot = %d LIMIT 1;", mID, SlotId);  
+
+  result = MySQL->GameResQuery(query);
+  if(result == NULL)
+  {
+      Console->Print(RED, BLACK, "Failed to load CharacterData from SQL");
+      MySQL->ShowGameSQLError();
+      return 0;
+  }
+
+  if((row = mysql_fetch_row(result)))
+  {
+    CharId = std::atoi(row[0]);
+  }
+  
+  MySQL->FreeGameSQLResult(result);
+  
+  // Temporary workaround to cope with DB where c_slot is not set ///
+  if(!CharId)
+  {
+    sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d ORDER BY c_slot ASC, c_id ASC LIMIT %d, 1;", mID, SlotId);
+  
+    result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
-        Console->Print("%s cant get bandate from sql!", Console->ColorText(RED, BLACK, "Error"));
-        MySQL->ShowSQLError();
-        return "DBERROR";
+        Console->Print(RED, BLACK, "Failed to load CharacterData from SQL");
+        MySQL->ShowGameSQLError();
+        return 0;
     }
-    banneduntil = atol(row[0]);
-    MySQL->FreeSQLResult(result);
-
-    if(banneduntil < time(NULL))
+    
+    if((row = mysql_fetch_row(result)))
     {
-        return "0 more seconds. Please relog";
+      CharId = std::atoi(row[0]);
     }
-    timediff = banneduntil - time(NULL);
+    
+    MySQL->FreeGameSQLResult(result);    
+  }
+  // End of workaround ///
+  
+  return CharId;
+}
+*/
 
-    unsigned long tmpcalc = 0;
-    int counter = 0;
-    int type = 0;
+std::string PAccount::GetBannedTime() const
+{
+  const char* unit[5] = {"seconds", "minutes", "hours", "days", "weeks"};
+  
+  std::time_t timediff = mBannedUntil - std::time(NULL);
+  if(timediff <=0)
+  {
+    return "0 more seconds. Please relog";
+  }
 
-    tmpcalc = timediff;
+  long counter;
+  int type;
 
-    if(timediff > 604800)       // weeks
-    {
-        while(tmpcalc > 604800)
-        {
-            tmpcalc -= 604800;
-            counter++;
-        }
-        type = 5;
-    }
-    else if(timediff > 86400)   // days
-    {
-        while(tmpcalc > 86400)
-        {
-            tmpcalc -= 86400;
-            counter++;
-        }
-        type = 4;
-    }
-    else if(timediff > 3600)    // hours
-    {
-        while(tmpcalc > 3600)
-        {
-            tmpcalc -= 3600;
-            counter++;
-        }
-        type = 3;
-    }
-    else if(timediff > 60)      // Minutes
-    {
-        while(tmpcalc > 60)
-        {
-            tmpcalc -= 60;
-            counter++;
-        }
-        type = 2;
-    }
-    else if(timediff < 61)      // Seconds
-    {
-        counter = timediff;
-        type = 1;
-    }
+  if(timediff > 86400)   // days
+  {
+    counter = timediff / 86400;
+    type = 3;
+  }
+  else if(timediff > 3600)    // hours
+  {
+    counter = timediff / 3600;
+    type = 2;
+  }
+  else if(timediff > 60)      // Minutes
+  {
+    counter  = timediff / 60;
+    type = 1;
+  }
+  else      // Seconds
+  {
+    counter = timediff;
+    type = 0;
+  }
 
-    char buffer[15];
-    sprintf(buffer, "%d", counter);
-    std::string rbuf(buffer);
-
-    if(type == 1)
-        return rbuf + " more seconds";
-    else if(type == 2)
-        return rbuf + " more minutes";
-    else if(type == 3)
-        return rbuf + " more hours";
-    else if(type == 4)
-        return rbuf + " more days";
-    else if(type == 5)
-        return rbuf + " more weeks";
-    return "ERROR";
+  return Ssprintf("%d more %s", counter, unit[type]);
 }

@@ -1483,3 +1483,40 @@ Hammag; 21.06.2007 01:45 GMT+2
 
 [GAME]
 decoder/udp_entityposreq.cpp: fixed a bug
+
+====================
+Hammag; 15.07.2007 19:00 GMT+2
+----------
+[rev. 87]
+
+<General changes>
+ - infoserver & gameserver now make use of common config/global.conf file (as least in
+    default conf/*.conf files)
+
+[LIBS]
+config.* :
+  - conf/*.conf file can now use the 'include' directive to include other config files
+  - Now use PCRE RegEx instead of "strtok", enabling rentrance and removing potential issues.
+  - Added GetOption & GetOptionInt with const std::string parameter
+  - Fixed a bug in EOF detection in the main file reading loop
+
+conf/global.conf : Moved/added following directives in conf/global.conf
+    minlevel = 0
+    username_filter = ^[a-z][\w\-]{2-14}$
+    password_filter = ^[[:graph:]]{3-15}$
+
+[INFO]
+  Added username and password syntax filter in config (username_filter and password_filter
+    directives, see above). Filters are case insensivite PCRE RegEx.
+  Note: theses filter need to protect at least against sql injection.
+  accounts.* : built common code with gamseserver (Not put in common tinns lib atm
+    because of DB access and log issues)
+    
+[GAME]
+  Added charname and clanname (for future use) syntax filter in config/gameserver.conf :
+    charname_filter = ^[a-z]+([\-\ ]?[a-z]+){0-2}$
+    clanname_filter = ^[a-z][\w\-\ ]{2-14}$
+  Filters are case insensivite PCRE RegEx.
+  Note: theses filter need to protect at least against sql injection.
+
+  sql.*, appartments.* : Moved Apt request methods from PMySQL to PAppartements

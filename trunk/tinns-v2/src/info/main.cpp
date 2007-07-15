@@ -41,8 +41,11 @@ int main()
     signal(SIGINT, signal_handler);
 
 	if(!Init())
-		while(1)
-			sleep(1);
+	{
+	  if(Console)
+	    Console->Print("%s Aborting startup.", Console->ColorText(RED, BLACK, "[Fatal]"));
+		Shutdown(); // exits with 0 ...
+  }
 
 	InfoServer->Start();
 	Console->Print("Infoserver is now %s. Waiting for clients...", Console->ColorText(GREEN, BLACK, "Online"));
@@ -54,9 +57,6 @@ int main()
 		InfoServer->Update();
 		MySQL->Update(); // MySQL keepalive
 		Console->Update();
-		// in release mode, we just relinquish our remaining time slice to other processes
-		//SleepEx(0, true);
-		//sched_yield();
 	}
 
 	return 0;

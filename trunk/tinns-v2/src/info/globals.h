@@ -48,7 +48,7 @@ extern class PConfig *Config;
 extern class PInfoServer *InfoServer;
 
 extern class PMySQL* MySQL;
-extern class PAccounts* Accounts;
+//extern class PAccounts* Accounts;  // To be removed
 
 extern const char ServerVersion[];
 extern const char SVNRevision[];

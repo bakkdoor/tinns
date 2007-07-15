@@ -35,9 +35,10 @@ enum PClientConnection
 class PClient
 {
 	private :
-        ConnectionTCP* m_TCPConnection;
+    ConnectionTCP* m_TCPConnection;
 		int mIndex;
 		int mConnection;
+		u32 mAccountID;
 
 	protected :
 	public :
@@ -52,6 +53,9 @@ class PClient
 		inline int GetConnection() const { return mConnection; }
 		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
 
+    inline void setAccountID(u32 nAccountID) { mAccountID = nAccountID; }
+    inline u32 getAccountID() { return mAccountID; }
+    
 		void InfoDisconnect();
 
 		void Update();

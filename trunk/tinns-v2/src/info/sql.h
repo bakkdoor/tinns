@@ -50,5 +50,6 @@ class PMySQL
         MYSQL_RES *ResQuery(const char *query);
         void ShowSQLError();
         void FreeSQLResult(MYSQL_RES *res);
+        inline u32 GetLastInsertId() { return mysql_insert_id(dbHandle); };
 };
 #endif

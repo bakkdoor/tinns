@@ -42,10 +42,11 @@ const char* InfoConfigTemplate[][2] = {
   {"isc_method", "1"},
   {"isc_infoserverport", "9991"},
   {"isc_connect_pw", "changeme"},
+  {"username_filter", "^[a-z][\\w\\-]{2,14}$"},
+  {"password_filter", "^[[:graph:]]{3,15}$"},
+  
 // For futur use:
 //  {"max_chars_per_account", "4"},
-//  {"account_name_regex", "[a-zA-Z0-9_-]{3-20}"}, // for account name sytnax control. Better be used in infoserver
-//  {"char_name_regex", "[a-zA-Z]\\([ -][a-zA-Z]\\)?\\([ -][a-zA-Z]\\)?"}, // for character name sytnax control. Default is "human-like" names in 3 parts max
 
   {"", ""} // do not change this line (end mark)
 };

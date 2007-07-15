@@ -42,7 +42,7 @@ LINK_TINNSLIBS := tinns
 
 # local dir Linker Flags (for final executable linking)
 #EXTRA_LINKFLAGS := -lpthread -lm -lcrypt -L"/usr/lib/mysql" -lmysqlclient -lz
-EXTRA_LINKFLAGS := -L"/usr/lib/mysql" -lmysqlclient -lz
+EXTRA_LINKFLAGS := -L"/usr/lib/mysql" -lmysqlclient -lz -lpcre
 
 
 #####################################################

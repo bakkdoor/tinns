@@ -411,6 +411,11 @@ bool PGameServer::HandleAuthenticate(PClient *Client, PGameState *State, const u
 					Console->Print(YELLOW, BLACK, "[Info] Rejecting connection from regular user '%s', account not activated yet", UserName);
 					Failed = true;
 			}
+		  else if (Config->GetOptionInt("minlevel") > Account.GetLevel())
+			{
+					Console->Print(YELLOW, BLACK, "[Info] Rejecting connection from regular user '%s', insufficient level %d vs %d required", UserName, Account.GetLevel(), Config->GetOptionInt("minlevel"));
+					Failed = true;
+			}
 			else if (Server->GetNumClients() > Server->GetMaxClients())
 			{
 					Console->Print(YELLOW, BLACK, "[Info] Server full, refusing connection from privileged user '%s'", UserName);
@@ -622,10 +627,10 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 					}
         
         const char *Name = (char*)&Packet[30];
-        /*if (ValidString)
+        if (ValidString)
         {
-          ValidString = PChar::IsUsernameWellFormed(Name);
-        }*/
+          ValidString = PChar::IsCharnameWellFormed(Name);
+        }
          
 				if (ValidString)
 				{
@@ -638,8 +643,9 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 				if (ValidString)
 					Answer[5] = 1;	// ok
 				else
-					Answer[5] = 2;	// nope
+					Answer[5] = 2;	// 2..6 => 'char name already in use!'
 
+        // Answer[5] = 0; // => 'unknown error'
 				Socket->write(Answer, 10);
 				return (true);
 			}
@@ -707,20 +713,23 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 
 				Answer[5] = 2;	// return error if char creation fails
 
-				// check for already used char name - should not happen though
-				PChar *Char = Chars->GetChar(TempName);
-				if (!Char)
-				{
-					PAccount Acc(Client->GetAccountID());
-					PChar* nChar = new PChar();
-					
-					if(nChar->CreateNewChar(Acc.GetID(), TempName, Gender, Profession, Faction,
-					     Head, Torso, Legs, NZSNb, (const char*)&Packet[64+NameLen], Slot))
-					{
-						Answer[5] = 1;	// return success
-					}
-					delete nChar;
-				}
+        if(PChar::IsCharnameWellFormed(TempName))
+        {
+  				// check for already used char name - should not happen though
+  				PChar *Char = Chars->GetChar(TempName);
+  				if (!Char)
+  				{
+  					PAccount Acc(Client->GetAccountID());
+  					PChar* nChar = new PChar();
+  					
+  					if(nChar->CreateNewChar(Acc.GetID(), TempName, Gender, Profession, Faction,
+  					     Head, Torso, Legs, NZSNb, (const char*)&Packet[64+NameLen], Slot))
+  					{
+  						Answer[5] = 1;	// return success
+  					}
+  					delete nChar;
+  				}
+  			}
 
 				Socket->write(Answer, 10);
 				return (true);

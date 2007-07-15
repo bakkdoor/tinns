@@ -68,6 +68,7 @@
 #include "main.h"
 
 #include "worlds.h"
+#include "appartements.h"
 
 void SendZone(PClient *Client, u32 loc)
 {
@@ -107,7 +108,7 @@ void SendZone(PClient *Client, u32 loc)
 
 /*	if(loc > 100000)
 	{
-	    u32 i = MySQL->GetAptType(Char->GetLocation()); // changed from NeoX
+	    u32 i = Appartements->GetAptType(Char->GetLocation()); // changed from NeoX
 	    const PDefAppartement* nDestApp = GameDefs->GetAppartementDef(i);
 	    if (nDestApp)
 	    {

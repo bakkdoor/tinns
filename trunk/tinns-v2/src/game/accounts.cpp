@@ -62,30 +62,44 @@ a_status:
 RegEx* PAccount::mUsernameRegexFilter = NULL;
 RegEx* PAccount::mPasswordRegexFilter = NULL;
 
-void PAccount::SetUsernameRegexFilter(const char* RegexStr)
+bool PAccount::SetUsernameRegexFilter(const char* RegexStr)
 {
   if(mUsernameRegexFilter)
   {
     delete mUsernameRegexFilter;
+    mUsernameRegexFilter = NULL;
   }
   
   if(RegexStr)
   {
-    mUsernameRegexFilter = new RegEx(RegexStr);
+    try {
+      mUsernameRegexFilter = new RegEx(RegexStr, PCRE_CASELESS);
+    }
+    catch (...) {
+      return false;
+    }
   }
+  return true;
 }
 
-void PAccount::SetPasswordRegexFilter(const char* RegexStr)
+bool PAccount::SetPasswordRegexFilter(const char* RegexStr)
 {
   if(mPasswordRegexFilter)
   {
     delete mPasswordRegexFilter;
+    mPasswordRegexFilter = NULL;
   }
   
   if(RegexStr)
   {
-    mPasswordRegexFilter = new RegEx(RegexStr);
-  }  
+    try {
+      mPasswordRegexFilter = new RegEx(RegexStr, PCRE_CASELESS);
+    }
+    catch (...) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool PAccount::IsUsernameWellFormed(const char *Username)
@@ -205,6 +219,21 @@ bool PAccount::SetPassword(const std::string &Password)
   }
 }
 
+bool PAccount::SetPasswordEncoded(const u8* PasswordData, int PassLen, const u8* Key)
+{
+	char Pass[128];
+	
+	if(DecodePassword(PasswordData, PassLen, Key, Pass))
+  {
+		return SetPassword((std::string)Pass);
+	}
+	else
+	{
+		Console->Print(RED, BLACK, "[Error]: user %s : malformed auth data (size=%d)", mName.c_str(), PassLen);
+		return false;
+	}
+}
+
 bool PAccount::SetLevel(int newLevel)
 {
   if((newLevel >= PAL_BANNED) && (newLevel <= PAL_ADMIN))
@@ -252,33 +281,38 @@ bool PAccount::SetBannedUntilTime(std::time_t BannedUntil)
   }
 }
 
-bool PAccount::Authenticate(const u8* PasswordData, int PassLen, const u8 *Key)
+bool PAccount::DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword)
 {
-	char Pass[128];
-	Pass[0]=0;
-	
-	if(mID == 0) // User doesn't exist and that hasn't been checked !
-	{
-	  Console->Print(RED, BLACK, "[Bug]: user %s doesn't exist and was not checked by code !", mName.c_str());
-	  return false;
-	}
-	
-	if(PassLen < 128)
+  ClearPassword[0] = 0;
+  
+  if(PassLen < 128)
 	{
 		if(Key[0]>7) // TODO: >7 correct?
 		{
 			for(int i=0; i<PassLen; i+=2)
-				Pass[i>>1] = (char)(((PasswordData[i]&0xf0)>>4)
+				ClearPassword[i>>1] = (char)(((PasswordData[i]&0xf0)>>4)
 					+((PasswordData[i+1]&0x0f)<<4)-Key[0]);
-			Pass[PassLen>>1]=0;
-		} else
+			ClearPassword[PassLen>>1]=0;
+		}
+		else
 		{
 			for(int i=0; i<PassLen; i++)
-				Pass[i] = (char)(PasswordData[i]-Key[0]);
-			Pass[PassLen]=0;
+				ClearPassword[i] = (char)(PasswordData[i]-Key[0]);
+			ClearPassword[PassLen]=0;
 		}
+		return true;
+	}
+	else
+	  return false;
+}
 
-		return(mPassword == Pass);
+bool PAccount::Authenticate(const u8* PasswordData, int PassLen, const u8 *Key)
+{
+	char Pass[128];
+	
+	if(DecodePassword(PasswordData, PassLen, Key, Pass))
+  {
+		return Authenticate(Pass);
 	}
 	else
 	{
@@ -379,4 +413,42 @@ u32 PAccount::GetCharIdBySlot(const u32 SlotId)
   /*** End of workaround ***/
   
   return CharId;
+}
+
+
+std::string PAccount::GetBannedTime() const
+{
+  const char* unit[5] = {"seconds", "minutes", "hours", "days", "weeks"};
+  
+  std::time_t timediff = mBannedUntil - std::time(NULL);
+  if(timediff <=0)
+  {
+    return "0 more seconds. Please relog";
+  }
+
+  long counter;
+  int type;
+
+  if(timediff > 86400)   // days
+  {
+    counter = timediff / 86400;
+    type = 3;
+  }
+  else if(timediff > 3600)    // hours
+  {
+    counter = timediff / 3600;
+    type = 2;
+  }
+  else if(timediff > 60)      // Minutes
+  {
+    counter  = timediff / 60;
+    type = 1;
+  }
+  else      // Seconds
+  {
+    counter = timediff;
+    type = 0;
+  }
+
+  return Ssprintf("%d more %s", counter, unit[type]);
 }

@@ -251,6 +251,7 @@ bool PInfoServer::HandleHandshake(PInfoState *State, const u8 *Packet, int Packe
 
 bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u8 *Packet, int PacketSize)
 {
+  int returnval = 0;
     // ReturnValue values:
     // 0: No error
     // -1: Wrong/Unknown username
@@ -267,29 +268,100 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
     // -12: Account is not yet activated (accesslevel = 0)
     // -99: General fault. Contact admin
 	ConnectionTCP *Socket = Client->getTCPConn();
+	PAccount* currentAccount = NULL;
+	
 	if(PacketSize > 20 && *(u16*)&Packet[3]==0x8084)
 	{
 		const u8 *Key = &Packet[5];			// password key
 		u16 ULen = *(u16*)&Packet[16];		// username length
 		u16 PLen = *(u16*)&Packet[18];		// password length
-		char *UserID = (char*)&Packet[20];	// account name
+		char *UserName = (char*)&Packet[20];	// account name
 		const u8 *PW = &Packet[20+ULen];	// encoded password
 
-        int accountID;
-        int returnval = Accounts->Authenticate(UserID, PW, PLen, Key, &accountID);
+    if(UserName[ULen-1]) // Check that string is well terminated
+    {
+      Console->Print("Infoserver: Client [%d]: Username was not NULL-terminated !", Client->GetIndex());
+      returnval = -1;
+    }
+    else
+    {
+      currentAccount = new PAccount(UserName);
+      if(!currentAccount->GetID())
+      {
+        if(Config->GetOptionInt("auto_accounts")) // Autoaccount
+        {
+          delete currentAccount;
+          currentAccount = new PAccount();
+          
+          if(!currentAccount->SetName(UserName)) // !!! len
+          {
+              returnval = -7;
+          }
+          if(!currentAccount->SetPasswordEncoded(PW, PLen, Key))
+          {
+              returnval = returnval ? -8 : -6;
+          }
+              
+          if(!returnval)
+          {
+            if(currentAccount->Create())
+            {
+              returnval = -5;
+            }
+            else
+            {
+              returnval = -4;
+            }
+          }
+        }
+        else
+        {
+          returnval = -1;
+        }
+      }
+      else
+      {
+        if(currentAccount->Authenticate(PW, PLen, Key))
+        { // Username & Password correct
+          if(currentAccount->IsBanned())
+          {
+              returnval = -10;
+          }
+          else if(currentAccount->GetLevel() < Config->GetOptionInt("minlevel")) // insufficient access rights
+          {
+              returnval = -11;
+          }
+          else if(Config->GetOptionInt("require_validation") == 1 && currentAccount->GetLevel() == PAL_UNREGPLAYER)
+          {
+              returnval = -12;
+          }
+          else
+          {
+              Client->setAccountID(currentAccount->GetID());
+              returnval = 0;
+          }
+  
+        }
+        else
+        {
+          returnval = -2;
+        }
+      }
+    }
+    
 		bool Failed = false;
 		if(returnval == 0)
 		{
 			u8 AUTHOK[28]={0xfe, 0x19, 0x00, 0x83, 0x81, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
 							0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 							0x00, 0x00, 0x00, 0x00, 0x00 };
-			*(u32*)&AUTHOK[5] = accountID;
+			*(u32*)&AUTHOK[5] = currentAccount->GetID();
 			Socket->write(AUTHOK, 28);
 			State->mState = PInfoState::IS_SERVERLIST;
 		}
 		else
 		{
-			Console->Print("Infoserver: User '%s': authentication failed. Errorcode %d", UserID, returnval);
+			Console->Print("Infoserver: User '%s': authentication failed. Errorcode %d", UserName, returnval);
 			Failed = true;	// auth failed
 		}
 		if(Failed == true)
@@ -319,7 +391,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
 			    }
 			    case -10:
 			    {
-			        errorReason = "You are banned for " + Accounts->GetBannedTime(UserID);
+			        errorReason = "You are banned for " + currentAccount->GetBannedTime();
 			        break;
 			    }
 			    case -9:
@@ -401,69 +473,75 @@ bool PInfoServer::HandleServerList(PClient *Client, const u8 *Packet, int Packet
 
 	ConnectionTCP *Socket = Client->getTCPConn();
 
-	int aID = *(u32*)&Packet[5];
-	int accesslevel = Accounts->GetAccesslevel(aID);
+	u32 tID = *(u32*)&Packet[5];
+	PAccount* currentAccount = new PAccount(Client->getAccountID());
+	u32 aID = currentAccount->GetID();
 
-	if(accesslevel == -100)
+	if(!aID || (aID != tID))
 	{
-	    Console->Print("%s invalid userID %d", Console->ColorText(YELLOW, BLACK, "Warning:"), aID);
+	    Console->Print("%s invalid userID %d (auth with id %d)", Console->ColorText(YELLOW, BLACK, "Warning:"), tID, aID);
+	    delete currentAccount;
 	    return false;
 	}
 
-	if(accesslevel < Config->GetOptionInt("minlevel"))
+	if(currentAccount->GetLevel() < Config->GetOptionInt("minlevel"))
 	{
 	    Console->Print("%s someone tried to bypass the login process! UserID %d", Console->ColorText(RED, BLACK, "Warning:"), aID);
+	    delete currentAccount;
 	    return false;
 	}
 
-    if(PacketSize == 31 && *(u16*)&Packet[3]==0x8284)
+  if(PacketSize == 31 && *(u16*)&Packet[3]==0x8284)
 	{
-        GSLiveCheck(); // Perform livecheck to have up-to-date data
+    GSLiveCheck(); // Perform livecheck to have up-to-date data
 
-        int len = 0;
-        int num = 0;
-        for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
-        {
-            num++;
-            len += 14 + strlen(it->second.mName);
-        }
+    int len = 0;
+    int num = 0;
+    for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
+    {
+        num++;
+        len += 14 + strlen(it->second.mName);
+    }
 
-        *(u16*)&SERVERLIST_HEAD[1] = len;
-        *(u8*)&SERVERLIST_HEAD[5] = num;
-        Socket->write(SERVERLIST_HEAD, sizeof(SERVERLIST_HEAD));
+    *(u16*)&SERVERLIST_HEAD[1] = len;
+    *(u8*)&SERVERLIST_HEAD[5] = num;
+    Socket->write(SERVERLIST_HEAD, sizeof(SERVERLIST_HEAD));
 
-        for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
-        {
+    for(ServerMap::iterator it = Serverlist.begin(); it != Serverlist.end(); it++)
+    {
             /* Prepared for future addon Servers by Accesslevel */
 //            if(accesslevel >= it->second.mMinLv)
 //            {
             /* ------------------------------------------------ */
-                *(u32*)&SERVERLIST[0] = it->second.mIp;
-                *(u16*)&SERVERLIST[4] = it->second.mPort;
-                *(u8*)&SERVERLIST[8] = strlen(it->second.mName) + 1;
-                *(u16*)&SERVERLIST[9] = it->second.mPlayers;
-                if(it->second.mOnline == true)
-                {
-                    Console->Print("Sending server name: %s ip: %s player: %d port: %d online: yes", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
-                    *(u16*)&SERVERLIST[11] = 1;
-                }
-                else if(it->second.mOnline == false)
-                {
-                    Console->Print("Sending server name: %s ip: %s player: %d port: %d online: no", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
-                    *(u16*)&SERVERLIST[11] = 0;
-                }
-                Socket->write(SERVERLIST, sizeof(SERVERLIST));
-                Socket->write(it->second.mName, strlen(it->second.mName));
-                Socket->write(SERVERLIST_FOOTER, sizeof(SERVERLIST_FOOTER));
+      *(u32*)&SERVERLIST[0] = it->second.mIp;
+      *(u16*)&SERVERLIST[4] = it->second.mPort;
+      *(u8*)&SERVERLIST[8] = strlen(it->second.mName) + 1;
+      *(u16*)&SERVERLIST[9] = it->second.mPlayers;
+      if(it->second.mOnline == true)
+      {
+          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: yes", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
+          *(u16*)&SERVERLIST[11] = 1;
+      }
+      else if(it->second.mOnline == false)
+      {
+          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: no", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
+          *(u16*)&SERVERLIST[11] = 0;
+      }
+      Socket->write(SERVERLIST, sizeof(SERVERLIST));
+      Socket->write(it->second.mName, strlen(it->second.mName));
+      Socket->write(SERVERLIST_FOOTER, sizeof(SERVERLIST_FOOTER));
             /* Prepared for future addon Servers by Accesslevel */
 //            }
             /* ------------------------------------------------ */
-        }
-	} else
+    }
+	}
+	else
 	{
 		Console->Print(RED, BLACK, "Infoserver protocol error (IS_SERVERLIST): invalid packet [%04x]", *(u16*)&Packet[3]);
+		delete currentAccount;
 		return false;
 	}
+	delete currentAccount;
 	return true;
 }
 

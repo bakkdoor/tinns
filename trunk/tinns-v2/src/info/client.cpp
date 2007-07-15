@@ -25,6 +25,7 @@ PClient::PClient(int Index)
 {
 	mIndex = Index;
 	mConnection = PCC_NONE;
+	mAccountID = 0;
 }
 
 PClient::~PClient()
@@ -45,6 +46,7 @@ void PClient::InfoDisconnect()
 
 	//mConnection &= ~PCC_INFO;
 	mConnection = PCC_NONE;
+	mAccountID = 0;
 }
 
 void PClient::Update()

@@ -50,6 +50,8 @@
         MODIFIED: 12 Oct 2006 Hammag                
         REASON: - Added Update() method
                 - added mKeepaliveDelay and mLastKeepaliveSent members
+        MODIFIED: 25 Jun 2007 Hammag
+        REASON: - Moved all Appartements related methods to PAppartements class
                 
         TODO: take all non-pure SQL DB access stuff out of this class        
 */
@@ -96,13 +98,9 @@ class PMySQL
         int GameQuery(const char *query);
         MYSQL_RES *GameResQuery(const char *query);
 
-        int GetWorldItemType(unsigned short ID, int Location);
+        /*int GetWorldItemType(unsigned short ID, int Location);
         int GetWorldItemOption(unsigned short ID, int Location, int option);
-        int GetWorldDoorType(unsigned int ID, int Location);
-        int GetAptID(unsigned int AptLoc, const u8 *pass);
-        int GetAptType(int AptID);
-        int GetAptOwner(int loc);
-        int GetAptLocation(int loc);
+        int GetWorldDoorType(unsigned int ID, int Location);*/
         
         void ShowInfoSQLError();
         void ShowGameSQLError();

@@ -31,47 +31,45 @@ It involves modification of:
     appartment in/out rather than hardcoded info (e.g. zoning.cpp) and manually built database.
  - [DONE] make use of world .dat files and worldmodels.def to manage item use rather than
     a manually built database.
-    
-Other current work:
- - dynamic loading/unloading of chars, non mem-resident account info
+ - [DONE] dynamic loading/unloading of chars, non mem-resident account info
 
-==> revoir GR zoning/BuildZoning1Msg: arg Unknown value ?
+Notes
 ----------------
-        REASON: - Added command @skin to play with skins :-P
-                  Usage:  @skin #<chardef idx>
-                                  for use with the index id from characters.def
-                      or  @skin <model>|-|# [<head>[ <torso>[ <legs>]]]
-                                  <model> is the model id found after the model name in characters.def
-                                  # resets to real char skin
-                                  - means current skin
-                                  incrementaly optional <head>, <torso> and <legs> are values 0-9
-                      As a side effect, just doing @skin - will display you current skin infos (and change to the same ...)
+command @skin to play with skins
+    Usage:  @skin #<chardef idx>
+                    for use with the index id from characters.def
+        or  @skin <model>|-|# [<head>[ <torso>[ <legs>]]]
+                    <model> is the model id found after the model name in characters.def
+                    # resets to real char skin
+                    - means current skin
+                    incrementaly optional <head>, <torso> and <legs> are values 0-9
+        As a side effect, just doing @skin - will display you current skin infos (and change to the same ...)
 
-        MODIFIED: 9 Sep Hammag
-        REASON: - Added command @effect to play with skins effect :-P
-                  Usage:  @effect <effect> [<density>]
-                              with <effect> = 0 to 17 and <density> = 0 (max density) to 255 (min density)
-                              <density> is meaningfull for some of the effects only
-                  Note: you won't see the effect on yourself. Only other chars will see it ...
-                  Effects found:
-                  0 = no effect
-                  1 = poison smoke
-                  2 = electricity
-                  3 = deflector (instant white flash)
-                  4 = heal bubbles
-                  5 = be a light in the darkness !!!
-                  6 = flames
-                  7 = stun particles
-                  8 = group heal
-                  9 = group deflector (?)
-                  10= damage boost
-                  11= group damage boost
-                  12= shelter (instant yellow flash)
-                  13= group deflector (?)
-                  14= stealth
-                  15= anti poison aura
-                  16= I don't remember this one: swarming yellow & blue bubbles
-                  17= true sight
-        REASON: - Added command @speed to play with speed
-                  Usage:  @speed <newspeed> | #
-                              with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"
+command @effect to play with skins effect
+    Usage:  @effect <effect> [<density>]
+                with <effect> = 0 to 17 and <density> = 0 (max density) to 255 (min density)
+                <density> is meaningfull for some of the effects only
+    Note: you won't see the effect on yourself. Only other chars will see it ...
+    Effects found:
+    0 = no effect
+    1 = poison smoke
+    2 = electricity
+    3 = deflector (instant white flash)
+    4 = heal bubbles
+    5 = be a light in the darkness !!!
+    6 = flames
+    7 = stun particles
+    8 = group heal
+    9 = group deflector (?)
+    10= damage boost
+    11= group damage boost
+    12= shelter (instant yellow flash)
+    13= group deflector (?)
+    14= stealth
+    15= anti poison aura
+    16= I don't remember this one: swarming yellow & blue bubbles
+    17= true sight
+
+command @speed to play with speed
+    Usage:  @speed <newspeed> | #
+                with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"

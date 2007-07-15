@@ -54,7 +54,8 @@
                 - Modified Apt & Item info methods as they should work, but it doesn't match the DB
                   So commented out some changes
                   DB shouln't be used anymore for that soon anyway
-
+        MODIFIED: 25 Jun 2007 Hammag
+        REASON: - Moved all Appartements related methods to PAppartements class
 
 */
 #include "main.h"
@@ -302,6 +303,7 @@ void PMySQL::FreeGameSQLResult(MYSQL_RES *res)
         Console->Print("PMySQL::FreeGameSQLResult: Nothing to free...");
 }
 // ----------------------------------------------------
+/*
 int PMySQL::GetWorldItemType(unsigned short ID, int Location)
 {
     char query[2048];
@@ -347,12 +349,12 @@ int PMySQL::GetWorldItemType(unsigned short ID, int Location)
             return ret_val;
         }
     }
-/*    else
-    {
-        FreeGameSQLResult(result);
-        return -1;
-    }
-*/
+//    else
+//  {
+//      FreeGameSQLResult(result);
+//      return -1;
+//  }
+//
     return -1;
 }
 
@@ -405,17 +407,17 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
             return ret_val;
         }
     }
-/*
-    else
-    {
-        FreeGameSQLResult(result);
-        return -1;
-    }
-*/
+//
+//  else
+//  {
+//      FreeGameSQLResult(result);
+//      return -1;
+//  }
+
     return -1;
 }
 
-int PMySQL::GetWorldDoorType(unsigned int ID, int Location) /* To be removed */
+int PMySQL::GetWorldDoorType(unsigned int ID, int Location) // To be removed
 {
     char query[2048];
     MYSQL_RES *result;
@@ -461,147 +463,12 @@ Console->Print(RED, BLACK, "PMySQL::GetWorldDoorType: DATABASE MUST NOT BE USED 
             return ret_val;
         }
     }
-/*
-    else
-    {
-        FreeGameSQLResult(result);
-        return -1;
-    }
-*/
+//
+//    else
+//    {
+//        FreeGameSQLResult(result);
+//        return -1;
+//    }
+//
     return -1;
-}
-
-int PMySQL::GetAptID(unsigned int AptLoc, const u8 *pass)
-{
-    int type;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-    char query[255];
-
-    if(!strcmp((const char*)pass, "Exit"))
-        return 1;
-
-    sprintf(query, "SELECT apt_id FROM apartments WHERE apt_location = %i AND apt_password = \"%s\"", AptLoc, pass);
-    result = GameResQuery(query);
-
-    if(!result)
-    {
-        Console->Print("%s Cannot get AppartmentID; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowGameSQLError();
-        return 0;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        FreeGameSQLResult(result);
-        return 0;
-    }
-    else
-    {
-        row = mysql_fetch_row(result);
-        type = std::atoi(row[0]);
-        FreeGameSQLResult(result);
-    }
-
-    return (type + 100000);
-}
-
-int PMySQL::GetAptType(int AptID)
-{
-    int type;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-    char query[255];
-
-    sprintf(query, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - 100000);
-    result = GameResQuery(query);
-
-    if(!result)
-    {
-        Console->Print("%s Cannot get AppartmentType; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowGameSQLError();
-        return 0;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        FreeGameSQLResult(result);
-        return 0;
-    }
-    else
-    {
-        row = mysql_fetch_row(result);
-        type = std::atoi(row[0]);
-        FreeGameSQLResult(result);
-    }
-
-    return type;
-}
-
-int PMySQL::GetAptOwner(int loc)
-{
-    int owner;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-    char query[255];
-
-    sprintf (query, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - 100000);
-
-    result = GameResQuery(query);
-    if(!result)
-    {
-        Console->Print("%s Cannot get AppartmentOwner; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowGameSQLError();
-        return 0;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        FreeGameSQLResult(result);
-        return 0;
-    }
-    else
-    {
-        row = mysql_fetch_row(result);
-        owner = std::atoi(row[0]);
-        FreeGameSQLResult(result);
-    }
-
-    return owner;
-}
-
-int PMySQL::GetAptLocation(int loc)
-{
-    int Location;
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-    char query[255];
-
-    if(loc > 100000)
-        loc = loc - 100000;
-
-    sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
-
-//Console->Print("Q: %s", query);
-    result = GameResQuery(query);
-    if(!result)
-    {
-        Console->Print("%s Cannot get AppartmentLocation; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"));
-        ShowGameSQLError();
-        return 0;
-    }
-
-    if(mysql_num_rows(result) == 0)
-    {
-        FreeGameSQLResult(result);
-        return 0;
-    }
-    else
-    {
-        row = mysql_fetch_row(result);
-        Location = std::atoi(row[0]);
-        FreeGameSQLResult(result);
-    }
-
-    return Location;
-}
+}*/

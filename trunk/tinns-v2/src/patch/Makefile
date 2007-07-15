@@ -42,7 +42,7 @@ LINK_TINNSLIBS := tinns
 
 # local dir Linker Flags (for final executable linking)
 #EXTRA_LINKFLAGS := -lrt -lpthread -lz -lm -lcrypt
-EXTRA_LINKFLAGS := -lz 
+EXTRA_LINKFLAGS := -lz -lpcre
 
 
 #####################################################

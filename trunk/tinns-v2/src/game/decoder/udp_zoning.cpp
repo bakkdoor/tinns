@@ -34,6 +34,7 @@
 #include "udp_zoning.h"
 
 #include "udp_sync.h"
+#include "appartements.h"
 
 /**** PUdpZoning1 ****/
 
@@ -262,7 +263,7 @@ bool PUdpAppartmentAccess::DoAction()
 if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);
   if ((Location > 100000) && (!strcmp ("Exit", mPassword)))
   {
-    AppLoc = MySQL->GetAptLocation(Location);
+    AppLoc = Appartements->GetAptLocation(Location);
     const PDefAppPlace* nAppPlace = (AppLoc ? GameDefs->GetAppPlaceDef(AppLoc) : 0);
     if(nAppPlace)
     {
@@ -278,7 +279,7 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
   }
   else
   {
-    u32 Location = MySQL->GetAptID(mAppartmentPlace, (u8*)mPassword);
+    u32 Location = Appartements->GetAptID(mAppartmentPlace, (u8*)mPassword);
     if (Location > 1)
     {
       tmpMsg = MsgBuilder->BuildAptLiftUseMsg(nClient, Location, 1);

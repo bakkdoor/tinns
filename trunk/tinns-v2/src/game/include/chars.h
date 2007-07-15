@@ -58,10 +58,15 @@
 #include "inventory.h"
 #include "buddylist.h"
 #include "genreplist.h"
+#include "regex++.h"
 
 class PChar
 {
 	private :
+    // static members
+	  static RegEx* mCharnameRegexFilter;
+	  
+	  // instance members
 		u32 mID;
 		u32 mAccount;
 		u8 mSlot;
@@ -176,6 +181,9 @@ class PChar
 		PChar();
 		~PChar();
 
+    static bool SetCharnameRegexFilter(const char* RegexStr);
+    static bool IsCharnameWellFormed(const char *Username);
+    
     PSkillHandler *Skill;
     PCharCoordinates Coords;
 

@@ -73,8 +73,11 @@ int main()
 
 
 	if(!InitTinNS())
-		while(1)
-			sleep(1);
+	{
+	  if(Console)
+	    Console->Print("%s Aborting startup.", Console->ColorText(RED, BLACK, "[Fatal]"));
+		Shutdown(); // exits with 0 ...
+  }
 
 	//RemoteConsole->Start();
 	GameServer->Start();

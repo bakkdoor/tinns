@@ -120,7 +120,9 @@ enum
     c_faction,
     c_slot
 };
-        
+
+RegEx* PChar::mCharnameRegexFilter = NULL;
+       
 PChar::PChar()
 {
 	mID = 0;
@@ -179,6 +181,36 @@ PChar::~PChar()
     delete mBuddyList;
   if (mGenrepList)
     delete mGenrepList;
+}
+
+bool PChar::SetCharnameRegexFilter(const char* RegexStr)
+{
+  if(mCharnameRegexFilter)
+  {
+    delete mCharnameRegexFilter;
+    mCharnameRegexFilter = NULL;
+  }
+  
+  if(RegexStr)
+  {
+    try {
+      mCharnameRegexFilter = new RegEx(RegexStr, PCRE_CASELESS);
+    }
+    catch (...) {
+      return false;
+    }
+  }
+  return true; 
+}
+
+bool PChar::IsCharnameWellFormed(const char *Charname)
+{
+  if(mCharnameRegexFilter)
+  {
+    return mCharnameRegexFilter->Search(Charname);
+  }
+  else
+    return true;
 }
 
 void PChar::SetProfession(u32 Profession)

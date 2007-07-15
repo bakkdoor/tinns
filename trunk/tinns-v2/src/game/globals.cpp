@@ -121,11 +121,11 @@ bool InitTinNS()
 
     Config = new PConfig();
     if(!Config->LoadOptions(GameConfigTemplate, "./conf/gameserver.conf"))
-        Shutdown();
+        return false; //Shutdown();
 
     CmdAccess = new PConfig();
     if(!CmdAccess->LoadOptions(CommandsTemplate, "./conf/commands.conf"))
-        Shutdown();
+        return false; //Shutdown();
 
     gDevDebug = Config->GetOptionInt("dev_debug");
     std::string MyName = Config->GetOption("server_name");
@@ -137,7 +137,7 @@ bool InitTinNS()
 
     MySQL = new PMySQL();
     if(MySQL->Connect() == false)
-        Shutdown();
+        return false; //Shutdown();
 
     Filesystem = new PFileSystem();
 
@@ -151,8 +151,24 @@ bool InitTinNS()
     NPCManager = new PNPCManager();
     Appartements = new PAppartements;
 
+    if (!PAccount::SetUsernameRegexFilter(Config->GetOption("username_filter").c_str()))
+    {
+      Console->Print("%s Could not creat username_filter PCRE '%s'", Console->ColorText(RED, BLACK, "[Error]"), Config->GetOption("username_filter").c_str());
+      return false;
+    }
+    if(!PAccount::SetPasswordRegexFilter(Config->GetOption("password_filter").c_str()))
+    {
+      Console->Print("%s Could not creat password_filter PCRE '%s'", Console->ColorText(RED, BLACK, "[Error]"), Config->GetOption("password_filter").c_str());
+      return false;
+    }
+    
+    if (!PChar::SetCharnameRegexFilter(Config->GetOption("charname_filter").c_str()))
+    {
+      Console->Print("%s Could not creat charname_filter PCRE '%s'", Console->ColorText(RED, BLACK, "[Error]"), Config->GetOption("charname_filter").c_str());
+      return false;
+    }
     Chars = new PChars();
-
+       
     ServerSock = new ServerSocket();
     Server = new PServer();
     GameServer = new PGameServer();

@@ -33,6 +33,8 @@
 #include "main.h"
 #include "msgbuilder.h"
 
+#include "appartements.h"
+
 PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
 {
     PChar *nChar = nClient->GetChar();
@@ -1328,7 +1330,7 @@ PMessage* PMsgBuilder::BuildCharAptLocInfoMsg (PClient* nClient)
     nClient->IncreaseUDP_ID();
 
     int BaseAppId = nClient->GetChar()->GetBaseApartment();
-    u32 AptLocation = (u32)MySQL->GetAptLocation(BaseAppId);
+    u32 AptLocation = (u32)Appartements->GetAptLocation(BaseAppId);
 
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)nClient->GetUDP_ID();

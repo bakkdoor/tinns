@@ -61,6 +61,7 @@
 //    Match(0) returns the match of the complete regular expression.
 //    Match(1) returns $1, etc.
 //
+// See man pcre & man pcrepattern for more info
 
 #ifndef _REGEX_H
 #define _REGEX_H
