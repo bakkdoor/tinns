@@ -50,7 +50,7 @@ PUdpMsgAnalyser* PUdpItemSlotUse::Analyse()
 
 bool PUdpItemSlotUse::DoAction()
 {
-    PClient* nClient = mDecodeData->mClient;
+/*    PClient* nClient = mDecodeData->mClient;
     PChar* tChar = nClient->GetChar();
     u8 SlotNumber = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
 
@@ -116,7 +116,7 @@ bool PUdpItemSlotUse::DoAction()
     tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4(nClient, ItemVal1);
     nClient->getUDPConn()->SendMessage(tmpMsg);
     tmpMsg = NULL;
-
+*/
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

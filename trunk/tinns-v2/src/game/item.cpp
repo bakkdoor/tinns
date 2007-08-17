@@ -30,38 +30,42 @@
 
 #include "main.h"
 
+#include "item.h"
+#include "gamedefs.h"
+#include "def_items.h"
+
 PItem::PItem(u32 ItemID, u8 nStackSize, u8 CurDur, u8 MaxDur, u8 Dmg, u8 Freq, u8 Hand, u8 Rng)
 {
-  const PDefItems *def = GameDefs->GetItemsDef(ItemID);
-  if (def) {
+  mDefItem = GameDefs->GetItemsDef(ItemID);
+  if (mDefItem) {
     mItemID = ItemID;
-    mStackable = def->IsStackable();
-    mStackSize = nStackSize;
+    mStackable = mDefItem->IsStackable();
+    mStackSize = mStackable ? nStackSize : 1;
     
-    //mType = def->GetType();
-    //mValue1 = def->GetValue1();
-    //mValue2 = def->GetValue2();
-    //mValue3 = def->GetValue3();
-    mSizeX = def->GetSizeX();
-    mSizeY = def->GetSizeY();	
-    mWeight = def->GetWeight();
-    //mFillWeight = def->GetFillWeight();
-    //mQualifier = def->GetQualifier();
-    //mItemGroupID = def->GetItemGroupID();	
-    //mBasePrice = def->GetBasePrice();
-    //mTechlevel = def->GetTechlevel();
-    //mItemflags = def->GetItemflags();
+    //mType = mDefItem->GetType();
+    //mValue1 = mDefItem->GetValue1();
+    //mValue2 = mDefItem->GetValue2();
+    //mValue3 = mDefItem->GetValue3();
+    //mSizeX = mDefItem->GetSizeX();
+    //mSizeY = mDefItem->GetSizeY();	
+    //mWeight = mDefItem->GetWeight();
+    //mFillWeight = mDefItem->GetFillWeight();
+    //mQualifier = mDefItem->GetQualifier();
+    //mItemGroupID = mDefItem->GetItemGroupID();	
+    //mBasePrice = mDefItem->GetBasePrice();
+    //mTechlevel = mDefItem->GetTechlevel();
+    //mItemflags = mDefItem->GetItemflags();
 
-    if (!mStackable) // only non-stackable items can have quality stats
-    {
-      mStackSize = 1;
-      Quality.CurDuration = CurDur;
-      Quality.MaxDuration = MaxDur;
-      Quality.Damages = Dmg;
-      Quality.Frequency = Freq;
-      Quality.Handling = Hand;
-      Quality.Range = Rng;
-    }
+    //if (!mStackable) // only non-stackable items can have quality stats (?)
+    //{
+    //  mStackSize = 1;
+      mCurDuration = CurDur;
+      mMaxDuration = MaxDur;
+      mDamages = Dmg;
+      mFrequency = Freq;
+      mHandling = Hand;
+      mRange = Rng;
+    //}
   }
   else
   {

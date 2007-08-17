@@ -33,53 +33,100 @@
 #define ITEM_H
 
 #define MAX_ITEMSTACK_SIZE 250
-
+        
 class PItem
 {
-      private:
-        u32 mItemID;
-        bool mStackable;
-        u8 mStackSize;
-        
-        //int mType;
-        //int mValue1;
-        //int mValue2;
-        //int mValue3;
-        u8 mSizeX;
-        u8 mSizeY;	
-        float mWeight;
-        //float mFillWeight;
-        //int mQualifier;
-        //int mItemGroupID;	
-        //int mBasePrice;
-        //int mTechlevel;
-        //int mItemflags;
+  friend class PContainerEntry;
+  friend class PMsgBuilder;
 
-        struct PItemQuality {
-          u8 CurDuration;
-          u8 MaxDuration;
-          u8 Damages;
-          u8 Frequency;
-          u8 Handling;
-          u8 Range;
-        };
-        
-      public:
-        PItem(u32 ItemID, u8 nStackSize = 1, u8 CurDur = 0, u8 MaxDur = 0, u8 Dmg = 0, u8 Freq = 0, u8 Hand = 0, u8 Rng = 0);
-        //~PItem();
-        
-        PItemQuality Quality;
-        
-        inline u32 GetItemID() {return mItemID; }
-        inline bool const IsStackable() { return mStackable; }
-        inline u8 GetStackSize() { return mStackSize; }
-        u8 AddToStack(u8 ItemNb); // return the nb of added items
-        u8 TakeFromStack(u8 ItemNb); // return the nb of retreived items
-        inline u8 const GetSizeX() { return mSizeX; }
-        inline u8 const GetSizeY() { return mSizeY; }
-        inline float const GetWeight() { return mWeight; }
-        inline float const GetStackWeight() { return mWeight * mStackSize; }
+  private:
+    u32 mItemID;
+    const PDefItems* mDefItem;
+    
+    bool mStackable;
+    u8 mStackSize;
+    
+    u32 mLoadedAmmoId;
+    u8 mLoadedAmmoNb;
+
+    u8 mPropertiesFlags;
+    
+    u8 mCurDuration;
+    u8 mMaxDuration;
+    u8 mDamages;
+    u8 mFrequency;
+    u8 mHandling;
+    u8 mRange;
+    
+    u8 mUsedSlots;
+    u8 mMaxSlots;
+    u8 mSlot[5];
+    u8 mModificators;
+    
+    u32 mConstructorId;
+    
+  public:
+    PItem(u32 ItemID, u8 nStackSize = 1, u8 CurDur = 0, u8 MaxDur = 0, u8 Dmg = 0, u8 Freq = 0, u8 Hand = 0, u8 Rng = 0);
+    //~PItem();
+    
+    inline u32 GetItemID() {return mItemID; }
+    
+    inline int const GetType() { return mDefItem->GetType(); }
+    inline u8 const GetItemflags() { return mDefItem->GetItemflags(); }
+    
+    inline u8 const GetSizeX() { return mDefItem->GetSizeX(); }
+    inline u8 const GetSizeY() { return mDefItem->GetSizeY(); }
+    inline float const GetWeight() { return mStackSize * mDefItem->GetWeight(); }
+    inline float const GetSingleUnitWeight() { return mDefItem->GetWeight(); }
+    inline float const GetFillWeight() { return mDefItem->GetFillWeight(); }
+    inline u32 const GetBasePrice() { return mDefItem->GetBasePrice(); }
+    inline u16 const GetTechlevel() { return mDefItem->GetTechlevel(); }
+    inline int const GetValue1() { return mDefItem->GetValue1(); }
+    inline int const GetValue2() { return mDefItem->GetValue2(); }
+    inline int const GetValue3() { return mDefItem->GetValue3(); }
+    inline int const GetQualifier() { return mDefItem->GetQualifier(); }        
+    
+    inline bool const IsStackable() { return mDefItem->IsStackable(); }
+    inline u8 GetStackSize() { return mStackSize; }
+    u8 AddToStack(u8 ItemNb); // return the nb of added items
+    u8 TakeFromStack(u8 ItemNb); // return the nb of retreived items        
+
+    //mItemGroupID = def->GetItemGroupID();
+    
+    //mBasePrice = def->GetBasePrice();
+    //mTechlevel = def->GetTechlevel();
+    //mItemflags = def->GetItemflags();
 
 };
 
+/*
+mType:
+ITEMTYPE_WEAPON  1
+ITEMTYPE_AMMO  2
+ITEMTYPE_HEALTH  3
+ITEMTYPE_IMPLANT 4
+ITEMTYPE_DRUG  5
+ITEMTYPE_MOD  6
+ITEMTYPE_GFXMOD  7
+ITEMTYPE_BLUEPRINT 8
+ITEMTYPE_ARMOR  9
+ITEMTYPE_PSIMOD  10
+ITEMTYPE_PSIMODREADY 11
+ITEMTYPE_REPAIR  12
+ITEMTYPE_RECYCLER 13
+ITEMTYPE_DATACUBE 14																		
+
+// gfxmodflags: moegliche weapon enhancements werte addieren 																						
+1 : flashlight weapon enhancement	
+2 : scope weapon enhancement
+4 : silencer weapon enhancement
+8 : laserpointer weapon enhancement
+
+// itemflags:
+1 : researchable
+2 : no drop
+4 : no max repair decay
+8 : for ammos  / can reload weapons ?
+
+*/
 #endif

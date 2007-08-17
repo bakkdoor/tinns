@@ -396,7 +396,7 @@ void PChar::SetBaseInventory()
 if (gDevDebug) Console->Print(GREEN, BLACK, "Adding item %d to base inventory", BaseItemID);
       PItem* NewItem = new PItem(BaseItemID);
       if (NewItem->GetItemID())
-        mInventory.PutItem(NewItem);
+        mInventory.AddItem(NewItem);
       else
         Console->Print(RED, BLACK, "Invalid item ID !");
     }
@@ -420,7 +420,7 @@ bool PChar::SQLLoad(int CharID) {
         MySQL->ShowGameSQLError();
         return false;
     }
-    while((row = mysql_fetch_row(result)))
+    if((row = mysql_fetch_row(result)))
     {
         SetID(CharID);
         SetName(row[c_name]);
@@ -557,8 +557,8 @@ bool PChar::SQLLoad(int CharID) {
         // ---------------------------------------------
         // Inventory
         // ---------------------------------------------
-        mInventory.SQLLoad(mID);
-        // + Belt, Implants(&Armor), Gogo, GR list, Chats settings & friendlist
+        mInventory.SetCharId(mID);
+        mInventory.SQLLoad();
 
         // temp value forcing, not get/saved from DB atm
         mSoullight = 10;
@@ -572,13 +572,14 @@ bool PChar::SQLLoad(int CharID) {
         {
           Console->Print(RED, BLACK, "Char ID %d : Can't load buddy list", mID);
         }
-
+        //to add: Chats settings
+        
         mGenrepList = new PGenrepList(mID);
         if (!mGenrepList->SQLLoad())
         {
           Console->Print(RED, BLACK, "Char ID %d : Can't load genrep list", mID);
         }
-
+        
     }
     MySQL->FreeGameSQLResult(result);
 
@@ -671,7 +672,8 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
     mBuddyList = new PBuddyList(mID);
     mGenrepList = new PGenrepList(mID);
     mStartApt = mPrimaryApt = Appartements->CreateBaseAppartement(mID, mName, mFaction);
-
+    mInventory.SetCharId(mID);
+    
 	  if (mStartApt && SQLSave())
 	  {
       return true;
@@ -805,10 +807,10 @@ bool PChar::SQLSave()
         return false;
     }
 
-    if (! mInventory.SQLSave(mID))
+    if (! mInventory.SQLSave())
       return false;
 
-    // + Belt, Implants(&Armor), Gogo, GRs,
+    // GRs,
     // Chats settings (?), directs & buddies, GR list
 
     mDirtyFlag = false;
@@ -847,7 +849,7 @@ void PChar::SetOnlineStatus(bool IsOnline)
     return;
 }
 
-void PChar::FillinCharDetails(u8 *Packet)
+/* void PChar::FillinCharDetails(u8 *Packet)
 {
     //const PDefCharKind *def = GameDefs->GetCharKindDef(GetType());
     const PDefCharKind *def = GameDefs->GetCharKindDef(GetProfession());
@@ -990,7 +992,7 @@ void PChar::FillinCharDetails(u8 *Packet)
     Packet[219] = (u8)Skill->GetSKPCost(SK_PSR);
     Packet[220] = (u8)Skill->GetSubSkill(SK_WPW);
     Packet[221] = (u8)Skill->GetSKPCost(SK_WPW);
-}
+}*/
 
 u8 PChar::GetMainRank() {
    u16 total;

@@ -174,7 +174,7 @@ class PChar
     void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
     void SetBaseInventory();
 
-    void FillinCharDetails(u8 *Packet);
+    //void FillinCharDetails(u8 *Packet);
     bool SQLCreate();
 
 	public :

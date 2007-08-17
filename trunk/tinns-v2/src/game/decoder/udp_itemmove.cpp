@@ -50,7 +50,7 @@ PUdpMsgAnalyser* PUdpItemMove::Analyse()
 
 bool PUdpItemMove::DoAction()
 {
-    PMessage* tmpMsg = NULL;
+/*    PMessage* tmpMsg = NULL;
     bool DoneAnalyzing = false; // Make sure only ONE action is performed here
     PClient* nClient = mDecodeData->mClient;
     PChar* tChar = nClient->GetChar();
@@ -103,7 +103,7 @@ bool PUdpItemMove::DoAction()
 
     if(DoneAnalyzing == true && tmpMsg != NULL) // Send message if we got one
         nClient->getUDPConn()->SendMessage(tmpMsg);
-
+*/
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

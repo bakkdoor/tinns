@@ -58,7 +58,7 @@ class PDefItems
     int mStackable;
     float mFillWeight;
     int mQualifier;
-    // int mGfxmods; // used IG ?
+    int mGfxMods;
     int mItemGroupID;	
     int mTextDescID;
     int mBasePrice;
@@ -84,6 +84,7 @@ class PDefItems
     inline const bool IsStackable() const { return (mStackable == 1); }
     inline const float GetFillWeight() const { return mFillWeight; }
     inline const int GetQualifier() const { return mQualifier; }
+    inline const int GetGfxMods() const { return mGfxMods; }
     inline const int GetItemGroupID() const { return mItemGroupID; }	
     inline const int GetTextDescID() const { return mTextDescID; }
     inline const int GetBasePrice() const { return mBasePrice; }

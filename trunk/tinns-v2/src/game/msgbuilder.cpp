@@ -34,6 +34,9 @@
 #include "msgbuilder.h"
 
 #include "appartements.h"
+#include "item.h"
+#include "container.h"
+
 
 PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
 {
@@ -687,19 +690,23 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     // ---- Section 5 ----
     *BaselineMsg << (u8)0x05; // section id
 
+    PMessage* ContentList = BuildContainerContentList(nChar->GetInventory()->mBackpack, INV_LOC_BACKPACK);
+    SectionMsg << *ContentList;
+ContentList->Dump();
+    delete ContentList;
+
     //SectionMsg << (u16)0x00;
+/*
+    SectionMsg << (u16)0x0001; // Backpack items nb  // section content at offset 3
 
-    SectionMsg << (u16)0x01; // Backpack items nb  // section content at offset 3
-
-    SectionMsg << (u16)0x07; // data size of item
+    SectionMsg << (u16)0x0006; // data size of item
     SectionMsg << (u8)0x00; // Spare on inventory
-    SectionMsg << (u8)0x00; // pos X
+    SectionMsg << (u8)0x02; // pos X
     SectionMsg << (u8)0x00; // pos Y
     SectionMsg << (u16)0x0051; // item id (torch)
     SectionMsg << (u8)0x00;  // type
-    SectionMsg << (u8)0x01; // Qty
-
-    /*
+*/
+/*
      //
      //Section 5
      //
@@ -740,7 +747,12 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     // ---- Section 6 ----
     *BaselineMsg << (u8)0x06; // section id
 
-    SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
+    ContentList = BuildContainerContentList(nChar->GetInventory()->mWorn, INV_LOC_WORN);
+    SectionMsg << *ContentList;
+ContentList->Dump();
+    delete ContentList;
+    
+/*    SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
 
     // THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== BEGIN
     SectionMsg << (u16)0x06;     // Size of item
@@ -748,13 +760,55 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     SectionMsg << (u16)0x0051;   // ItemID: 81, Flashlight
     SectionMsg << (u8)0x01;      // Datatype
     SectionMsg << (u8)0x00;      // Data
+*/
 
+/****
+SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
+
+// THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== BEGIN
+SectionMsg << (u16)0x001b;     // Size of item
+SectionMsg << (u8)0x00;     // Location: Quickbelt slot 0
+SectionMsg << (u8)0x00; // nop (Y)
+SectionMsg << (u16)0x0003;   // ItemID: 3, assault riffle
+SectionMsg << (u8)(0x01|0x02|0x10|0x40);      // Datatype
+
+//SectionMsg << (u8)0x01; // for 0x80. Use ???
+
+SectionMsg << (u8)0x00; // Qty / remaining ammos
+
+SectionMsg << (u8)0x06; // Qual entries
+SectionMsg << (u8)0x40; // current qual
+SectionMsg << (u8)0x80; // dmg
+SectionMsg << (u8)0xc0; // freq
+SectionMsg << (u8)0xa0; // handl
+SectionMsg << (u8)0xb0; // range
+SectionMsg << (u8)0xff; // max qual <= always last
+
+SectionMsg << (u8)0x07; // addons bitflag: flashlight=1, scope, silencer, laserpointer
+
+SectionMsg << (u8)0x02; // used slots
+SectionMsg << (u8)0x05; // max slots
+SectionMsg << (u16)1526; // slots / explo ammo
+SectionMsg << (u16)21; // riffle-barrel
+SectionMsg << (u16)0x0000;
+SectionMsg << (u16)0x0000;
+SectionMsg << (u16)0x0000;
+*****/
+/*
+SectionMsg << (u16)0x06;     // Size of item
+SectionMsg << (u8)0x01;     // Location: Quickbelt slot 1
+SectionMsg << (u8)0x00; // nop (Y)
+SectionMsg << (u16)0x0023;   // ItemID: 35, Med Kit
+SectionMsg << (u8)0x01;      // Data=ammo count
+SectionMsg << (u8)0x03;      // Data
+*/
+/*
     SectionMsg << (u16)0x06;     // Size of item
     SectionMsg << (u16)0x01;     // Location: Quickbelt slot 0
     SectionMsg << (u16)0x0055;   // ItemID: 81, Flashlight
     SectionMsg << (u8)0x01;      // Datatype
     SectionMsg << (u8)0x00;      // Data
-
+    
     SectionMsg << (u16)0x06;     // Size of item
     SectionMsg << (u16)0x02;     // Location: Quickbelt slot 0
     SectionMsg << (u16)0x176F;   // ItemID: 81, Flashlight
@@ -769,10 +823,10 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     SectionMsg << (u8)0x02;       // SubDatatype02: Full itemdetails follow
     SectionMsg << (u8)0x2a;       // Current duration
     SectionMsg << (u8)0x2a;       // Max duration
-
-    nChar->GetInventory()->QB_SetSlot(0, 81); // Add Flashlight to QB slot 1
-    nChar->GetInventory()->QB_SetSlot(1, 85); // Add Flashlight to QB slot 1
-    nChar->GetInventory()->QB_SetSlot(2, 5999); // Add Flashlight to QB slot 1
+*/
+//    nChar->GetInventory()->QB_SetSlot(0, 81); // Add Flashlight to QB slot 1
+//    nChar->GetInventory()->QB_SetSlot(1, 85); // Add Flashlight to QB slot 1
+//    nChar->GetInventory()->QB_SetSlot(2, 5999); // Add Flashlight to QB slot 1
     // THIS IS A TEMP SOLUTION UNTIL WE HAVE ITEM STUFF WORKING ===== END
     /*
      StatsBuffer[len+3] = 0; //Number of items
@@ -849,16 +903,33 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     // ---- Section 0c ----
     *BaselineMsg << (u8)0x0c; // section id
 
+    ContentList = BuildContainerContentList(nChar->GetInventory()->mGogo, INV_LOC_GOGO);
+    SectionMsg << *ContentList;
+ContentList->Dump();
+    delete ContentList;
+
+/*    
     //SectionMsg << (u8)0x00;
 
-    SectionMsg << (u8)0x01; // Gogo items nb  // section content at offset 3
+    SectionMsg << (u8)0x02; // Gogo items nb  // section content at offset 3
 
-    SectionMsg << (u16)0x05; // data size of item
+    SectionMsg << (u16)0x0b; // data size of item
+    SectionMsg << (u8)0x00; // pos (X) in gogo
+    SectionMsg << (u16)0x0188; // item id (Beggar Electroshocker)
+    SectionMsg << (u8)0x02;  // Flags
+    SectionMsg << (u8)0x06;
+    SectionMsg << (u8)0x9f;
+    SectionMsg << (u8)0xff;
+    SectionMsg << (u8)0xf0;
+    SectionMsg << (u8)0xff;
+    SectionMsg << (u8)0x8f;
+    SectionMsg << (u8)0xff;
+
+    SectionMsg << (u16)0x04; // data size of item
     SectionMsg << (u8)0x00; // pos (X) in gogo
     SectionMsg << (u16)0x0c6d; // item id (bullets 8mm explosive)
-    SectionMsg << (u8)0x00;  // type
-    SectionMsg << (u8)0x04; // Qty
-
+    SectionMsg << (u8)0x00;  // Flags
+*/    
     *BaselineMsg << (u16)SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
     SectionMsg.Clear();
@@ -1823,6 +1894,152 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1)
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildContainerContentList (PContainer* nContainer, u8 nLocType)
+{
+  PMessage* tmpMsg = new PMessage(24);
+  std::vector< PContainerEntry* >* Entries = nContainer->GetEntries();
+  u16 StartPos;
+  PItem* tItem;
+  u8 Flags, Qualifier; 
+
+/*** for gogo ***
+INV_LOC_GOGO
+    SectionMsg << (u8)0x02; // Gogo items nb  // section content at offset 3
+
+    SectionMsg << (u16)0x0b; // data size of item
+    SectionMsg << (u8)0x00; // pos (X) in gogo
+    SectionMsg << (u16)0x0188; // item id (Beggar Electroshocker)
+***/
+/*** for box ***
+INV_LOC_BOX
+    *tmpMsg << (u16)0x08; // Len
+    
+    *tmpMsg << (u8)0x0a; //Item len
+    *tmpMsg << (u16)0x0188; //Beggar Electroshocker
+    *tmpMsg << (u8)0x02; // Flags
+***/  
+// INV_LOC_WORN
+// INV_LOC_BACKPACK 
+
+if(nLocType == INV_LOC_BOX)
+  *tmpMsg << (u16)0x0000;     // Total size placeholder - To be put back in packet building
+else
+  if(nLocType == INV_LOC_BACKPACK)
+    *tmpMsg << (u16)Entries->size(); // items nb
+  else
+    *tmpMsg << (u8)Entries->size(); // items nb
+  
+  for(u16 i=0; i < Entries->size(); ++i)
+  {
+    tItem = Entries->at(i)->mItem;
+    Flags = 0x00 ; // tItem->mPropertiesFlags;
+    switch(tItem->GetQualifier())
+    {
+      case 1:
+        Qualifier = 2;
+        Flags |= 0x02;
+        break;
+      case 31:
+        Qualifier = 6;
+        Flags |= 0x02;
+        break;
+      default:
+        break; 
+    }
+
+    StartPos = tmpMsg->GetNextByteOffset();
+    
+    *tmpMsg << (u8)0x00;     // Size of item placeholder
+    switch(nLocType)
+    {
+      case INV_LOC_WORN:
+        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
+        *tmpMsg << (u8)Entries->at(i)->mPosX; // X Location
+        *tmpMsg << (u8)0x00; // just nothing
+        break;
+      case INV_LOC_BACKPACK:
+        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
+        *tmpMsg << (u8)0x00; // just nothing again
+        *tmpMsg << (u8)Entries->at(i)->mPosX; // X Location
+        *tmpMsg << (u8)Entries->at(i)->mPosY; // Y Location
+        break;
+      case INV_LOC_GOGO:
+        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
+        *tmpMsg << (u8)Entries->at(i)->mPosX;
+        break;
+      case INV_LOC_BOX:
+ 
+        
+        break;      
+      default:      
+        break;
+    }
+     
+    *tmpMsg << (u16)tItem->GetItemID(); // ItemID
+    *tmpMsg << (u8)Flags; // (0x01|0x02|0x10|0x40);      // Datatype
+
+//SectionMsg << (u8)0x01; // for 0x80. Use ???
+    
+    if(Flags & 0x01)
+    {
+      *tmpMsg << (u8)0x00; // Qty / remaining ammos => use mLoadedAmmoNb
+    }
+
+    if(Flags & 0x02)
+    {
+      *tmpMsg << (u8)Qualifier; // Qual entries
+      if(Qualifier >= 2)
+      {
+        *tmpMsg << (u8)tItem->mCurDuration; // current qual
+        if(Qualifier == 6)
+        {
+          *tmpMsg << (u8)tItem->mDamages; // dmg
+          *tmpMsg << (u8)tItem->mFrequency; // freq
+          *tmpMsg << (u8)tItem->mHandling; // handl
+          *tmpMsg << (u8)tItem->mRange; // range
+        }
+        *tmpMsg << (u8)tItem->mMaxDuration; // max qual
+      }
+    }
+
+    if(Flags & 0x04)
+    {
+      *tmpMsg << (u32)tItem->mStackSize;
+    }
+
+    if(Flags & 0x10)
+    {
+      *tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
+    }
+
+//    if(Flags & 0x20)
+//    {
+//      
+//    }
+                    
+    if(Flags & 0x40)
+    {
+      *tmpMsg << (u8)tItem->mUsedSlots; // used slots
+      *tmpMsg << (u8)tItem->mMaxSlots; // max slots
+      for(u8 j = 0; j < tItem->mMaxSlots; ++j)
+        *tmpMsg << (u16)tItem->mSlot[j]; // mod in slot
+    }
+    
+//    if(Flags & 0x80)
+//    {
+//      *tmpMsg << (u8)0x01; // use ???
+//    }
+          
+    tmpMsg->U8Data(StartPos) = tmpMsg->GetNextByteOffset() - StartPos -2;
+  }
+  
+  if(nLocType == INV_LOC_BOX)
+    tmpMsg->U16Data(0) = tmpMsg->GetSize() - 2;
+  
+  delete Entries;
+  return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID)
 {
     // "Header"
@@ -1838,7 +2055,7 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     // u16  - ItemID (items.def)
     // u8   - DataType
 
-    PMessage* tmpMsg = new PMessage(24);
+    PMessage* tmpMsg = new PMessage();
     nClient->IncreaseUDP_ID();
 
     *tmpMsg << (u8)0x13;
@@ -1855,12 +2072,35 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u8)0x64; // Always the same on item containers?
     *tmpMsg << (u8)0x00; // Always the same on item containers?
     *tmpMsg << (u8)0x08; // 0x08 when container is filled, 0x00 when not? At least it works..
+
+/*    
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u8)0x00;
+    
     *tmpMsg << (u8)0x02;
     *tmpMsg << (u8)0x06;
     *tmpMsg << (u8)0x29;
+*/
 
+    *tmpMsg << (u16)0x0f; // Len
+    
+    *tmpMsg << (u8)0x0a; //Item len
+    *tmpMsg << (u16)0x0188; //Beggar Electroshocker
+    *tmpMsg << (u8)0x02; // Flags
+    *tmpMsg << (u8)0x06;
+    *tmpMsg << (u8)0x9f;
+    *tmpMsg << (u8)0xff;
+    *tmpMsg << (u8)0xf0;
+    *tmpMsg << (u8)0xff;
+    *tmpMsg << (u8)0x8f;
+    *tmpMsg << (u8)0xff;
+    
+    *tmpMsg << (u8)0x03; //Item len
+    *tmpMsg << (u16)0x016B; //Self-constructed Claw
+    *tmpMsg << (u8)0x00; // Flags
+    
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+    
     return tmpMsg;
 }
 
@@ -1936,7 +2176,7 @@ PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, 
     return tmpMsg;
 }*/
 
-/*PMessage* PMsgBuilder::BuiltSpawnObjectMsg (u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotX)
+/*PMessage* PMsgBuilder::BuildSpawnObjectMsg (u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotX)
 {
     PMessage* tmpMsg = new PMessage(29);
     *tmpMsg << (u8)0x13;

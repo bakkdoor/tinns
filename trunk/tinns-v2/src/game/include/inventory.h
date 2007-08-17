@@ -33,90 +33,71 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#define INV_WIDTH 10
+//NC containers message locations
+#define INV_LOC_GROUND 1
+#define INV_LOC_WORN 2
 #define INV_LOC_BACKPACK 3
+#define INV_LOC_BOX 4
+#define INV_LOC_NPCTRADE 5
+#define INV_LOC_GOGO 18
+//PC-Trade window = ?
 
-/* Game DB inventory::inv_loc values used by MaxxJagg:
-		1: GoGo
-		2: QB
-		3: Inventory
-		... ?
+//Inventory containers info
+#define INV_WORN_QB_START 0
+#define INV_WORN_QB_END 9
+#define INV_WORN_PROC_START 12
+#define INV_WORN_PROC_END 24
+#define INV_WORN_IMP_START 26
+#define INV_WORN_IMP_END 38
+#define INV_WORN_ARMOR_START 39
+#define INV_WORN_ARMOR_END 43
+#define INV_WORN_COLS 44
+#define INV_WORN_MAXSLOTS 44
 
-// values from item movement messages:
-	// 1 = Ground
-	// 2 = QB, Armor, Implants //0-9 QB, 12-24 Processor, 26-38 Implants, 39-43 Armor
-	// 3 = Inventory
-	// 4 = loot? or Box?
-	// 5 = NPC trading
-	// 18 = GoGo
+#define INV_BACKPACK_COLS 10
 
-		What is inventory::inv_type ?
-		No storage place in DB for constructor-character id + other (see item.h)
-*/
+#define INV_GOGO_COLS 5
+#define INV_GOGO_MAXSLOTS 50
 
-class PInventoryEntry
-{
-  private:
-    class PItem* mItem;
-    u8  mPosX;
-    u8  mPosY;
-    u32 mInvID;
-    bool mDirtyFlag;
+#define INV_CABINET_COLS 5
+#define INV_CABINET_MAXSLOTS 33
 
-    PInventoryEntry(PItem* nItem, u8 X, u8 Y, u32 nInvID = 0, bool SetDirty = true);
+// inv_loc values in database
+#define INV_DB_LOC_GOGO 1
+#define INV_DB_LOC_WORN 2
+#define INV_DB_LOC_BACKPACK 3
 
-    bool SQLSave(u32 CharID, u32 InvLoc);
-    bool SQLDelete();
-
-  friend class PInventory;
-};
+class PItem;
+class PContainer;
 
 class PInventory
 {
-   private:
-        enum {
-            i_invid = 0,
-            i_charid,
-            i_invloc,
-            i_x,
-            i_y,
-            i_itemid,
-            i_type,
-            i_qty,
-            i_curdur,
-            i_dmg,
-            i_freq,
-            i_hand,
-            i_rng,
-            i_maxdur
-        };
-
-    // the following choice of containers can (should) be improved later
-    std::multimap< u32, PInventoryEntry*> mInvContent;
-    std::vector< std::vector<bool>* > mInvSpace; //mInvSpace(1, std::vector<bool>(INV_WIDTH,0))
-    u16 mQuickAccessBelt[10]; // 10 Slots, dont think we need to do this dynamic.. do we?
-    int mRows;
-    u8 mLastInsertX;
-    u8 mLastInsertY;
-    void AddRow();
-    bool IsInvSpaceAvailable(u8 PosX, u8 PosY, u8 SizeX = 1, u8 SizeY = 1);
-    void SetInvSpaceUsed(u8 PosX, u8 PosY, u8 SizeX = 1, u8 SizeY = 1, bool Value = true);
+  private:
 
   public:
+    PContainer* mWorn; // PContainerLinearSlots
+    PContainer* mBackpack; // PContainer2DAreas
+    PContainer* mGogo; // PContainerLinearSlots
+    
+    
     PInventory();
     ~PInventory();
-    bool SQLLoad(u32 CharID);
-    bool SQLSave(u32 CharID);
-    bool PutItem(PItem *NewItem, u32 nInvID = 0, u8 nPosX = 255, u8 nPosY = 255, bool SetDirty = true);
+    
+    void SetCharId(u32 CharID);
+    bool SQLLoad();
+    bool SQLSave();
+    
+    
+    bool AddItem(PItem* NewItem, u32 nInvLoc = INV_LOC_BACKPACK, u32 nInvID = 0, u8 nPosX = 0, u8 nPosY = 0, bool SetDirty = true);
     //bool CheckItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItemByPos(u8 nPosX, u8 nPosY, u8 StackSize = 1);
     //bool MoveItem(u8 oPosX, u8 oPosY, u8 dPosX, u8 dPosY);
 
-    bool QB_IsFree(u8 nSlot);
-    void QB_SetSlot(u8 nSlot, u16 nItemID);
-    u16 QB_GetSlot(u8 nSlot);
-    void QB_Move(u8 nSlotSRC, u8 nSlotDST);
+    //bool QB_IsFree(u8 nSlot);
+    //void QB_SetSlot(u8 nSlot, u16 nItemID);
+    //u16 QB_GetSlot(u8 nSlot);
+    //void QB_Move(u8 nSlotSRC, u8 nSlotDST);
 };
 
 #endif
