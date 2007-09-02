@@ -40,103 +40,111 @@
 
 PMessage* PMsgBuilder::BuildCharHelloMsg(PClient* nClient)
 {
-    PChar *nChar = nClient->GetChar();
-    u32 nSkin, nHead, nTorso, nLegs;
-    u8 nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness;
+  PChar *nChar = nClient->GetChar();
+  u32 nSkin, nHead, nTorso, nLegs;
+  u8 nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness;
 
-    nChar->GetCurrentLook(nSkin, nHead, nTorso, nLegs);
-    nChar->GetCurrentBodyColor(nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness);
+  nChar->GetCurrentLook(nSkin, nHead, nTorso, nLegs);
+  nChar->GetCurrentBodyColor(nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness);
 
-    PMessage* tmpMsg = new PMessage(80);
+  PMessage* tmpMsg = new PMessage(80);
 
-    u16 ItemVal1 = 0;
-    u16 item_inuse = nChar->GetItemInHand();
-    if(item_inuse > 0)
-    {
-        const PDefItems *def = GameDefs->GetItemsDef(item_inuse);
-        if(def != NULL)
-            ItemVal1 = (u16)def->GetValue1();
-        else
-            Console->Print("%s Unable to get itemdata for itemID %d", Console->ColorText(RED, BLACK, "[ERROR]"), item_inuse);
-    }
+  u8 currentActiveSlot = nChar->GetQuickBeltActiveSlot();
+  u16 ItemVal1 = 0;
+  switch(currentActiveSlot)
+  {
+    case INV_WORN_QB_NONE:
+      //ItemInHandID = 0;
+      break;
+    case INV_WORN_QB_HAND:
+      //ItemInHandID = 0; // <= TODO
+      break;
+    default:
+      PItem* currentItem = nChar->GetInventory()->GetContainer(INV_LOC_WORN)->GetItem(INV_WORN_QB_START + currentActiveSlot);
+      //Todo : item addons & effects
+      //ItemInHandID = currentItem->GetItemID():
+      if(currentItem)
+        ItemVal1 = currentItem->GetValue1();
+      //else
+        //ItemInHandID = 0;
+      break;
+  }
 
+  //nClient->IncreaseUDP_ID(); // This must be done outside
 
-    //nClient->IncreaseUDP_ID(); // This must be done outside
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+  *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+  *tmpMsg << (u8)0x00; // size placeholder, set later in the function
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)0x0000; // Client->GetUDP_ID(); // just placeholder, must be set outside
+  *tmpMsg << (u8)0x25;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u32)nChar->GetID();
 
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-    *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-    *tmpMsg << (u8)0x00; // size placeholder, set later in the function
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)0x0000; // Client->GetUDP_ID(); // just placeholder, must be set outside
-    *tmpMsg << (u8)0x25;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u32)nChar->GetID();
+  *tmpMsg << (u8)0x60; // 0x40 if current faction epic done (master), | 0x80 to display [afk] | 0x20 if LE in
+  *tmpMsg << (u8)((nChar->GetSpeedOverride() == 255) ? 10 : nChar->GetSpeedOverride()); // move speed, reset by client (and for him only) when getting fall damage
+  *tmpMsg << (u8)0x08; // ??? something to do with speed ?
+  *tmpMsg << (u16)ItemVal1; // WeaponID of the weapon in hand
+  *tmpMsg << (u8)0x01; // ???
+  *tmpMsg << (u8)0x01; // ???
+  *tmpMsg << (u8)(128 + nChar->GetSoullight());
+  *tmpMsg << (u8)nChar->GetMainRank(); // in fact, Ranks are of type s8, but it doesn't matter much
+  *tmpMsg << (u8)nChar->GetCombatRank();
 
-    *tmpMsg << (u8)0x60; // 0x40 if current faction epic done (master), | 0x80 to display [afk] | 0x20 if LE in
-    *tmpMsg << (u8)((nChar->GetSpeedOverride() == 255) ? 10 : nChar->GetSpeedOverride()); // move speed, reset by client (and for him only) when getting fall damage
-    *tmpMsg << (u8)0x08; // ??? something to do with speed ?
-    //*tmpMsg << (u16)0x0000;// WeaponID of the weapon in hand
-    *tmpMsg << (u16)ItemVal1;
-    *tmpMsg << (u8)0x01; // ???
-    *tmpMsg << (u8)0x01; // ???
-    *tmpMsg << (u8)(128 + nChar->GetSoullight());
-    *tmpMsg << (u8)nChar->GetMainRank(); // in fact, Ranks are of type s8, but it doesn't matter much
-    *tmpMsg << (u8)nChar->GetCombatRank();
+  *tmpMsg << (u8)nChar->GetFaction();
 
-    *tmpMsg << (u8)nChar->GetFaction();
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u8)0x0f; // size of the next bloc (skin + ?clan?)
+  // Current skin
+  *tmpMsg << (u16)nSkin;
+  *tmpMsg << (u8)nHead;
+  *tmpMsg << (u8)nTorso;
+  *tmpMsg << (u8)nLegs;
+  // Skin colors
+  *tmpMsg << (u8)nHeadColor;
+  *tmpMsg << (u8)nTorsoColor;
+  *tmpMsg << (u8)nLegsColor;
+  *tmpMsg << (u8)nHeadDarkness; // (0=bright 255=dark)
+  *tmpMsg << (u8)nTorsoDarkness;
+  *tmpMsg << (u8)nLegsDarkness;
+  *tmpMsg << (u8)0x00; // ??? << not sure at all // eg: 0x3e
+  *tmpMsg << (u8)0x00; // eg: 0x03
+  *tmpMsg << (u8)0x00; // eg: 0xa3
+  *tmpMsg << (u8)0x00; // eg: 0x03
 
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x0f; // size of the next bloc (skin + ?clan?)
-    // Current skin
-    *tmpMsg << (u16)nSkin;
-    *tmpMsg << (u8)nHead;
-    *tmpMsg << (u8)nTorso;
-    *tmpMsg << (u8)nLegs;
-    // Skin colors
-    *tmpMsg << (u8)nHeadColor;
-    *tmpMsg << (u8)nTorsoColor;
-    *tmpMsg << (u8)nLegsColor;
-    *tmpMsg << (u8)nHeadDarkness; // (0=bright 255=dark)
-    *tmpMsg << (u8)nTorsoDarkness;
-    *tmpMsg << (u8)nLegsDarkness;
-    *tmpMsg << (u8)0x00; // ??? << not sure at all // eg: 0x3e
-    *tmpMsg << (u8)0x00; // eg: 0x03
-    *tmpMsg << (u8)0x00; // eg: 0xa3
-    *tmpMsg << (u8)0x00; // eg: 0x03
+  //Name
+  *tmpMsg << (u8) ((nChar->GetName()).length()+1);
+  *tmpMsg << (nChar->GetName()).c_str();
+  //Body effects
+  u8 cBodyEffect, cEffectDensity;
+  nChar->GetBodyEffect(cBodyEffect, cEffectDensity);
+  if (cBodyEffect)
+  {
+    *tmpMsg << (u8)0x06; // size of effect list : 6 bytes/effect. Only one supported atm
+    *tmpMsg << (u8)cBodyEffect; // effect type (0=none, effecive values 1 - 17)
+    *tmpMsg << (u8)cEffectDensity; // density: 0=max, 0xff=min (for some effects only)
+    *tmpMsg << (u8)0x00; // ???
+    *tmpMsg << (u8)0x00; // ???
+    *tmpMsg << (u8)0x00; // ???
+    *tmpMsg << (u8)0x00; // ???
+  }
+  else
+  {
+      *tmpMsg << (u8)0x00; // size of empty effect list
+  }
 
-    //Name
-    *tmpMsg << (u8) ((nChar->GetName()).length()+1);
-    *tmpMsg << (nChar->GetName()).c_str();
-    //Body effects
-    u8 cBodyEffect, cEffectDensity;
-    nChar->GetBodyEffect(cBodyEffect, cEffectDensity);
-    if (cBodyEffect)
-    {
-        *tmpMsg << (u8)0x06; // size of effect list : 6 bytes/effect. Only one supported atm
-        *tmpMsg << (u8)cBodyEffect; // effect type (0=none, effecive values 1 - 17)
-        *tmpMsg << (u8)cEffectDensity; // density: 0=max, 0xff=min (for some effects only)
-        *tmpMsg << (u8)0x00; // ???
-        *tmpMsg << (u8)0x00; // ???
-        *tmpMsg << (u8)0x00; // ???
-        *tmpMsg << (u8)0x00; // ???
-    }
-    else
-    {
-        *tmpMsg << (u8)0x00; // size of empty effect list
-    }
+  *tmpMsg << (u8)0x00; // ending null
+  // alternate interpretation to this "ending null"/optional bloc:
+  /* *tmpMsg << (u8)0x04; // size of unknown bloc ... 0x00 when empty (aka the "ending null")
+   *tmpMsg << (u8)0x0b; // vary ... ??? 0b, eb, ee, ...
+   *tmpMsg << (u8)0x44; // vary ... ???
+   *tmpMsg << (u8)0x00; // these two seem always null
+   *tmpMsg << (u8)0x00; */
 
-    *tmpMsg << (u8)0x00; // ending null
-    // alternate interpretation to this "ending null"/optional bloc:
-    /* *tmpMsg << (u8)0x04; // size of unknown bloc ... 0x00 when empty (aka the "ending null")
-     *tmpMsg << (u8)0x0b; // vary ... ??? 0b, eb, ee, ...
-     *tmpMsg << (u8)0x44; // vary ... ???
-     *tmpMsg << (u8)0x00; // these two seem always null
-     *tmpMsg << (u8)0x00; */
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
-    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-    return tmpMsg;
+  return tmpMsg;
 }
 
 
@@ -690,9 +698,9 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     // ---- Section 5 ----
     *BaselineMsg << (u8)0x05; // section id
 
-    PMessage* ContentList = BuildContainerContentList(nChar->GetInventory()->mBackpack, INV_LOC_BACKPACK);
+    PMessage* ContentList = BuildContainerContentList(nChar->GetInventory()->GetContainer(INV_LOC_BACKPACK), INV_LOC_BACKPACK);
     SectionMsg << *ContentList;
-ContentList->Dump();
+//ContentList->Dump();
     delete ContentList;
 
     //SectionMsg << (u16)0x00;
@@ -747,9 +755,9 @@ ContentList->Dump();
     // ---- Section 6 ----
     *BaselineMsg << (u8)0x06; // section id
 
-    ContentList = BuildContainerContentList(nChar->GetInventory()->mWorn, INV_LOC_WORN);
+    ContentList = BuildContainerContentList(nChar->GetInventory()->GetContainer(INV_LOC_WORN), INV_LOC_WORN);
     SectionMsg << *ContentList;
-ContentList->Dump();
+//ContentList->Dump();
     delete ContentList;
     
 /*    SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
@@ -903,9 +911,9 @@ SectionMsg << (u8)0x03;      // Data
     // ---- Section 0c ----
     *BaselineMsg << (u8)0x0c; // section id
 
-    ContentList = BuildContainerContentList(nChar->GetInventory()->mGogo, INV_LOC_GOGO);
+    ContentList = BuildContainerContentList(nChar->GetInventory()->GetContainer(INV_LOC_GOGO), INV_LOC_GOGO);
     SectionMsg << *ContentList;
-ContentList->Dump();
+//ContentList->Dump();
     delete ContentList;
 
 /*    
@@ -1899,6 +1907,7 @@ PMessage* PMsgBuilder::BuildContainerContentList (PContainer* nContainer, u8 nLo
   PMessage* tmpMsg = new PMessage(24);
   std::vector< PContainerEntry* >* Entries = nContainer->GetEntries();
   u16 StartPos;
+  PContainerEntry* tEntry;
   PItem* tItem;
   u8 Flags, Qualifier; 
 
@@ -1931,7 +1940,8 @@ else
   
   for(u16 i=0; i < Entries->size(); ++i)
   {
-    tItem = Entries->at(i)->mItem;
+    tEntry = Entries->at(i);
+    tItem = tEntry->mItem;
     Flags = 0x00 ; // tItem->mPropertiesFlags;
     switch(tItem->GetQualifier())
     {
@@ -1954,18 +1964,18 @@ else
     {
       case INV_LOC_WORN:
         *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
-        *tmpMsg << (u8)Entries->at(i)->mPosX; // X Location
+        *tmpMsg << (u8)tEntry->mPosX; // X Location
         *tmpMsg << (u8)0x00; // just nothing
         break;
       case INV_LOC_BACKPACK:
         *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
         *tmpMsg << (u8)0x00; // just nothing again
-        *tmpMsg << (u8)Entries->at(i)->mPosX; // X Location
-        *tmpMsg << (u8)Entries->at(i)->mPosY; // Y Location
+        *tmpMsg << (u8)tEntry->mPosX; // X Location
+        *tmpMsg << (u8)tEntry->mPosY; // Y Location
         break;
       case INV_LOC_GOGO:
         *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
-        *tmpMsg << (u8)Entries->at(i)->mPosX;
+        *tmpMsg << (u8)tEntry->mPosX;
         break;
       case INV_LOC_BOX:
  
@@ -1975,14 +1985,14 @@ else
         break;
     }
      
-    *tmpMsg << (u16)tItem->GetItemID(); // ItemID
+    *tmpMsg << (u16)tItem->mItemID; // ItemID
     *tmpMsg << (u8)Flags; // (0x01|0x02|0x10|0x40);      // Datatype
 
 //SectionMsg << (u8)0x01; // for 0x80. Use ???
     
     if(Flags & 0x01)
     {
-      *tmpMsg << (u8)0x00; // Qty / remaining ammos => use mLoadedAmmoNb
+      *tmpMsg << (u8)tItem->mLoadedAmmoNb; // Remaining ammos
     }
 
     if(Flags & 0x02)

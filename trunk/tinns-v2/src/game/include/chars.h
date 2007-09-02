@@ -119,10 +119,10 @@ class PChar
 
 		PGenrepList* mGenrepList; // Character's GR list
 
-		u16 mItemInHand; // ItemID of current item "in hand"
+		u8 mQuickBeltActiveSlot; // QB SlotID of item "in hand", or INV_WORN_QB_HAND or INV_WORN_QB_NONE
 
 		u16 mLookingAt;  // Zone charID of currently targeted player
-        std::time_t mLookAtTimer; // Lifetimer of lookat var
+    std::time_t mLookAtTimer; // Lifetimer of lookat var
 
 		struct PCharCoordinates {
 		    u16 mY;     // Y-Position in world
@@ -174,7 +174,6 @@ class PChar
     void SetBaseSubskills(u8 NZSNb, const char* NonZeroSubskills);
     void SetBaseInventory();
 
-    //void FillinCharDetails(u8 *Packet);
     bool SQLCreate();
 
 	public :
@@ -210,8 +209,8 @@ class PChar
 		void GetCurrentLook (u32 &nSkin, u32 &nHead, u32 &nTorso, u32 &nLegs);
 		inline void GetBodyEffect(u8 &nEffect, u8 &nDensity) { nEffect = mBodyEffect; nDensity = mBodyEffectDensity; }
 
-		inline u16 GetItemInHand() { return mItemInHand; }
-    inline void SetItemInHand(u16 nItem) { mItemInHand = nItem; }
+		inline u8 GetQuickBeltActiveSlot() { return mQuickBeltActiveSlot; }
+    bool SetQuickBeltActiveSlot(u8 nSlotID);
 
 		void GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor, u8 &nHeadDarkness, u8 &nTorsoDarkness, u8 &nLegsDarkness);
 		inline u8 GetSpeedOverride() { return mSpeedOverride; }

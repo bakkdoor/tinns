@@ -35,11 +35,20 @@
 
 class PUdpItemMove : public PUdpMsgAnalyser
 {
-    public:
-        PUdpItemMove(PMsgDecodeData* nDecodeData);
-        //~PUdpItemMove();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
+  private:
+    u8 mSrcLoc;
+    u8 mSrcX;
+    u8 mSrcY;
+    u8 mDstLoc;
+    u8 mDstX;
+    u8 mDstY;
+    u8 mItemCnt;
+ 
+  public:
+      PUdpItemMove(PMsgDecodeData* nDecodeData);
+      //~PUdpItemMove();
+      PUdpMsgAnalyser* Analyse();
+      bool DoAction();
 };
 
 #endif

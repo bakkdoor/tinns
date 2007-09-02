@@ -25,44 +25,65 @@
 
  CREATION: 30 Dec 2006 Namikon
 
- MODIFIED:
- REASON: -
+ MODIFIED: 28 Aug 2007 Hammag
+ REASON: Moved decoding part from DoAction() to Analyse(), use natural decode methods
 
 */
 
 #include "main.h"
 #include "udp_itemmove.h"
+#include "chars.h"
+#include "inventory.h"
+#include "container.h"
 
 /**** PUdpItemSlotUse ****/
 
 PUdpItemMove::PUdpItemMove(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-    nDecodeData->mName << "/0x1e";
+  nDecodeData->mName << "/0x1e";
 }
 
 PUdpMsgAnalyser* PUdpItemMove::Analyse()
 {
-    mDecodeData->mName << "=Moving item";
+  mDecodeData->mName << "=Moving item";
 
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 8);
+  
+  *nMsg >> mSrcLoc;
+  *nMsg >> mSrcX;
+  *nMsg >> mSrcY;
+  *nMsg >> mDstLoc;
+  *nMsg >> mDstX;
+  *nMsg >> mDstY;
+  *nMsg >> mItemCnt;
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
 }
 
 bool PUdpItemMove::DoAction()
 {
-/*    PMessage* tmpMsg = NULL;
-    bool DoneAnalyzing = false; // Make sure only ONE action is performed here
-    PClient* nClient = mDecodeData->mClient;
-    PChar* tChar = nClient->GetChar();
+  PMessage* tmpMsg;
+  bool MoveSucceded = false;
+  PClient* nClient = mDecodeData->mClient;
+  PChar* tChar = nClient->GetChar();
 
-    u8 src_loc = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
-    u8 src_x = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 9);
-    u8 src_y = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 10);
-    u8 dst_loc = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 11);
-    u8 dst_x = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 12);
-    u8 dst_y = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 13);
-    u8 itemcnt = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 14);
+  PContainer* SrcContainer = tChar->GetInventory()->GetContainer(mSrcLoc);
+  if(mSrcLoc != mDstLoc)
+  {
+    PContainer* DstContainer = tChar->GetInventory()->GetContainer(mDstLoc);
+    MoveSucceded = SrcContainer->MoveItem(mSrcX, mSrcY, mItemCnt, DstContainer, mDstX, mDstY);
+  }
+  else
+  {
+    MoveSucceded = SrcContainer->MoveItem(mSrcX, mSrcY, mItemCnt, mDstX, mDstY);
+  }
+           
+          
 
+
+/*
     // Case #1: Simplest thing, client trying to change slots
     if(src_loc == 2 && dst_loc == 2)
     {
@@ -100,10 +121,31 @@ bool PUdpItemMove::DoAction()
         else
             Console->Print("Client trying to move %d items from LOC: %d X: %d Y: %d to LOC: %d X: %d Y: %d", itemcnt, src_loc, src_x, src_y, dst_loc, dst_x, dst_y);
     //}
-
-    if(DoneAnalyzing == true && tmpMsg != NULL) // Send message if we got one
-        nClient->getUDPConn()->SendMessage(tmpMsg);
 */
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+  if(MoveSucceded)
+  {
+    tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+    nClient->SendUDPMessage(tmpMsg);
+
+Console->Print(GREEN, BLACK, "[Success] Item move %u:%u-%u => %u:%u-%u (%u)", mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);    
+Console->Print(YELLOW, BLACK, "--- Worn Inventory ---");
+tChar->GetInventory()->GetContainer(INV_LOC_WORN)->Dump();
+Console->Print(YELLOW, BLACK, "--- Backpack Inventory ---");
+tChar->GetInventory()->GetContainer(INV_LOC_BACKPACK)->Dump();
+Console->Print(YELLOW, BLACK, "--- Gogo Inventory ---");    
+tChar->GetInventory()->GetContainer(INV_LOC_GOGO)->Dump();
+
+// => TO CHECK: deactivate item in-hand if active slot now emtpy ???
+    
+  }
+  else
+  {
+Console->Print(YELLOW, BLACK, "[Warning] Item move failed %u:%u-%u => %u:%u-%u (%u)", mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+    // Send 'null move'
+    //tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, mSrcLoc, mSrcX, mSrcY, mSrcLoc, mSrcX, mSrcY, mItemCnt);
+    //nClient->SendUDPMessage(tmpMsg);
+  }    
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }

@@ -45,14 +45,21 @@
 //Inventory containers info
 #define INV_WORN_QB_START 0
 #define INV_WORN_QB_END 9
+#define INV_WORN_QB_HAND 255
+#define INV_WORN_QB_NONE 99
+
 #define INV_WORN_PROC_START 12
 #define INV_WORN_PROC_END 24
+
 #define INV_WORN_IMP_START 26
 #define INV_WORN_IMP_END 38
+
 #define INV_WORN_ARMOR_START 39
 #define INV_WORN_ARMOR_END 43
+
 #define INV_WORN_COLS 44
 #define INV_WORN_MAXSLOTS 44
+
 
 #define INV_BACKPACK_COLS 10
 
@@ -73,22 +80,21 @@ class PContainer;
 class PInventory
 {
   private:
-
-  public:
     PContainer* mWorn; // PContainerLinearSlots
     PContainer* mBackpack; // PContainer2DAreas
     PContainer* mGogo; // PContainerLinearSlots
     
-    
+  public:
+
     PInventory();
     ~PInventory();
     
     void SetCharId(u32 CharID);
     bool SQLLoad();
     bool SQLSave();
+    PContainer* GetContainer(u8 nInvLoc);
     
-    
-    bool AddItem(PItem* NewItem, u32 nInvLoc = INV_LOC_BACKPACK, u32 nInvID = 0, u8 nPosX = 0, u8 nPosY = 0, bool SetDirty = true);
+    bool AddItem(PItem* NewItem, u8 nInvLoc = INV_LOC_BACKPACK, u32 nInvID = 0, u8 nPosX = 0, u8 nPosY = 0, bool SetDirty = true);
     //bool CheckItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItemByPos(u8 nPosX, u8 nPosY, u8 StackSize = 1);

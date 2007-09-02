@@ -49,6 +49,8 @@
 #include "main.h"
 #include "worlds.h"
 #include "appartements.h"
+#include "container.h"
+#include "inventory.h"
 
 // SQL Layout
 enum
@@ -145,7 +147,7 @@ PChar::PChar()
 
 	mBodyEffect = 0;
 	mBodyEffectDensity = 0;
-	mItemInHand = 0;
+	mQuickBeltActiveSlot = INV_WORN_QB_NONE;
 
 	mLookingAt = 0;
 	mLookAtTimer = 0;
@@ -849,151 +851,6 @@ void PChar::SetOnlineStatus(bool IsOnline)
     return;
 }
 
-/* void PChar::FillinCharDetails(u8 *Packet)
-{
-    //const PDefCharKind *def = GameDefs->GetCharKindDef(GetType());
-    const PDefCharKind *def = GameDefs->GetCharKindDef(GetProfession());
-
-    if(!Packet)
-        return;
-
-    Packet[36] = mHealth;
-    Packet[38] = GetMaxHealth();
-    Packet[40] = mMana;
-    Packet[42] = GetMaxMana();
-    Packet[44] = mStamina;
-    Packet[46] = GetMaxStamina();
-
-    Packet[52] = (u16)mHealth + 1;
-    Packet[54] = (u16)mHealth + 1;
-    Packet[56] = (u16)mHealth + 1;
-
-// ---------------------------------------------------
-
-    Packet[76] = (u8)Skill->GetMainSkill(MS_STR);
-    Packet[77] = (u16)Skill->GetSP(MS_STR);
-    Packet[79] = (u32)Skill->GetXP(MS_STR);
-    Packet[83] = (u8)def->GetSkillInfo(MS_STR).mGrow;
-    Packet[84] = (u8)def->GetSkillInfo(MS_STR).mMax;
-
-    Packet[85] = (u8)Skill->GetMainSkill(MS_DEX);
-    Packet[86] = (u16)Skill->GetSP(MS_DEX);
-    Packet[88] = (u32)Skill->GetXP(MS_DEX);
-    Packet[92] = (u8)def->GetSkillInfo(MS_DEX).mGrow;
-    Packet[93] = (u8)def->GetSkillInfo(MS_DEX).mMax;
-
-    Packet[94] = (u8)Skill->GetMainSkill(MS_CON);
-    Packet[95] = (u16)Skill->GetSP(MS_CON);
-    Packet[97] = (u32)Skill->GetXP(MS_CON);
-    Packet[101] = (u8)def->GetSkillInfo(MS_CON).mGrow;
-    Packet[102] = (u8)def->GetSkillInfo(MS_CON).mMax;
-
-    Packet[103] = (u8)Skill->GetMainSkill(MS_INT);
-    Packet[104] = (u16)Skill->GetSP(MS_INT);
-    Packet[106] = (u32)Skill->GetXP(MS_INT);
-    Packet[110] = (u8)def->GetSkillInfo(MS_INT).mGrow;
-    Packet[111] = (u8)def->GetSkillInfo(MS_INT).mMax;
-
-    Packet[112] = (u8)Skill->GetMainSkill(MS_PSI);
-    Packet[113] = (u16)Skill->GetSP(MS_PSI);
-    Packet[115] = (u32)Skill->GetXP(MS_PSI);
-    Packet[119] = (u8)def->GetSkillInfo(MS_PSI).mGrow;
-    Packet[120] = (u8)def->GetSkillInfo(MS_PSI).mMax;
-
-// ---------------------------------------------------
-
-    Packet[132] = (u8)Skill->GetSubSkill(SK_MC);
-    Packet[133] = (u8)Skill->GetSKPCost(SK_MC);
-    Packet[134] = (u8)Skill->GetSubSkill(SK_HC);
-    Packet[135] = (u8)Skill->GetSKPCost(SK_HC);
-    Packet[136] = (u8)Skill->GetSubSkill(SK_TRA);
-    Packet[137] = (u8)Skill->GetSKPCost(SK_TRA);
-    //Packet[138] =
-    //Packet[139] =
-    //Packet[140] =
-    //Packet[141] =
-    //Packet[142] =
-    //Packet[143] =
-    //Packet[144] =
-    //Packet[145] =
-    //Packet[146] =
-    //Packet[147] =
-    //Packet[148] =
-    //Packet[149] =
-    Packet[150] = (u8)Skill->GetSubSkill(SK_PC);
-    Packet[151] = (u8)Skill->GetSKPCost(SK_PC);
-    Packet[152] = (u8)Skill->GetSubSkill(SK_RC);
-    Packet[153] = (u8)Skill->GetSKPCost(SK_RC);
-    Packet[154] = (u8)Skill->GetSubSkill(SK_TC);
-    Packet[155] = (u8)Skill->GetSKPCost(SK_TC);
-    Packet[156] = (u8)Skill->GetSubSkill(SK_VHC);
-    Packet[157] = (u8)Skill->GetSKPCost(SK_VHC);
-    Packet[158] = (u8)Skill->GetSubSkill(SK_AGL);
-    Packet[159] = (u8)Skill->GetSKPCost(SK_AGL);
-    Packet[160] = (u8)Skill->GetSubSkill(SK_REP);
-    Packet[161] = (u8)Skill->GetSKPCost(SK_REP);
-    Packet[162] = (u8)Skill->GetSubSkill(SK_REC);
-    Packet[163] = (u8)Skill->GetSKPCost(SK_REC);
-    Packet[164] = (u8)Skill->GetSubSkill(SK_RCL);
-    Packet[165] = (u8)Skill->GetSKPCost(SK_RCL);
-    //Packet[166] =
-    //Packet[167] =
-    //Packet[168] =
-    //Packet[169] =
-    Packet[170] = (u8)Skill->GetSubSkill(SK_ATL);
-    Packet[171] = (u8)Skill->GetSKPCost(SK_ATL);
-    Packet[172] = (u8)Skill->GetSubSkill(SK_END);
-    Packet[173] = (u8)Skill->GetSKPCost(SK_END);
-    Packet[174] = (u8)Skill->GetSubSkill(SK_FOR);
-    Packet[175] = (u8)Skill->GetSKPCost(SK_FOR);
-    Packet[176] = (u8)Skill->GetSubSkill(SK_FIR);
-    Packet[177] = (u8)Skill->GetSKPCost(SK_FIR);
-    Packet[178] = (u8)Skill->GetSubSkill(SK_ENR);
-    Packet[179] = (u8)Skill->GetSKPCost(SK_ENR);
-    Packet[180] = (u8)Skill->GetSubSkill(SK_XRR);
-    Packet[181] = (u8)Skill->GetSKPCost(SK_XRR);
-    Packet[182] = (u8)Skill->GetSubSkill(SK_POR);
-    Packet[183] = (u8)Skill->GetSKPCost(SK_POR);
-    Packet[184] = (u8)Skill->GetSubSkill(SK_HLT);
-    Packet[185] = (u8)Skill->GetSKPCost(SK_HLT);
-    //Packet[186] =
-    //Packet[187] =
-    //Packet[188] =
-    //Packet[189] =
-    Packet[190] = (u8)Skill->GetSubSkill(SK_HCK);
-    Packet[191] = (u8)Skill->GetSKPCost(SK_HCK);
-    Packet[192] = (u8)Skill->GetSubSkill(SK_BRT);
-    Packet[193] = (u8)Skill->GetSKPCost(SK_BRT);
-    Packet[194] = (u8)Skill->GetSubSkill(SK_PSU);
-    Packet[195] = (u8)Skill->GetSKPCost(SK_PSU);
-    Packet[196] = (u8)Skill->GetSubSkill(SK_WEP);
-    Packet[197] = (u8)Skill->GetSKPCost(SK_WEP);
-    Packet[198] = (u8)Skill->GetSubSkill(SK_CST);
-    Packet[199] = (u8)Skill->GetSKPCost(SK_CST);
-    Packet[200] = (u8)Skill->GetSubSkill(SK_RES);
-    Packet[201] = (u8)Skill->GetSKPCost(SK_RES);
-    Packet[202] = (u8)Skill->GetSubSkill(SK_IMP);
-    Packet[203] = (u8)Skill->GetSKPCost(SK_IMP);
-    //Packet[204] =
-    //Packet[205] =
-    //Packet[206] =
-    //Packet[207] =
-    //Packet[208] =
-    //Packet[209] =
-    Packet[210] = (u8)Skill->GetSubSkill(SK_PPU);
-    Packet[211] = (u8)Skill->GetSKPCost(SK_PPU);
-    Packet[212] = (u8)Skill->GetSubSkill(SK_APU);
-    Packet[213] = (u8)Skill->GetSKPCost(SK_APU);
-    Packet[214] = (u8)Skill->GetSubSkill(SK_MST);
-    Packet[215] = (u8)Skill->GetSKPCost(SK_MST);
-    Packet[216] = (u8)Skill->GetSubSkill(SK_PPW);
-    Packet[217] = (u8)Skill->GetSKPCost(SK_PPW);
-    Packet[218] = (u8)Skill->GetSubSkill(SK_PSR);
-    Packet[219] = (u8)Skill->GetSKPCost(SK_PSR);
-    Packet[220] = (u8)Skill->GetSubSkill(SK_WPW);
-    Packet[221] = (u8)Skill->GetSKPCost(SK_WPW);
-}*/
-
 u8 PChar::GetMainRank() {
    u16 total;
    total  = Skill->GetMainSkill(MS_STR) + Skill->GetMainSkill(MS_DEX);
@@ -1024,6 +881,32 @@ u32 PChar::SetCash(u32 nCash)
     return mCash;
 }
 
+
+bool PChar::SetQuickBeltActiveSlot(u8 nSlotID)
+{
+  if( (nSlotID == INV_WORN_QB_HAND) || (nSlotID == INV_WORN_QB_NONE) )
+  {
+    mQuickBeltActiveSlot = nSlotID;
+    return true;   
+  }
+  else if (nSlotID <= (INV_WORN_QB_END - INV_WORN_QB_START))
+  {
+    PContainer* tWorn = mInventory.GetContainer(INV_LOC_WORN);
+    
+    if(! tWorn->IsFree(nSlotID) ) // => TODO: MUST ALSO CHECK that item is currently usable and can be held in hand
+    {
+      mQuickBeltActiveSlot = nSlotID;
+      return true;
+    }
+else
+{
+Console->Print("SetQuickBeltActiveSlot: SlotID %d greater than %d or free (%d)", nSlotID, INV_WORN_QB_END - INV_WORN_QB_START, tWorn->IsFree(nSlotID));
+}
+  }
+  return false;
+}
+    
+    
 // ===================================
 
 PChars::PChars()
@@ -1184,6 +1067,7 @@ void PChars::SQLSave()
     			if (Char->SQLSave())
     			  ++nChars;
     		}
+    		Char->GetInventory()->SQLSave(); // TODO: add IsDirty managment
 		}
 Console->Print("%i characters saved", nChars);
     return;

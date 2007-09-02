@@ -78,24 +78,28 @@ bool PInventory::SQLSave()
   return mWorn->SQLSave() && mBackpack->SQLSave() && mGogo->SQLSave();
 }
 
-bool PInventory::AddItem(PItem *NewItem, u32 nInvLoc, u32 nInvID, u8 nPosX, u8 nPosY, bool SetDirty)
+PContainer* PInventory::GetContainer(u8 nInvLoc)
 {
-  PContainer* destContainer;
+  PContainer* tContainer = NULL;
   switch(nInvLoc)
   {
     case INV_LOC_WORN:
-      destContainer = mWorn;
+      tContainer = mWorn;
       break;
     case INV_LOC_BACKPACK:
-      destContainer = mBackpack;
+      tContainer = mBackpack;
       break;
     case INV_LOC_GOGO:
-      destContainer = mGogo;
+      tContainer = mGogo;
       break;
-    default:
-      return false;
   }
-  return destContainer->AddItem(NewItem, nInvID, nPosX, nPosY, SetDirty);
+  return tContainer;
+}
+
+bool PInventory::AddItem(PItem *NewItem, u8 nInvLoc, u32 nInvID, u8 nPosX, u8 nPosY, bool SetDirty)
+{
+  PContainer* destContainer = GetContainer(nInvLoc);
+  return(destContainer ? destContainer->AddItem(NewItem, nInvID, nPosX, nPosY, SetDirty) : false);
 }
 
 /*

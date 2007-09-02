@@ -35,6 +35,9 @@
 
 class PUdpItemSlotUse : public PUdpMsgAnalyser
 {
+  private:
+    u8 mTargetSlot;
+    
   public:
     PUdpItemSlotUse(PMsgDecodeData* nDecodeData);
     //~PUdpItemSlotUse();

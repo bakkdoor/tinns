@@ -33,7 +33,36 @@
 #define ITEM_H
 
 #define MAX_ITEMSTACK_SIZE 250
-        
+
+//Type
+#define ITEM_TYPE_WEAPON  1
+#define ITEM_TYPE_AMMO  2
+#define ITEM_TYPE_HEALTH  3
+#define ITEM_TYPE_IMPLANT 4
+#define ITEM_TYPE_DRUG  5
+#define ITEM_TYPE_MOD  6
+#define ITEM_TYPE_GFXMOD  7
+#define ITEM_TYPE_BLUEPRINT 8
+#define ITEM_TYPE_ARMOR  9
+#define ITEM_TYPE_PSIMOD  10
+#define ITEM_TYPE_PSIMODREADY 11
+#define ITEM_TYPE_REPAIR  12
+#define ITEM_TYPE_RECYCLER 13
+#define ITEM_TYPE_DATACUBE 14																		
+
+// gfxmodflags																						
+#define ITEM_MOD_FLASHLIGHT 1	
+#define ITEM_MOD_SCOP 2
+#define ITEM_MOD_SILENCER 4
+#define ITEM_MOD_LASERPOINTER 8
+
+// itemflags:
+#define ITEM_FLAG_RESEARCHABLE 1
+#define ITEM_FLAG_NO_DROP 2
+#define ITEM_FLAG_NO_MAX_REPAIRE_DECAY 4
+#define ITEM_FLAG_AMMO 8 
+// not sure for ITEM_FLAG_AMMO
+
 class PItem
 {
   friend class PContainerEntry;
@@ -73,7 +102,7 @@ class PItem
     
     inline int const GetType() { return mDefItem->GetType(); }
     inline u8 const GetItemflags() { return mDefItem->GetItemflags(); }
-    
+    inline const std::string &GetName() const { return mDefItem->GetName(); }
     inline u8 const GetSizeX() { return mDefItem->GetSizeX(); }
     inline u8 const GetSizeY() { return mDefItem->GetSizeY(); }
     inline float const GetWeight() { return mStackSize * mDefItem->GetWeight(); }
@@ -93,40 +122,6 @@ class PItem
 
     //mItemGroupID = def->GetItemGroupID();
     
-    //mBasePrice = def->GetBasePrice();
-    //mTechlevel = def->GetTechlevel();
-    //mItemflags = def->GetItemflags();
-
 };
 
-/*
-mType:
-ITEMTYPE_WEAPON  1
-ITEMTYPE_AMMO  2
-ITEMTYPE_HEALTH  3
-ITEMTYPE_IMPLANT 4
-ITEMTYPE_DRUG  5
-ITEMTYPE_MOD  6
-ITEMTYPE_GFXMOD  7
-ITEMTYPE_BLUEPRINT 8
-ITEMTYPE_ARMOR  9
-ITEMTYPE_PSIMOD  10
-ITEMTYPE_PSIMODREADY 11
-ITEMTYPE_REPAIR  12
-ITEMTYPE_RECYCLER 13
-ITEMTYPE_DATACUBE 14																		
-
-// gfxmodflags: moegliche weapon enhancements werte addieren 																						
-1 : flashlight weapon enhancement	
-2 : scope weapon enhancement
-4 : silencer weapon enhancement
-8 : laserpointer weapon enhancement
-
-// itemflags:
-1 : researchable
-2 : no drop
-4 : no max repair decay
-8 : for ammos  / can reload weapons ?
-
-*/
 #endif

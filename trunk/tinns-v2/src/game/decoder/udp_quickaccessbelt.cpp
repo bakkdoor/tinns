@@ -25,98 +25,124 @@
 
  CREATION: 30 Dec 2006 Namikon
 
- MODIFIED:
- REASON: -
+ MODIFIED: 1 Sept 2007 Hammage
+ REASON: Put analysis code in Analyse() and change to use new item management methods
 
 */
 
 #include "main.h"
 #include "udp_quickaccessbelt.h"
+#include "container.h"
+#include "inventory.h"
 
 /**** PUdpItemSlotUse ****/
 
 PUdpItemSlotUse::PUdpItemSlotUse(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-    nDecodeData->mName << "/0x1f";
+  nDecodeData->mName << "/0x1f";
 }
 
 PUdpMsgAnalyser* PUdpItemSlotUse::Analyse()
 {
-    mDecodeData->mName << "=Using item from QuickAccessBelt";
+  mDecodeData->mName << "=Active QuickBelt Slot";
 
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
+  mTargetSlot = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
+  // TODO : Check on mTargetSlot value + put set to INV_WORN_QB_HAND for hand
+  if(mTargetSlot == 255) // H "slot 0" Hand
+    mTargetSlot = INV_WORN_QB_HAND;
+
+  //if(mTargetSlot == 11) //  ALT-H ?
+    
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
 }
 
 bool PUdpItemSlotUse::DoAction()
 {
-/*    PClient* nClient = mDecodeData->mClient;
-    PChar* tChar = nClient->GetChar();
-    u8 SlotNumber = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
+  PClient* nClient = mDecodeData->mClient;
+  PChar* tChar = nClient->GetChar();
+  PItem* targetItem = NULL;
+  bool tUsable = false;
+  bool tUsableInHand = false;
+  u16 ItemVal1 = 0;
 
-    Console->Print("Client trying to activate item in slot %d.", SlotNumber);
+Console->Print("Client trying to activate item in slot %d.", mTargetSlot);
 
-    u16 ItemVal1 = 0;
-    u16 qb_item = tChar->GetInventory()->QB_GetSlot(SlotNumber);
-    u16 active_item = tChar->GetItemInHand();
-    // Case 1: No item active, select slot X
-    // Ex: active_item = 0
-    // Act: Activate Slot X
-
-    // Case 2: Slot X active, press same slot again
-    // Ex: active_item = 28, qb_item = 28
-    // Act: Deactivate Slot X
-
-    // Case 3: Slot X active, press other slot Y
-    // Ex: active_item = 28, qb_item = 35
-    // Act: Activate Slot Y
-
-    if((active_item == 0) || (qb_item != active_item))
-    {
-        if(qb_item == 0) // Slot is empty, unequip current item in use
-            return true;
-
-        const PDefItems *def = GameDefs->GetItemsDef(qb_item);  // Search for this itemID in items.def
-        if(def != NULL)
-        {
-            ItemVal1 = (u16)def->GetValue1();
-        }
-        else
-        {
-            Console->Print("ERROR: Unable to get itemdata for itemID %d", qb_item);
-            return false;
-        }
-        // Done, now set this itemnumber as "item in hand"
-        tChar->SetItemInHand(qb_item);
+  u8 currentActiveSlot = tChar->GetQuickBeltActiveSlot();
+  if(mTargetSlot == INV_WORN_QB_HAND)
+  {
+Console->Print("Want to use Hand");
+    tUsable = true;
+    tUsableInHand = true;
+  }
+  else
+  {
+    targetItem = tChar->GetInventory()->GetContainer(INV_LOC_WORN)->GetItem(INV_WORN_QB_START + mTargetSlot);
+    if(targetItem)
+    { // TODO : do the real check;
+Console->Print("Want to use existing item");
+      tUsable = true;
+      tUsableInHand = true;
+      ItemVal1 = targetItem->GetValue1();
     }
-    else // Should only match for case 2 ( qb_item == active_item ), but better us a generic else here
+  }
+
+//TODO:
+// if tUsableInHand
+//  must check if weapon and allowed in zone
+//  and change tUsableInHand to false if needed
+
+  if(tUsable && !tUsableInHand)
+  {
+    // active item in belt, but don't take in hand
+Console->Print(YELLOW, BLACK, "Debug: activation of QB item slot %d (%s)", mTargetSlot, targetItem->GetName().c_str());    
+  }
+  else
+  {
+    if(!tUsable)
     {
-        tChar->SetItemInHand(0);
-        ItemVal1 = 0;
-        SlotNumber = 10; // Slot for "nothing"
+Console->Print("Want to use non-usable item");  
+      mTargetSlot = INV_WORN_QB_NONE; // if not usable, unequip active one
     }
-
-    PMessage* tmpMsg;
-    tmpMsg = MsgBuilder->BuildCharHelloMsg(nClient);
-    ClientManager->UDPBroadcast(tmpMsg, nClient);
-    tmpMsg = NULL;
-
-    tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1(nClient, 59);
-    nClient->getUDPConn()->SendMessage(tmpMsg);
-    tmpMsg = NULL;
-    if(ItemVal1 > 0)
+      
+    if(mTargetSlot == currentActiveSlot) // if same as active, unequip active one 
     {
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2(nClient);
+Console->Print("Want to use active slot");
+      mTargetSlot = INV_WORN_QB_NONE;
+    }
+    
+    if(mTargetSlot != currentActiveSlot) // now do somthing only if not same as active
+    {
+      if(tChar->SetQuickBeltActiveSlot(mTargetSlot))
+      {
+        PMessage* tmpMsg;
+        tmpMsg = MsgBuilder->BuildCharHelloMsg(nClient);
+        ClientManager->UDPBroadcast(tmpMsg, nClient);
+      
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1(nClient, 59);
         nClient->getUDPConn()->SendMessage(tmpMsg);
-        tmpMsg = NULL;
+
+        if(ItemVal1 > 0)
+        {
+          tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2(nClient);
+          nClient->getUDPConn()->SendMessage(tmpMsg);
+        }
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3(nClient, mTargetSlot);
+        nClient->getUDPConn()->SendMessage(tmpMsg);
+
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4(nClient, ItemVal1);
+        nClient->getUDPConn()->SendMessage(tmpMsg);
+
+Console->Print(YELLOW, BLACK, "Debug: activation of QB item slot %d", mTargetSlot);
+      }
+else Console->Print(RED, BLACK, "Error: activation of QB slot %d refused by PChar", mTargetSlot);
     }
-    tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3(nClient, SlotNumber);
-    nClient->getUDPConn()->SendMessage(tmpMsg);
-    tmpMsg = NULL;
-    tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4(nClient, ItemVal1);
-    nClient->getUDPConn()->SendMessage(tmpMsg);
-    tmpMsg = NULL;
-*/
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+else
+{
+Console->Print("Same slot %d as active - do nothing", mTargetSlot);
+}
+  }
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
