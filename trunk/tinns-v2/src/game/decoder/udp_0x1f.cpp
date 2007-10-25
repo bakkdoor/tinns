@@ -103,14 +103,24 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     case 0x25:
     {
       mDecodeData->mName << "/0x25";
-      if (MsgSubType == 0x04) // Is it sure this is a requirement ?
+      switch(MsgSubType)
       {
-        nextAnalyser = new PUdpSubskillInc(mDecodeData);
-      }
-      else
-      {
-        mDecodeData->mUnknownType = MsgSubType;
-        mDecodeData->mTraceUnknownMsg = true;
+        case 0x04: // Hack announcement?
+        {
+          nextAnalyser = new PUdpSubskillInc(mDecodeData);
+          break;
+        }
+        case 0x14: // Hack announcement?
+        {
+          nextAnalyser = new PUdpItemMoveBP(mDecodeData);
+          break;
+        }   
+        default:
+        {
+          mDecodeData->mUnknownType = MsgSubType;
+          mDecodeData->mTraceUnknownMsg = true;
+          break;
+        }
       }
       break;
     }

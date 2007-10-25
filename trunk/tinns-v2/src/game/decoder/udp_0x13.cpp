@@ -65,7 +65,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
 
   if(TmpMsg->EOM())
   {
-Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Emptied 0x13 msg handling !!!");
+    Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Emptied 0x13 msg handling !!!");
     mDecodeData->mState = DECODE_FINISHED;
     mDecodeData->mHandling0x13Sub = false;
     nextAnalyser = this;
@@ -89,7 +89,7 @@ Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Emptied 0x13 msg handling !!!")
 //Console->Print("Simple 0x13 msg");
       if (EndOffset > TmpMsg->GetSize())
       {
-Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling !!!");
+        Console->Print(RED, BLACK, "PUdp0x13::Analyse(): Size error in 0x13 msg handling !!!");
         mDecodeData->mState = DECODE_ERROR;
         mDecodeData->mErrorDetail = "Submessage too long.";
         return this;

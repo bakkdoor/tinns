@@ -276,7 +276,10 @@ if (gDevDebug) Console->Print("Discarded");
 //  nItem->mBoxUpperX = DataB.mBoxUpperX;
     
   nItem->mDefWorldModel = nWorldModel;
-  
+/*u16 func=nWorldModel->GetFunctionType();
+if((func==18) || (func==20) || (func==29))
+Console->Print("gate model: %d", DataA.mWorldmodelID);*/
+
   float Angle = (180 +DataA.mRotZ) * 3.14159/180;
   float Radius = abs((int)((DataB.mBoxUpperX - DataB.mBoxLowerX)/2));
   if (Radius == 0)

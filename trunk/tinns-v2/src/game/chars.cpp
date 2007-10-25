@@ -160,6 +160,7 @@ PChar::PChar()
 	mPrimaryApt=0;
 	mCash = 0;
 	mChairInUse = 0;
+	mContainerInExclusiveUse = NULL;
 
   mIsOnline = false;
   mDirtyFlag = false;
@@ -183,6 +184,12 @@ PChar::~PChar()
     delete mBuddyList;
   if (mGenrepList)
     delete mGenrepList;
+    
+  if(mContainerInExclusiveUse)
+  {
+    mContainerInExclusiveUse->EndUse(mID);
+    Console->Print(RED, BLACK, "Warning: PChar::~PChar : Char still had exclusive use of container. Now freed.");
+  }
 }
 
 bool PChar::SetCharnameRegexFilter(const char* RegexStr)
@@ -403,8 +410,6 @@ if (gDevDebug) Console->Print(GREEN, BLACK, "Adding item %d to base inventory", 
         Console->Print(RED, BLACK, "Invalid item ID !");
     }
   }
-
-Console->Print(YELLOW, BLACK, "Warning: Inventory are saved to DB at creation but not reloaded nor transfered ingame (for now)");
 }
 
 bool PChar::SQLLoad(int CharID) {
@@ -809,11 +814,7 @@ bool PChar::SQLSave()
         return false;
     }
 
-    if (! mInventory.SQLSave())
-      return false;
-
-    // GRs,
-    // Chats settings (?), directs & buddies, GR list
+    // Chats settings (?), directs
 
     mDirtyFlag = false;
     return true;
@@ -893,14 +894,14 @@ bool PChar::SetQuickBeltActiveSlot(u8 nSlotID)
   {
     PContainer* tWorn = mInventory.GetContainer(INV_LOC_WORN);
     
-    if(! tWorn->IsFree(nSlotID) ) // => TODO: MUST ALSO CHECK that item is currently usable and can be held in hand
+    if(! tWorn->IsSlotFree(nSlotID) ) // => TODO: MUST ALSO CHECK that item is currently usable and can be held in hand
     {
       mQuickBeltActiveSlot = nSlotID;
       return true;
     }
 else
 {
-Console->Print("SetQuickBeltActiveSlot: SlotID %d greater than %d or free (%d)", nSlotID, INV_WORN_QB_END - INV_WORN_QB_START, tWorn->IsFree(nSlotID));
+Console->Print("SetQuickBeltActiveSlot: SlotID %d greater than %d or free (%d)", nSlotID, INV_WORN_QB_END - INV_WORN_QB_START, tWorn->IsSlotFree(nSlotID));
 }
   }
   return false;
@@ -1058,18 +1059,26 @@ PChar* PChars::RemoveChar(u32 CharID)
 void PChars::SQLSave()
 {
   // saves all dirty-flagged chars
-  	int nChars = 0;
+  	int nDirtyChars = 0, nSavedChars = 0;
+  	int nDirtyInv = 0, nSavedInv = 0;
+  	
   	for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
 	  {
-		    PChar *Char = i->second;
+		    PChar* Char = i->second;
 		    if(Char->IsDirty())
-    		{
+    		{ 
+    		  ++nDirtyChars;
     			if (Char->SQLSave())
-    			  ++nChars;
+    			  ++nSavedChars;
     		}
-    		Char->GetInventory()->SQLSave(); // TODO: add IsDirty managment
+    		if(Char->GetInventory()->IsDirty())
+    		{
+    		  ++nDirtyInv;
+    		  if (Char->GetInventory()->SQLSave())
+    		    ++nSavedInv;
+    		}
 		}
-Console->Print("%i characters saved", nChars);
+Console->Print("%i chars saved on %i dirty, %i inventories saved on %i dirty", nSavedChars, nDirtyChars, nSavedInv, nDirtyInv);
     return;
 }
 
@@ -1127,7 +1136,7 @@ void PChars::Update()
 		bool NeedSave = false;
 		for(CharMap::const_iterator i=mChars.begin(); i!=mChars.end(); i++)
 		{
-			if(i->second->IsDirty())
+			if(i->second->IsAnyDirty())
 			{
 				NeedSave=true;
 				break;

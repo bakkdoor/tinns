@@ -35,6 +35,7 @@
 
 class PClient;
 class PMessage;
+class PContainerEntry;
 class PContainer;
 
 class PMsgBuilder
@@ -101,15 +102,19 @@ class PMsgBuilder
   PMessage* BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType);
 
   PMessage* BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits);
-  PMessage* BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue);
+  PMessage* BuildUndefineduseMsg (PClient* nClient, u8 nValue);
+  inline PMessage* BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue) {return BuildUndefineduseMsg(nClient, nValue);}
   PMessage* BuildCharUseQBSlotMsg2 (PClient* nClient, u16 nV1 = 100, u16 nV2 = 100, u16 nV3 = 100, u16 nV4 = 100, u16 nV5 = 100, u16 nV6 = 100, u16 nV7 = 0);
   PMessage* BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot);
   PMessage* BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1);
   PMessage* BuildContainerContentList (PContainer* nContainer, u8 nLocType);
+  PMessage* BuildContainerContentEntry (PContainerEntry* nEntry, u8 nLocType);
 
-  PMessage* BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID); // TEMP Solution! Need to change this when we have an itemsystem
+  PMessage* BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID, PContainer* nContainer); // TEMP Solution! Need to change this when we have an itemsystem
   PMessage* BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt);
-  PMessage* BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, u8 nHackDifficult);
+  PMessage* BuildBoxItemMoveMsg (PClient* nClient, PContainerEntry* nEntry, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt);
+    
+  PMessage* BuildStartHackGameMsg (PClient* nClient, u32 nWorldObjID, u8 nHackDifficult);
 };
 
 #endif

@@ -97,6 +97,7 @@ class PChar
 		u32 mStartApt; // set same as PrimaryApt atm
 		u32 mPrimaryApt;
     u32 mChairInUse; // not saved in DB atm
+    PContainer* mContainerInExclusiveUse;
 
 		u16 mHealth;
 		u16 mMana;
@@ -197,7 +198,7 @@ class PChar
     inline void SetLookingAt(u16 nCharID) { mLookingAt = nCharID; mLookAtTimer = std::time(NULL) + 1; };
     inline u16 GetLookingAt() { if(mLookAtTimer < std::time(NULL)) return mLookingAt; else return 0; };
 
-    inline PInventory *GetInventory() { return &mInventory; }
+    inline PInventory* GetInventory() { return &mInventory; }
 		inline u32 GetID() const { return mID; }
 		inline u32 GetAccount() const { return mAccount; }
 		inline const std::string &GetName() const { return mName; }
@@ -260,6 +261,7 @@ class PChar
     inline u8 GetGenrepCount() { return mGenrepList->Count(); }
 
 		inline bool IsDirty() const { return mDirtyFlag; }
+		inline bool IsAnyDirty() const { return mDirtyFlag || mInventory.IsDirty(); }
     inline bool IsOnline() { return mIsOnline; }
     void SetOnlineStatus(bool IsOnline);
 
@@ -267,6 +269,7 @@ class PChar
         u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 		bool SQLLoad(int CharID);
 		bool SQLSave();
+		inline bool SQLSaveFull() { return SQLSave() && mInventory.SQLSave(); }
 		bool SQLDelete(); // not implemented yet
 
 		inline void SetLocation(u32 Location) { mLocation = Location; }
@@ -278,7 +281,8 @@ class PChar
 
 		inline u32 GetChairInUse() { return mChairInUse; }
 		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
-
+		inline PContainer* GetContainerInExclusiveUse() { return mContainerInExclusiveUse; }
+		inline void SetContainerInExclusiveUse(PContainer* nContainer) { mContainerInExclusiveUse = nContainer; }
 };
 
 struct PCharProfile

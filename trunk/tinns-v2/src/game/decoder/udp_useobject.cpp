@@ -38,6 +38,7 @@
 #include "furnituretemplate.h"
 #include "doortemplate.h"
 #include "appartements.h"
+#include "container.h"
 
 /**** PUdpVhcMove ****/
 
@@ -346,12 +347,12 @@ bool PUdpUseObject::DoAction()
                             {
                                 Console->Print("%s Client[%d] Char[%s] moving to zone %d, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
                                 Console->Print("%s Location=%d Entity=%d Level=%d", Console->ColorText(GREEN, BLACK, "[Debug]"), Location, Entity, SewerLevel);
-                                Console->Print("%s Function: %d - Sewer level in appplaces.def for this point: %d", Console->ColorText(GREEN, BLACK, "[Debug]"), tFurnitureModel->GetFunctionType(), nAppPlace->GetSewerLevel());
+                                Console->Print("%s Function: %d, Value: %d - Sewer level in appplaces.def for this point: %d", Console->ColorText(GREEN, BLACK, "[Debug]"), tFurnitureModel->GetFunctionType(), tFurnitureModel->GetFunctionValue(), nAppPlace->GetSewerLevel());
+                                Console->Print("%s Worldmodel id: %d", Console->ColorText(GREEN, BLACK, "[Debug]"), tFurnitureModel->GetID());
                             }
                         }
                         else
-                        {
-                            Console->Print("%s Client[%d] Char[%s] invalid destination %d (appplaces.def)", Console->ColorText(RED, BLACK, "[Warning]"), nClient->GetID(), tChar->GetName().c_str(), tFurnitureModel->GetFunctionValue());
+                        {                            Console->Print("%s Client[%d] Char[%s] invalid destination %d (appplaces.def)", Console->ColorText(RED, BLACK, "[Warning]"), nClient->GetID(), tChar->GetName().c_str(), tFurnitureModel->GetFunctionValue());
                             // send a "refused" msg ?
                         }
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -559,8 +560,64 @@ bool PUdpUseObject::DoAction()
                     case 1: //Itemcontainer
                     {
                         // TODO: Add check if container is already open
-                        tmpMsg = MsgBuilder->BuildCharOpenContainerMsg(nClient, mRawItemID);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        // PContainer* tContainer = World->GetContainer(mRawItemID);
+                        PContainer* tContainer = new PContainerAutoCompactOnClose(INV_CABINET_MAXSLOTS);
+                        PItem* nItem;
+                        u32 nItemId;
+                        
+                        for(u8 i = 0; i < (INV_CABINET_MAXSLOTS / 2); ++i)
+                        {
+                          nItemId = GameServer->GetRandom(10006, 1);
+
+                          if(! GameDefs->GetItemsDef(nItemId))
+                          {
+                            u16 j0, j;
+                            j0 = j = (nItemId / 100);
+                            do
+                            {
+                              if(++j > 100)
+                                j = 0;
+                              if(j == j0)
+                                break;
+                            }
+                            while(!GameDefs->GetItemsDef(100 * j));
+                            
+                            u16 k = 99;
+                            do
+                            {
+                              nItemId = 100 * j + GameServer->GetRandom(k, 0);
+                              k = k/2 + 1;
+                            }
+                            while(!GameDefs->GetItemsDef(nItemId) && (k>2));
+                          }
+                          
+                          if(GameDefs->GetItemsDef(nItemId))
+                          {                        
+                            nItem = new PItem(nItemId, 1, 250, 250, 250, 250, 250, 250);
+                            if(nItem->GetItemID());
+                              tContainer->AddItem(nItem);
+                          }
+                        }
+                        
+                        /*nItem = new PItem(19, 1, 250, 250, 250, 250, 250, 250);
+                        if(nItem->GetItemID());
+                          tContainer->AddItem(nItem);*/
+Console->Print(YELLOW, BLACK, "[Info] Temporary container created");
+//tContainer->Dump();                      
+                        if(tContainer->StartUse(tChar->GetID()))
+                        {
+                          tChar->SetContainerInExclusiveUse(tContainer);
+                          tmpMsg = MsgBuilder->BuildCharOpenContainerMsg(nClient, mRawItemID, tContainer);
+//tmpMsg->Dump();
+                        }
+                        else
+                        {
+                          tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(nClient, mRawItemID, 10);
+                          nClient->SendUDPMessage(tmpMsg);
+                          tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID);
+                        }
+
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -616,8 +673,21 @@ PUdpMsgAnalyser* PUdpCloseItemContainer::Analyse()
 
 bool PUdpCloseItemContainer::DoAction()
 {
-    // TODO: free container that is currently in use by localchar
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+//  PClient* nClient = mDecodeData->mClient;
+//  PChar* tChar = nClient->GetChar();
+  PChar* tChar = mDecodeData->mClient->GetChar();
+  PContainer* tContainer = tChar->GetContainerInExclusiveUse();
+  if(tContainer)
+  {
+    tChar->SetContainerInExclusiveUse(NULL);
+    tContainer->EndUse(tChar->GetID());
+    if(! tContainer->GetOwnerId())
+    {
+      delete tContainer;
+Console->Print(YELLOW, BLACK, "[Info] Temporary container deleted");      
+    }
+  }
+  
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
-

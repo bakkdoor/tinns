@@ -35,18 +35,19 @@
 #define MAX_ITEMSTACK_SIZE 250
 
 //Type
-#define ITEM_TYPE_WEAPON  1
-#define ITEM_TYPE_AMMO  2
-#define ITEM_TYPE_HEALTH  3
+#define ITEM_TYPE_VARIOUS 0
+#define ITEM_TYPE_WEAPON 1
+#define ITEM_TYPE_AMMO 2
+#define ITEM_TYPE_HEALTH 3
 #define ITEM_TYPE_IMPLANT 4
-#define ITEM_TYPE_DRUG  5
-#define ITEM_TYPE_MOD  6
-#define ITEM_TYPE_GFXMOD  7
+#define ITEM_TYPE_DRUG 5
+#define ITEM_TYPE_MOD 6
+#define ITEM_TYPE_GFXMOD 7
 #define ITEM_TYPE_BLUEPRINT 8
-#define ITEM_TYPE_ARMOR  9
-#define ITEM_TYPE_PSIMOD  10
+#define ITEM_TYPE_ARMOR 9
+#define ITEM_TYPE_PSIMOD 10
 #define ITEM_TYPE_PSIMODREADY 11
-#define ITEM_TYPE_REPAIR  12
+#define ITEM_TYPE_REPAIR 12
 #define ITEM_TYPE_RECYCLER 13
 #define ITEM_TYPE_DATACUBE 14																		
 
@@ -60,7 +61,7 @@
 #define ITEM_FLAG_RESEARCHABLE 1
 #define ITEM_FLAG_NO_DROP 2
 #define ITEM_FLAG_NO_MAX_REPAIRE_DECAY 4
-#define ITEM_FLAG_AMMO 8 
+#define ITEM_FLAG_AMMO 8 // for loadable ammo
 // not sure for ITEM_FLAG_AMMO
 
 class PItem

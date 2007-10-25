@@ -712,7 +712,8 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     SectionMsg << (u8)0x02; // pos X
     SectionMsg << (u8)0x00; // pos Y
     SectionMsg << (u16)0x0051; // item id (torch)
-    SectionMsg << (u8)0x00;  // type
+    SectionMsg << (u8)0x01;  // type
+    SectionMsg << (u8)0x00;
 */
 /*
      //
@@ -1796,7 +1797,7 @@ PMessage* PMsgBuilder::BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits)
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue)
+PMessage* PMsgBuilder::BuildUndefineduseMsg (PClient* nClient, u8 nValue)
 {
     PMessage* tmpMsg = new PMessage(15);
     nClient->IncreaseUDP_ID();
@@ -1809,9 +1810,9 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg1 (PClient* nClient, u8 nValue)
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x25; // ??
-    *tmpMsg << (u8)0x23; // ??
-    *tmpMsg << nValue; // ??
+    *tmpMsg << (u8)0x25;
+    *tmpMsg << (u8)0x23;
+    *tmpMsg << nValue;
 
     return tmpMsg;
 }
@@ -1867,7 +1868,7 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot)
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x0D; // Message length
+    *tmpMsg << (u8)0x0d; // Message length
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
@@ -1875,7 +1876,7 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot)
     *tmpMsg << (u8)0x25; // ??
     *tmpMsg << (u8)0x13; // ??
     *tmpMsg << (u16)nClient->GetTransactionID();
-    *tmpMsg << (u8)0x0B; // ??
+    *tmpMsg << (u8)0x0b; // ??
     *tmpMsg << nSlot; // ??
     *tmpMsg << (u8)0x00; // ??
 
@@ -1904,153 +1905,143 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4 (PClient* nClient, u16 nValue1)
 
 PMessage* PMsgBuilder::BuildContainerContentList (PContainer* nContainer, u8 nLocType)
 {
-  PMessage* tmpMsg = new PMessage(24);
+  PMessage* tmpMsg = new PMessage(256);
   std::vector< PContainerEntry* >* Entries = nContainer->GetEntries();
-  u16 StartPos;
   PContainerEntry* tEntry;
-  PItem* tItem;
-  u8 Flags, Qualifier; 
+  PMessage* entryMsg;
+ 
 
-/*** for gogo ***
-INV_LOC_GOGO
-    SectionMsg << (u8)0x02; // Gogo items nb  // section content at offset 3
-
-    SectionMsg << (u16)0x0b; // data size of item
-    SectionMsg << (u8)0x00; // pos (X) in gogo
-    SectionMsg << (u16)0x0188; // item id (Beggar Electroshocker)
-***/
-/*** for box ***
-INV_LOC_BOX
-    *tmpMsg << (u16)0x08; // Len
-    
-    *tmpMsg << (u8)0x0a; //Item len
-    *tmpMsg << (u16)0x0188; //Beggar Electroshocker
-    *tmpMsg << (u8)0x02; // Flags
-***/  
-// INV_LOC_WORN
-// INV_LOC_BACKPACK 
-
-if(nLocType == INV_LOC_BOX)
-  *tmpMsg << (u16)0x0000;     // Total size placeholder - To be put back in packet building
-else
-  if(nLocType == INV_LOC_BACKPACK)
-    *tmpMsg << (u16)Entries->size(); // items nb
-  else
-    *tmpMsg << (u8)Entries->size(); // items nb
+  if(nLocType != INV_LOC_BOX)
+  {
+    if(nLocType == INV_LOC_BACKPACK)
+      *tmpMsg << (u16)Entries->size(); // items nb
+    else
+      *tmpMsg << (u8)Entries->size(); // items nb
+  }
   
   for(u16 i=0; i < Entries->size(); ++i)
   {
     tEntry = Entries->at(i);
-    tItem = tEntry->mItem;
-    Flags = 0x00 ; // tItem->mPropertiesFlags;
-    switch(tItem->GetQualifier())
-    {
-      case 1:
-        Qualifier = 2;
-        Flags |= 0x02;
-        break;
-      case 31:
-        Qualifier = 6;
-        Flags |= 0x02;
-        break;
-      default:
-        break; 
-    }
-
-    StartPos = tmpMsg->GetNextByteOffset();
-    
-    *tmpMsg << (u8)0x00;     // Size of item placeholder
-    switch(nLocType)
-    {
-      case INV_LOC_WORN:
-        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
-        *tmpMsg << (u8)tEntry->mPosX; // X Location
-        *tmpMsg << (u8)0x00; // just nothing
-        break;
-      case INV_LOC_BACKPACK:
-        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
-        *tmpMsg << (u8)0x00; // just nothing again
-        *tmpMsg << (u8)tEntry->mPosX; // X Location
-        *tmpMsg << (u8)tEntry->mPosY; // Y Location
-        break;
-      case INV_LOC_GOGO:
-        *tmpMsg << (u8)0x00; // just nothing or Item size 2nd byte ?
-        *tmpMsg << (u8)tEntry->mPosX;
-        break;
-      case INV_LOC_BOX:
- 
-        
-        break;      
-      default:      
-        break;
-    }
-     
-    *tmpMsg << (u16)tItem->mItemID; // ItemID
-    *tmpMsg << (u8)Flags; // (0x01|0x02|0x10|0x40);      // Datatype
-
-//SectionMsg << (u8)0x01; // for 0x80. Use ???
-    
-    if(Flags & 0x01)
-    {
-      *tmpMsg << (u8)tItem->mLoadedAmmoNb; // Remaining ammos
-    }
-
-    if(Flags & 0x02)
-    {
-      *tmpMsg << (u8)Qualifier; // Qual entries
-      if(Qualifier >= 2)
-      {
-        *tmpMsg << (u8)tItem->mCurDuration; // current qual
-        if(Qualifier == 6)
-        {
-          *tmpMsg << (u8)tItem->mDamages; // dmg
-          *tmpMsg << (u8)tItem->mFrequency; // freq
-          *tmpMsg << (u8)tItem->mHandling; // handl
-          *tmpMsg << (u8)tItem->mRange; // range
-        }
-        *tmpMsg << (u8)tItem->mMaxDuration; // max qual
-      }
-    }
-
-    if(Flags & 0x04)
-    {
-      *tmpMsg << (u32)tItem->mStackSize;
-    }
-
-    if(Flags & 0x10)
-    {
-      *tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
-    }
-
-//    if(Flags & 0x20)
-//    {
-//      
-//    }
-                    
-    if(Flags & 0x40)
-    {
-      *tmpMsg << (u8)tItem->mUsedSlots; // used slots
-      *tmpMsg << (u8)tItem->mMaxSlots; // max slots
-      for(u8 j = 0; j < tItem->mMaxSlots; ++j)
-        *tmpMsg << (u16)tItem->mSlot[j]; // mod in slot
-    }
-    
-//    if(Flags & 0x80)
-//    {
-//      *tmpMsg << (u8)0x01; // use ???
-//    }
-          
-    tmpMsg->U8Data(StartPos) = tmpMsg->GetNextByteOffset() - StartPos -2;
+    entryMsg = BuildContainerContentEntry(tEntry, nLocType);
+    *tmpMsg << *entryMsg;
+    delete entryMsg;
   }
-  
-  if(nLocType == INV_LOC_BOX)
-    tmpMsg->U16Data(0) = tmpMsg->GetSize() - 2;
   
   delete Entries;
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID)
+PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nLocType)
+{
+  PMessage* tmpMsg = new PMessage(16);
+  PItem* tItem;
+  u8 Flags, Qualifier;
+  
+  tItem = nEntry->mItem;
+  Flags = 0x00 ; // tItem->mPropertiesFlags;
+  switch(tItem->GetQualifier()) // 1=tradeable (0 for medals, dogtags=>personnal stuff), 31=weapon, 15=mod,datacube,slotenh
+  {
+    case 1:
+      Qualifier = 2;
+      Flags |= 0x02;
+      break;
+    case 31:
+      Qualifier = 6;
+      Flags |= 0x02;
+      break;
+    default:
+      Qualifier = 0;
+      break; 
+  }
+  
+  if(nLocType == INV_LOC_BOX)
+    *tmpMsg << (u8)0x00;     // Size of item placeholder
+  else
+    *tmpMsg << (u16)0x0000;     // Size of item placeholder
+    
+  switch(nLocType)
+  {
+    case INV_LOC_WORN:
+      *tmpMsg << (u8)nEntry->mPosX; // X Location
+      *tmpMsg << (u8)0x00; // just nothing
+      break;
+    case INV_LOC_BACKPACK:
+      *tmpMsg << (u8)0x00; // just nothing again
+      *tmpMsg << (u8)nEntry->mPosX; // X Location
+      *tmpMsg << (u8)nEntry->mPosY; // Y Location
+      break;
+    case INV_LOC_GOGO:
+      *tmpMsg << (u8)nEntry->mPosX;
+      break;
+    case INV_LOC_BOX:
+    case INV_LOC_BOX2:
+      break;      
+    default:      
+      break;
+  }
+   
+  *tmpMsg << (u16)tItem->mItemID; // ItemID
+  *tmpMsg << (u8)Flags; // (0x01|0x02|0x10|0x40);      // Datatype
+  
+  if(Flags & 0x01)
+  {
+    *tmpMsg << (u8)tItem->mLoadedAmmoNb; // Remaining ammos
+  }
+
+  if(Flags & 0x02)
+  {
+    *tmpMsg << (u8)Qualifier; // Qual entries
+    if(Qualifier >= 2)
+    {
+      *tmpMsg << (u8)tItem->mCurDuration; // current qual
+      if(Qualifier == 6)
+      {
+        *tmpMsg << (u8)tItem->mDamages; // dmg
+        *tmpMsg << (u8)tItem->mFrequency; // freq
+        *tmpMsg << (u8)tItem->mHandling; // handl
+        *tmpMsg << (u8)tItem->mRange; // range
+      }
+      *tmpMsg << (u8)tItem->mMaxDuration; // max qual
+    }
+  }
+
+  if(Flags & 0x04)
+  {
+    *tmpMsg << (u32)tItem->mStackSize;
+  }
+
+  if(Flags & 0x10)
+  {
+    *tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
+  }
+
+//    if(Flags & 0x20)
+//    {
+//      
+//    }
+                  
+  if(Flags & 0x40)
+  {
+    *tmpMsg << (u8)tItem->mUsedSlots; // used slots
+    *tmpMsg << (u8)tItem->mMaxSlots; // max slots
+    for(u8 j = 0; j < tItem->mMaxSlots; ++j)
+      *tmpMsg << (u16)tItem->mSlot[j]; // mod in slot
+  }
+  
+//    if(Flags & 0x80)
+//    {
+//      *tmpMsg << (u8)0x01; // use ???
+//    }
+  
+  if(nLocType == INV_LOC_BOX)
+    tmpMsg->U8Data(0) = tmpMsg->GetSize() - 1;
+  else
+    tmpMsg->U16Data(0) = tmpMsg->GetSize() - 2;
+    
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID, PContainer* nContainer)
 {
     // "Header"
     // 13 7f 00 d7 b5 0f 03 7f 00 1f 01 00 26 00 70 01 00 00 64 00 00
@@ -2064,14 +2055,14 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     // u8   - bytes to follow for THIS item
     // u16  - ItemID (items.def)
     // u8   - DataType
-
+    
     PMessage* tmpMsg = new PMessage();
     nClient->IncreaseUDP_ID();
 
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x14; // Message length
+    *tmpMsg << (u8)0x00; // Message length
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
@@ -2083,6 +2074,11 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u8)0x00; // Always the same on item containers?
     *tmpMsg << (u8)0x08; // 0x08 when container is filled, 0x00 when not? At least it works..
 
+    PMessage* ContentList = BuildContainerContentList(nContainer, INV_LOC_BOX);
+    *tmpMsg << (u16)(ContentList->GetSize());
+    *tmpMsg << *ContentList;
+    delete ContentList;
+
 /*    
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u8)0x00;
@@ -2092,7 +2088,7 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u8)0x29;
 */
 
-    *tmpMsg << (u16)0x0f; // Len
+/*    *tmpMsg << (u16)0x0f; // Len
     
     *tmpMsg << (u8)0x0a; //Item len
     *tmpMsg << (u16)0x0188; //Beggar Electroshocker
@@ -2108,6 +2104,7 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u8)0x03; //Item len
     *tmpMsg << (u16)0x016B; //Self-constructed Claw
     *tmpMsg << (u8)0x00; // Flags
+*/
     
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
     
@@ -2116,33 +2113,84 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
 
 PMessage* PMsgBuilder::BuildItemMoveMsg (PClient* nClient, u8 nSource, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt)
 {
-    // 13 01 01 C6 E3 14 03 01 01 1F 01 00 25 13 BE F8 14 02 06 00 03 03 00 01 00 00
-    PMessage* tmpMsg = new PMessage(24);
-    nClient->IncreaseUDP_ID();
-    nClient->IncreaseTransactionID();
+  PMessage* tmpMsg = new PMessage(26);
+  nClient->IncreaseUDP_ID();
+  nClient->IncreaseTransactionID();
 
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x14; // Message length
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x1f;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x25;
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)nClient->GetTransactionID();
-    *tmpMsg << (u8)0x14; // ItemMove Answer
-    *tmpMsg << nSource;
-    *tmpMsg << nSrcX;
-    *tmpMsg << nSrcY;
-    *tmpMsg << nDestination;
-    *tmpMsg << nDestX;
-    *tmpMsg << nDestY;
-    *tmpMsg << nItemCnt;
-    *tmpMsg << (u8)0x00; // ??
-    *tmpMsg << (u8)0x00; // ??
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  *tmpMsg << (u8)0x14; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x25;
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x14; // ItemMove Answer
+  *tmpMsg << nSource;
+  *tmpMsg << nSrcX;
+  *tmpMsg << nSrcY;
+  *tmpMsg << nDestination;
+  *tmpMsg << nDestX;
+  *tmpMsg << nDestY;
+  *tmpMsg << nItemCnt;
+  *tmpMsg << (u8)0x00; // ??
+  *tmpMsg << (u8)0x00; // ??
 
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildBoxItemMoveMsg (PClient* nClient, PContainerEntry* nEntry, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt)
+{
+  PMessage* tmpMsg = new PMessage(64);
+  PMessage* entryMsg = BuildContainerContentEntry(nEntry, INV_LOC_BOX2);
+
+  nClient->IncreaseUDP_ID();
+  nClient->IncreaseTransactionID();
+      
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  
+  *tmpMsg << (u8)0x09; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x25;
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x17; // BoxItemMove Answer Src
+  *tmpMsg << (u8)INV_LOC_BOX; // Src = Box
+  *tmpMsg << nSrcX;
+  *tmpMsg << nSrcY;
+  *tmpMsg << nItemCnt;
+  *tmpMsg << (u8)0x00; // Qty high
+  *tmpMsg << (u8)0x18; // BoxItemMove Answer Dst
+  *tmpMsg << nDestination;
+  *tmpMsg << nDestX;
+  *tmpMsg << nDestY;
+  *tmpMsg << *entryMsg;
+  *tmpMsg << (u8)0x12; // ? vary ...
+  *tmpMsg << (u8)0x00;
+  
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+/*
+13 2d 00 97 d0
+09
+03 2c 00 1f 01 00 25 23 2c
+21
+03 2d 00 1f 01 00 25 13
+ bc 3b 17 04 06 00 05 00
+ bd 3b 18 03 00 04 07 00 57 14 04 05 00 00 00
+ 12 00 
+*/
+    delete entryMsg;
     return tmpMsg;
 }
 

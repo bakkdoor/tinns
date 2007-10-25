@@ -36,7 +36,9 @@
 #include "inventory.h"
 #include "container.h"
 
-/**** PUdpItemSlotUse ****/
+/**** PUdpItemMove ****/
+
+#define PUdpItemMove_NO_BOX_TAKE_ALL
 
 PUdpItemMove::PUdpItemMove(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
@@ -64,87 +66,189 @@ PUdpMsgAnalyser* PUdpItemMove::Analyse()
 
 bool PUdpItemMove::DoAction()
 {
+//mDecodeData->mTraceDump = true;
   PMessage* tmpMsg;
   bool MoveSucceded = false;
   PClient* nClient = mDecodeData->mClient;
   PChar* tChar = nClient->GetChar();
+  u8 origDstX = mDstX;
+  u8 origDstY = mDstY;
+  PContainerEntry* tEntry;
+  
+PItem* tItem = NULL;
 
-  PContainer* SrcContainer = tChar->GetInventory()->GetContainer(mSrcLoc);
-  if(mSrcLoc != mDstLoc)
+  PContainer* SrcContainer = GetContainerByLoc(tChar, mSrcLoc);
+  if(SrcContainer)
   {
-    PContainer* DstContainer = tChar->GetInventory()->GetContainer(mDstLoc);
-    MoveSucceded = SrcContainer->MoveItem(mSrcX, mSrcY, mItemCnt, DstContainer, mDstX, mDstY);
-  }
-  else
-  {
-    MoveSucceded = SrcContainer->MoveItem(mSrcX, mSrcY, mItemCnt, mDstX, mDstY);
-  }
-           
-          
-
-
-/*
-    // Case #1: Simplest thing, client trying to change slots
-    if(src_loc == 2 && dst_loc == 2)
+    tEntry = SrcContainer->GetEntry(mSrcX);
+    tItem = SrcContainer->GetItem(mSrcX);
+    if(mSrcLoc != mDstLoc)
     {
-        if(tChar->GetInventory()->QB_IsFree(dst_x) == false)  // Destination slot is in use? Break here
-            return true;
-
-        tChar->GetInventory()->QB_Move(src_x, dst_x); // Destination slot is free, now switch item internal
-        // Now built the clientmessage to move item on client
-        tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, src_loc, src_x, src_y, dst_loc, dst_x, dst_y, itemcnt);
-        DoneAnalyzing = true;
+      PContainer* DstContainer = GetContainerByLoc(tChar, mDstLoc);
+if(mSrcY)
+Console->Print(RED, BLACK, "Warning: PUdpItemMove: intramove: src Y != 0");
+#ifdef PUdpItemMove_NO_BOX_TAKE_ALL
+  if((mSrcLoc != INV_LOC_BOX) || (mDstX != 255) || (mDstY != 255))
+  {
+#endif
+      if(DstContainer)
+      {
+        //PContainerEntry* tEntry = SrcContainer->GetEntry(mSrcX);
+          MoveSucceded = SrcContainer->MoveItem(mSrcX, mItemCnt, DstContainer, mDstX, mDstX, mDstY);
+        /*if(tEntry)
+          tEntry->Get2DPos(&mDstX, &mDstY);*/
+      }
+#ifdef PUdpItemMove_NO_BOX_TAKE_ALL
+  }
+#endif
     }
-// *_loc:
-// 1: Ground
-// 2: QB
-// 3: Inv
-// 4: Current open container/trashcan/box/w.e.
-// 18:GoGuardian
+    else
+    {
+if(mSrcY || mDstY)
+  Console->Print(RED, BLACK, "Warning: PUdpItemMove: intramove: src Y or dst Y != 0");
+      MoveSucceded = SrcContainer->MoveItem(mSrcX, mItemCnt, mDstX);
+    }
+  }
 
-    //if (gDevDebug)
-    //{
-        if(src_loc == 1 && dst_loc == 2)
-            Console->Print("Client trying to move %d items from ground to Quickaccessbelt slot %d", itemcnt, dst_x);
-        else if(src_loc == 1 && dst_loc == 3)
-            Console->Print("Client trying to move %d items from ground to Inventory X %d Y %d", itemcnt, dst_x, dst_y);
-        else if(src_loc == 2 && dst_loc == 1)
-            Console->Print("Client trying to move %d items from Quickaccessbelt slot %d to ground", itemcnt, src_x);
-        else if(src_loc == 2 && dst_loc == 2)
-            Console->Print("Client trying to move %d items from Quickaccessbelt slot %d to Quickaccessbelt slot %d", itemcnt, src_x, dst_x);
-        else if(src_loc == 2 && dst_loc == 3)
-            Console->Print("Client trying to move %d items from Quickaccessbelt slot %d to Inventory X %d Y %d", itemcnt, src_x, dst_x, dst_y);
-        else if(src_loc == 3 && dst_loc == 1)
-            Console->Print("Client trying to move %d items from Inventory to Ground", itemcnt);
-        else if(src_loc == 3 && dst_loc == 2)
-            Console->Print("Client trying to move %d items from Inventory to Quickaccessbelt slot %d", itemcnt, dst_x);
-        else
-            Console->Print("Client trying to move %d items from LOC: %d X: %d Y: %d to LOC: %d X: %d Y: %d", itemcnt, src_loc, src_x, src_y, dst_loc, dst_x, dst_y);
-    //}
-*/
   if(MoveSucceded)
   {
-    tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+    if((mDstX == 255) && (mDstY == 255) && (mSrcLoc == INV_LOC_BOX))
+    {
+      tmpMsg = MsgBuilder->BuildUndefineduseMsg(nClient, 0x2c);
+      nClient->SendUDPMessage(tmpMsg);
+      tmpMsg = MsgBuilder->BuildBoxItemMoveMsg (nClient, tEntry, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+    }
+    else
+    {
+      tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+    }
     nClient->SendUDPMessage(tmpMsg);
 
-Console->Print(GREEN, BLACK, "[Success] Item move %u:%u-%u => %u:%u-%u (%u)", mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);    
+/*Console->Print(YELLOW, BLACK, "[Success] Item move %u:%u-%u => %u:%u-%u : %u %s", mSrcLoc, mSrcX, mSrcY, mDstLoc, origDstX, origDstY, mItemCnt, tItem ? tItem->GetName().c_str() : "");    
 Console->Print(YELLOW, BLACK, "--- Worn Inventory ---");
 tChar->GetInventory()->GetContainer(INV_LOC_WORN)->Dump();
 Console->Print(YELLOW, BLACK, "--- Backpack Inventory ---");
 tChar->GetInventory()->GetContainer(INV_LOC_BACKPACK)->Dump();
 Console->Print(YELLOW, BLACK, "--- Gogo Inventory ---");    
 tChar->GetInventory()->GetContainer(INV_LOC_GOGO)->Dump();
-
+if (tChar->GetInventory()->IsDirty())
+  Console->Print(YELLOW, BLACK, "Inventory DIRTY"); */
+  
 // => TO CHECK: deactivate item in-hand if active slot now emtpy ???
-    
   }
   else
   {
-Console->Print(YELLOW, BLACK, "[Warning] Item move failed %u:%u-%u => %u:%u-%u (%u)", mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY, mItemCnt);
+#ifdef PUdpItemMove_NO_BOX_TAKE_ALL
+  if((mSrcLoc != INV_LOC_BOX) || (mDstX != 255) || (mDstY != 255))
+  {
+#endif
+if(mDstLoc == INV_LOC_GROUND)
+  Chat->send(nClient, CHAT_DIRECT, "System", "Can't throw items to the ground yet.");
+else
+  Console->Print(YELLOW, BLACK, "[Warning] Item move failed %u:%u-%u => %u:%u-%u : %u %s", mSrcLoc, mSrcX, mSrcY, mDstLoc, origDstX, origDstY, mItemCnt, tItem ? tItem->GetName().c_str() : "");
     // Send 'null move'
     //tmpMsg = MsgBuilder->BuildItemMoveMsg(nClient, mSrcLoc, mSrcX, mSrcY, mSrcLoc, mSrcX, mSrcY, mItemCnt);
     //nClient->SendUDPMessage(tmpMsg);
+#ifdef PUdpItemMove_NO_BOX_TAKE_ALL
+  }
+  else
+  {
+    Chat->send(nClient, CHAT_DIRECT, "System", "'TAKE ALL' can't be used yet.");
+  }
+#endif
   }    
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+PContainer* PUdpItemMove::GetContainerByLoc(PChar* nChar, u8 nLoc)
+{
+  PContainer* tContainer = NULL;
+  
+  switch(nLoc)
+  {
+    case INV_LOC_WORN:
+    case INV_LOC_BACKPACK:
+    case INV_LOC_GOGO:
+    {
+      tContainer = nChar->GetInventory()->GetContainer(nLoc);
+      break;
+    }
+    
+    case INV_LOC_BOX:
+    {
+      tContainer = nChar->GetContainerInExclusiveUse();
+      break; 
+    }
+    case INV_LOC_GROUND:
+    case INV_LOC_NPCTRADE:
+    default:
+      break;    
+  }
+  
+  return tContainer;
+}
+
+  
+/**** PUdpItemMoveBP ****/
+
+PUdpItemMoveBP::PUdpItemMoveBP(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x14";
+}
+
+PUdpMsgAnalyser* PUdpItemMoveBP::Analyse()
+{
+  mDecodeData->mName << "=Moving item";
+
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 9);
+  
+  *nMsg >> mSrcSlotId;
+  *nMsg >> mDumb;
+  *nMsg >> mDstX;
+  *nMsg >> mDstY;
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpItemMoveBP::DoAction()
+{
+//mDecodeData->mTraceDump = true;
+//  PMessage* tmpMsg;
+  bool MoveSucceded = false;
+  PClient* nClient = mDecodeData->mClient;
+  PChar* tChar = nClient->GetChar();
+
+  PContainer2DWorkaround* SrcContainer = tChar->GetInventory()->GetBackpackContainer();
+  if(SrcContainer)
+  {
+if(mDumb)
+  Console->Print(RED, BLACK, "[Warning] PUdpItemMoveBP: Dumb != 0 (%d)", mDumb);
+//Console->Print(YELLOW, BLACK, "PUdpItemMoveBP: Tyring Item move: slot %u => %u-%u", mSrcSlotId, mDstX, mDstY);
+    PContainerEntry* tEntry = SrcContainer->GetEntry(mSrcSlotId);
+    if(tEntry)
+    {
+      SrcContainer->SetUsed(tEntry, false);
+      SrcContainer->SetEntryPosXY(tEntry, mSrcSlotId, mDstX, mDstY);
+      SrcContainer->SetUsed(tEntry);
+      SrcContainer->SetDirty();
+      MoveSucceded = true;
+    }
+    else
+      Console->Print(RED, BLACK, "[Warning] PUdpItemMoveBP: trying to use invalid slot %d", mSrcSlotId);
+  }
+  else
+  {
+    Console->Print(RED, BLACK, "[Warning] trying to use invalid Backpack container");
+  }
+//Console->Print(YELLOW, BLACK, "--- Backpack Inventory ---");
+//SrcContainer->Dump();
+
+// No answer to confirm ?
+//tmpMsg = NULL;
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

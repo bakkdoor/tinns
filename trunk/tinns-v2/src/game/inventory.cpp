@@ -39,9 +39,11 @@
 
 PInventory::PInventory ()
 {
-  mWorn = new PContainerLinearSlots(INV_WORN_COLS, INV_WORN_MAXSLOTS);
-  mBackpack = new PContainer2DAreas(INV_BACKPACK_COLS);
-  mGogo = new PContainerLinearSlots(INV_GOGO_COLS, INV_GOGO_MAXSLOTS);
+  mWorn = new PContainerWithHoles(INV_WORN_MAXSLOTS);
+  //mBackpack = new PContainer2D();
+  mBackpack = new PContainer2DWorkaround(); // until Inside-Backpack item moving issues are solved
+  mBackpack->Set2DPosMax(INV_BACKPACK_COLS);
+  mGogo = new PContainerAutoFindFree(INV_GOGO_MAXSLOTS);
 }
 
 PInventory::~PInventory ()
@@ -60,9 +62,9 @@ void PInventory::SetCharId(u32 CharID)
 
 bool PInventory::SQLLoad()
 {
-  //return mWorn->SQLLoad() && mBackpack->SQLLoad() && mGogo->SQLLoad();
+  return ( mWorn->SQLLoad() && mBackpack->SQLLoad() && mGogo->SQLLoad() );
   
-bool ret = mWorn->SQLLoad() && mBackpack->SQLLoad() && mGogo->SQLLoad();
+/*bool ret = mWorn->SQLLoad() && mBackpack->SQLLoad() && mGogo->SQLLoad();
 Console->Print(YELLOW, BLACK, "--- Worn Inventory ---");
 mWorn->Dump();
 Console->Print(YELLOW, BLACK, "--- Backpack Inventory ---");
@@ -70,7 +72,7 @@ mBackpack->Dump();
 Console->Print(YELLOW, BLACK, "--- Gogo Inventory ---");
 mGogo->Dump();
 Console->Print(YELLOW, BLACK, "--- End Inventory ---");
-return ret;
+return ret;*/
 }
 
 bool PInventory::SQLSave()
@@ -78,9 +80,14 @@ bool PInventory::SQLSave()
   return mWorn->SQLSave() && mBackpack->SQLSave() && mGogo->SQLSave();
 }
 
+bool PInventory::IsDirty() const
+{
+  return (mWorn && mWorn->IsDirty()) || (mBackpack && mBackpack->IsDirty()) || (mGogo && mGogo->IsDirty());
+}
+
 PContainer* PInventory::GetContainer(u8 nInvLoc)
 {
-  PContainer* tContainer = NULL;
+  PContainer* tContainer;
   switch(nInvLoc)
   {
     case INV_LOC_WORN:
@@ -92,6 +99,8 @@ PContainer* PInventory::GetContainer(u8 nInvLoc)
     case INV_LOC_GOGO:
       tContainer = mGogo;
       break;
+    default:
+      tContainer = NULL;
   }
   return tContainer;
 }

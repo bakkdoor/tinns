@@ -44,8 +44,25 @@ class PUdpItemMove : public PUdpMsgAnalyser
     u8 mDstY;
     u8 mItemCnt;
  
+    PContainer* GetContainerByLoc(PChar* nChar, u8 nLoc);
+    
   public:
       PUdpItemMove(PMsgDecodeData* nDecodeData);
+      //~PUdpItemMove();
+      PUdpMsgAnalyser* Analyse();
+      bool DoAction();
+};
+
+class PUdpItemMoveBP : public PUdpMsgAnalyser
+{
+  private:
+    u8 mSrcSlotId;
+    u8 mDumb;
+    u8 mDstX;
+    u8 mDstY;
+    
+  public:
+      PUdpItemMoveBP(PMsgDecodeData* nDecodeData);
       //~PUdpItemMove();
       PUdpMsgAnalyser* Analyse();
       bool DoAction();

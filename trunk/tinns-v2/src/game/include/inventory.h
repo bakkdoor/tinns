@@ -40,6 +40,7 @@
 #define INV_LOC_BOX 4
 #define INV_LOC_NPCTRADE 5
 #define INV_LOC_GOGO 18
+#define INV_LOC_BOX2 255
 //PC-Trade window = ?
 
 //Inventory containers info
@@ -76,13 +77,16 @@
 
 class PItem;
 class PContainer;
+class PContainerWithHoles;
+class PContainer2DWorkaround;
+class PContainerAutoFindFree;
 
 class PInventory
 {
   private:
-    PContainer* mWorn; // PContainerLinearSlots
-    PContainer* mBackpack; // PContainer2DAreas
-    PContainer* mGogo; // PContainerLinearSlots
+    PContainerWithHoles* mWorn; // PContainerLinearSlots
+    PContainer2DWorkaround* mBackpack; // PContainer2DAreas
+    PContainerAutoFindFree* mGogo; // PContainerLinearSlots
     
   public:
 
@@ -93,7 +97,10 @@ class PInventory
     bool SQLLoad();
     bool SQLSave();
     PContainer* GetContainer(u8 nInvLoc);
-    
+    inline PContainer2DWorkaround* GetBackpackContainer() { return mBackpack; }
+
+    bool IsDirty() const;
+      
     bool AddItem(PItem* NewItem, u8 nInvLoc = INV_LOC_BACKPACK, u32 nInvID = 0, u8 nPosX = 0, u8 nPosY = 0, bool SetDirty = true);
     //bool CheckItem(u32 ItemID, u8 StackSize = 1);
     //PItem *GetItem(u32 ItemID, u8 StackSize = 1);

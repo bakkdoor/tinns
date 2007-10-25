@@ -54,7 +54,7 @@ struct PMsgDecodeData
 	  u8 mState;
 	  u8 mUnknownType;
 	  bool mHandling0x13Sub;
-	  u8 Sub0x13Start;
+	  u16 Sub0x13Start;
 	  u16 Sub0x13StartNext;
 	  std::stringstream mName;
 	  std::string mErrorDetail;
