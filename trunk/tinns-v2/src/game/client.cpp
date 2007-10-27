@@ -215,6 +215,7 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
   }
   else if (nLocation != 1) // try to fall back if bad location
   {
+    Console->Print(YELLOW, BLACK, "[Warning] Client %d want to zone to invalid world %d. Falling back to world 1", mIndex, nLocation);
     return ChangeCharLocation(1, DoForce);
   }
 

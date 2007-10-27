@@ -28,7 +28,7 @@
 #ifndef SVN_REV_DEF
 #define SVN_REV_DEF
 
-#define TINNS_SVN_REVISION "90"
+#define TINNS_SVN_REVISION "91"
 
 #endif
 

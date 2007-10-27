@@ -562,48 +562,13 @@ bool PUdpUseObject::DoAction()
                         // TODO: Add check if container is already open
                         // PContainer* tContainer = World->GetContainer(mRawItemID);
                         PContainer* tContainer = new PContainerAutoCompactOnClose(INV_CABINET_MAXSLOTS);
-                        PItem* nItem;
-                        u32 nItemId;
-                        
-                        for(u8 i = 0; i < (INV_CABINET_MAXSLOTS / 2); ++i)
-                        {
-                          nItemId = GameServer->GetRandom(10006, 1);
-
-                          if(! GameDefs->GetItemsDef(nItemId))
-                          {
-                            u16 j0, j;
-                            j0 = j = (nItemId / 100);
-                            do
-                            {
-                              if(++j > 100)
-                                j = 0;
-                              if(j == j0)
-                                break;
-                            }
-                            while(!GameDefs->GetItemsDef(100 * j));
-                            
-                            u16 k = 99;
-                            do
-                            {
-                              nItemId = 100 * j + GameServer->GetRandom(k, 0);
-                              k = k/2 + 1;
-                            }
-                            while(!GameDefs->GetItemsDef(nItemId) && (k>2));
-                          }
-                          
-                          if(GameDefs->GetItemsDef(nItemId))
-                          {                        
-                            nItem = new PItem(nItemId, 1, 250, 250, 250, 250, 250, 250);
-                            if(nItem->GetItemID());
-                              tContainer->AddItem(nItem);
-                          }
-                        }
-                        
+                        tContainer->RandomFill(INV_CABINET_MAXSLOTS / 2);
+                                                
                         /*nItem = new PItem(19, 1, 250, 250, 250, 250, 250, 250);
                         if(nItem->GetItemID());
                           tContainer->AddItem(nItem);*/
-Console->Print(YELLOW, BLACK, "[Info] Temporary container created");
-//tContainer->Dump();                      
+if(gDevDebug) Console->Print(YELLOW, BLACK, "[Info] Temporary container created");
+//if(gDevDebug) tContainer->Dump();                      
                         if(tContainer->StartUse(tChar->GetID()))
                         {
                           tChar->SetContainerInExclusiveUse(tContainer);
@@ -684,7 +649,7 @@ bool PUdpCloseItemContainer::DoAction()
     if(! tContainer->GetOwnerId())
     {
       delete tContainer;
-Console->Print(YELLOW, BLACK, "[Info] Temporary container deleted");      
+if(gDevDebug) Console->Print(YELLOW, BLACK, "[Info] Temporary container deleted");      
     }
   }
   

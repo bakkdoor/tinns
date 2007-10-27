@@ -136,7 +136,7 @@ bool PWorld::Load(u32 nWorldID)
             return false;
     }
 
-    mWorldDataTemplate = Worlds->GetWorldDataTemplate(WorldTemplateName);
+    mWorldDataTemplate = Worlds->GetWorldDataTemplate(tFileName);
     if(!mWorldDataTemplate)
     {
         Console->Print("%s PWorld::Load : Unexpected world %d not found error", Console->ColorText(RED, BLACK, "[Warning]"), nWorldID);
@@ -226,26 +226,26 @@ PWorlds::~PWorlds()
         }
 }
 
-bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase)
+bool PWorlds::LeaseWorldDataTemplate(const std::string& nBspName, const std::string& nFileName, const bool nPreloadPhase)
 {
     PWorldDataTemplate* tWorldDataTemplate;
 
-    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nFileName);
     if(it == mWorldDataTemplatesMap.end()) // template unkown yet
     {
         if (nPreloadPhase) // if in preload phase, we try to load it or make it known
         {
             tWorldDataTemplate = new PWorldDataTemplate;
-            if (tWorldDataTemplate->LoadDatFile(nWorldName, nFileName, !mPreloadWorldsTemplates))
+            if (tWorldDataTemplate->LoadDatFile(nBspName, nFileName, !mPreloadWorldsTemplates))
             {
                 if (mPreloadWorldsTemplates)
                 {
-                    mWorldDataTemplatesMap.insert(std::make_pair(nWorldName, tWorldDataTemplate));
+                    mWorldDataTemplatesMap.insert(std::make_pair(nFileName, tWorldDataTemplate));
                     tWorldDataTemplate->IncreaseUseCount();
                 }
                 else
                 {
-                    mWorldDataTemplatesMap.insert(std::make_pair(nWorldName, (PWorldDataTemplate*)NULL)); // NULL means file access OK but not preloaded yet
+                    mWorldDataTemplatesMap.insert(std::make_pair(nFileName, (PWorldDataTemplate*)NULL)); // NULL means file access OK but not preloaded yet
                     delete tWorldDataTemplate;
                 }
                 //return true;
@@ -266,7 +266,7 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
         if (!it->second  &&  !nPreloadPhase) // template known but not already loaded and not in preload ?
         {
             tWorldDataTemplate = new PWorldDataTemplate;
-            if (tWorldDataTemplate->LoadDatFile(nWorldName, nFileName))
+            if (tWorldDataTemplate->LoadDatFile(nBspName, nFileName))
             {
                 it->second = tWorldDataTemplate;
             }
@@ -288,27 +288,27 @@ bool PWorlds::LeaseWorldDataTemplate(const std::string& nWorldName, const std::s
     return true;
 }
 
-void PWorlds::ReleaseWorldDataTemplate(const std::string& nWorldName)
+void PWorlds::ReleaseWorldDataTemplate(const std::string& nFileName)
 {
-    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nFileName);
     if((it != mWorldDataTemplatesMap.end()) && it->second)
     {
         it->second->DecreaseUseCount();
     }
     else
-        Console->Print("%s PWorlds::ReleaseWorldDataTemplate : try to relese not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
+        Console->Print("%s PWorlds::ReleaseWorldDataTemplate : try to relese not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nFileName.c_str());
 }
 
-void PWorlds::UnloadWorldDataTemplate(const std::string& nWorldName)
+void PWorlds::UnloadWorldDataTemplate(const std::string& nFileName)
 {
     PWorldDataTemplate* tWorldDataTemplate;
 
-    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nWorldName);
+    PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(nFileName);
     if((it != mWorldDataTemplatesMap.end()) && it->second)
     {
         tWorldDataTemplate = it->second;
         if (mPreloadWorldsTemplates ||(tWorldDataTemplate->GetUseCount() > 0))
-            Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to unload template %s when use count not null ou preload set", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
+            Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to unload template %s when use count not null ou preload set", Console->ColorText(RED, BLACK, "[Warning]"), nFileName.c_str());
         else
         {
             it->second = (PWorldDataTemplate*)NULL;
@@ -316,12 +316,12 @@ void PWorlds::UnloadWorldDataTemplate(const std::string& nWorldName)
         }
     }
     else
-        Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to release not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nWorldName.c_str());
+        Console->Print("%s PWorlds::UnloadWorldDataTemplate : attempt to release not loaded template %s", Console->ColorText(RED, BLACK, "[Warning]"), nFileName.c_str());
 }
 
-PWorldDataTemplate* PWorlds::GetWorldDataTemplate(const std::string& nWorldName)
+PWorldDataTemplate* PWorlds::GetWorldDataTemplate(const std::string& nFileName)
 {
-    PWorldDataTemplatesMap::const_iterator it = mWorldDataTemplatesMap.find(nWorldName);
+    PWorldDataTemplatesMap::const_iterator it = mWorldDataTemplatesMap.find(nFileName);
     if(it != mWorldDataTemplatesMap.end())
         return it->second;
     else
@@ -331,6 +331,7 @@ PWorldDataTemplate* PWorlds::GetWorldDataTemplate(const std::string& nWorldName)
 bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registred in mWorldDataTemplatesMap
 {                          //   will be considered as valid
     std::string tFileName;
+    std::string tBspName;  
     const PDefWorld* tDefWorld;
     bool tCheckOK;
     int ValidCount = 0, InvalidCount = 0, DblInvCount = 0;
@@ -344,10 +345,11 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     for (PDefAppartementMap::const_iterator i=itAptStart; i!=itAptEnd; i++)
     {
         tCheckOK = false;
-        tFileName = std::string("worlds/") + i->second->GetWorldName() + ".dat";
+        tBspName = i->second->GetWorldName();
+        tFileName = std::string("worlds/") + tBspName + ".dat";
         if (!InvalideFiles.count(tFileName))
         {
-            tCheckOK = LeaseWorldDataTemplate(i->second->GetWorldName(), tFileName, true);
+            tCheckOK = LeaseWorldDataTemplate(tBspName, tFileName, true);
             if (!tCheckOK)
             {
                 InvalideFiles.insert(tFileName);
@@ -357,10 +359,10 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         }
         if (!tCheckOK) // in case full path was given without omiting worlds/ or in another dir/archive ...
         {
-            tFileName = i->second->GetWorldName() + ".dat";
+            tFileName = tBspName + ".dat";
             if(!InvalideFiles.count(tFileName))
             {
-                tCheckOK = LeaseWorldDataTemplate(i->second->GetWorldName(), tFileName, true);
+                tCheckOK = LeaseWorldDataTemplate(tBspName, tFileName, true);
                 if (!tCheckOK)
                 {
                     InvalideFiles.insert(tFileName);
@@ -401,6 +403,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
         tDefWorld = GameDefs->GetWorldDef(tDefWorldFile->GetIndex());
         if (tDefWorld) // we only care for worlds that are present in worldinfo.def too
         {
+            tBspName = tDefWorldFile->GetName();
             if(!(tDefWorld->GetDatFile().empty()))
                 tFileName = tDefWorld->GetDatFile();
             else
@@ -409,7 +412,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
             tCheckOK = false;
             if (!InvalideFiles.count(tFileName))
             {
-                tCheckOK = LeaseWorldDataTemplate(i->second->GetName(), tFileName, true);
+                tCheckOK = LeaseWorldDataTemplate(tBspName,tFileName, true);
                 if (!tCheckOK)
                 {
                     InvalideFiles.insert(tFileName);
@@ -467,7 +470,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
             tCheckOK = false;
             if (!InvalideFiles.count(tFileName))
             {
-                tCheckOK = LeaseWorldDataTemplate(std::string(worldName), tFileName, true);
+                tCheckOK = LeaseWorldDataTemplate(worldName,tFileName, true);
                 if (!tCheckOK)
                 {
                     InvalideFiles.insert(tFileName);
@@ -527,9 +530,8 @@ bool PWorlds::IsValidWorld(u32 nWorldID)
             if (!nAppDef)
                 return false;
 
-            std::string WorldTemplateName = nAppDef->GetWorldName();
-
-            PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(WorldTemplateName);
+            std::string tFileName = "worlds/" + nAppDef->GetWorldName() + ".dat";
+            PWorldDataTemplatesMap::iterator it = mWorldDataTemplatesMap.find(tFileName);
             return (it != mWorldDataTemplatesMap.end());
         }
     }

@@ -77,7 +77,10 @@ class PGameDefs
     PDefAppartementMap mAppartementDefs;
     PDefRespawnMap mRespawnDefs;
     PDefWorldFileMap mWorldFileDefs;
-        
+    
+    PDefItemsMap::const_iterator* DefItemsMapItCache;
+    int DefItemsMapItCacheCount;
+    
 		bool LoadCharDefs();
 		bool LoadSkillDefs();
 		bool LoadSubSkillDefs();
@@ -91,7 +94,8 @@ class PGameDefs
 		bool LoadAppartementDefs();
 		bool LoadRespawnDefs();
 		bool LoadWorldFileDefs();
-		
+    void BuildDefItemsMapItCache();
+    
 	public :
 		PGameDefs();
 		~PGameDefs();
@@ -119,6 +123,7 @@ class PGameDefs
 
 		inline int GetNumItemsDefs() const { return mItemsDefs.size(); }
 		const PDefItems *GetItemsDef(int Index) const;
+		const PDefItems *GetItemsDefBySeqIndex(int SeqIndex) const;
 
 		inline int GetNumWorldModelDefs() const { return mWorldModelDefs.size(); }
 		const PDefWorldModel *GetWorldModelDef(int Index) const;

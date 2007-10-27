@@ -40,7 +40,8 @@ typedef std::map<u32, PDoorTemplate*> PDoorsMap;
 class PWorldDataTemplate
 {
   private:
-    std::string mName; // relative path+filename without leading ./ or ./worlds/ nor .dat extension
+    std::string mName; // (datfile) relative path+filename without leading ./ or ./worlds/ nor .dat extension
+    std::string mBspName; // (bsp file) relative path+filename without leading ./ or ./worlds/ nor .bsp extension
     PFurnitureItemsMap mFurnitureItems;
     PDoorsMap mDoors;
     PFurnitureItemTemplate* mPositionItems[10];
@@ -54,8 +55,9 @@ class PWorldDataTemplate
     PWorldDataTemplate();
     ~PWorldDataTemplate();
     
-    bool LoadDatFile(const std::string& nWorldName, const std::string& nFilename, const bool nTestAccesOnly = false);
+    bool LoadDatFile(const std::string& WorldTemplateName, const std::string& nFilename, const bool nTestAccesOnly = false);
     inline const std::string& GetName() { return mName; }
+    inline const std::string& GetBspName() { return mBspName; }
     
     inline void IncreaseUseCount() { ++mUseCount; }
     inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }

@@ -57,6 +57,7 @@ class PWorld
     ~PWorld();
     
     inline std::string GetName() { return (mWorldDataTemplate ? mWorldDataTemplate->GetName() : EmptyString ); }
+    inline std::string GetBspName() { return (mWorldDataTemplate ? mWorldDataTemplate->GetBspName() : EmptyString ); }
     inline bool IsAppartment() { return mIsAppartment; }
     inline const PFurnitureItemTemplate* GetFurnitureItemTemplate(u32 nItemID) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetFurnitureItem(nItemID) : NULL) ; }
     const PDefWorldModel* GetFurnitureItemModel(u32 nItemID);
@@ -82,10 +83,10 @@ class PWorlds
     PWorldsMap mOnDemandWorldsMap; // mostly appartments. Could be used for instance dungeons too, but instance dungeons are crap :p
     PWorldDataTemplatesMap mWorldDataTemplatesMap;
 
-    bool LeaseWorldDataTemplate(const std::string& nWorldName, const std::string& nFileName, const bool nPreloadPhase = false);
-    void ReleaseWorldDataTemplate(const std::string& nWorldName);
-    void UnloadWorldDataTemplate(const std::string& nWorldName);
-    PWorldDataTemplate* GetWorldDataTemplate(const std::string& nWorldName);
+    bool LeaseWorldDataTemplate(const std::string& nBspName, const std::string& nFileName, const bool nPreloadPhase = false);
+    void ReleaseWorldDataTemplate(const std::string& nFileName);
+    void UnloadWorldDataTemplate(const std::string& nFileName);
+    PWorldDataTemplate* GetWorldDataTemplate(const std::string& nFileName);
     PWorld* LeaseWorld(u32 nWorldID, const bool nPreloadPhase);
 
   public:

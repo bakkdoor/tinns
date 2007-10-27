@@ -57,7 +57,7 @@ void PWorldDataTemplate::DatFileDataCleanup()
     delete i->second;
 }
 
-bool PWorldDataTemplate::LoadDatFile(const std::string& nWorldName, const std::string& nFilename, const bool nTestAccesOnly)
+bool PWorldDataTemplate::LoadDatFile(const std::string& WorldTemplateName, const std::string& nFilename, const bool nTestAccesOnly)
 {
   PWorldDatParser WDatLoader;
   int LoadResult;
@@ -69,7 +69,8 @@ if (gDevDebug) Console->Print("Loading %s", nFilename.c_str());
   {
     case 0:
     {
-      mName = nWorldName;
+      mName = nFilename;
+      mBspName = WorldTemplateName;
       if(!nTestAccesOnly)
       {
         SetLinkedObjects(); // temp until better solution found from .dat & .bsp files

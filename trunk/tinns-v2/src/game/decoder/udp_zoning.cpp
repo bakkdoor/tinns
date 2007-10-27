@@ -34,6 +34,7 @@
 #include "udp_zoning.h"
 
 #include "udp_sync.h"
+#include "worlds.h"
 #include "appartements.h"
 
 /**** PUdpZoning1 ****/
@@ -175,8 +176,8 @@ bool PUdpAptGRZoning::DoAction()
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  if (! nClient->ChangeCharLocation(100000 + nClient->GetChar()->GetBaseApartment()))
-    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), 100000 + nClient->GetChar()->GetBaseApartment(), newLocation);
+  if (! nClient->ChangeCharLocation(APT_BASE_WORLD_ID + nClient->GetChar()->GetBaseApartment()))
+    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), APT_BASE_WORLD_ID + nClient->GetChar()->GetBaseApartment(), newLocation);
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
@@ -261,7 +262,7 @@ bool PUdpAppartmentAccess::DoAction()
 
   Location = nChar->GetLocation();
 if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %s)", nClient->GetID(), mAppartmentPlace, mPassword);
-  if ((Location > 100000) && (!strcmp ("Exit", mPassword)))
+  if ((Location > APT_BASE_WORLD_ID) && (!strcmp ("Exit", mPassword)))
   {
     AppLoc = Appartements->GetAptLocation(Location);
     const PDefAppPlace* nAppPlace = (AppLoc ? GameDefs->GetAppPlaceDef(AppLoc) : 0);

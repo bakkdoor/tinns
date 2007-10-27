@@ -64,13 +64,18 @@
 */
 
 #include "main.h"
+#define GAMEDEFS_DEFITEMSMAXSEQ 100
 
 PGameDefs::PGameDefs()
 {
+  DefItemsMapItCache = NULL;
+  DefItemsMapItCacheCount = 0;
 }
 
 PGameDefs::~PGameDefs()
 {
+  delete [] DefItemsMapItCache;
+  
 	for (PDefCharacterMap::iterator i=mCharDefs.begin(); i!=mCharDefs.end(); i++)
 		delete i->second;
 	for (PDefSkillMap::iterator i=mSkillDefs.begin(); i!=mSkillDefs.end(); i++)
@@ -110,11 +115,62 @@ void PGameDefs::Init()
 	LoadFactionDefs();
 	LoadHackDefs();
 	LoadItemsDefs();
+	BuildDefItemsMapItCache();
 	LoadWorldModelDefs();
 	LoadAppPlaceDefs();
 	LoadAppartementDefs();
 	LoadRespawnDefs();
 	LoadWorldFileDefs();
+}
+
+void PGameDefs::BuildDefItemsMapItCache()
+{
+  int CacheEntryIdx = 0;
+  int EntrySeqIdx = 1;
+  PDefItemsMap::const_iterator It;
+  
+  DefItemsMapItCacheCount = 1 + (mItemsDefs.size()/GAMEDEFS_DEFITEMSMAXSEQ);
+  
+  if(DefItemsMapItCacheCount)
+  {
+    DefItemsMapItCache = new PDefItemsMap::const_iterator[DefItemsMapItCacheCount];
+    DefItemsMapItCache[CacheEntryIdx++] = mItemsDefs.begin();
+    
+    It = mItemsDefs.begin();
+
+    while (It != mItemsDefs.end())
+    {
+      if(EntrySeqIdx++ == GAMEDEFS_DEFITEMSMAXSEQ)
+      {
+        DefItemsMapItCache[CacheEntryIdx++] = It;
+        EntrySeqIdx = 1;
+      }
+      It++;
+    }
+  }
+}
+
+const PDefItems *PGameDefs::GetItemsDefBySeqIndex(int SeqIndex) const
+{
+  int CacheEntryIdx = SeqIndex/GAMEDEFS_DEFITEMSMAXSEQ;
+  if (CacheEntryIdx >= DefItemsMapItCacheCount)
+    return NULL;
+  
+  PDefItemsMap::const_iterator It = DefItemsMapItCache[CacheEntryIdx];
+  int EntrySeqIdx = CacheEntryIdx * GAMEDEFS_DEFITEMSMAXSEQ;
+
+  while((EntrySeqIdx < SeqIndex) && (It != mItemsDefs.end()))
+  {
+    EntrySeqIdx++;
+    It++;
+  }
+  
+  if((EntrySeqIdx == SeqIndex) && (It != mItemsDefs.end()))
+  {
+    return It->second;
+  }
+  else
+    return NULL;
 }
 
 /****** Loading methods ******/
@@ -436,8 +492,9 @@ bool PGameDefs::LoadHackDefs()
 bool PGameDefs::LoadItemsDefs()
 {
 	PDefParser parser;
-	int nDefs = 0, nErrors = 0;
-	const string DEF_FILE = DEF_ITEMS;
+	int nDefs = 0, nErrors = 0, nIgnored = 0;
+	const std::string DEF_FILE = DEF_ITEMS;
+	const std::string SINGLE_IGNORED("\"temporary-item\"");
 
 	if (parser.Parse(DEF_FILE.c_str()))
 	{
@@ -446,17 +503,31 @@ bool PGameDefs::LoadItemsDefs()
 		for (PDefTokenList::const_iterator i=t.begin(); i!=t.end(); i++)
 		{
 			PDefItems *it = new PDefItems();
-			bool loadfail = !it->LoadFromDef(*i), insertfail=false;
+			bool loadfail = !it->LoadFromDef(*i), insertfail=false, ignore=false;
 
 			if (!loadfail)
-				insertfail = !mItemsDefs.insert(std::make_pair(it->GetIndex(), it)).second;
-			if (loadfail || insertfail)
 			{
-				if (insertfail)
-					Console->Print("Items def error (duplicate id %i): %s", it->GetIndex(), it->GetName().c_str());
-				else
-					Console->Print("Items def load error @ %i", nDefs+nErrors);
-				++nErrors;
+			  if(it->GetName() == SINGLE_IGNORED)
+			  {
+			    ignore = true;
+			    ++nIgnored;
+			  }
+			  else
+			  {
+				  insertfail = !mItemsDefs.insert(std::make_pair(it->GetIndex(), it)).second;
+				}
+		  }
+		  
+			if (ignore || loadfail || insertfail)
+			{
+			  if(!ignore)
+			  {
+  				if (insertfail)
+  					Console->Print("Items def error (duplicate id %i): %s", it->GetIndex(), it->GetName().c_str());
+  				else
+  					Console->Print("Items def load error @ %i", nDefs+nErrors);
+  				++nErrors;
+  			}
 				delete it;
 			}
 			else
@@ -470,9 +541,9 @@ bool PGameDefs::LoadItemsDefs()
 		return (false);
 	}
     if(nErrors > 0)
-        Console->Print("%s Loaded %i items defs, %i error(s).", Console->ColorText(RED, BLACK, "[ERROR]"), nDefs, nErrors);
+        Console->Print("%s Loaded %i items defs, %i ignored, %i error(s).", Console->ColorText(RED, BLACK, "[ERROR]"), nDefs, nIgnored, nErrors);
     else
-        Console->Print("%s Loaded %i items defs, %i error(s).", Console->ColorText(GREEN, BLACK, "[Success]"), nDefs, nErrors);
+        Console->Print("%s Loaded %i items defs, %i ignored, %i error(s).", Console->ColorText(GREEN, BLACK, "[Success]"), nDefs, nIgnored, nErrors);
 
 	return (true);
 }

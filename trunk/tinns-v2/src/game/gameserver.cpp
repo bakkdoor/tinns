@@ -141,6 +141,7 @@ void PGameServer::Start()
   {
     Console->Print("%s UDP port range setting doesn't allow for the simultaneous max clients set in config", Console->ColorText(YELLOW, BLACK, "[Warning]"));
   }
+
 }
 
 void PGameServer::SetGameTime(u32 newtime)

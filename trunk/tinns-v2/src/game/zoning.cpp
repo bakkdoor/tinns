@@ -82,7 +82,7 @@ void SendZone(PClient *Client, u32 loc)
   PWorld* CurrentWorld = Worlds->GetWorld(loc);
   if (CurrentWorld)
   {
-    worldName = CurrentWorld->GetName();
+    worldName = CurrentWorld->GetBspName();
     if (worldName.empty())
     {
       worldName = "plaza/plaza_p1"; // Should be a config entry
@@ -105,44 +105,3 @@ void SendZone(PClient *Client, u32 loc)
 	Socket->write(packet1, sizeof(packet1));
 	Socket->write(worldName.c_str(), worldName.size() + 1);    
 }
-
-/*	if(loc > 100000)
-	{
-	    u32 i = Appartements->GetAptType(Char->GetLocation()); // changed from NeoX
-	    const PDefAppartement* nDestApp = GameDefs->GetAppartementDef(i);
-	    if (nDestApp)
-	    {
-        worldName = nDestApp->GetWorldName();
-	    }
-	}
-	else if ((loc >= 90001) && (loc <= 90016))
-	{
-	  char Num[19];
-	  int MatchID = loc - 90000;
-	  if (MatchID > 8) // to care for Neofrag 1 & 2
-	    MatchID -= 8;
-	  if (MatchID > 6)
-	    MatchID = 6; // holomatch 7 and 8 are same as 6
-	  snprintf(Num, 19, "holomatch/neofrag%d", MatchID);
-	  worldName = Num;
-	}
-	else
-	{
-    const PDefWorldFile* nWorldFile = GameDefs->GetWorldFileDef(loc);
-    if (nWorldFile)
-    {
-      worldName = nWorldFile->GetName();
-    }   
-    // Fallback:
-    if (worldName.empty())
-      worldName = "plaza/plaza_p1"; // Should be a config entry
-      
-    u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    *(u16*) &packet1[1] = (u16) (worldName.size() + 11);
-    *(u32*) &packet1[5] = loc;
-    //u8 packet3[] = {0x00};
-  
-  	Socket->write(packet1, sizeof(packet1));
-  	Socket->write(worldName.c_str(), worldName.size() + 1);
-  	//Socket->write(packet3, sizeof(packet3));
-  } */

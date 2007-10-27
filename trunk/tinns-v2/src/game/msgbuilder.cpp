@@ -33,6 +33,7 @@
 #include "main.h"
 #include "msgbuilder.h"
 
+#include "worlds.h"
 #include "appartements.h"
 #include "item.h"
 #include "container.h"
@@ -992,7 +993,7 @@ SectionMsg << (u8)0x03;      // Data
     SectionMsg << (u8)nTorso;
     SectionMsg << (u8)nLegs;
     SectionMsg << (u8)0x00; // Rank
-    SectionMsg << (u32)(nChar->GetBaseApartment() + 100000); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
+    SectionMsg << (u32)(nChar->GetBaseApartment() + APT_BASE_WORLD_ID); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
     SectionMsg << (u8)0x01; // ?
     SectionMsg << (u8)0x00; // ?
     SectionMsg << (u8)0x00; // ?
