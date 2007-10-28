@@ -441,7 +441,6 @@ PMessage* PMsgBuilder::BuildPacket0Msg (PClient* nClient)
     PChar* nChar = nClient->GetChar();
     nClient->IncreaseUDP_ID();
 
-    nClient->CharIsAwaitingWarpto(); // Update location
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u16)nClient->GetSessionID();

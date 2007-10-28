@@ -1548,3 +1548,15 @@ Hammag; 27.10.2007 19:00 GMT+2
   Zoning issue fixed (a bug was leading to always load the same zone data for all zones with the same .bsp file, which is wrong)
   Improved random-filled boxes
   Excluded "temporary-items" from available item catalog (ItemsDef)
+
+====================
+Hammag; 287.10.2007 16:15 GMT+2
+----------
+[rev. 92]
+<General changes>
+  @warpto command now works.
+  
+[GAME]
+  Improved container loading in odrer not lo load invalid items from DB.
+  Items are not deleted from DB because it could cause loss of inventory
+   in case of issue with items.def content or loading.

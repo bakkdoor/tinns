@@ -34,6 +34,8 @@
 
 #define CONTAINER_MAX_SIZE 254
 
+class PItem;
+
 class PContainerEntry
 {
   friend class PContainer;
@@ -60,7 +62,7 @@ class PContainerEntry
       i_maxdur
     };
     
-    class PItem* mItem;
+    PItem* mItem;
     u8  mPosX;
     u8  mPosY;
     u32 mInvID;

@@ -293,6 +293,7 @@ bool PContainer::SQLLoad()
   char query[1024];
   PContainerEntry* NewEntry;
   bool SaveDirtyFlag;
+  u8 nSlotId;
   //u8 nPosX, nPosY, nSizeX, nSizeY;
 
   /*if (!mContContent.empty())
@@ -314,18 +315,26 @@ bool PContainer::SQLLoad()
   while((row = mysql_fetch_row(result)))
   {
     NewEntry = new PContainerEntry(row);
-    u8 nSlotId = NewEntry->mPosX;
-    SaveDirtyFlag = mDirtyFlag;
-    
-    if(! this->GetFreeSlot(&nSlotId) || ! this->AddEntry(NewEntry, nSlotId))
+    if(NewEntry->mItem->GetItemID())
     {
-      Console->Print(YELLOW, BLACK, "[Warning] PContainer::SQLLoad: Can't add item %d in slot %d of char %d inventory", NewEntry->mItem->GetItemID(), nSlotId, mCharID);
-      delete NewEntry;
-      mDirtyFlag = SaveDirtyFlag;
+      nSlotId = NewEntry->mPosX;
+      SaveDirtyFlag = mDirtyFlag;
+      
+      if(! this->GetFreeSlot(&nSlotId) || ! this->AddEntry(NewEntry, nSlotId))
+      {
+        Console->Print(YELLOW, BLACK, "[Warning] PContainer::SQLLoad: Can't add item %d in slot %d of char %d inventory", NewEntry->mItem->GetItemID(), nSlotId, mCharID);
+        delete NewEntry;
+        mDirtyFlag = SaveDirtyFlag;
+      }
+      else
+      {
+        mDirtyFlag  = SaveDirtyFlag || (nSlotId != NewEntry->mPosX);
+      }
     }
     else
     {
-      mDirtyFlag  = SaveDirtyFlag || (nSlotId != NewEntry->mPosX);
+      Console->Print(YELLOW, BLACK, "[Notice] Invalid item in DB (inv_id = %d) - Ignored", NewEntry->mInvID);
+      delete NewEntry;    
     }
   }
   MySQL->FreeGameSQLResult(result);
@@ -501,7 +510,7 @@ u8 PContainer::RandomFill(u8 nItemCount)
   PItem* nItem = NULL;
   const PDefItems* nItemDef;
   u32 nItemSeqId;
-  u8 CreatedCount;
+  u8 CreatedCount = 0;
   
   if(!nItemCount)
     nItemCount = mMaxSlots;

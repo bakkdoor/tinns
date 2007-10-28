@@ -318,7 +318,7 @@ bool PUdpUseObject::DoAction()
                         break;
                     }
                     case 18: // "WORLDCHANGEACTOR"
-                    case 20: // "DATFILE WORLDCHANGE ACTOR" // yet to find out how to get the right destination entity
+                    case 20: // "DATFILE WORLDCHANGE ACTOR"
                     case 29: //Underground Exit
                     {
                         const PDefAppPlace* nAppPlace;

@@ -53,8 +53,9 @@ void PCommands::doCmdwarpto()
 
     int destZone = 0;
     // Warp GM/Admin to target player
-    destZone = Chars->GetChar(target->GetCharID())->GetLocation();
-    /*if (gDevDebug)*/ Console->Print("%s Warping %d to location of %d (> %d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), source->GetCharID(), target->GetCharID(), destZone);
+    PChar* targetChar = target->GetChar();
+    destZone = targetChar->GetLocation();
+    if (gDevDebug) Console->Print("%s Warping %d to location of %d (> %d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), source->GetCharID(), target->GetCharID(), destZone);
     if (!Worlds->IsValidWorld(destZone))
     {
         Console->Print("%s Can't change location, destZone '%d' is invalid for some reason", Console->ColorText(RED, BLACK, "[PANIC]"), destZone);
@@ -65,21 +66,15 @@ void PCommands::doCmdwarpto()
     InitCharVanish(source);
     if (source->ChangeCharLocation(destZone), true)
     {
-        PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (source, destZone, 0);
-        source->getUDPConn()->SendMessage(tmpMsg_zone);
-        tmpMsg_zone = NULL;
+      source->SetAwaitingWarpto(true, targetChar->Coords.mX, targetChar->Coords.mY, targetChar->Coords.mZ);
+      PMessage* tmpMsg_zone = MsgBuilder->BuildChangeLocationMsg(source, destZone, 10, 1, 0);
+      source->getUDPConn()->SendMessage(tmpMsg_zone);
 
-        u16 nNewX, nNewY, nNewZ;
-        nNewX = target->GetChar()->Coords.mX;
-        nNewY = target->GetChar()->Coords.mY;
-        nNewZ = target->GetChar()->Coords.mZ;
-        source->SetAwaitingWarpto(true, nNewX, nNewY, nNewZ);
-
-        char tmpMsg_success[81];
-        snprintf(tmpMsg_success, 80, "Successfully warped you to %s", target->GetChar()->GetName().c_str());
-        tmpMsg_success[80] = '\0';
-        Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
-        return;
+      char tmpMsg_success[81];
+      snprintf(tmpMsg_success, 80, "Successfully warped you to %s", target->GetChar()->GetName().c_str());
+      tmpMsg_success[80] = '\0';
+      Chat->send(source, CHAT_DIRECT, "System", tmpMsg_success);
+      return;
     }
     else
     {

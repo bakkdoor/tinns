@@ -88,18 +88,18 @@ PItem* tItem = NULL;
 if(mSrcY)
 Console->Print(RED, BLACK, "Warning: PUdpItemMove: intramove: src Y != 0");
 #ifdef PUdpItemMove_NO_BOX_TAKE_ALL
-  if((mSrcLoc != INV_LOC_BOX) || (mDstX != 255) || (mDstY != 255))
-  {
-#endif
-      if(DstContainer)
+      if((mSrcLoc != INV_LOC_BOX) || (mDstX != 255) || (mDstY != 255))
       {
-        //PContainerEntry* tEntry = SrcContainer->GetEntry(mSrcX);
-          MoveSucceded = SrcContainer->MoveItem(mSrcX, mItemCnt, DstContainer, mDstX, mDstX, mDstY);
-        /*if(tEntry)
-          tEntry->Get2DPos(&mDstX, &mDstY);*/
-      }
+#endif
+        if(DstContainer)
+        {
+          //PContainerEntry* tEntry = SrcContainer->GetEntry(mSrcX);
+            MoveSucceded = SrcContainer->MoveItem(mSrcX, mItemCnt, DstContainer, mDstX, mDstX, mDstY);
+          /*if(tEntry)
+            tEntry->Get2DPos(&mDstX, &mDstY);*/
+        }
 #ifdef PUdpItemMove_NO_BOX_TAKE_ALL
-  }
+      }
 #endif
     }
     else

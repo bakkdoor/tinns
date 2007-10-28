@@ -344,8 +344,17 @@ PChar* PClient::GetChar() const
   }
 }
 
-bool PClient::CharIsAwaitingWarpto()
+bool PClient::GetCharAwaitingWarpto(u16* PosX, u16* PosY, u16* PosZ)
 {
+  if(PosX)
+    *PosX = mTargetX;
+  if(PosY)
+    *PosY = mTargetY;
+  if(PosZ)
+    *PosZ = mTargetZ;
+  
+  return mAwaitingWarpto;
+  /*
     if(mAwaitingWarpto == true)
     {
 
@@ -362,5 +371,6 @@ bool PClient::CharIsAwaitingWarpto()
 //        tmpMsg_posupdate = NULL;
     }
     return false;
+  */
 }
 

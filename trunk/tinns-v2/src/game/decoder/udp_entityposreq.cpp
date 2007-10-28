@@ -85,7 +85,7 @@ bool PUdpEntityPosRequest::DoAction()
 
 if(gDevDebug) Console->Print(GREEN, BLACK, "Client %d - Sending pos for entity %d : X=%d Y=%d Z=%d", mDecodeData->mClient->GetID(), mEntityID, pX, pY, pZ);
     }
-    else
+    else if(!nClient->GetCharAwaitingWarpto(&pX, &pY, &pZ))
     {
       pX = pY = pZ = 0;
       Console->Print("%s Client[%d] requested invalid position entity %d. Position reset.", Console->ColorText(YELLOW, BLACK, "[Notice]"), mDecodeData->mClient->GetID(), mEntityID);

@@ -203,7 +203,7 @@ class PClient
         mTargetY = NewY;
         mTargetZ = NewZ;
     }
-    bool CharIsAwaitingWarpto();
+    bool GetCharAwaitingWarpto(u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL);
 
 
 		// used for dynamic ingame testing
