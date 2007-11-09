@@ -38,6 +38,7 @@
 
 #include "worlds.h"
 #include "msgbuilder.h"
+#include "subway.h"
 
 PClient::PClient(int Index)
 {
@@ -200,10 +201,12 @@ bool PClient::ChangeCharLocation(u32 nLocation, bool DoForce)
     {
       if(tChar->GetLocationLeased())
       {
-        if(tChar->GetChairInUse())
+        u32 ChairObjectId;
+        
+        if(tChar->GetSeatInUse(&ChairObjectId) == seat_chair)
         {
-          Worlds->GetWorld(CurrentLocation)->CharLeaveChair(GetLocalID(), tChar->GetChairInUse());
-          tChar->SetChairInUse(0);
+          Worlds->GetWorld(CurrentLocation)->CharLeaveChair(GetLocalID(), ChairObjectId);
+          tChar->SetSeatInUse(seat_none);
         }
         Worlds->ReleaseWorld(CurrentLocation);
       }
@@ -268,11 +271,29 @@ void PClient::GameDisconnect()
     // temp
     if(tChar->GetLocationLeased())
     {
-      if(tChar->GetChairInUse())
+      PSeatType cSeatType;
+      u32 cSeatObjectId;
+      u8 cSeatId;
+      
+      cSeatType = tChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
+      if(cSeatType)
       {
-        Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(GetLocalID(), tChar->GetChairInUse());
-        tChar->SetChairInUse(0);
+        if(cSeatType == seat_chair)
+        {
+          Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(GetLocalID(), cSeatObjectId);
+          tChar->SetSeatInUse(seat_none);
+        }
+        else if(cSeatType == seat_subway)
+        {
+          Subway->UnsetSeatUser(cSeatObjectId, cSeatId, GetLocalID());
+          tChar->SetSeatInUse(seat_none);
+        }
+        else
+        {
+          Console->Print(RED, BLACK, "[Notice] PClient::GameDisconnect : Leaving subway & vhc seat not implemented");
+        }
       }
+      
       Worlds->ReleaseWorld(tChar->GetLocation());
       tChar->SetLocationLeased(false);
     }

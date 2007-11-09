@@ -145,11 +145,6 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
             mDecodeData->mUnknownType = MsgSubType;
             break;
           }
-          /*default: // Temporary
-          {
-            nextAnalyser = new PUdp0x13Old(mDecodeData);
-            break;
-          }*/
         }
         break;
       }
@@ -193,7 +188,26 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
 
       case 0x32: // Vhc move
       {
-        nextAnalyser = new PUdpVhcMove(mDecodeData);
+        mDecodeData->mName << "/0x32";
+        u8 MsgSubType = TmpMsg->U8Data(TmpMsg->GetNextByteOffset()+4);
+        switch(MsgSubType)
+        {
+          case 0x00: // Subway position update
+          {
+            nextAnalyser = new PUdpSubwayUpdate(mDecodeData);
+            break;
+          }
+          case 0x03: // Vhc position update
+          {
+            nextAnalyser = new PUdpVhcMove(mDecodeData);
+            break;
+          }
+          default:
+          {
+            mDecodeData->mUnknownType = MsgSubType;
+            break;
+          }
+        }
         break;
       }
 
@@ -202,12 +216,6 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
         mDecodeData->mUnknownType = MsgType;
         break;
       }
-
-      /*default: // Temporary
-      {
-        nextAnalyser = new PUdp0x13Old(mDecodeData);
-        break;
-      }*/
     }
 
     if (! nextAnalyser)

@@ -34,6 +34,7 @@
 #include "udp_charmove.h"
 
 #include "worlds.h"
+#include "subway.h"
 
 /**** PUdpCharPosUpdate ****/
 
@@ -238,16 +239,36 @@ bool PUdpCharExitChair::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* tChar = nClient->GetChar();
-  u32 ChairInUse = tChar->GetChairInUse();
-  if(ChairInUse)
+  
+  u32 cSeatObjectId;
+  u8 cSeatId;
+  PSeatType cSeatType = tChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
+
+//Console->Print("Localchar %d want to get up from seat type %d", nClient->GetLocalID(), (u8)cSeatType);
+  if(cSeatType)
   {
-    Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(nClient->GetLocalID(), ChairInUse);
-    tChar->SetChairInUse(0);
+    if(cSeatType == seat_chair)
+    {
+      Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(nClient->GetLocalID(), cSeatObjectId);
+      tChar->SetSeatInUse(seat_none);
+    }
+    else if(cSeatType == seat_subway)
+    {
+      Subway->UnsetSeatUser(cSeatObjectId, cSeatId, tChar->GetID());
+      tChar->SetSeatInUse(seat_none);
+      Console->Print(YELLOW, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving subway seat not fully implemented (pos reset to start pos)");
+    }
+    else
+    {
+      Console->Print(RED, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving vhc seat exit not implemented");
+    }
+
+    tChar->SetSeatInUse(seat_none);
 
     PMessage* tmpMsg = MsgBuilder->BuildCharExitChairMsg(nClient);
     ClientManager->UDPBroadcast(tmpMsg, nClient);
 
-if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->GetLocalID(), ChairInUse);
+if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->GetLocalID(), cSeatObjectId);
   }
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

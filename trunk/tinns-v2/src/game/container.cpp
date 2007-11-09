@@ -522,28 +522,6 @@ u8 PContainer::RandomFill(u8 nItemCount)
   for(u8 i = 0; i < nItemCount; ++i)
   {
     nItemSeqId = GameServer->GetRandom(NumItemsDefs, 1);
-
-    /*if(! GameDefs->GetItemsDefBySeqIndex(nItemId))
-    {
-      u16 j0, j;
-      j0 = j = (nItemId / 100);
-      do
-      {
-        if(++j > 100)
-          j = 0;
-        if(j == j0)
-          break;
-      }
-      while(!GameDefs->GetItemsDef(100 * j));
-      
-      u16 k = 99;
-      do
-      {
-        nItemId = 100 * j + GameServer->GetRandom(k, 0);
-        k = k/2 + 1;
-      }
-      while(!GameDefs->GetItemsDef(nItemId) && (k>2));
-    }*/
     
     if((nItemDef = GameDefs->GetItemsDefBySeqIndex(nItemSeqId)))
     {                        

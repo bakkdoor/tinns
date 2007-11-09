@@ -126,7 +126,7 @@ void PGameServer::Start()
 	Console->LClose();
 	ServerSock->settimeout(0, 10000);
 
-	SetGameTime(0);	//Init time
+	SetGameTime((1000/10)*3600*12);	//Set initial time to 12:00 on 7 Jul 2789
 
   // Init random generator
   struct timespec tmpTime;

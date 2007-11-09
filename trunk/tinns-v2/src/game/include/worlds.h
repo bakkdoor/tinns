@@ -31,6 +31,7 @@
 #ifndef WORLDS_H
 #define WORLDS_H
 
+#define NC_SUBWAY_WORLD_ID 1000
 #define APT_BASE_WORLD_ID 100000
 
 #include "worlddatatemplate.h"

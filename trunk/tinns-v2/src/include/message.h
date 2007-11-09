@@ -74,6 +74,7 @@ class PMessage
         inline ~PMessage() { ReleaseMsgBuffer(); --smMsgCount; }
 
         void SetNextByteOffset(u16 nPos);
+        inline void IncreaseNextByteOffset(u16 nIncrement) { SetNextByteOffset(mNextByteOffset + nIncrement); }
         inline void SetNextByteAtEnd() { mNextByteOffset = mUsedSize; }
         inline u16 GetNextByteOffset() { return mNextByteOffset; }
         void ForceSize(u16 nUsedSize);

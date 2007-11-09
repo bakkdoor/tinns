@@ -58,11 +58,12 @@ class PMsgBuilder
   PMessage* BuildCharJumpingMsg (PClient* nClient);
   PMessage* BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat);
   PMessage* BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor = false);
-  PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID);
+  PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID, u8 nChairSubId = 0);
   PMessage* BuildCharShowGlowCircleMsg (PClient* nClient);
   PMessage* BuildCharVanishMsg (PClient* nClient);
-  //PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);
-  //PMessage* BuiltSpawnObjectMsg (PClient* nClient, u16 nActorID, u16 nFunctionID, u32 nWOID);
+
+  PMessage* BuildSpawnWorldObjectMsg (u16 nModelID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ);
+  PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);
 
   // Following methods for unicast messages DO include UDP_ID increment and
   // UDP_ID / SessionID setting when needed (at least for now)
@@ -71,10 +72,11 @@ class PMsgBuilder
   PMessage* BuildPacket0Msg (PClient* nClient);
   PMessage* BuildPingMsg (PClient* nClient, u32 nClientTime);
   PMessage* BuildBaselineMsg (PClient* nClient);
-  PMessage* BuildCharInfo3Msg (PClient* nClient);
+  //PMessage* BuildCharInfo3Msg (PClient* nClient); // Removed because same as Zoning2Msg
 
   PMessage* BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown = 0);
   PMessage* BuildZoningTCPReadyMsg ();
+  PMessage* BuildSendZoneTCPMsg (u32 nLocation, std::string* nWorldName);
   PMessage* BuildZoning2Msg (PClient* nClient);
   PMessage* BuildGenrepZoningMsg (PClient* nClient, u32 nLocation, u16 nEntity);
 
@@ -115,6 +117,10 @@ class PMsgBuilder
   PMessage* BuildBoxItemMoveMsg (PClient* nClient, PContainerEntry* nEntry, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt);
     
   PMessage* BuildStartHackGameMsg (PClient* nClient, u32 nWorldObjID, u8 nHackDifficult);
+  
+  PMessage* BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessage);
+  //PMessage* BuildSubwayFullUpdateMsg(PClient* nClient);
+  PMessage* BuildSubwaySingleUpdateMsg(PClient* nClient, u16 nVehicleID, u16 nPosition, u8 nDoorOpened);
 };
 
 #endif

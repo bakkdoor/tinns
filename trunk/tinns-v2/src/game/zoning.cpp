@@ -69,6 +69,7 @@
 
 #include "worlds.h"
 #include "appartements.h"
+#include "msgbuilder.h"
 
 void SendZone(PClient *Client, u32 loc)
 {
@@ -96,12 +97,7 @@ void SendZone(PClient *Client, u32 loc)
     Console->Print("Client %d: Invalid or not loaded world %d. Redirecting to %s", Console->ColorText(YELLOW, BLACK, "Warning"), Client->GetID(), loc, worldName.c_str());
     loc = 1;
   }
-      
-  u8 packet1[] = {0xfe, 0x17, 0x00, 0x83, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  *(u16*) &packet1[1] = (u16) (worldName.size() + 11);
-  *(u32*) &packet1[5] = loc;
-  //u8 packet3[] = {0x00};
-
-	Socket->write(packet1, sizeof(packet1));
-	Socket->write(worldName.c_str(), worldName.size() + 1);    
+  
+  PMessage* cMsg = MsgBuilder->BuildSendZoneTCPMsg(loc, &worldName);
+	Client->SendTCPMessage(cMsg);
 }

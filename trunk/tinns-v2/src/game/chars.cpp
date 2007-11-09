@@ -159,7 +159,11 @@ PChar::PChar()
 	mStartApt=0;
 	mPrimaryApt=0;
 	mCash = 0;
-	mChairInUse = 0;
+	
+	mSeatInUseType = seat_none;
+  mSeatInUseObjectId = 0; 
+  mSeatInUseSeatId = 0;
+
 	mContainerInExclusiveUse = NULL;
 
   mIsOnline = false;
@@ -906,7 +910,28 @@ Console->Print("SetQuickBeltActiveSlot: SlotID %d greater than %d or free (%d)",
   }
   return false;
 }
-    
+
+PSeatType PChar::GetSeatInUse(u32* nObjectId, u8* nSeatId)
+{
+  if(nObjectId)
+  {
+    *nObjectId = mSeatInUseObjectId;
+  }
+  if(nSeatId)
+  {
+    *nSeatId = mSeatInUseSeatId;
+  }
+  
+  return mSeatInUseType;
+}
+
+void PChar::SetSeatInUse(PSeatType nSeatType, u32 nObjectId, u8 nSeatId)
+{
+  mSeatInUseType = nSeatType;
+  mSeatInUseObjectId = nObjectId; 
+  mSeatInUseSeatId = nSeatId;  
+}
+       
     
 // ===================================
 

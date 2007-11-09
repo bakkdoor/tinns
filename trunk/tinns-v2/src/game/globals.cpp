@@ -54,6 +54,7 @@
 #include "worlds.h"
 #include "appartements.h"
 #include "npc.h"
+#include "subway.h"
 #include "terminal.h"
 
 #include "version.h"
@@ -76,6 +77,7 @@ PWorlds *Worlds = 0;
 PAppartements* Appartements = 0;
 PWorldActors* WorldActors = 0;
 PNPCManager* NPCManager = 0;
+PSubway* Subway = 0;
 PTerminal* Terminal = 0;
 
 //multi-user chat implementation
@@ -150,6 +152,7 @@ bool InitTinNS()
     WorldActors = new PWorldActors();
     NPCManager = new PNPCManager();
     Appartements = new PAppartements;
+    Subway = new PSubway;
 
     if (!PAccount::SetUsernameRegexFilter(Config->GetOption("username_filter").c_str()))
     {
@@ -216,6 +219,8 @@ void Shutdown()
         Worlds->Shutdown();
         delete Worlds;
     }
+    if(Subway)
+        delete Subway;
     if(Chars)
         delete Chars;
     if(MySQL)

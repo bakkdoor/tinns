@@ -228,7 +228,7 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
     PMessage* tmpMsg;
     u32 nZoneID;
     PClient* itClient;
-
+      
     if (nClient && (nChar = nClient->GetChar())) // if nClient is set, always use its zone
     {
         nZoneID = nChar->GetLocation();
@@ -255,7 +255,7 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
             //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
             //tmpMsg->Dump();
 
-            if (itChar->GetChairInUse())
+            if (itChar->GetSeatInUse() != seat_none)
             {
                 tmpMsg = MsgBuilder->BuildCharPosUpdateMsg (itClient);
                 nClient->FillInUDP_ID(tmpMsg);

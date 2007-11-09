@@ -33,6 +33,7 @@
 
 #include "main.h"
 #include "udp_sync.h"
+#include "worlds.h"
 
 /**** PUdpSync0 ****/
 
@@ -214,9 +215,10 @@ bool PUdpSync2::DoAction()
     }
     delete BaselineMsg;
 
-    // Sending "CharInfo3" message
-    PMessage* CharInfo3Msg = MsgBuilder->BuildCharInfo3Msg(nClient);
-    nClient->getUDPConn()->SendMessage(CharInfo3Msg);
+    // Sending "CharInfo3/Zoning2Msg" message
+    // Removed because same as Zoning2Msg
+    PMessage* Zoning2Msg = MsgBuilder->BuildZoning2Msg(nClient);
+    nClient->SendUDPMessage(Zoning2Msg);
 
     mDecodeData->mClientState->UDP.mState = PGameState::UDP::GUS_SYNC3;
 
@@ -235,6 +237,15 @@ bool PUdpSync2::DoAction()
     // Send NPC information to client
     NPCManager->InitPlayer(nClient);
 
+    //Temp: send Subway to client if in subway
+    if(nClient->GetChar()->GetLocation() == NC_SUBWAY_WORLD_ID)
+    {
+      PMessage* SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, false);
+      nClient->SendUDPMessage(SubwayMsg);
+      SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, true);
+      nClient->SendUDPMessage(SubwayMsg);
+    }
+    
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
   }

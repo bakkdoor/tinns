@@ -35,6 +35,7 @@
 
 #include "worlds.h"
 #include "appartements.h"
+#include "subway.h"
 #include "item.h"
 #include "container.h"
 
@@ -199,11 +200,14 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(32);
     PChar* nChar = nClient->GetChar();
-    u32 UsedChair = nChar->GetChairInUse();
-    if(UsedChair) {
-      UsedChair = (UsedChair + 1) * 1024;
-    }
     
+    u32 cSeatObjectId;
+    u8 cSeatId;
+    PSeatType cSeatType = nChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
+    if(cSeatType == seat_chair) {
+      cSeatObjectId = (cSeatObjectId + 1) * 1024;
+    }
+
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
     *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
@@ -212,10 +216,10 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
     *tmpMsg << (u8)0x03;
-    if(UsedChair)
+    if(cSeatType)
     {
-      *tmpMsg << (u32)UsedChair;
-      *tmpMsg << (u16)0x0000;
+      *tmpMsg << (u32)cSeatObjectId;
+      *tmpMsg << (u16)cSeatId; // testing... else 0x0000
     }
     else
     {
@@ -225,7 +229,7 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
     }
     *tmpMsg << (u16)(31910+(nChar->Coords).mUD-50);  // Up - Mid - Down  mUD=(d6 - 80 - 2a) NeoX original offset: 31910
     *tmpMsg << (u16)(31820+(nChar->Coords).mLR*2-179); // Compass direction mLR=(S..E..N..W..S [0-45-90-135-179]) There still is a small buggy movement when slowly crossing the South axis from the right
-    if(UsedChair)
+    if(cSeatType)
     {
       *tmpMsg << (u8)0x00;
       *tmpMsg << (u8)0x10;
@@ -350,7 +354,7 @@ PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
   return tmpMsg;
 }*/
 
-PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID)
+PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID, u8 nChairSubId)
 {
     //PMessage* tmpMsg = new PMessage(31);
     PMessage* tmpMsg = new PMessage(18);
@@ -367,7 +371,7 @@ PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID)
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x21;
     *tmpMsg << (u32)nRawChairID;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)nChairSubId; // 0x00 for real chair, 1+ for subway cab
     /*
      *tmpMsg << (u8)0x0c; // Sub message length;
      *tmpMsg << (u8)0x03;
@@ -1072,7 +1076,8 @@ SectionMsg << (u8)0x03;      // Data
     return BaselineMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharInfo3Msg (PClient* nClient)
+// Removed because same as Zoning2Msg
+/*PMessage* PMsgBuilder::BuildCharInfo3Msg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(22);
 
@@ -1100,7 +1105,7 @@ PMessage* PMsgBuilder::BuildCharInfo3Msg (PClient* nClient)
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
     return tmpMsg;
-}
+}*/
 
 PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown)
 {
@@ -1120,8 +1125,14 @@ PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnkno
     *tmpMsg << (u8)0x25; // ??
     *tmpMsg << (u8)0x13; // ??
     *tmpMsg << (u16)nClient->GetTransactionID(); // from NeoX / ?? right ???
+    // In case of apt GR or NC2.2 ?
+    // *tmpMsg << (u8)0x04; // len ?
+    // *tmpMsg << (u32)AptWorldID; // len ?
+    // nClient->IncreaseTransactionID();
+    // *tmpMsg << (u16)nClient->GetTransactionID();
     *tmpMsg << (u8)0x0e; // ?? from NeoX
     *tmpMsg << (u8)0x02; // ?? from NeoX
+    //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
     nClient->IncreaseUDP_ID();
 
@@ -1163,6 +1174,23 @@ PMessage* PMsgBuilder::BuildZoningTCPReadyMsg ()
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildSendZoneTCPMsg (u32 nLocation, std::string* nWorldName)
+{
+  PMessage* tmpMsg = new PMessage(14 + nWorldName->size());
+  
+  *tmpMsg << (u8)0xfe;
+  *tmpMsg << (u16)0x0000; // size placeholder
+  *tmpMsg << (u8)0x83;
+  *tmpMsg << (u8)0x0c;
+  *tmpMsg << (u32)nLocation;
+  *tmpMsg << (u32)0x00000000;
+  tmpMsg->Write(nWorldName->c_str(), nWorldName->size() + 1);
+  
+  tmpMsg->U16Data(1) = (u16)(tmpMsg->GetSize() - 3); 
+	
+	return tmpMsg;
+}
+	
 PMessage* PMsgBuilder::BuildZoning2Msg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(22);
@@ -1288,7 +1316,33 @@ PMessage* PMsgBuilder::BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
     return tmpMsg;
+    
 }
+
+/*
+char VehicleUse[] = {0x13, 0x52, 0x00, 0x94, 0xae, 		
+		0x13, 		
+		0x03, 0x51, 0x00, 0x1f, 0x01, 0x00, 0x3d, 0x0e, 0x00, 0x00, 		
+		0x00, 0xfc, 0x03, 0x00, 0x00, 0x05, 0x00, 0x0f, 0x00}; 		
+	//       | Item ID               |Vehicle|	
+
+	GetSpawnedVehicle (&Vehicle, ItemID, Client_Sockets[ClientNum].CharInfo.Location);
+	if (Vehicle.WorldId == ItemID)
+	{
+		AddToLog (LOG_DEBUG, "User %i: Vehicle ID %i, Location %i", ClientNum, ItemID, Client_Sockets[ClientNum].CharInfo.Location);
+		//Network_IncrementUDP (ClientNum);									
+		// *(unsigned short*)&VehicleUse[1] = Client_Sockets[ClientNum].UDP_ID;
+		// *(unsigned short*)&VehicleUse[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
+		// *(unsigned short*)&VehicleUse[7] = Client_Sockets[ClientNum].UDP_ID;
+
+		*(unsigned int *)&VehicleUse[17] = ItemID;
+
+		//Map ID
+		*(unsigned short*)&VehicleUse[10] = Client_Sockets[ClientNum].CharInfo.MapID;
+
+		VehicleUse[21] = Vehicle.Type;
+		// to be broadcasted
+*/
 
 PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType)
 {
@@ -1516,51 +1570,12 @@ PMessage* PMsgBuilder::BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor)
     else
     {
         *tmpMsg << (u16)0x0000; //?
-        *tmpMsg << (u16)0x00c8; //?
+        *tmpMsg << (u16)0x00c8; //? or 0x64 ?
         *tmpMsg << (u16)0x10ff; //?
     }
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
-    /* *tmpMsg << (u8)0x0f; // Sub-message length;
-     *tmpMsg << (u8)0x03;
-     *tmpMsg << (u16)0x0000; //++Client->GetUDP_ID(); // just placeholder, must be set outside
-     *tmpMsg << (u8)0x1b;
-     *tmpMsg << (u32)nRawItemID;
-     *tmpMsg << (u8)0x20; //?
-     if (nDoubleDoor)
-     {
-       *tmpMsg << (u16)0x0005; //?
-       *tmpMsg << (u16)0x0000; //?
-       *tmpMsg << (u16)0x1500; //?
-     }
-     else
-     {
-       *tmpMsg << (u16)0x0000; //?
-       *tmpMsg << (u16)0x00c8; //?
-       *tmpMsg << (u16)0x10ff; //?
-      }*/
-
-    /*
-      case 3: // Single Locked
-      AptDoorUse[22] = 0x00;
-      AptDoorUse[24] = 0x64;
-      AptDoorUse[26] = 0xFF;
-      AptDoorUse[27] = 0x10;
-      break;
-      case 4: // Double Locked
-      AptDoorUse[22] = 0x05;
-      AptDoorUse[24] = 0x00;
-      AptDoorUse[26] = 0x00;
-      AptDoorUse[27] = 0x15;
-      break;
-      default:
-      AptDoorUse[22] = 0x00;
-      AptDoorUse[24] = 0x64;
-      AptDoorUse[26] = 0xFF;
-      AptDoorUse[27] = 0x10;
-      break;
-    */
     return tmpMsg;
 }
 
@@ -1696,7 +1711,7 @@ PMessage* PMsgBuilder::BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID
     *tmpMsg << (u32)nRawObjectID;
     *tmpMsg << (u8)0x0a;
 
-    // this submessage is only needed to set to location/entity ofthe GR for a potential record in the char's GR list
+    // this submessage is only needed to set to location/entity of the GR for a potential record in the char's GR list
     *tmpMsg << (u8)0x0d; // SubMessage length;
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
@@ -2218,44 +2233,227 @@ PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, 
     return tmpMsg;
 }
 
-/*PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
-{
-    PMessage* tmpMsg = new PMessage(14);
-
- *tmpMsg << (u8)0x13;
- *tmpMsg << (u16)0x0000; // UDP ID placeholder
- *tmpMsg << (u16)0x0000; // SessionID placeholder
- *tmpMsg << (u8)0x08;    // Len (static, always 0x08
- *tmpMsg << (u8)0x03;
- *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
- *tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
-    *tmpMsg << (u32)nWOID;  // WorldobjectID
-
-    return tmpMsg;
-}*/
-
-/*PMessage* PMsgBuilder::BuildSpawnObjectMsg (u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotX)
-{
-    PMessage* tmpMsg = new PMessage(29);
+PMessage* PMsgBuilder::BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessage)
+{   
+    PMessage* tmpMsg = new PMessage(197);
+    u16 First = IsSecondMessage ? 6 : 0;
+    u16 Last = IsSecondMessage ? 10 : 5;
+    
     *tmpMsg << (u8)0x13;
- *tmpMsg << (u16)0x0000; // UDP placeholder
- *tmpMsg << (u16)0x0000; // Session placeholder
- *tmpMsg << (u8)0x16;    // Message length
- *tmpMsg << (u8)0x03;    // 0x03 commandset
- *tmpMsg << (u16)0x0000; // UDP placeholder
- *tmpMsg << (u8)0x1b;    // Subcommandset
-    *tmpMsg << nWOID;  // WorldobjectID
+    *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
+    *tmpMsg << (u16)0x0000; // placeholder for SessionID();
 
- *tmpMsg << (u8)0x19;    // Positiondata follows
- *tmpMsg << nPosY;
- *tmpMsg << nPosZ;
- *tmpMsg << nPosX;
+    for(u16 i=First; (i<=Last); i++)
+    {
+      nClient->IncreaseUDP_ID();    
+      *tmpMsg << (u8)0x11; //msg size
+      *tmpMsg << (u8)0x03;
+      *tmpMsg << (u16)nClient->GetUDP_ID();
+      *tmpMsg << (u8)0x28;
+      *tmpMsg << (u16)0x0027;
+      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
+      *tmpMsg << (u32)0x00000000;
+      *tmpMsg << (u8)0x00;
+      *tmpMsg << (u16)Subway->mSubways[i].mPosition;
+      *tmpMsg << (u8)0x00;
+      *tmpMsg << (u8)Subway->mSubways[i].mDoorOpened;; 	
+  
+/* Apparently no effect when this message is not sent...
+      nClient->IncreaseUDP_ID();			
+  		*tmpMsg << (u8)0x0d; //msg size
+  		*tmpMsg << (u8)0x03;
+      *tmpMsg << (u16)nClient->GetUDP_ID();
+      *tmpMsg << (u8)0x2d;
+      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
+      *tmpMsg << (u16)0x0000;
+      *tmpMsg << (u8)0x0a;
+      *tmpMsg << (u32)0x00000000;
+*/
+		}
 
- *tmpMsg << nRotY;    // Rotation X
- *tmpMsg << nRotZ;    // Rotation Y
- *tmpMsg << nRotX;    // Rotation Z
- *tmpMsg << nActorID;
- *tmpMsg << nFunctionID;
+    tmpMsg->U16Data(1) = nClient->GetUDP_ID();
+    tmpMsg->U16Data(3) = nClient->GetSessionID();
+    
+    return tmpMsg;
+}
+
+/*
+PMessage* PMsgBuilder::BuildSubwayFullUpdateMsg(PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(148);
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
+    *tmpMsg << (u16)0x0000; // placeholder for SessionID();
+
+    for(u8 i=0; i<SUBWAY_VHC_NB; i++)
+    {
+      nClient->IncreaseUDP_ID();    
+      *tmpMsg << (u8)0x0c; //msg size
+      *tmpMsg << (u8)0x03;
+      *tmpMsg << (u16)nClient->GetUDP_ID();
+      *tmpMsg << (u8)0x32;
+      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
+      *tmpMsg << (u16)0x0000;
+      *tmpMsg << (u8)0x00;
+      *tmpMsg << (u16)Subway->mSubways[i].mPosition;
+      *tmpMsg << (u8)Subway->mSubways[i].mDoorOpened;; 	
+		}
+
+    tmpMsg->U16Data(1) = nClient->GetUDP_ID();
+    tmpMsg->U16Data(3) = nClient->GetSessionID();
+    
+    return tmpMsg;
+}
+*/
+
+PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(PClient* nClient, u16 nVehicleID, u16 nPosition, u8 nDoorOpened)
+{
+    PMessage* tmpMsg = new PMessage(148);
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
+    *tmpMsg << (u16)0x0000; // placeholder for SessionID();
+
+    nClient->IncreaseUDP_ID();    
+    *tmpMsg << (u8)0x0c; //msg size
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x32;
+    *tmpMsg << (u16)nVehicleID;
+    *tmpMsg << (u16)0x0000;
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u16)nPosition;
+    *tmpMsg << (u8)nDoorOpened; 	
+
+    tmpMsg->U16Data(1) = nClient->GetUDP_ID();
+    tmpMsg->U16Data(3) = nClient->GetSessionID();
+    
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildSpawnWorldObjectMsg (u16 nModelID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ)
+{
+  PMessage* tmpMsg = new PMessage(31);
+  
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)0x0000; // UDP placeholder
+  *tmpMsg << (u16)0x0000; // Session placeholder
+  *tmpMsg << (u8)0x16;    // Message length
+  *tmpMsg << (u8)0x03;    // 0x03 commandset
+  *tmpMsg << (u16)0x0000; // UDP placeholder
+  *tmpMsg << (u8)0x1b;    // Subcommandset
+  *tmpMsg << (u32)nWOID;  // WorldobjectID
+  
+  *tmpMsg << (u8)0x19;    // Positiondata follows
+  *tmpMsg << (u16)nPosY;
+  *tmpMsg << (u16)nPosZ;
+  *tmpMsg << (u16)nPosX;
+  *tmpMsg << (u8)nRotY;    // Rotation X
+  *tmpMsg << (u8)nRotZ;    // Rotation Y
+  *tmpMsg << (u8)nRotX;    // Rotation Z
+  *tmpMsg << (u16)nModelID;
+  *tmpMsg << (u16)nFunctionID;
 
  return tmpMsg;
-}*/
+}
+
+PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
+{
+  PMessage* tmpMsg = new PMessage(14);
+  
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)0x0000; // UDP ID placeholder
+  *tmpMsg << (u16)0x0000; // SessionID placeholder
+  *tmpMsg << (u8)0x08;    // Len (static, always 0x08
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
+  *tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
+  *tmpMsg << (u32)nWOID;  // WorldobjectID
+  
+  return tmpMsg;
+}
+
+/*
+void Server_SendVHCUpdate ( int ClientNum )
+{
+	int				i;
+	unsigned char	SendBuffer[1024];
+
+	//VHC Update
+	//13 34 00 e1 de 19 32 fc 03 03 0d 82 7f 85 1a 95 80 80 96 06 7e 02 00 00 00 01 00 00 80 00 80
+	for (i=0;i<MAX_VEHICLES;i++)
+	{
+		if (SpawnedVHC[i].WorldId == 0)
+			continue;
+		else if (SpawnedVHC[i].Location != Client_Sockets[ClientNum].CharInfo.Location)
+			continue;
+
+		Network_IncrementUDP (ClientNum);
+		SendBuffer[0] = 0x13;
+		*(unsigned short*)&SendBuffer[1] = Client_Sockets[ClientNum].UDP_ID;
+		*(unsigned short*)&SendBuffer[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
+		SendBuffer[5] = 0x19;
+		SendBuffer[6] = 0x32;
+		*(unsigned short*)&SendBuffer[7] = (unsigned short)SpawnedVHC[i].WorldId;
+		SendBuffer[9] = 0x03;
+		SendBuffer[10] = 0x0d;
+		SendBuffer[11] = 0x82;
+		SendBuffer[12] = 0x7f;
+		SendBuffer[13] = 0x85;
+		SendBuffer[14] = 0x1a;
+		SendBuffer[15] = 0x95;
+		SendBuffer[16] = 0x80;
+		SendBuffer[17] = 0x80;
+		SendBuffer[18] = 0x96;
+		SendBuffer[19] = 0x06;
+		SendBuffer[20] = 0x7e;
+		SendBuffer[21] = 0x02;
+		SendBuffer[22] = 0x00;
+		SendBuffer[23] = 0x00;
+		SendBuffer[24] = 0x00;
+		SendBuffer[25] = 0x01;
+		SendBuffer[26] = 0x00;
+		SendBuffer[27] = 0x00;
+		SendBuffer[28] = 0x80;
+		SendBuffer[29] = 0x00;
+		SendBuffer[30] = 0x80;
+
+		Network_SendUDP (SendBuffer, 31, ClientNum);
+	}	
+}
+
+void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
+{
+	unsigned char	SendBuffer[256];
+
+//	Inventory_AddNewItem (&Client_Sockets[ClientNum].CharInfo, ItemId, Amount);
+	SendBuffer[0] = 0x13;
+	SendBuffer[5] = 0x1b;
+	SendBuffer[6] = 0x03;
+	Network_IncrementUDP (ClientNum);
+	*(unsigned short*)&SendBuffer[7] = Client_Sockets[ClientNum].UDP_ID;
+	SendBuffer[9] = 0x1f;
+	*(unsigned short*)&SendBuffer[10] = Client_Sockets[ClientNum].CharInfo.MapID;
+	SendBuffer[12] = 0x25;
+	SendBuffer[13] = 0x13;
+	Client_Sockets[ClientNum].TransactionID++;
+	*(unsigned short*)&SendBuffer[14] = Client_Sockets[ClientNum].TransactionID;//Transaction ID
+	SendBuffer[16] = 0x18;
+	SendBuffer[17] = 0x03; //Location
+	SendBuffer[18] = 0xff; // \/
+	SendBuffer[19] = 0xff; //Anywhere
+	SendBuffer[20] = 0x08;
+	SendBuffer[21] = 0x00;
+	*(unsigned short*)&SendBuffer[22] = ItemId; //Item Id
+	SendBuffer[24] = 0x05;
+	SendBuffer[25] = 0x01;
+	*(unsigned short*)&SendBuffer[26] = Amount; //Quantity
+	SendBuffer[28] = 0x00;
+	SendBuffer[29] = 0x00;
+	*(unsigned short*)&SendBuffer[30] = Client_Sockets[ClientNum].CharInfo.ItemTransactionID; //Id of Purchased Item (Client sends another packet for placement of new item)
+
+	*(unsigned short*)&SendBuffer[1] = Client_Sockets[ClientNum].UDP_ID;
+	*(unsigned short*)&SendBuffer[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
+
+	Network_SendUDP (SendBuffer, 32, ClientNum);
+}
+*/

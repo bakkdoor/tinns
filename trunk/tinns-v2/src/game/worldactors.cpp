@@ -34,6 +34,7 @@
 #include "main.h"
 #include "worldactors.h"
 #include "worlds.h"
+#include "msgbuilder.h"
 
 PWorldActors::PWorldActors()
 {
@@ -46,41 +47,13 @@ PWorldActors::~PWorldActors()
 
 void PWorldActors::SpawnWA(u32 nWorld, u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ)
 {
-    PMessage* tmpMsg = new PMessage(29);
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)0x0000; // UDP placeholder
-    *tmpMsg << (u16)0x0000; // Session placeholder
-    *tmpMsg << (u8)0x16;    // Message length
-    *tmpMsg << (u8)0x03;    // 0x03 commandset
-    *tmpMsg << (u16)0x0000; // UDP placeholder
-    *tmpMsg << (u8)0x1b;    // Subcommandset
-    *tmpMsg << nWOID;  // WorldobjectID
-
-    *tmpMsg << (u8)0x19;    // Positiondata follows
-    *tmpMsg << nPosY;
-    *tmpMsg << nPosZ;
-    *tmpMsg << nPosX;
-
-    *tmpMsg << nRotY;    // Rotation X
-    *tmpMsg << nRotZ;    // Rotation Y
-    *tmpMsg << nRotX;    // Rotation Z
-    *tmpMsg << nActorID;
-    *tmpMsg << nFunctionID;
+    PMessage* tmpMsg = MsgBuilder->BuildSpawnWorldObjectMsg(nActorID, nFunctionID, nWOID, nPosX, nPosY, nPosZ, nRotX, nRotY, nRotZ);
     ClientManager->UDPBroadcast(tmpMsg, nWorld);
 }
 
 void PWorldActors::VanishWA(u32 nWorld, u32 nWAid)
-{
-    PMessage* tmpMsg = new PMessage(14);
-
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)0x0000; // UDP ID placeholder
-    *tmpMsg << (u16)0x0000; // SessionID placeholder
-    *tmpMsg << (u8)0x08;    // Len (static, always 0x08
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
-    *tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
-    *tmpMsg << (u32)nWAid;  // WorldobjectID
+{    
+    PMessage* tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg(nWAid);
     ClientManager->UDPBroadcast(tmpMsg, nWorld);
 }
 

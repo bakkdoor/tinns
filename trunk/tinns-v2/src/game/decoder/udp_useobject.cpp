@@ -39,6 +39,7 @@
 #include "doortemplate.h"
 #include "appartements.h"
 #include "container.h"
+#include "subway.h"
 
 /**** PUdpVhcMove ****/
 
@@ -91,7 +92,7 @@ bool PUdpUseObject::DoAction()
         if (mRawItemID & 1023)
             Console->Print("using item %d (0x%08x)", mRawItemID, mRawItemID);
         else
-            Console->Print("using item %d (0x%08x) [%d (0x%08x)]", mRawItemID, mRawItemID, mRawItemID/1024 -1, mRawItemID/1024 -1);
+            Console->Print("using item %d (0x%08x) [dat entry %d (0x%08x)]", mRawItemID, mRawItemID, mRawItemID/1024 -1, mRawItemID/1024 -1);
     }
 
     if(nClient->GetDebugMode(DBG_ITEMID))
@@ -140,8 +141,33 @@ bool PUdpUseObject::DoAction()
         }
         if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
         {
-            if (gDevDebug)
-                Console->Print("Clicing on char, npc or vhc %d", mRawItemID);
+            //if (gDevDebug)
+              Console->Print("Clicking on char, npc or vhc %d (%x)", mRawItemID, mRawItemID);
+            
+            if((tChar->GetLocation() == NC_SUBWAY_WORLD_ID) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
+            {
+              if(Subway->GetDoorOpened(mRawItemID))
+              {
+                u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
+                if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
+                {
+                  tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
+                  tmpMsg = MsgBuilder->BuildCharUseChairMsg (nClient, mRawItemID, freeSeat);
+                  ClientManager->UDPBroadcast(tmpMsg, nClient);
+                }
+                else
+                {
+                  tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
+                  nClient->getUDPConn()->SendMessage(tmpMsg);
+                }
+              }
+              else
+              {
+                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
+                nClient->getUDPConn()->SendMessage(tmpMsg);
+              }
+            }
+
             mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
         }
     }
@@ -190,34 +216,38 @@ bool PUdpUseObject::DoAction()
 
             if(tFurnitureModel->GetUseFlags() & ufChair)
             {
-                if (CurrentWorld->CharUseChair(nClient->GetLocalID(), ItemID))
+                u32 cSeatObjectId;
+                PSeatType cSeatType = tChar->GetSeatInUse(&cSeatObjectId);
+                if((cSeatType == seat_none) || (cSeatType == seat_chair))
                 {
-                    u32 ChairInUse = tChar->GetChairInUse();
-                    if (gDevDebug)
-                        Console->Print("Localchar %d was previously using chair %d.", nClient->GetLocalID(), ChairInUse);
-                    if((ChairInUse) && (ChairInUse != ItemID))
-                    {
-                        CurrentWorld->CharLeaveChair(nClient->GetLocalID(), ChairInUse);
-                    }
-                    tChar->SetChairInUse(ItemID);
-                    if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
-                    {
-                        tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
-                        //(tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
-                    }
-                    else
-                    {
-                        WorldActors->GetFrontPos(mRawItemID, &(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
-                        //(tChar->Coords).mLR = WorldActors->GetFrontLR();
-                    }
-
-                    tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
-                    ClientManager->UDPBroadcast(tmpMsg, nClient);
-                }
-                else
-                {
-                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
-                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                  if (CurrentWorld->CharUseChair(nClient->GetLocalID(), ItemID))
+                  {
+                      if (gDevDebug)
+                          Console->Print("Localchar %d was previously using chair %d.", nClient->GetLocalID(), cSeatObjectId);
+                      if((cSeatType) && (cSeatObjectId != ItemID))
+                      {
+                          CurrentWorld->CharLeaveChair(nClient->GetLocalID(), cSeatObjectId);
+                      }
+                      tChar->SetSeatInUse(seat_chair, ItemID);
+                      if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
+                      {
+                          tFurnitureTemplate->GetFrontPos(&(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
+                          //(tChar->Coords).mLR = tFurnitureTemplate->GetFrontLR();
+                      }
+                      else
+                      {
+                          WorldActors->GetFrontPos(mRawItemID, &(tChar->Coords.mX), &(tChar->Coords.mY), &(tChar->Coords.mZ));
+                          //(tChar->Coords).mLR = WorldActors->GetFrontLR();
+                      }
+  
+                      tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
+                      ClientManager->UDPBroadcast(tmpMsg, nClient);
+                  }
+                  else
+                  {
+                      tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
+                      nClient->getUDPConn()->SendMessage(tmpMsg);
+                  }
                 }
 
                 mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

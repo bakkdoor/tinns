@@ -130,7 +130,6 @@ bool PUdpGenrepZoning::DoAction()
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
 
-  //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not 32 ???
   u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
 
@@ -168,7 +167,6 @@ bool PUdpAptGRZoning::DoAction()
   PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
 
-  //u16 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // not u32 ???
   u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
 

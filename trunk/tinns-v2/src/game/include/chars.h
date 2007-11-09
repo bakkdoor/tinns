@@ -60,6 +60,14 @@
 #include "genreplist.h"
 #include "regex++.h"
 
+enum PSeatType
+{
+  seat_none = 0,
+  seat_chair,
+  seat_subway,
+  seat_vhc 
+};
+
 class PChar
 {
 	private :
@@ -96,7 +104,12 @@ class PChar
 		u32 mCash;
 		u32 mStartApt; // set same as PrimaryApt atm
 		u32 mPrimaryApt;
-    u32 mChairInUse; // not saved in DB atm
+		
+		// not saved in DB atm
+		PSeatType mSeatInUseType;
+    u32 mSeatInUseObjectId; 
+    u8 mSeatInUseSeatId;
+    
     PContainer* mContainerInExclusiveUse;
 
 		u16 mHealth;
@@ -279,8 +292,8 @@ class PChar
 		inline void SetLocationLeased(bool nState = true) { mLocationLeased = nState; }
 		inline bool GetLocationLeased() { return mLocationLeased; }
 
-		inline u32 GetChairInUse() { return mChairInUse; }
-		inline void SetChairInUse(u32 nItemID) { mChairInUse = nItemID; }
+		PSeatType GetSeatInUse(u32* nObjectId = NULL, u8* nSeatId = NULL);
+		void SetSeatInUse(PSeatType nSeatType, u32 nObjectId = 0, u8 nSeatId = 0);
 		inline PContainer* GetContainerInExclusiveUse() { return mContainerInExclusiveUse; }
 		inline void SetContainerInExclusiveUse(PContainer* nContainer) { mContainerInExclusiveUse = nContainer; }
 };
