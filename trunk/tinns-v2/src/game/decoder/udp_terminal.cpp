@@ -38,22 +38,123 @@
 /*******************************************************************************************/
 PUdpReceiveDB::PUdpReceiveDB(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-    nDecodeData->mName << "/0x17";
+  nDecodeData->mName << "/0x17";
+  mOptionsCount = 0;
 }
 
 PUdpMsgAnalyser* PUdpReceiveDB::Analyse()
 {
-    mDecodeData->mName << "=ReceiveDB request from client";
+  PMessage* TmpMsg = mDecodeData->mMessage;
+  u16 Unknown3, OptionSize;
 
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
+  mDecodeData->mName << "=ReceiveDB request from client";
+  
+  mTerminalSessionId = TmpMsg->U8Data(mDecodeData->Sub0x13Start + 6); 
+  TmpMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 18);
+  (*TmpMsg) >> mUnknown1; // command name size
+  (*TmpMsg) >> mUnknown2; // variable, increments
+  (*TmpMsg) >> Unknown3; // constant ?
+  (*TmpMsg) >> mCommandName; // null terminated string
+
+  
+  while((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && (mOptionsCount < mMaxOptions))
+  {
+    (*TmpMsg) >> OptionSize;
+    if((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && OptionSize)
+    {
+      (*TmpMsg) >> mOptions[mOptionsCount++];
+      //if(mOptions[mOptionsCount-1].size() != (OptionSize-1)) Warning (but no pb)!
+    }
+    else
+    {
+      break;
+    }
+  }
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
 }
 
 bool PUdpReceiveDB::DoAction()
 {
-    Console->Print("ReceiveDB request from client");
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+  
+  Console->Print("ReceiveDB request from client");
+  Console->Print("Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", mTerminalSessionId, mUnknown1, mUnknown2);
+  Console->Print("Command: '%s'", mCommandName.c_str());
+  for(u8 i = 0; i < mOptionsCount; ++i)
+    Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+
+  if(mCommandName == "VehicleListing")
+  {
+    if(mOptionsCount == 3)
+    {
+      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 1, 0);
+      tClient->SendUDPMessage(tmpMsg);
+      
+      std::string* Answer = new std::string[1 * 4];
+      Answer[0] = "12345"; //vhcId
+      Answer[1] = "4"; //vhcType
+      Answer[2] = "0"; //vhcStatus 0:parking, 1:in_service, 2:destroyed
+      Answer[3] = "255"; //vhcHealth%
+      tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, 1, 4);
+      tClient->SendUDPMessage(tmpMsg);
+      delete [] Answer;
+/*    
+// Option1=CharId, Option2=resultEntryStart, Option3=maxResultEntries
+S=> 03/2b/1a <u16 size incl 0><u8 bool succes ?><u16 err code ?>VehicleListing+0
+	13 2a 00 7c be 19
+	03 2a 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .*.+......Vehicl
+	65 4c 69 73 74 69 6e 67 00  eListing.
+S=> 03/2b/17 0f 00 08 00 04 00 <0f 00><u16 entries nb><04 00>
+	VehicleListing+0
+	<id_size incl 0><id_string +0>
+	<type_size><type_id_string? +0>
+	<status_size><status_string +0> (val: 0=stored)
+	<health_size><health_string +0> (val: 0-255)
+  ==	
+03/2b/17 0f 00 01 00 04 00 <0f 00><u16 entries nb><04 00>
+	31
+	03 54 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 4c 69 73 74  .....VehicleList
+	69 6e 67 00 06 00 32 35 32 37 37 00 03 00 36 30  ing...25277...60
+	00 02 00 30 00 04 00 32 35 35 00  ...0...255.
+*/
+    }
+  }
+  else if(mCommandName == "VehicleControl")
+  {
+    if(mOptionsCount == 2)
+    {
+      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 1, 0);
+      tClient->SendUDPMessage(tmpMsg);
+      
+      std::string* Answer = new std::string[4];
+      Answer[0] = "4"; //vhcType
+      Answer[1] = "0"; //vhcStatus
+      Answer[2] = "255"; //vhcHealth%
+      Answer[3] = "4255"; // worldId ?
+      tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, 1, 4);
+      tClient->SendUDPMessage(tmpMsg);
+      delete [] Answer;
+      
+/*
+// Option1=VhcId, Option2=CharId
+S=> 03/2b/1a VehicleControl 
+	13 77 00 c9 be 19
+	03 76 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .v.+......Vehicl
+	65 43 6f 6e 74 72 6f 6c 00  eControl.
+S=> 03/2b/17 0f 00 01 00 04 00 VehicleControl  4 0 255 4255(
+	2f
+	03 77 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 43 6f 6e 74  .....VehicleCont
+	72 6f 6c 00 02 00 34 00 02 00 30 00 04 00 32 35  rol...4...0...25
+	35 00 05 00 34 32 35 35 00                       5...4255.
+*/
+    }  
+  }
+  
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
 /*******************************************************************************************/
 /**** PUdpUpdateDB ****/
@@ -205,41 +306,99 @@ Console->Print("tMsglen %d tCmdLen %d tCmdNr %d area %s", tMsgLen, tCmdLen, tCmd
 PUdpQueryDB::PUdpQueryDB(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
     nDecodeData->mName << "/0x1b";
+    mOptionsCount = 0;
 }
 
 PUdpMsgAnalyser* PUdpQueryDB::Analyse()
 {
-    mDecodeData->mName << "=QueryDB request from client";
+  PMessage* TmpMsg = mDecodeData->mMessage;
+  u16 OptionSize;
 
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
+  mDecodeData->mName << "=QueryDB request from client";
+  
+  mTerminalSessionId = TmpMsg->U8Data(mDecodeData->Sub0x13Start + 6); 
+  TmpMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 18);
+  (*TmpMsg) >> OptionSize; // Size of data
+  (*TmpMsg) >> OptionSize; // Size of DB Command Name
+  if((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && OptionSize)
+  {
+    (*TmpMsg) >> mDBCommandName;
+  }
+  (*TmpMsg) >> OptionSize; // Size of Command Name
+  if((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && OptionSize)
+  {
+    (*TmpMsg) >> mCommandName; // null terminated string
+  }
+
+  while((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && (mOptionsCount < mMaxOptions))
+  {
+    (*TmpMsg) >> OptionSize;
+    if((TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext) && OptionSize)
+    {
+      (*TmpMsg) >> mOptions[mOptionsCount++];
+      //if(mOptions[mOptionsCount-1].size() != (OptionSize-1)) Warning (but no pb)!
+    }
+    else
+    {
+      break;
+    }
+  }
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
 }
 
 bool PUdpQueryDB::DoAction()
 {
-    Console->Print("QueryDB request from client");
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+  
+  Console->Print("QueryDB request from client");
+  Console->Print("Open Terminal - Terminal session %04x (?)", mTerminalSessionId);
+  Console->Print("DBCommand: '%s'", mDBCommandName.c_str());
+  Console->Print("Command: '%s'", mCommandName.c_str());
+  for(u8 i = 0; i < mOptionsCount; ++i)
+    Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+
+  if(mCommandName == "VehicleListing")
+  {
+    if(mOptionsCount == 3)
+    {
+/*
+// Option1=New Requested Status ?, Option2=vhcId, Option3=CharId
+S=> 03/2b/1a  // if vhc not spawned
+	13 87 00 d9 be 1c
+	03 87 00 2b 1a 12 00 00 11 00 44 43 42 44 69 73  ...+......DCBDis
+	6d 69 73 73 56 65 68 69 63 6c 65 00              missVehicle.
+*/
+      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 0, 11);
+      tClient->SendUDPMessage(tmpMsg);
+    }
+  }
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
 /*******************************************************************************************/
 /**** PUdpTeminal0x1f ****/
 /*******************************************************************************************/
 PUdpTeminal0x1f::PUdpTeminal0x1f(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
-    nDecodeData->mName << "/0x1f";
+  nDecodeData->mName << "/0x1f";
 }
 
 PUdpMsgAnalyser* PUdpTeminal0x1f::Analyse()
 {
-    mDecodeData->mName << "=Open Terminal";
-
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
+  mDecodeData->mName << "=Open Terminal";
+  mTerminalSessionId = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 6); 
+  
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
 }
 
 bool PUdpTeminal0x1f::DoAction()
 {
-    Console->Print("Open Terminal");
+    Console->Print("Open Terminal - Terminal session %04x (?)", mTerminalSessionId);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

@@ -68,6 +68,31 @@ enum PSeatType
   seat_vhc 
 };
 
+class PCharCoordinates {
+  public:
+    u16 mY;     // Y-Position in world
+    u16 mZ;     // Z-Position in world
+    u16 mX;     // X-Position in world
+    u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
+    u8 mLR;     // Compass direction (S..E..N..W..S [0-45-90-135-179])
+    u8 mAct;    // Last user action state
+    u8 mUnknown;// sometime sent by client with value != 0 (usual case)
+    // mAct:
+        // 0x00 NC has no focus (player alt+tab'ed out)
+        // 0x20 Char does nothing     00100000
+        // 0x22 kneeing               00100010
+        // 0x28 left step             00101000
+        // 0x30 right step            00110000
+        // 0x40 walking (not running) 01000000 // Seems to mean Running ? - to be verfied, with default walk/run mode !!!
+        // 0x60 forward               01100000
+        // 0xA0 backward              10100000
+        // bits:                      BFWRL.K.
+  
+    inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = 0;}
+    void SetPosition(u16 nY, u16 nZ, u16 nX, u8 nUD = 0x80, u8 nLR = 0);
+    void SetInterpolate(PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef);
+};
+
 class PChar
 {
 	private :
@@ -137,31 +162,6 @@ class PChar
 
 		u16 mLookingAt;  // Zone charID of currently targeted player
     std::time_t mLookAtTimer; // Lifetimer of lookat var
-
-		struct PCharCoordinates {
-		    u16 mY;     // Y-Position in world
-        u16 mZ;     // Z-Position in world
-		    u16 mX;     // X-Position in world
-        u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
-        u8 mLR;     // Compass direction (S..E..N..W..S [0-45-90-135-180])
-        u8 mAct;    // Last user action state
-        u8 mUnknown;// sometime sent by client with value != 0 (usual case)
-        // mAct:
-            // 0x00 NC has no focus (player alt+tab'ed out)
-            // 0x20 Char does nothing     00100000
-            // 0x22 kneeing               00100010
-            // 0x28 left step             00101000
-            // 0x30 right step            00110000
-            // 0x40 walking (not running) 01000000 // Seems to mean Running ? - to be verfied, with default walk/run mode !!!
-            // 0x60 forward               01100000
-            // 0xA0 backward              10100000
-            // bits:                      BFWRL.K.
-
-            inline PCharCoordinates()
-            {
-                mX = mY = mZ = mUD = mLR = mAct = mUnknown = 0;
-            }
-		};
 
     bool mIsOnline;
 		bool mDirtyFlag;

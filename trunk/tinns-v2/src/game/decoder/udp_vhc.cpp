@@ -236,11 +236,12 @@ PUdpMsgAnalyser* PUdpSubwayUpdate::Analyse()
 
 bool PUdpSubwayUpdate::DoAction()
 {
+/* No real use for that ?
   Subway->UpdateInfo(mVehicleID, mPosition, mDoorOpened);
 
   PMessage* tmpMsg = MsgBuilder->BuildSubwaySingleUpdateMsg(mDecodeData->mClient, mVehicleID, mPosition, mDoorOpened);
   mDecodeData->mClient->SendUDPMessage(tmpMsg);
-
+*/
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

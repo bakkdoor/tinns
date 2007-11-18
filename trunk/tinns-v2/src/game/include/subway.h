@@ -45,23 +45,45 @@ class PSubway
     u8 mDoorOpened;
     u32 mSeatUsersId[4];
   };
-  
-  private:
-    PSubwayInfo mSubways[SUBWAY_VHC_NB];
+
+  public:
+    static const u16 mCabsNumber = 11;
+    static const u32 mCabsBaseId = 0x03f2;
+    static const u8 mStationsNumber = 8;
     
-    bool GetInfoIndex(u16 nVhcId, u8 *Index = NULL);
+  private:
+    static const u16 mSubwayInitData [];
+    static const u32 mCabLoopTime;
+    static const u32 mCab0TimeOffset;
+    static const s32 mTimingAdjust;
+    static const u32 mCabIntervalTime;
+    static const u32 mOpenDoorOffset [];
+    static const u32 mOpenDoorDuration [];
+    static const char* mSubwayStationName [];
+    static PCharCoordinates mCabExitPositions [2][mStationsNumber];
+    
+    PSubwayInfo mSubways[mCabsNumber];
+
+public:    
+    bool GetInfoIndex(u32 nVhcId, u8 *Index = NULL);
     
   public:
     PSubway();
     //~PSubway();
     
-    inline bool IsValidSubwayCab(u16 nVhcId) {return GetInfoIndex(nVhcId); }
-    bool UpdateInfo(u16 nVhcId, u16 nPosition, u8 nDoorOpened);
-    u16 GetPosition(u16 nVhcId);
-    u8 GetDoorOpened(u16 nVhcId);
-    u8 GetFreeSeat(u16 nVhcId);
-    bool SetSeatUser(u16 nVhcId, u8 nSeat, u32 nCharId);
-    bool UnsetSeatUser(u16 nVhcId, u8 nSeat, u32 nCharId);
+    inline bool IsValidSubwayCab(u32 nVhcId) {return GetInfoIndex(nVhcId); }
+    bool UpdateInfo(u32 nVhcId, u16 nPosition, u8 nDoorOpened);
+    u16 GetPosition(u32 nVhcId);
+    
+    u32 GetTimeOffset(u32 nVhcId, u32 nTime);
+    u8 GetStation(u32 nVhcId, u32 nTime, u32* TimeOffset = NULL);
+    bool IsDoorOpen(u32 nVhcId, u32 nTime);
+    std::string* GetStationName(u8 nStationId);
+    bool GetStationExitPosition(PCharCoordinates* nPosition, u8 nStationId, f32 nCoef = 0.5);
+    
+    u8 GetFreeSeat(u32 nVhcId);
+    bool SetSeatUser(u32 nVhcId, u8 nSeat, u32 nCharId);
+    bool UnsetSeatUser(u32 nVhcId, u8 nSeat, u32 nCharId);
 };
 
 #endif

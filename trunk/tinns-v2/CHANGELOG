@@ -1575,4 +1575,20 @@ Hammag; 9.11.2007 23:30 GMT+2
 [GAME]
   subway.cpp/.h : Added PSubway class to manage Neocron subway cabs.
   Many files: Extended the Chair system to a general Seat system, used for subway and maybe for vhc.
+
+Hammag; 18.11.2007 18:45 GMT+2
+----------
+[rev. 94]
+<General changes>
+  Subway is now apparently running well.
+  Much work was needed to achieve that as some server-side computations were needed to emulate the subway movements.
+  There still may be some timing issues about the subway cab positions and door status on the long run...
+  Visibility between subway travellers isn't working yet. It will be done when working on vehicules to try make it all the same way.
+
+  Added subcommand @debug subway
   
+[GAME]
+  subway.cpp/.h : Various changes
+  decoder/udp_charmove.cpp/.h , decoder/udp_useobject.cpp/.h : Various changes for subway use
+  chars.cpp/.h : moved PCharPosition class out of PChar, and added some required methods to it
+  decoder/udp_terminal.h/.cpp : started some work on that

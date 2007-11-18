@@ -33,8 +33,20 @@
 #ifndef UDPTERMINAL_H
 #define UDPTERMINAL_H
 
+
+
 class PUdpReceiveDB : public PUdpMsgAnalyser
 {
+  private:
+    static const u8 mMaxOptions = 3;
+    u16 mTerminalSessionId;
+    std::string mCommandName;
+    std::string mOptions[mMaxOptions];
+    u8 mOptionsCount;
+    
+    u16 mUnknown1;
+    u16 mUnknown2;
+    
   public:
     PUdpReceiveDB(PMsgDecodeData* nDecodeData);
     //~PUdpReceiveDB();
@@ -62,6 +74,14 @@ class PUdpTryAccessDB : public PUdpMsgAnalyser
 
 class PUdpQueryDB : public PUdpMsgAnalyser
 {
+  private:
+    static const u8 mMaxOptions = 3;
+    u16 mTerminalSessionId;
+    std::string mDBCommandName;
+    std::string mCommandName;
+    std::string mOptions[mMaxOptions];
+    u8 mOptionsCount;
+  
   public:
     PUdpQueryDB(PMsgDecodeData* nDecodeData);
     //~PUdpQueryDB();
@@ -71,6 +91,9 @@ class PUdpQueryDB : public PUdpMsgAnalyser
 
 class PUdpTeminal0x1f : public PUdpMsgAnalyser
 {
+  private:
+    u16 mTerminalSessionId;
+    
   public:
     PUdpTeminal0x1f(PMsgDecodeData* nDecodeData);
     //~PUdpTeminal0x1f();

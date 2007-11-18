@@ -239,37 +239,67 @@ bool PUdpCharExitChair::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* tChar = nClient->GetChar();
-  
+  PMessage* tmpMsg;
   u32 cSeatObjectId;
   u8 cSeatId;
   PSeatType cSeatType = tChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
+  u32 tNowTime = GameServer->GetGameTime();
+  bool ReadyToExit = false;
 
-//Console->Print("Localchar %d want to get up from seat type %d", nClient->GetLocalID(), (u8)cSeatType);
+  if(nClient->GetDebugMode(DBG_SUBWAY))
+  {
+    char DbgMessage[80];
+    u8 tCabId;
+    Subway->GetInfoIndex(cSeatObjectId, &tCabId);
+    u8 tStationId = Subway->GetStation(cSeatObjectId, tNowTime);
+    std::string* StationName = Subway->GetStationName(tStationId);
+    std::string OpenState = (Subway->IsDoorOpen(cSeatObjectId, tNowTime) ? "open" : "closed");
+    
+    snprintf(DbgMessage, 80, "Cab %d (%d) is in station %s (%d). Door is %s (time: %d)", tCabId, cSeatObjectId, StationName->c_str(), tStationId, OpenState.c_str(), tNowTime);
+    DbgMessage[79] = 0;
+    Chat->send(nClient, CHAT_DIRECT, "System", DbgMessage);
+    delete StationName;
+  }
+
   if(cSeatType)
   {
     if(cSeatType == seat_chair)
     {
       Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(nClient->GetLocalID(), cSeatObjectId);
       tChar->SetSeatInUse(seat_none);
+      ReadyToExit = true;
     }
     else if(cSeatType == seat_subway)
     {
-      Subway->UnsetSeatUser(cSeatObjectId, cSeatId, tChar->GetID());
-      tChar->SetSeatInUse(seat_none);
-      Console->Print(YELLOW, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving subway seat not fully implemented (pos reset to start pos)");
+      if(Subway->IsDoorOpen(cSeatObjectId, tNowTime))
+      {
+        Subway->GetStationExitPosition(&(tChar->Coords), Subway->GetStation(cSeatObjectId, tNowTime), GameServer->GetRandomFloat());
+        Subway->UnsetSeatUser(cSeatObjectId, cSeatId, tChar->GetID());
+        tChar->SetSeatInUse(seat_none);
+        ReadyToExit = true;
+      }
+      else
+      {
+        tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, cSeatObjectId);
+        nClient->SendUDPMessage(tmpMsg);
+      }
     }
     else
     {
-      Console->Print(RED, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving vhc seat exit not implemented");
+      Console->Print(RED, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving this kind of seat is not implemented");
     }
 
-    tChar->SetSeatInUse(seat_none);
-
-    PMessage* tmpMsg = MsgBuilder->BuildCharExitChairMsg(nClient);
-    ClientManager->UDPBroadcast(tmpMsg, nClient);
+    if(ReadyToExit)
+    {
+      tChar->SetSeatInUse(seat_none);
+  
+      tmpMsg = MsgBuilder->BuildCharExitChairMsg(nClient);
+      ClientManager->UDPBroadcast(tmpMsg, nClient);
 
 if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->GetLocalID(), cSeatObjectId);
+    }
   }
+
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

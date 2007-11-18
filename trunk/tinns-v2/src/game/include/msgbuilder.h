@@ -120,7 +120,10 @@ class PMsgBuilder
   
   PMessage* BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessage);
   //PMessage* BuildSubwayFullUpdateMsg(PClient* nClient);
-  PMessage* BuildSubwaySingleUpdateMsg(PClient* nClient, u16 nVehicleID, u16 nPosition, u8 nDoorOpened);
+  PMessage* BuildSubwaySingleUpdateMsg(PClient* nClient, u32 nVehicleID, u16 nPosition, u8 nDoorOpened);
+  
+  PMessage* BuildDBRequestStatusMsg(PClient* nClient, std::string* nCommandName, u8 nStatus, u16 nErrCode);
+  PMessage* BuildDBAnswerMsg(PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols);
 };
 
 #endif

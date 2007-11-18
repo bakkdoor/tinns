@@ -141,12 +141,14 @@ bool PUdpUseObject::DoAction()
         }
         if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
         {
-            //if (gDevDebug)
-              Console->Print("Clicking on char, npc or vhc %d (%x)", mRawItemID, mRawItemID);
+            if (gDevDebug)
+              Console->Print("Clicking on char, npc or vhc %d (%x) - time = %d", mRawItemID, mRawItemID, GameServer->GetGameTime());
+            
             
             if((tChar->GetLocation() == NC_SUBWAY_WORLD_ID) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
             {
-              if(Subway->GetDoorOpened(mRawItemID))
+              
+              if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
               {
                 u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
                 if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
@@ -167,7 +169,8 @@ bool PUdpUseObject::DoAction()
                 nClient->getUDPConn()->SendMessage(tmpMsg);
               }
             }
-
+            
+            
             mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
         }
     }

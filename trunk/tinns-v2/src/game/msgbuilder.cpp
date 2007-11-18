@@ -2251,8 +2251,8 @@ PMessage* PMsgBuilder::BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessag
       *tmpMsg << (u16)nClient->GetUDP_ID();
       *tmpMsg << (u8)0x28;
       *tmpMsg << (u16)0x0027;
-      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
-      *tmpMsg << (u32)0x00000000;
+      *tmpMsg << (u32)(SUBWAY_VHC_BASE_ID + i);
+      *tmpMsg << (u16)0x0000;
       *tmpMsg << (u8)0x00;
       *tmpMsg << (u16)Subway->mSubways[i].mPosition;
       *tmpMsg << (u8)0x00;
@@ -2285,15 +2285,14 @@ PMessage* PMsgBuilder::BuildSubwayFullUpdateMsg(PClient* nClient)
     *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
     *tmpMsg << (u16)0x0000; // placeholder for SessionID();
 
-    for(u8 i=0; i<SUBWAY_VHC_NB; i++)
+    for(u8 i=0; i<PSubway::mCabsNumber; i++)
     {
       nClient->IncreaseUDP_ID();    
       *tmpMsg << (u8)0x0c; //msg size
       *tmpMsg << (u8)0x03;
       *tmpMsg << (u16)nClient->GetUDP_ID();
       *tmpMsg << (u8)0x32;
-      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
-      *tmpMsg << (u16)0x0000;
+      *tmpMsg << (u32)(PSubway::mCabsBaseId + i);
       *tmpMsg << (u8)0x00;
       *tmpMsg << (u16)Subway->mSubways[i].mPosition;
       *tmpMsg << (u8)Subway->mSubways[i].mDoorOpened;; 	
@@ -2306,7 +2305,7 @@ PMessage* PMsgBuilder::BuildSubwayFullUpdateMsg(PClient* nClient)
 }
 */
 
-PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(PClient* nClient, u16 nVehicleID, u16 nPosition, u8 nDoorOpened)
+PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(PClient* nClient, u32 nVehicleID, u16 nPosition, u8 nDoorOpened)
 {
     PMessage* tmpMsg = new PMessage(148);
     *tmpMsg << (u8)0x13;
@@ -2318,8 +2317,7 @@ PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(PClient* nClient, u16 nVehicle
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x32;
-    *tmpMsg << (u16)nVehicleID;
-    *tmpMsg << (u16)0x0000;
+    *tmpMsg << (u32)nVehicleID;
     *tmpMsg << (u8)0x00;
     *tmpMsg << (u16)nPosition;
     *tmpMsg << (u8)nDoorOpened; 	
@@ -2370,6 +2368,62 @@ PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg (u32 nWOID)
   *tmpMsg << (u32)nWOID;  // WorldobjectID
   
   return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildDBRequestStatusMsg(PClient* nClient, std::string* nCommandName, u8 nStatus, u16 nErrCode)
+{
+  PMessage* tmpMsg = new PMessage(32);
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  *tmpMsg << (u8)0x14; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x2b;
+  *tmpMsg << (u8)0x1a;
+  *tmpMsg << (u16)(nCommandName->size()+1);
+  *tmpMsg << (u8)nStatus;
+  *tmpMsg << (u16)nErrCode;
+  *tmpMsg << (*nCommandName);
+
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+ 
+  return tmpMsg;  
+}
+
+PMessage* PMsgBuilder::BuildDBAnswerMsg(PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols)
+{
+  u8 i, j, k;
+  PMessage* tmpMsg = new PMessage(32);
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  *tmpMsg << (u8)0x14; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x2b;
+  *tmpMsg << (u8)0x17;
+  *tmpMsg << (u16)(nCommandName->size()+1);
+  *tmpMsg << (u16)nRows;
+  *tmpMsg << (u16)nCols;
+  *tmpMsg << (*nCommandName);
+
+  for(i=0, k=0; i<nRows; ++i)
+  {
+    for(j=0; j<nCols; ++j, ++k)
+    {
+      *tmpMsg << (u16)(nAnswerData[k].size()+1);
+      *tmpMsg << nAnswerData[k];
+    }
+  }
+  
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+ 
+  return tmpMsg; 
 }
 
 /*

@@ -52,6 +52,55 @@
 #include "container.h"
 #include "inventory.h"
 
+// PCharCoordinates
+void PCharCoordinates::SetInterpolate(PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef)
+{
+  if((nCoef < 0) || (nCoef > 1))
+  {
+    Console->Print(RED, BLACK, "[Error] PCharCoordinates::Interpolate : Invalid nCoef value: %f", nCoef);
+    nCoef = 0;
+  }
+  f32 rCoef = 1 - nCoef;
+  
+  mY = (u16)(rCoef * Pos1.mY + nCoef * Pos2.mY);
+  mZ = (u16)(rCoef * Pos1.mZ + nCoef * Pos2.mZ);
+  mX = (u16)(rCoef * Pos1.mX + nCoef * Pos2.mX);
+  mUD = (u8)(rCoef * Pos1.mUD + nCoef * Pos2.mUD);
+  if(abs(Pos1.mLR - Pos2.mLR) < 90)
+  {
+    mLR = (u8)(rCoef * Pos1.mLR + nCoef * Pos2.mLR); 
+  }
+  else
+  {
+    mLR = (u8)((u16)(rCoef * (180.0+(f32)Pos1.mLR) + nCoef * Pos2.mLR) % 180);
+  }
+}
+
+u16 mY;     // Y-Position in world
+    u16 mZ;     // Z-Position in world
+    u16 mX;     // X-Position in world
+    u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
+    u8 mLR;     // Compass direction (S..E..N..W..S [0-45-90-135-179])
+    u8 mAct;    // Last user action state
+
+void PCharCoordinates::SetPosition(u16 nY, u16 nZ, u16 nX, u8 nUD, u8 nLR)
+{
+  mY = nY;
+  mZ = nZ;
+  mX = nX;
+  mUD = nUD;
+  if(mUD < 0x2a)
+  {
+    mUD = 0x2a;
+  }
+  else if(mUD > 0xd6)
+  {
+    mUD = 0xd6;
+  }
+  mLR = nLR % 180;
+}
+    
+
 // SQL Layout
 enum
 {

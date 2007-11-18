@@ -72,11 +72,12 @@ enum PClientLevel
 	PCL_ADMIN = 100
 };
 */
-#define DEBUG_MODES 2
+#define DEBUG_MODES 3
 enum PDebugMode
 {
   DBG_LOCATION = 0,
   DBG_ITEMID = 1,
+  DBG_SUBWAY = 2,
   DBG_ALL = DEBUG_MODES // must always be last, with DEBUG_MODES updated as needed
 };
 
