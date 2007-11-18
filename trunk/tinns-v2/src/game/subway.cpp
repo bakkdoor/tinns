@@ -235,7 +235,7 @@ bool PSubway::SetSeatUser(u32 nVhcId, u8 nSeat, u32 nCharId)
     if(! mSubways[tIndex].mSeatUsersId[nSeat-1])
     {
       mSubways[tIndex].mSeatUsersId[nSeat-1] = nCharId;
-Console->Print("[DEBUG] Char %d using seat %d of subway cab %08x, ", nCharId, nSeat, nVhcId);
+//Console->Print("[DEBUG] Char %d using seat %d of subway cab %08x, ", nCharId, nSeat, nVhcId);
       return true;
     }
   }
@@ -252,7 +252,7 @@ bool PSubway::UnsetSeatUser(u32 nVhcId, u8 nSeat, u32 nCharId)
     if(mSubways[tIndex].mSeatUsersId[nSeat-1] == nCharId)
     {
       mSubways[tIndex].mSeatUsersId[nSeat-1] = 0;
-Console->Print("[DEBUG] Char %d leaving seat %d of subway cab %08x, ", nCharId, nSeat, nVhcId);
+//Console->Print("[DEBUG] Char %d leaving seat %d of subway cab %08x, ", nCharId, nSeat, nVhcId);
       return true;
     }
   }
