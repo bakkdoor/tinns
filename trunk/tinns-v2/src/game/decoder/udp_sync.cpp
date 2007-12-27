@@ -34,6 +34,7 @@
 #include "main.h"
 #include "udp_sync.h"
 #include "worlds.h"
+#include "vehicle.h"
 
 /**** PUdpSync0 ****/
 
@@ -178,7 +179,9 @@ bool PUdpSync2::DoAction()
 
     // Baseline message chunking & sending
     PMessage* BaselineMsg = MsgBuilder->BuildBaselineMsg(nClient);
-    PMessage* ChunkBuffer;
+    nClient->FragmentAndSendUDPMessage(BaselineMsg, 0x19);
+// Old version removed
+/*    PMessage* ChunkBuffer;
     PMessage* ChunkMsg;
     const u16 ChunkSize = 220;
     u16 ChunksNum = (BaselineMsg->GetSize() + ChunkSize - 1)/ChunkSize;
@@ -214,6 +217,7 @@ bool PUdpSync2::DoAction()
       nClient->getUDPConn()->SendMessage(ChunkMsg);
     }
     delete BaselineMsg;
+*/
 
     // Sending "CharInfo3/Zoning2Msg" message
     // Removed because same as Zoning2Msg
@@ -222,6 +226,38 @@ bool PUdpSync2::DoAction()
 
     mDecodeData->mClientState->UDP.mState = PGameState::UDP::GUS_SYNC3;
 
+    //Temp: send Subway to client if in subway
+    if(nClient->GetChar()->GetLocation() == PWorlds::mNcSubwayWorldId)
+    {
+      PMessage* SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, false);
+      nClient->SendUDPMessage(SubwayMsg);
+      SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, true);
+      nClient->SendUDPMessage(SubwayMsg);
+    }
+    
+    // Send spawned vehicles
+
+    PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
+	  if(CurrentWorld)
+	  {
+	    PSpawnedVhcList* VhcList = CurrentWorld->GetSpawnedVehicules()->GetSpawnedVehicles();
+	    PSpawnedVehicle* VhcEntry;
+	    PMessage* VhcMsg;
+	    
+	    while(! VhcList->empty())
+			{
+				VhcEntry = VhcList->front();
+				VhcList->pop();
+Console->Print(YELLOW, BLACK, "[DEBUG] Send info for vhc id %d", VhcEntry->GetLocalId());
+				VhcMsg = MsgBuilder->BuildVhcPosUpdateMsg (VhcEntry);
+				nClient->FillInUDP_ID(VhcMsg);
+			  nClient->SendUDPMessage(VhcMsg);
+			  VhcMsg = MsgBuilder->BuildVhcInfoMsg (nClient, VhcEntry);
+			  nClient->SendUDPMessage(VhcMsg);
+			}
+	  }
+
+							    
     // Dispatching info to & from other chars in zone
     int nbSent;
     nbSent = ClientManager->SendUDPZoneWelcomeToClient(nClient);
@@ -236,15 +272,6 @@ bool PUdpSync2::DoAction()
 
     // Send NPC information to client
     NPCManager->InitPlayer(nClient);
-
-    //Temp: send Subway to client if in subway
-    if(nClient->GetChar()->GetLocation() == NC_SUBWAY_WORLD_ID)
-    {
-      PMessage* SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, false);
-      nClient->SendUDPMessage(SubwayMsg);
-      SubwayMsg = MsgBuilder->BuildSubwaySpawnMsg(nClient, true);
-      nClient->SendUDPMessage(SubwayMsg);
-    }
     
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;

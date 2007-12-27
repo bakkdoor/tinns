@@ -80,7 +80,7 @@
 // MySQL Support
 #include "mysql.h"
 #include "sql.h"
-#include "vehicle.h"
+
 #include "config.h"
 #include "filesystem.h"
 #include "defparser.h"

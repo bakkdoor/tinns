@@ -35,6 +35,18 @@
 
 class PUdpVhcMove : public PUdpMsgAnalyser
 { 
+  private:
+    u16 mVhcLocalId;
+    u16 mNewY;
+    u16 mNewZ;
+    u16 mNewX;
+    u16 mNewLR;
+    u16 mNewRoll;
+    u16 mUnk1; // always 0x0001 ?
+    u8 mMoveType;
+    u8 mNewUD;
+    u8 mFF; // always 0xff ?
+    u8 mAction; // &1 = Left, &2 = Right, &4 = Forward, &8 = Backward	
   public:
     PUdpVhcMove(PMsgDecodeData* nDecodeData);
     //~PUdpVhcMove();
@@ -45,7 +57,7 @@ class PUdpVhcMove : public PUdpMsgAnalyser
 class PUdpVhcUse : public PUdpMsgAnalyser
 {
   private:
-    u16 mVehicleID;
+    u32 mVehicleID;
     u8 mVehicleSeat;
     
   public:
@@ -58,13 +70,25 @@ class PUdpVhcUse : public PUdpMsgAnalyser
 class PUdpSubwayUpdate : public PUdpMsgAnalyser
 {
   private:
-    u16 mVehicleID;
+    u32 mVehicleID;
     u16 mPosition;
     u8 mDoorOpened;
     
   public:
     PUdpSubwayUpdate(PMsgDecodeData* nDecodeData);
     //~PUdpSubwayUpdate();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
+class PUdpRequestSeatInfo : public PUdpMsgAnalyser
+{
+  private:
+    u32 mVehicleID;
+    
+  public:
+    PUdpRequestSeatInfo(PMsgDecodeData* nDecodeData);
+    //~PUdpRequestSeatInfo();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

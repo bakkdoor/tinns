@@ -33,6 +33,7 @@
 #include "main.h"
 #include "udp_terminal.h"
 #include "terminal.h"
+#include "vehicle.h"
 /*******************************************************************************************/
 /**** PUdpReceiveDB ****/
 /*******************************************************************************************/
@@ -77,85 +78,157 @@ PUdpMsgAnalyser* PUdpReceiveDB::Analyse()
 
 bool PUdpReceiveDB::DoAction()
 {
-  PMessage* tmpMsg;
-  PClient* tClient = mDecodeData->mClient;
-  
-  Console->Print("ReceiveDB request from client");
-  Console->Print("Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", mTerminalSessionId, mUnknown1, mUnknown2);
-  Console->Print("Command: '%s'", mCommandName.c_str());
-  for(u8 i = 0; i < mOptionsCount; ++i)
-    Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+  //PMessage* tmpMsg;
+  //PClient* tClient = mDecodeData->mClient;
+  //PChar* tChar = tClient->GetChar();
+  bool Result = false;
+	
+Console->Print("ReceiveDB request from client");
+Console->Print("Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", mTerminalSessionId, mUnknown1, mUnknown2);
+Console->Print("Command: '%s'", mCommandName.c_str());
+for(u8 i = 0; i < mOptionsCount; ++i)
+	Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
 
   if(mCommandName == "VehicleListing")
-  {
-    if(mOptionsCount == 3)
-    {
-      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 1, 0);
-      tClient->SendUDPMessage(tmpMsg);
-      
-      std::string* Answer = new std::string[1 * 4];
-      Answer[0] = "12345"; //vhcId
-      Answer[1] = "4"; //vhcType
-      Answer[2] = "0"; //vhcStatus 0:parking, 1:in_service, 2:destroyed
-      Answer[3] = "255"; //vhcHealth%
-      tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, 1, 4);
-      tClient->SendUDPMessage(tmpMsg);
-      delete [] Answer;
+	{
+		Result = ActionVehicleListing();
+	}
+  else if(mCommandName == "VehicleControl")
+	{
+		Result = ActionVehicleControl();
+	}
+	
+	if(!Result)
+	{
+		Console->Print(RED, BLACK, "Error: PUdpReceiveDB - Error or unknown command %s", mCommandName.c_str());
+		for(u8 i = 0; i < mOptionsCount; ++i)
+			Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+	}
+	
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return Result;
+}
+
+bool PUdpReceiveDB::ActionVehicleListing()
+{
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+  PChar* tChar = tClient->GetChar();
+	
+	if(mOptionsCount == 3) // CharId, StartVhcEntry, MaxVhcEntries
+	{
+		if(((u32)atol(mOptions[0].c_str())) != tChar->GetID())
+		{
+		// Err: invalid CharId. Can alert, But we don't care :-) (except if used for other terminal function)
+		}
+		// !!! some more check/regex on values to do before using !!!
+		u16 StartIndex = atoi(mOptions[1].c_str());
+		u16 MaxEntries = atoi(mOptions[2].c_str());
+		
+		u8 nStatus = 1;
+		u16 nErrcode = 0;
+		
+		tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, nStatus, nErrcode);
+		tClient->SendUDPMessage(tmpMsg);
+			
+		PVhcInfoList* VhcList = Vehicles->GetCharVehicles(tChar->GetID(), MaxEntries, StartIndex);
+		if(! VhcList->empty())
+		{
+			u16 NumEntries = VhcList->size();
+			std::string* Answer = new std::string[4 * NumEntries];
+			u16 Index = 0;
+			PVehicleInformation* EntryInfo;
+Console->Print("VHc entries : %d", NumEntries);
+		
+			while(! VhcList->empty())
+			{
+				EntryInfo = VhcList->front();
+				VhcList->pop();
+				Answer[Index++] = Ssprintf("%u", EntryInfo->GetVehicleId()); //vhcId
+				Answer[Index++] = Ssprintf("%u", EntryInfo->GetVehicleType()); //vhcType
+				Answer[Index++] = Ssprintf("%u", EntryInfo->GetStatus()); //vhcStatus 0:parking, 1:in_service, 2:destroyed
+				Answer[Index++] = Ssprintf("%u", EntryInfo->GetHealth()); //vhcHealth%
+Console->Print("Entry: %s/%s/%s/%s", Answer[Index-4].c_str(), Answer[Index-3].c_str(), Answer[Index-2].c_str(), Answer[Index-1].c_str());
+				delete EntryInfo;
+			}
+			
+			tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, NumEntries, 4);
+			tClient->SendUDPMessage(tmpMsg);
+			delete [] Answer;
+		}
+		delete VhcList;
+		
+		return true;
+	}
+	else
+		return false;
 /*    
 // Option1=CharId, Option2=resultEntryStart, Option3=maxResultEntries
 S=> 03/2b/1a <u16 size incl 0><u8 bool succes ?><u16 err code ?>VehicleListing+0
-	13 2a 00 7c be 19
-	03 2a 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .*.+......Vehicl
-	65 4c 69 73 74 69 6e 67 00  eListing.
+13 2a 00 7c be 19
+03 2a 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .*.+......Vehicl
+65 4c 69 73 74 69 6e 67 00  eListing.
 S=> 03/2b/17 0f 00 08 00 04 00 <0f 00><u16 entries nb><04 00>
-	VehicleListing+0
-	<id_size incl 0><id_string +0>
-	<type_size><type_id_string? +0>
-	<status_size><status_string +0> (val: 0=stored)
-	<health_size><health_string +0> (val: 0-255)
-  ==	
+VehicleListing+0
+<id_size incl 0><id_string +0>
+<type_size><type_id_string? +0>
+<status_size><status_string +0> (val: 0=stored)
+<health_size><health_string +0> (val: 0-255)
+==	
 03/2b/17 0f 00 01 00 04 00 <0f 00><u16 entries nb><04 00>
-	31
-	03 54 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 4c 69 73 74  .....VehicleList
-	69 6e 67 00 06 00 32 35 32 37 37 00 03 00 36 30  ing...25277...60
-	00 02 00 30 00 04 00 32 35 35 00  ...0...255.
+31
+03 54 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 4c 69 73 74  .....VehicleList
+69 6e 67 00 06 00 32 35 32 37 37 00 03 00 36 30  ing...25277...60
+00 02 00 30 00 04 00 32 35 35 00  ...0...255.
 */
-    }
-  }
-  else if(mCommandName == "VehicleControl")
-  {
-    if(mOptionsCount == 2)
-    {
-      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 1, 0);
-      tClient->SendUDPMessage(tmpMsg);
-      
-      std::string* Answer = new std::string[4];
-      Answer[0] = "4"; //vhcType
-      Answer[1] = "0"; //vhcStatus
-      Answer[2] = "255"; //vhcHealth%
-      Answer[3] = "4255"; // worldId ?
-      tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, 1, 4);
-      tClient->SendUDPMessage(tmpMsg);
-      delete [] Answer;
-      
+}
+
+bool PUdpReceiveDB::ActionVehicleControl()
+{
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+	
+	if(mOptionsCount == 2) // VhcId, CharId
+	{
+		// !!! validate values !!!
+		u8 nStatus = 1;
+		u16 nErrcode = 0;
+		
+		tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, nStatus, nErrcode);
+		tClient->SendUDPMessage(tmpMsg);
+		
+		u32 VhcId = (u32)atol(mOptions[0].c_str());
+		PVehicleInformation EntryInfo;
+		if(Vehicles->GetVehicleInfo(VhcId, &EntryInfo))
+		{
+			std::string* Answer = new std::string[4];
+			Answer[0] = Ssprintf("%u", EntryInfo.GetVehicleType()); //vhcType
+			Answer[1] = Ssprintf("%u", EntryInfo.GetStatus()); //vhcStatus
+			Answer[2] = Ssprintf("%u", EntryInfo.GetHealth()); //vhcHealth%
+			Answer[3] = Ssprintf("%u", (255-EntryInfo.GetHealth()) * 1000 * EntryInfo.GetVehicleType() / 255); //Repair cost
+Console->Print("Entry: %s/%s/%s/%s", Answer[0].c_str(), Answer[1].c_str(), Answer[2].c_str(), Answer[3].c_str());
+			tmpMsg = MsgBuilder->BuildDBAnswerMsg(tClient, &mCommandName, Answer, 1, 4);
+			tClient->SendUDPMessage(tmpMsg);
+			delete [] Answer;
+		}
+		return true;
+	}
+	else
+		return false;		
 /*
 // Option1=VhcId, Option2=CharId
 S=> 03/2b/1a VehicleControl 
-	13 77 00 c9 be 19
-	03 76 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .v.+......Vehicl
-	65 43 6f 6e 74 72 6f 6c 00  eControl.
+13 77 00 c9 be 19
+03 76 00 2b 1a 0f 00 01 00 00 56 65 68 69 63 6c  .v.+......Vehicl
+65 43 6f 6e 74 72 6f 6c 00  eControl.
 S=> 03/2b/17 0f 00 01 00 04 00 VehicleControl  4 0 255 4255(
-	2f
-	03 77 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 43 6f 6e 74  .....VehicleCont
-	72 6f 6c 00 02 00 34 00 02 00 30 00 04 00 32 35  rol...4...0...25
-	35 00 05 00 34 32 35 35 00                       5...4255.
+2f
+03 77 00 2b 17 0f 00 01 00 04 00 56 65 68 69 63 6c 65 43 6f 6e 74  .....VehicleCont
+72 6f 6c 00 02 00 34 00 02 00 30 00 04 00 32 35  rol...4...0...25
+35 00 05 00 34 32 35 35 00                       5...4255.
 */
-    }  
-  }
-  
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true;
 }
+		
 /*******************************************************************************************/
 /**** PUdpUpdateDB ****/
 /*******************************************************************************************/
@@ -350,35 +423,146 @@ PUdpMsgAnalyser* PUdpQueryDB::Analyse()
 
 bool PUdpQueryDB::DoAction()
 {
+  //PMessage* tmpMsg;
+  //PClient* tClient = mDecodeData->mClient;
+  bool Result = false;
+  
+Console->Print("QueryDB request from client");
+Console->Print("Open Terminal - Terminal session %04x (?)", mTerminalSessionId);
+Console->Print("DBCommand: '%s'", mDBCommandName.c_str());
+Console->Print("Command: '%s'", mCommandName.c_str());
+for(u8 i = 0; i < mOptionsCount; ++i)
+  Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+
+  if(mDBCommandName == "SPAWNVEHICLE")
+	{
+		Result = ActionSpawnVehicle();
+	}
+	else if(mDBCommandName == "REPAIRVEHICLE")
+	{
+		Result = ActionRepairVehicle();
+	}	
+  else if(mDBCommandName == "DISMISSVEHICLE")
+	{
+		Result = ActionDismissVehicle();
+	}
+
+	if(!Result)
+	{
+		Console->Print(RED, BLACK, "Error: PUdpQueryDB - Error or unknown command %s", mDBCommandName.c_str());
+		for(u8 i = 0; i < mOptionsCount; ++i)
+			Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
+	}
+	
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return Result;
+}
+
+bool PUdpQueryDB::ActionSpawnVehicle()
+{
   PMessage* tmpMsg;
   PClient* tClient = mDecodeData->mClient;
-  
-  Console->Print("QueryDB request from client");
-  Console->Print("Open Terminal - Terminal session %04x (?)", mTerminalSessionId);
-  Console->Print("DBCommand: '%s'", mDBCommandName.c_str());
-  Console->Print("Command: '%s'", mCommandName.c_str());
-  for(u8 i = 0; i < mOptionsCount; ++i)
-    Console->Print("Option %d: '%s'", i, mOptions[i].c_str());
-
-  if(mCommandName == "VehicleListing")
-  {
-    if(mOptionsCount == 3)
-    {
-/*
-// Option1=New Requested Status ?, Option2=vhcId, Option3=CharId
-S=> 03/2b/1a  // if vhc not spawned
-	13 87 00 d9 be 1c
-	03 87 00 2b 1a 12 00 00 11 00 44 43 42 44 69 73  ...+......DCBDis
-	6d 69 73 73 56 65 68 69 63 6c 65 00              missVehicle.
-*/
-      tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, 0, 11);
-      tClient->SendUDPMessage(tmpMsg);
-    }
-  }
-
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true;
+	PChar* tChar = tClient->GetChar();
+	
+	if(mOptionsCount == 3) // 0, VhcId, CharId
+	{
+		u32 VhcId = (u32)atol(mOptions[1].c_str());
+		//u32 CharId = (u32)atol(mOptions[2].c_str());
+		// !!! validate values !!!
+		// !!! + check CharId = current char && CharId is owner of VhcId
+		u8 nStatus = 1; // 1=OK, 0=Err
+		u16 nErrcode = 0; // 0=n/a 11=Not Spawned
+		
+		tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, nStatus, nErrcode);
+		tClient->SendUDPMessage(tmpMsg);
+		
+		PVhcCoordinates NewPosition;
+		NewPosition.SetPosition((tChar->Coords).mY, (tChar->Coords).mZ+100, (tChar->Coords).mX, (tChar->Coords).mUD, 34683, 32403);
+		PSpawnedVehicle* NewVhc = Vehicles->SpawnVehicle(VhcId, tChar->GetLocation(), &NewPosition);
+		if(NewVhc)
+		{
+			tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg (NewVhc);
+			ClientManager->UDPBroadcast(tmpMsg, tChar->GetLocation());
+		}
+		
+		return true;
+	}
+	else
+		return false;
 }
+
+bool PUdpQueryDB::ActionRepairVehicle()
+{
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+	
+	if(mOptionsCount == 3) // 0, VhcId, CharId
+	{
+		//u32 VhcId = (u32)atol(mOptions[1].c_str());
+		//u32 CharId = (u32)atol(mOptions[2].c_str());
+		// !!! validate values !!!
+
+		u8 nStatus = 1; // 1=OK, 0=Err
+		u16 nErrcode = 11; // 0=n/a 11=Not Spawned
+		
+		tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, nStatus, nErrcode);
+		tClient->SendUDPMessage(tmpMsg);
+		
+		// Action here
+
+		return true;
+	}
+	else
+		return false;
+}
+
+bool PUdpQueryDB::ActionDismissVehicle()
+{
+  PMessage* tmpMsg;
+  PClient* tClient = mDecodeData->mClient;
+	//PChar* tChar = tClient->GetChar();
+	bool Result = false;
+	
+	if(mOptionsCount == 3) // 0, VhcId, CharId
+	{
+		u32 VhcId = (u32)atol(mOptions[1].c_str());
+		//u32 CharId = (u32)atol(mOptions[2].c_str());
+		// !!! validate values !!!
+		// !!! + check CharId = current char && CharId is owner of VjhcId
+		// !!! Check vhc empty
+		u8 nStatus = 0; // 1=OK, 0=Err
+		u16 nErrcode = 11; // 0=n/a 11=Not Spawned
+		PVehicleInformation nInfo;
+		
+		PSpawnedVehicle* tVhc = Vehicles->GetSpawnedVehicle(VhcId);
+		u32 tLocalId;
+		u32 tLocation;
+		if(tVhc)
+		{
+			tLocalId = tVhc->GetLocalId();
+			tLocation = tVhc->GetLocation();
+			Result = Vehicles->UnspawnVehicle(VhcId);
+		}
+	
+		if(Result)
+		{
+			nStatus = 1;
+			nErrcode = 0;
+		}
+		tmpMsg = MsgBuilder->BuildDBRequestStatusMsg(tClient, &mCommandName, nStatus, nErrcode);
+		tClient->SendUDPMessage(tmpMsg);
+
+		if(Result)
+		{
+			tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg(tLocalId);
+			ClientManager->UDPBroadcast(tmpMsg, tLocation);
+		}
+		return true;
+	}
+	else
+		return false;
+}
+
 /*******************************************************************************************/
 /**** PUdpTeminal0x1f ****/
 /*******************************************************************************************/

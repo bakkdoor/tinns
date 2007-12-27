@@ -35,6 +35,7 @@
 
 #include "worlds.h"
 #include "appartements.h"
+#include "vehicle.h"
 #include "subway.h"
 #include "item.h"
 #include "container.h"
@@ -204,7 +205,7 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg (PClient* nClient)
     u32 cSeatObjectId;
     u8 cSeatId;
     PSeatType cSeatType = nChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
-    if(cSeatType == seat_chair) {
+    if(cSeatType == seat_chair) { // temp ! Must migrate to RAW
       cSeatObjectId = (cSeatObjectId + 1) * 1024;
     }
 
@@ -298,18 +299,18 @@ PMessage* PMsgBuilder::BuildCharPosUpdate2Msg (PClient* nClient, u8 InfoBitfield
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
-{ // This one was pure guess, but it works :p
-    PMessage* tmpMsg = new PMessage(32);
+PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient)
+{
+    PMessage* tmpMsg = new PMessage(24);
     PChar* nChar = nClient->GetChar();
-    nData = nData;
+
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
     *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
     *tmpMsg << (u8)0x00; // Message length placeholder;
     *tmpMsg << (u8)0x32;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u16)0x0000; // pad to keep LocalID on u16
+    *tmpMsg << (u16)0x0000; // really that, or must be removed ???
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)((nChar->Coords).mY);
     *tmpMsg << (u16)((nChar->Coords).mZ);
@@ -354,11 +355,9 @@ PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
   return tmpMsg;
 }*/
 
-PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID, u8 nChairSubId)
+PMessage* PMsgBuilder::BuildCharUseSeatMsg (PClient* nClient, u32 nRawObjectId, u8 nSeatId)
 {
-    //PMessage* tmpMsg = new PMessage(31);
     PMessage* tmpMsg = new PMessage(18);
-    //PChar* nChar = nClient->GetChar();
 
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
@@ -370,22 +369,15 @@ PMessage* PMsgBuilder::BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID, 
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x21;
-    *tmpMsg << (u32)nRawChairID;
-    *tmpMsg << (u8)nChairSubId; // 0x00 for real chair, 1+ for subway cab
-    /*
-     *tmpMsg << (u8)0x0c; // Sub message length;
-     *tmpMsg << (u8)0x03;
-     *tmpMsg << (u16)0x0000; // ++ nClient->GetUDP_ID() placeholder
-     *tmpMsg << (u8)0x1f;
-     *tmpMsg << (u16)nClient->GetLocalID();
-     *tmpMsg << (u8)0x21;
-     *tmpMsg << (u32)nRawChairID;
-     *tmpMsg << (u8)0x00;
-    */
+    *tmpMsg << (u32)nRawObjectId;
+    *tmpMsg << (u8)nSeatId; // 0x00 for real chair, 1+ for subway cab
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharExitChairMsg (PClient* nClient)
+PMessage* PMsgBuilder::BuildCharExitSeatMsg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(22);
     PChar* nChar = nClient->GetChar();
@@ -996,7 +988,7 @@ SectionMsg << (u8)0x03;      // Data
     SectionMsg << (u8)nTorso;
     SectionMsg << (u8)nLegs;
     SectionMsg << (u8)0x00; // Rank
-    SectionMsg << (u32)(nChar->GetBaseApartment() + APT_BASE_WORLD_ID); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
+    SectionMsg << (u32)(nChar->GetBaseApartment() + PWorlds::mAptBaseWorldId); // 0x22, 0x00, 0x00, 0x00, //Primary Apartment (GR activated) ???
     SectionMsg << (u8)0x01; // ?
     SectionMsg << (u8)0x00; // ?
     SectionMsg << (u8)0x00; // ?
@@ -1294,29 +1286,6 @@ PMessage* PMsgBuilder::BuildGenrepDenyBrokenMsg (PClient* nClient)
     *tmpMsg << (u8)0x00; // ??
 
     return tmpMsg;
-}
-
-PMessage* PMsgBuilder::BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat)
-{
-    PMessage* tmpMsg = new PMessage(18);
-
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
-    *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
-    *tmpMsg << (u8)0x00; // Message length placeholder;
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
-    *tmpMsg << (u8)0x1f;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x21;
-    *tmpMsg << (u16)nVehicleID;
-    *tmpMsg << (u16)0x0000;
-    *tmpMsg << (u8)nVehicleSeat;
-
-    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-    return tmpMsg;
-    
 }
 
 /*
@@ -1669,6 +1638,31 @@ PMessage* PMsgBuilder::BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjec
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x17;
     *tmpMsg << (u32)nRawObjectID;
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseVhcTerminalMsg (PClient* nClient, u32 nRawObjectID)
+{
+    PMessage* tmpMsg = new PMessage(24);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+
+    *tmpMsg << (u8)0x06; // SubMessage length;
+    *tmpMsg << (u8)0x2d;
+    *tmpMsg << (u32)nRawObjectID;
+    *tmpMsg << (u8)0x0a;
+
+    *tmpMsg << (u8)0x07; // SubMessage length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x4a;
 
     return tmpMsg;
 }
@@ -2057,20 +2051,7 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
 }
 
 PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID, PContainer* nContainer)
-{
-    // "Header"
-    // 13 7f 00 d7 b5 0f 03 7f 00 1f 01 00 26 00 70 01 00 00 64 00 00
-    // Nc  UDP  SESS  Ln Cs  UDP  Cs ChrID Cs |.Cont.ID.| |.Cont.| 0x00: Empty 0x08: Filled
-
-    // Item SubHeader
-    // 03 00
-    // Len
-
-    // Item Data
-    // u8   - bytes to follow for THIS item
-    // u16  - ItemID (items.def)
-    // u8   - DataType
-    
+{    
     PMessage* tmpMsg = new PMessage();
     nClient->IncreaseUDP_ID();
 
@@ -2082,9 +2063,9 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x26; // ??
+    *tmpMsg << (u8)0x26;
     *tmpMsg << nContainerID;
-    *tmpMsg << (u8)0x00; // Always the same on item containers?
+    *tmpMsg << (u8)0x00; // Always the same on item containers? // 0x01 for Trader (NeoX gameclient 3608)
     *tmpMsg << (u8)0x64; // Always the same on item containers?
     *tmpMsg << (u8)0x00; // Always the same on item containers?
     *tmpMsg << (u8)0x08; // 0x08 when container is filled, 0x00 when not? At least it works..
@@ -2093,33 +2074,6 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u16)(ContentList->GetSize());
     *tmpMsg << *ContentList;
     delete ContentList;
-
-/*    
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u8)0x00;
-    
-    *tmpMsg << (u8)0x02;
-    *tmpMsg << (u8)0x06;
-    *tmpMsg << (u8)0x29;
-*/
-
-/*    *tmpMsg << (u16)0x0f; // Len
-    
-    *tmpMsg << (u8)0x0a; //Item len
-    *tmpMsg << (u16)0x0188; //Beggar Electroshocker
-    *tmpMsg << (u8)0x02; // Flags
-    *tmpMsg << (u8)0x06;
-    *tmpMsg << (u8)0x9f;
-    *tmpMsg << (u8)0xff;
-    *tmpMsg << (u8)0xf0;
-    *tmpMsg << (u8)0xff;
-    *tmpMsg << (u8)0x8f;
-    *tmpMsg << (u8)0xff;
-    
-    *tmpMsg << (u8)0x03; //Item len
-    *tmpMsg << (u16)0x016B; //Self-constructed Claw
-    *tmpMsg << (u8)0x00; // Flags
-*/
     
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
     
@@ -2195,18 +2149,8 @@ PMessage* PMsgBuilder::BuildBoxItemMoveMsg (PClient* nClient, PContainerEntry* n
   
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
   
-/*
-13 2d 00 97 d0
-09
-03 2c 00 1f 01 00 25 23 2c
-21
-03 2d 00 1f 01 00 25 13
- bc 3b 17 04 06 00 05 00
- bd 3b 18 03 00 04 07 00 57 14 04 05 00 00 00
- 12 00 
-*/
-    delete entryMsg;
-    return tmpMsg;
+  delete entryMsg;
+  return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, u8 nHackDifficult)
@@ -2251,24 +2195,21 @@ PMessage* PMsgBuilder::BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessag
       *tmpMsg << (u16)nClient->GetUDP_ID();
       *tmpMsg << (u8)0x28;
       *tmpMsg << (u16)0x0027;
-      *tmpMsg << (u32)(SUBWAY_VHC_BASE_ID + i);
+      *tmpMsg << (u32)(PSubway::mCabsBaseId + i);
       *tmpMsg << (u16)0x0000;
       *tmpMsg << (u8)0x00;
       *tmpMsg << (u16)Subway->mSubways[i].mPosition;
       *tmpMsg << (u8)0x00;
       *tmpMsg << (u8)Subway->mSubways[i].mDoorOpened;; 	
   
-/* Apparently no effect when this message is not sent...
       nClient->IncreaseUDP_ID();			
   		*tmpMsg << (u8)0x0d; //msg size
   		*tmpMsg << (u8)0x03;
       *tmpMsg << (u16)nClient->GetUDP_ID();
       *tmpMsg << (u8)0x2d;
-      *tmpMsg << (u16)(SUBWAY_VHC_BASE_ID + i);
-      *tmpMsg << (u16)0x0000;
+      *tmpMsg << (u32)(PSubway::mCabsBaseId + i);
       *tmpMsg << (u8)0x0a;
-      *tmpMsg << (u32)0x00000000;
-*/
+      *tmpMsg << (u32)PSubway::mCabsBaseHealth;
 		}
 
     tmpMsg->U16Data(1) = nClient->GetUDP_ID();
@@ -2305,25 +2246,21 @@ PMessage* PMsgBuilder::BuildSubwayFullUpdateMsg(PClient* nClient)
 }
 */
 
-PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(PClient* nClient, u32 nVehicleID, u16 nPosition, u8 nDoorOpened)
+PMessage* PMsgBuilder::BuildSubwaySingleUpdateMsg(u32 nVehicleID, u16 nPosition, u8 nDoorOpened)
 {
     PMessage* tmpMsg = new PMessage(148);
     *tmpMsg << (u8)0x13;
     *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
     *tmpMsg << (u16)0x0000; // placeholder for SessionID();
-
-    nClient->IncreaseUDP_ID();    
+    
     *tmpMsg << (u8)0x0c; //msg size
     *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)0x0000; // ++UDP_ID placeholder
     *tmpMsg << (u8)0x32;
     *tmpMsg << (u32)nVehicleID;
     *tmpMsg << (u8)0x00;
     *tmpMsg << (u16)nPosition;
     *tmpMsg << (u8)nDoorOpened; 	
-
-    tmpMsg->U16Data(1) = nClient->GetUDP_ID();
-    tmpMsg->U16Data(3) = nClient->GetSessionID();
     
     return tmpMsg;
 }
@@ -2426,55 +2363,123 @@ PMessage* PMsgBuilder::BuildDBAnswerMsg(PClient* nClient, std::string* nCommandN
   return tmpMsg; 
 }
 
-/*
-void Server_SendVHCUpdate ( int ClientNum )
+// Must not use Char info in final, but vhc object info
+PMessage* PMsgBuilder::BuildVhcInfoMsg (PClient* nClient, PSpawnedVehicle* nVehicle)
 {
-	int				i;
-	unsigned char	SendBuffer[1024];
+    PMessage* tmpMsg = new PMessage(32);
+	  PVhcCoordinates VhcPos = nVehicle->GetPosition();
+	  PVehicleInformation VhcInfo = nVehicle->GetInformation();
+	      
+    nClient->IncreaseUDP_ID();
+    
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
 
-	//VHC Update
-	//13 34 00 e1 de 19 32 fc 03 03 0d 82 7f 85 1a 95 80 80 96 06 7e 02 00 00 00 01 00 00 80 00 80
-	for (i=0;i<MAX_VEHICLES;i++)
-	{
-		if (SpawnedVHC[i].WorldId == 0)
-			continue;
-		else if (SpawnedVHC[i].Location != Client_Sockets[ClientNum].CharInfo.Location)
-			continue;
+    *tmpMsg << (u8)0x00; // Message length placeholder;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x28;
+    *tmpMsg << (u16)0x0031;
+    *tmpMsg << (u32)nVehicle->GetLocalId();
+    *tmpMsg << (u8)0x02;
+    *tmpMsg << (u16)(VhcPos.GetY()+768);
+    *tmpMsg << (u16)(VhcPos.GetZ()+768);
+    *tmpMsg << (u16)(VhcPos.GetX()+768);
+    *tmpMsg << (u8)VhcPos.GetUD();
+    *tmpMsg << (u16)VhcPos.GetLR();
+    *tmpMsg << (u16)VhcPos.GetRoll();
+    *tmpMsg << (u8)VhcInfo.GetVehicleType();
+    *tmpMsg << (u8)0xff;
+    *tmpMsg << (u32)0x00000000;
+    *tmpMsg << (u16)0x0000;
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)0x01; // ? changes
 
-		Network_IncrementUDP (ClientNum);
-		SendBuffer[0] = 0x13;
-		*(unsigned short*)&SendBuffer[1] = Client_Sockets[ClientNum].UDP_ID;
-		*(unsigned short*)&SendBuffer[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
-		SendBuffer[5] = 0x19;
-		SendBuffer[6] = 0x32;
-		*(unsigned short*)&SendBuffer[7] = (unsigned short)SpawnedVHC[i].WorldId;
-		SendBuffer[9] = 0x03;
-		SendBuffer[10] = 0x0d;
-		SendBuffer[11] = 0x82;
-		SendBuffer[12] = 0x7f;
-		SendBuffer[13] = 0x85;
-		SendBuffer[14] = 0x1a;
-		SendBuffer[15] = 0x95;
-		SendBuffer[16] = 0x80;
-		SendBuffer[17] = 0x80;
-		SendBuffer[18] = 0x96;
-		SendBuffer[19] = 0x06;
-		SendBuffer[20] = 0x7e;
-		SendBuffer[21] = 0x02;
-		SendBuffer[22] = 0x00;
-		SendBuffer[23] = 0x00;
-		SendBuffer[24] = 0x00;
-		SendBuffer[25] = 0x01;
-		SendBuffer[26] = 0x00;
-		SendBuffer[27] = 0x00;
-		SendBuffer[28] = 0x80;
-		SendBuffer[29] = 0x00;
-		SendBuffer[30] = 0x80;
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
-		Network_SendUDP (SendBuffer, 31, ClientNum);
-	}	
+    return tmpMsg;
+}
+/* ????
+13 f7 00 49 bf
+5d
+03 f7 00
+28 31 00
+c9 03 00 00 = Object ID
+02 
+47 ff
+00 cd
+c3 c3
+d7 d7
+ec 00
+00
+29
+2b 65 35 8b 8c 6c 7f 80 96
+5f 26 00 80 00
+ff ff ff ff 00 00 00
+ff ff ff ff 01 00 00
+ff ff ff ff 02 00 00
+ff ff ff ff 03 00 00
+ff ff ff ff 04 00 00
+ff ff ff ff 05 00 00
+ff ff ff ff 06 00 00
+ff ff ff ff 07 00 00
+
+*/    
+
+PMessage* PMsgBuilder::BuildVhcHealthUpdateMsg (PSpawnedVehicle* nVehicle)
+{   
+    PMessage* tmpMsg = new PMessage(19);
+    
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
+    *tmpMsg << (u16)0x0000; // placeholder for SessionID();	
+  			
+		*tmpMsg << (u8)0x0d; //msg size
+		*tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)0x0000; // placeholder for ++UDP_ID
+    *tmpMsg << (u8)0x2d;
+    *tmpMsg << (u32)nVehicle->GetLocalId();
+    *tmpMsg << (u8)0x0a;
+    *tmpMsg << (f32)(nVehicle->GetInformation().GetHealth());
+    
+    return tmpMsg;
 }
 
+// NB: same as BuildCharSittingMsg. To be merged later when classes are adapted
+PMessage* PMsgBuilder::BuildVhcPosUpdateMsg (PSpawnedVehicle* nVehicle)
+{;
+  PMessage* tmpMsg = new PMessage(33);
+  PVhcCoordinates VhcPos = nVehicle->GetPosition();
+  
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+  *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+
+  *tmpMsg << (u8)0x00; // Message length placeholder;
+  *tmpMsg << (u8)0x32;
+  *tmpMsg << (u16)(nVehicle->GetLocalId() & 0xffff);
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)(VhcPos.GetY()+768); // +768 or +0 ???
+  *tmpMsg << (u16)(VhcPos.GetZ()+768);
+  *tmpMsg << (u16)(VhcPos.GetX()+768);
+  *tmpMsg << (u8)VhcPos.GetUD();
+  *tmpMsg << (u16)VhcPos.GetLR();
+  *tmpMsg << (u16)VhcPos.GetRoll();
+  
+  *tmpMsg << (u8)0x02;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u16)0x0000;
+  *tmpMsg << (u16)0x0001;
+  *tmpMsg << (u16)0x8000;
+  *tmpMsg << (u16)0x8000;
+
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+  return tmpMsg;
+}
+
+/*
 void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 {
 	unsigned char	SendBuffer[256];

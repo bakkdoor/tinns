@@ -180,8 +180,9 @@ class PClient
     inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
     
     inline void SendTCPMessage(PMessage* nMessage) { if(m_TCPConnection) { m_TCPConnection->SendMessage(nMessage); } }
+    void FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType);
     inline void SendUDPMessage(PMessage* nMessage, bool nVIP = false) { if(m_UDPConnection) { m_UDPConnection->SendMessage(nMessage, nVIP); } }
-
+      
 		inline int GetConnection() const { return mConnection; }
 		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
 		inline u32 GetAccountID() const { return mAccountID; }

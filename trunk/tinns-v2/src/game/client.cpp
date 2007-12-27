@@ -161,6 +161,96 @@ void PClient::FillInUDP_ID(PMessage* nMessage)
   nMessage->U16Data(0x03) = GetSessionID();
 }
 
+void PClient::FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType)
+{
+    PMessage* ChunkBuffer;
+    PMessage* ChunkMsg;
+    const u16 ChunkSize = 220;
+    u16 StartIncUDPIDOnChunk = 0;
+    u16 IncludedHeaderSize = 0;
+    bool ReplaceFirstByte = false;
+    u8 ReplaceFirstByteValue = 0;
+    u16 MultiTriggeringSize = 0;
+    
+    switch(nType)
+    {
+      case 0x04:
+      {
+        Console->Print(RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Message type 0x%02x not managed yet", nType);
+        break;
+      }
+      case 0x05: //CharOpenContainerMsg with header & UDP_ID incremented
+      {
+        StartIncUDPIDOnChunk = 1;
+        IncludedHeaderSize = 9;
+        ReplaceFirstByte = true;
+        ReplaceFirstByteValue = 0x15;
+        MultiTriggeringSize = 230;
+        break;
+      }
+      case 0x19: //BaselineMsg (with no header)
+      {
+        break;
+      }
+      default: //BaselineMsg (with no header)
+      {
+        Console->Print(RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Message type 0x%02x not managed", nType);
+        break;
+      }     
+    }
+    
+    if(nMessage->GetSize() >= MultiTriggeringSize)
+    {
+      if(gDevDebug)
+        Console->Print(YELLOW, BLACK, "[Debug] Fragmenting message type 0x%02x", nType);
+      if(ReplaceFirstByte)
+      {
+        nMessage->U8Data(IncludedHeaderSize) = ReplaceFirstByteValue;
+      }
+      
+      u16 ChunksNum = (nMessage->GetSize() - IncludedHeaderSize + ChunkSize - 1)/ChunkSize;
+  
+      for (u16 ChunkID = 0; ChunkID < ChunksNum; ChunkID++)
+      {
+        ChunkBuffer = nMessage->GetChunk(IncludedHeaderSize, ChunkSize, ChunkID);
+        if (ChunkBuffer == NULL)
+        {
+          Console->Print(RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Bad chunk number: %d for size %d", ChunksNum, nMessage->GetSize());
+          break;
+        }
+  
+        ChunkMsg = new PMessage(ChunkSize + 15);
+        if(ChunkID >= StartIncUDPIDOnChunk)
+        {
+          IncreaseUDP_ID();
+        }
+  
+        *ChunkMsg << (u8)0x13;
+        *ChunkMsg << (u16)GetUDP_ID();
+        *ChunkMsg << (u16)GetSessionID();
+        *ChunkMsg << (u8) (9 + ChunkBuffer->GetSize());
+        *ChunkMsg << (u8)0x03;
+        *ChunkMsg << (u16)GetUDP_ID();
+        *ChunkMsg << (u8)0x07; // Fragmented
+        *ChunkMsg << (u16)ChunkID;
+        *ChunkMsg << (u16)ChunksNum;
+        *ChunkMsg << (u8)nType;
+        *ChunkMsg << *ChunkBuffer;
+  
+        delete ChunkBuffer;
+        //Console->Print(YELLOW, BLACK, "[Debug] Sending Fragment %d/%d", ChunkID+1, ChunksNum);
+        //ChunkMsg->Dump();
+        SendUDPMessage(ChunkMsg);
+      }
+      delete nMessage;
+    }
+    else
+    {
+      //Console->Print(YELLOW, BLACK, "[Debug] Sending message WITHOUT Fragmenting");
+      SendUDPMessage(nMessage);
+    }
+}
+
 /// ******************************************************
 
 void PClient::SetDebugMode(PDebugMode nDebugID, bool nVal)
@@ -260,27 +350,20 @@ void PClient::GameDisconnect()
         Console->Print(GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex);
     }
 
-    /* Disabled until dynamic char load/unload
-    if(tChar->GetLocation())
-    {
-      Worlds->ReleaseWorld(tChar->GetLocation());
-      tChar->SetLocation(0);
-    }
-    */
-
-    // temp
     if(tChar->GetLocationLeased())
     {
       PSeatType cSeatType;
       u32 cSeatObjectId;
       u8 cSeatId;
+      PWorld* cWorld;
       
+      cWorld = Worlds->GetWorld(tChar->GetLocation());
       cSeatType = tChar->GetSeatInUse(&cSeatObjectId, &cSeatId);
       if(cSeatType)
       {
         if(cSeatType == seat_chair)
         {
-          Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(GetLocalID(), cSeatObjectId);
+          cWorld->CharLeaveChair(GetLocalID(), cSeatObjectId);
           tChar->SetSeatInUse(seat_none);
         }
         else if(cSeatType == seat_subway)
@@ -288,9 +371,14 @@ void PClient::GameDisconnect()
           Subway->UnsetSeatUser(cSeatObjectId, cSeatId, GetLocalID());
           tChar->SetSeatInUse(seat_none);
         }
+        else if(cSeatType == seat_vhc)
+        {
+          cWorld->GetSpawnedVehicules()->GetVehicle(cSeatObjectId)->UnsetSeatUser(cSeatId, GetLocalID());
+          tChar->SetSeatInUse(seat_none);
+        }
         else
         {
-          Console->Print(RED, BLACK, "[Notice] PClient::GameDisconnect : Leaving subway & vhc seat not implemented");
+          Console->Print(RED, BLACK, "[Notice] PClient::GameDisconnect : Leaving seat of unkown type %d", cSeatType);
         }
       }
       

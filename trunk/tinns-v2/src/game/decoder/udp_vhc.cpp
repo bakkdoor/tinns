@@ -31,6 +31,8 @@
 */
 
 #include "main.h"
+#include "worlds.h"
+#include "vehicle.h"
 #include "udp_vhc.h"
 #include "subway.h"
 
@@ -42,138 +44,105 @@ PUdpVhcMove::PUdpVhcMove(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeD
 } 
 
 PUdpMsgAnalyser* PUdpVhcMove::Analyse()
-{
+{  
   mDecodeData->mName << "=Vhc move";
   
   PMessage* nMsg = mDecodeData->mMessage;
-  //nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 4);
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 2);
   
-  Console->Print(YELLOW, BLACK, "[DEBUG] VHC move %d", nMsg->U8Data(mDecodeData->Sub0x13Start + 4));
-  nMsg->Dump();
+  *nMsg >> mVhcLocalId;
+  *nMsg >> mMoveType; // 0 for subway, 3 for vhc
+  *nMsg >> mNewY;
+  *nMsg >> mNewZ;
+  *nMsg >> mNewX;
+  *nMsg >> mNewUD;
+  *nMsg >> mNewLR;
+  *nMsg >> mNewRoll;
+  *nMsg >> mUnk1;
+  *nMsg >> mFF;
+  *nMsg >> mAction;
+//0 = not moving
+//&01 = Left
+//&02 = Right
+//&04 = Forward
+//&08 = Back
+//&20 = Pushing down
+//&40 = Pulling up
+//
+	
+/*
+--- rolling front+left
+13 b0 00 02 bf
+15
+32 
+c9 03 =short VhcId
+07 
+c3 66 37 8b 47 6e 80 2a 88 70 27 22
+81
+01 00
+ff = speed% ?
+05 = forward+left ?
+=> srv resp
+13 6b 01 bd bf
+18
+03 6a 01 32 c9 03 07 8b 66 37 8b d9 6d 80 e0 8f
+ea 27 22 81 01 00 ff 05
+0c
+03 6b 01 1f 01 00 30 5e 79 36 87 87
+13
+32 c9 03 03 8b 66 38 8b d9 6d 7f 2a 88 92 7f 01 00 00 05
+0b
+20 ed 03 5d 5a c8 8d 9b 7b c2 00
+
+--- stopped
+13 88 01 da bf
+13
+32
+c9 03 =short VhcId
+03
+05
+66 36 8b 90 6d 7f 5b 9d 00
+80
+01 00
+00 = speed% ?
+00 = no move
+
+*/
   
+  Console->Print(YELLOW, BLACK, "[DEBUG] VHC move type %d - objid %d", mMoveType, mVhcLocalId);
+  //nMsg->Dump();
+  Console->Print("X=%d Y=%d Z=%d Act=%d", mNewX, mNewY, mNewZ, mAction);
+  Console->Print("LR=%d UD=%d Ro=%d Unk=%d Act=%02x ff=%x", mNewLR, mNewUD, mNewRoll, mUnk1, mAction, mFF);
+ 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;  
   return this;
 }
 
 bool PUdpVhcMove::DoAction()
 {
-    /*PMessage* cMsg = mDecodeData->mMessage;
-    u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
-    
-    PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
-    
-    //cMsg->SetNextByteOffset(mDecodeData->Sub0x13StartNext);
-    
-    
-		//			else if (Data[offset+1] == 0x32)
-		//			{
-						//Position of vehicle and what direction it's going
-						//Byte offset+19
-						//0 = not moving
-						//&1 = Left
-						//&2 = Right
-						//&4 = Forward
-						//&8 = Back
-						/*
-						13 d7 01 b4 9b 
-						16 
-						03 d7 01 32 f9 03 03 9b b3 81 84 07 a2 7e 03 bf 84 7f 01 00 ff 04 
-						| ID  |     Coords      |         ??               | Forward
-						*/
-						//32 fb 03 00 00 00 f0 41 00
-						//32 f7 03 03 0c 7a 51 86 6a 98 7e c0 ce 1e 27 01 00 00 00
+  PClient* nClient = mDecodeData->mClient;
+  //PCharCoordinates* nCoords = &(nClient->GetChar()->Coords);
+  PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
 
-		/*				if (Data[offset+4] == 0x00) //Subway updates
-						{
-							Network_SubwayUpdate (ClientNum, Data[offset+2], Data[offset+7], Data[offset+9]);							
-						}
-						else if (Data[offset+4] == 0x03) //Vehicle position updates
-						{
-							Client_Sockets[ClientNum].CharInfo.Coords[0] = (*(unsigned short*)&Data[offset+5])-768;
-							Client_Sockets[ClientNum].CharInfo.Coords[1] = (*(unsigned short*)&Data[offset+7])-768;
-							Client_Sockets[ClientNum].CharInfo.Coords[2] = (*(unsigned short*)&Data[offset+9])-768;
-							// *(unsigned short*)&Client_Sockets[ClientNum].CharInfo.Coords[3] = *(unsigned short*)&Data[offset+12];
-							AddToLog (LOG_DEBUG, "User %i, Packet 0x32 VHC ID %.2x %.2x: X(%.2x %.2x) Y(%.2x %.2x) Z(%.2x %.2x) U/D(%i) L/R(%i)", ClientNum, Data[offset+2], Data[offset+3], Data[offset+5], Data[offset+6], Data[offset+7], Data[offset+8], Data[offset+9], Data[offset+10], Data[offset+11], Data[offset+12], Data[offset+13]);
-							Client_SendNPCUpdateData ( ClientNum );
-							//Client sends
-							//13 69 00 ab ae 13          32 f8 03 03 ee 76 fd 85 0c 90 7c 11 89 5a 28 01 00 ff 06
-							//Server Sends
-							//13 d5 03 17 b2 16 03 d5 03 32 f8 03 03 ee 76 fd 85 0c 90 7c 11 89 5a 28 01 00 ff 06
-							//Test
-							//13 33 00 e0 de 19 32 fc 03 03 0d 82 7f 85 1a 95 80 80 96 06 7e 02 00 00 00 01 00 00 80 00 80
-							SendBuffer[0] = 0x13;
-							SendBuffer[5] = 0x19;
-							SendBuffer[6] = 0x32;
-							*(unsigned short*)&SendBuffer[7] = *(unsigned short*)&Data[offset+2]+1024;
-							SendBuffer[9] = 0x03; //??
-							SendBuffer[10] = 0x0d; //??
-							*(short*)&SendBuffer[11] = *(short*)&Data[offset+5];
-							*(short*)&SendBuffer[13] = *(short*)&Data[offset+7];
-							*(short*)&SendBuffer[15] = *(short*)&Data[offset+9];
-							SendBuffer[17] = 0x80; 
-							SendBuffer[18] = 0x96;
-							SendBuffer[19] = 0x06;
-							SendBuffer[20] = 0x7e;
-							SendBuffer[21] = 0x02;
-							SendBuffer[22] = 0x00;
-							SendBuffer[23] = 0x00;
-							SendBuffer[24] = 0x00;
-							SendBuffer[25] = 0x01;
-							SendBuffer[26] = 0x00;
-							SendBuffer[27] = 0x00;
-							SendBuffer[28] = 0x80;
-							SendBuffer[29] = 0x00;
-							SendBuffer[30] = 0x80;
-
-							Network_SendPacketToZone (SendBuffer, 31, Client_Sockets[ClientNum].CharInfo.Location);
-						}    
-    
-    */
-    
-    
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
-}
-/*
-else if(type == 0x32) // Vehicle update
-{
-    // Vehicle updates
-    if(Packet[19] == 0)
+  if(CurrentWorld)
+  {
+    PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle(mVhcLocalId);
+    if(tVhc)
     {
-        Console->Print("Vehicle going nowhere");
+      //Todo: calc & mem Speed & Accel vectors
+      PVhcCoordinates nPos;
+      nPos.SetPosition(mNewY-768, mNewZ-768, mNewX-768, mNewLR, mNewUD, mNewRoll, mAction);
+      tVhc->SetPosition(&nPos);
+      PMessage* tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg (tVhc);
+      ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
     }
     else
-    {
-        if(Packet[19] & 1)
-            Console->Print("Vehicle going left");
-        if(Packet[19] & 2)
-            Console->Print("Vehicle going right");
-        if(Packet[19] & 4)
-            Console->Print("Vehicle going forward");
-        if(Packet[19] & 8)
-            Console->Print("Vehicle going back");
-        Char->SetDirtyFlag();
-    }
-    //Playerposition update
-    Char->Coords.mY = *(u16*)&Packet[5];
-    Char->Coords.mZ = *(u16*)&Packet[7];
-    Char->Coords.mX = *(u16*)&Packet[9];
-    Char->Coords.mUD = Packet[11];
-    Char->Coords.mLR = Packet[12];
-    Char->Coords.mAct = Packet[13];
-    // movement byte:
-    // 0x00 NC has no focus (player alt+tab'ed out)
-    // 0x20 Char does nothing
-    // 0x22 kneeing
-    // 0x28 left step
-    // 0x30 right step
-    // 0x40 walking (not running)
-    // 0x60 forward
-    // 0xA0 backward
-    break;
+      Console->Print(RED, BLACK, "[Error] PUdpRequestSeatInfo: Inexistant vhc Id %d", mVhcLocalId);
+  }
+   
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
 }
-*/
 
 
 /**** PUdpVhcUse ****/
@@ -190,18 +159,18 @@ PUdpMsgAnalyser* PUdpVhcUse::Analyse()
 
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 12);
-  *nMsg >> mVehicleID; // ? not u32 ???
+  *nMsg >> mVehicleID;
   *nMsg >> dumb;
   *nMsg >> mVehicleSeat;
 
-Console->Print(YELLOW, BLACK, "[DEBUG] Trying to enter vhc %d on seat %d", mVehicleID, mVehicleSeat);
+Console->Print(YELLOW, BLACK, "[DEBUG] Localid %d trying to enter vhc %d on seat %d (dumb=%d)", mDecodeData->mClient->GetLocalID(), mVehicleID, mVehicleSeat, dumb);
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
 
 bool PUdpVhcUse::DoAction()
 {  
-  PMessage* tmpMsg = MsgBuilder->BuildCharEnteringVhcMsg (mDecodeData->mClient, mVehicleID, mVehicleSeat);
+  PMessage* tmpMsg = MsgBuilder->BuildCharUseSeatMsg (mDecodeData->mClient, mVehicleID, mVehicleSeat);
   ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -217,13 +186,15 @@ PUdpSubwayUpdate::PUdpSubwayUpdate(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyse
 
 PUdpMsgAnalyser* PUdpSubwayUpdate::Analyse()
 {
+  u8 Dumb;
+  
   mDecodeData->mName << "=Subway update";
   
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 2);
   
   *nMsg >> mVehicleID;
-  nMsg->IncreaseNextByteOffset(3);
+  *nMsg >> Dumb;
   *nMsg >> mPosition;
   *nMsg >> mDoorOpened;
   
@@ -239,9 +210,55 @@ bool PUdpSubwayUpdate::DoAction()
 /* No real use for that ?
   Subway->UpdateInfo(mVehicleID, mPosition, mDoorOpened);
 
-  PMessage* tmpMsg = MsgBuilder->BuildSubwaySingleUpdateMsg(mDecodeData->mClient, mVehicleID, mPosition, mDoorOpened);
-  mDecodeData->mClient->SendUDPMessage(tmpMsg);
+  PMessage* tmpMsg = MsgBuilder->BuildSubwaySingleUpdateMsg(mVehicleID, mPosition, mDoorOpened);
+  ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
 */
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+/**** PUdpRequestSeatInfo ****/
+
+PUdpRequestSeatInfo::PUdpRequestSeatInfo(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x27";
+} 
+
+PUdpMsgAnalyser* PUdpRequestSeatInfo::Analyse()
+{  
+  mDecodeData->mName << "=Request seat object info";
+  
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 2);
+  
+  *nMsg >> mVehicleID;
+  
+  //if(gDevDebug)  
+    Console->Print(YELLOW, BLACK, "[DEBUG] Request Seat Info for 0x%04x :", mVehicleID);
+
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpRequestSeatInfo::DoAction()
+{
+  PClient* nClient = mDecodeData->mClient;
+  //PCharCoordinates* nCoords = &(nClient->GetChar()->Coords);
+  PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
+
+  if(CurrentWorld)
+  {
+    PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle(mVehicleID);
+    if(tVhc)
+    {
+Console->Print(YELLOW, BLACK, "[DEBUG] Sending Info for vhcId 0x%04x : type %d", mVehicleID, tVhc->GetInformation().GetVehicleType());  
+      PMessage* tmpMsg = MsgBuilder->BuildVhcInfoMsg (nClient, tVhc);
+      nClient->SendUDPMessage(tmpMsg);
+    }
+    else
+      Console->Print(RED, BLACK, "[Error] PUdpRequestSeatInfo: Inexistant vhc Id %d", mVehicleID);        
+  }
+  
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

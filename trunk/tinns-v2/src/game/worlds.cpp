@@ -61,13 +61,13 @@ bool PWorld::Load(u32 nWorldID)
     std::string tFileName;
     bool tCheckOK;
 
-    if (nWorldID > APT_BASE_WORLD_ID)
+    if (nWorldID > PWorlds::mAptBaseWorldId)
     {
-        //int AptTmplID = Appartements->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+        //int AptTmplID = Appartements->GetAptType(nWorldID - PWorlds::mAptBaseWorldId);
         int AptTmplID = Appartements->GetAptType(nWorldID);
         if (!AptTmplID)
         {
-            Console->Print("PWorld::Load - invalid apt %d", nWorldID - APT_BASE_WORLD_ID);
+            Console->Print("PWorld::Load - invalid apt %d", nWorldID - PWorlds::mAptBaseWorldId);
             return false;
         }
         const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
@@ -144,6 +144,7 @@ bool PWorld::Load(u32 nWorldID)
     }
 
     mID = nWorldID;
+    mSpawnedVehicles.SetLocation(nWorldID);
     // furniture & other world stuff loading here
     Console->Print("%s Loaded world %d", Console->ColorText(GREEN, BLACK, "[Debug]"), nWorldID);
     return true;
@@ -515,13 +516,13 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
 
 bool PWorlds::IsValidWorld(u32 nWorldID)
 {
-    if (nWorldID > APT_BASE_WORLD_ID)
+    if (nWorldID > PWorlds::mAptBaseWorldId)
     {
         if (mOnDemandWorldsMap.count(nWorldID)) // Check if already loaded
             return true;
         else //should better do a check using a PAppartements class object to get the world template
         {
-            //int AptTmplID = Appartements->GetAptType(nWorldID - APT_BASE_WORLD_ID);
+            //int AptTmplID = Appartements->GetAptType(nWorldID - PWorlds::mAptBaseWorldId);
             int AptTmplID = Appartements->GetAptType(nWorldID);
             if (!AptTmplID)
                 return false;
@@ -547,7 +548,7 @@ PWorld* PWorlds::LeaseWorld(u32 nWorldID, const bool nPreloadPhase)
 {
     PWorldsMap::iterator it;
 
-    if (nWorldID > APT_BASE_WORLD_ID)
+    if (nWorldID > PWorlds::mAptBaseWorldId)
     {
         it = mOnDemandWorldsMap.find(nWorldID); // Check if already loaded
         if((it != mOnDemandWorldsMap.end()) && it->second) // Dynamic world shall not have a NULL it->second
@@ -614,7 +615,7 @@ PWorld* PWorlds::GetWorld(u32 nWorldID)
     PWorldsMap* tMap;
     PWorldsMap::iterator it;
 
-    tMap = ((nWorldID > APT_BASE_WORLD_ID) ? &mOnDemandWorldsMap : &mStaticWorldsMap);
+    tMap = ((nWorldID > PWorlds::mAptBaseWorldId) ? &mOnDemandWorldsMap : &mStaticWorldsMap);
 
     it = tMap->find(nWorldID);
     if((it != tMap->end()) && it->second)
@@ -628,7 +629,7 @@ PWorld* PWorlds::GetWorld(u32 nWorldID)
     }
 }
 
-void PWorlds::ReleaseWorld(u32 nWorldID) // no dynamic unload is performed atm
+void PWorlds::ReleaseWorld(u32 nWorldID) // no dynamic unload is performed atm + don't forget spawned vhc !
 {
     PWorld* tWorld = GetWorld(nWorldID);
     if (tWorld)
@@ -652,7 +653,7 @@ void PWorlds::ReleaseWorld(u32 nWorldID) // no dynamic unload is performed atm
 
 bool PWorlds::IsAppartment(u32 nWorldID)
 {
-    return ((nWorldID > APT_BASE_WORLD_ID) && IsValidWorld(nWorldID));
+    return ((nWorldID > PWorlds::mAptBaseWorldId) && IsValidWorld(nWorldID));
 }
 
 void PWorlds::Update()

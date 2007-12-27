@@ -167,10 +167,9 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
         break;
       }
 
-      case 0x27: // sent when char sit. Same occurence but less info than 0x13/0x20/0x80
+      case 0x27: // Sitting object info request
       {
-        mDecodeData->mUnknownType = MsgType;
-        nextAnalyser = new PUdpMsgIgnore(mDecodeData); // Silently ignore this message
+        nextAnalyser = new PUdpRequestSeatInfo(mDecodeData);
         break;
       }
 

@@ -243,6 +243,11 @@ PChar::~PChar()
     mContainerInExclusiveUse->EndUse(mID);
     Console->Print(RED, BLACK, "Warning: PChar::~PChar : Char still had exclusive use of container. Now freed.");
   }
+	
+	if(mSeatInUseType != seat_none)
+	{
+    Console->Print(RED, BLACK, "Warning: PChar::~PChar : Char still using seat %d of vhc or chair %d.", mSeatInUseSeatId, mSeatInUseObjectId);
+	}
 }
 
 bool PChar::SetCharnameRegexFilter(const char* RegexStr)
@@ -1018,65 +1023,6 @@ PChars::~PChars()
 		delete i->second;
 }
 
-/*void PChars::SQLLoad()
-{
-    Console->Print("Loading player chars...");
-    int nChars = 0;
-    //char query[1024];
-    MYSQL_RES *result;
-    MYSQL_ROW row;
-
-    result = MySQL->GameResQuery("SELECT c_id, c_name, a_id FROM characters");
-    if(result == NULL)
-    {
-        Console->LPrint(RED, BLACK, "FAILED");
-        Console->Print(" Unable to load data from MySQL DB");
-        Console->LClose();
-        MySQL->ShowGameSQLError();
-        exit(0);
-    }
-    while((row = mysql_fetch_row(result)))
-    {
-        int AccId = 0;
-        AccId = std::atoi(row[2]);
-        PAccount Account(AccId);
-        if(Account.GetID())
-        {
-            PChar *info = new PChar();
-            int CharID = std::atoi(row[0]);
-            if(info->SQLLoad(CharID))
-            {
-                info->SetDirtyFlag(false);
-                info->SetAccount(Account->GetID());
-                mLastID = max(mLastID, info->GetID());
-                if(!mChars.insert(std::make_pair(info->GetID(), info)).second)
-                {
-                    Console->Print(YELLOW, BLACK, "Duplicate char id found: %s (%d)", info->GetName().c_str(), info->GetID());
-                    delete info;
-                }
-                else
-                {
-                    if(!Account->AddChar(info->GetID()))
-						Console->Print(RED, BLACK, "Could not add char '%s' to account '%s'", info->GetName().c_str(), Account->GetName().c_str());
-                    ++nChars;
-                }
-            }
-            else
-            {
-                Console->Print(RED, BLACK, "Invalid char entry found in database. Ignored.");
-                delete info;
-            }
-        }
-        else
-        {
-            Console->Print(MAGENTA, BLACK, "Ignoring chars of inexistant account %i", AccId);
-        }
-    }
-    MySQL->FreeGameSQLResult(result);
-    Console->Print("%s Loaded %i player chars", Console->ColorText(GREEN, BLACK, "[Success]"), nChars);
-	  mLastSave = std::time(NULL);
-}*/
-
 bool PChars::LoadChar(u32 CharID)
 {
   if(!CharID)
@@ -1226,24 +1172,6 @@ if (gDevDebug) Console->Print("Autosave done.");
 		mLastSave = t;
 	}
 }
-
-/*PChar* PChars::CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
-  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot)
-{
-  bool Result = false;
-	PChar* nChar = new PChar();
-	
-	if (nChar->CreateNewChar(Account, Name, Gender, Profession, Faction, Head, Torso, Legs, NZSNb, NonZeroSubskills, Slot))
-  {
-    mChars.insert(std::make_pair(nChar->GetID(), nChar));
-    if (mLastID < nChar->GetID())
-      mLastID = nChar->GetID(); // just in case it is needed somewhere. To be removed later with all LastID.
-    Result = true;
-  }
-
-  delete nChar;
-  return Result;
-}*/
 
 //MAX_CHARS_PER_ACCOUNT
 int PChars::GetCharProfiles(const u32 AccountID, PCharProfile* CharSlotsArray, const u8 ArraySize)

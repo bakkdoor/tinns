@@ -60,8 +60,6 @@
 #include "mysql.h"
 #include "sql.h"
 
-#include "vehicle.h"
-
 #include "skill.h"
 
 #include "chars.h"

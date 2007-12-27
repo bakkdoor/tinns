@@ -34,6 +34,7 @@
 #include "udp_charmove.h"
 
 #include "worlds.h"
+#include "vehicle.h"
 #include "subway.h"
 
 /**** PUdpCharPosUpdate ****/
@@ -70,11 +71,11 @@ Console->Print(YELLOW, BLACK, "[DEBUG] PUdpCharPosUpdate: Client %d sent Mixed f
       mDecodeData->mName << " (Char sitting)";
 
       *nMsg >> mChairItemID;
-      *nMsg >> mChairItemType;      
+      *nMsg >> mChairItemSeat;      
       mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 //mDecodeData->mTraceKnownMsg = true;
 //mDecodeData->mTraceDump = true;
-//Console->Print(YELLOW, BLACK, "[DEBUG] Sitting on chair %d (%x) type %d", mChairItemID, mChairItemID, mChairItemType);
+Console->Print(YELLOW, BLACK, "[DEBUG] Localid %d sitting on object %d (0x%08x) seat %d", mDecodeData->mClient->GetLocalID(), mChairItemID, mChairItemID, mChairItemSeat);
     }
   }
   else
@@ -121,12 +122,13 @@ bool PUdpCharPosUpdate::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
+  PMessage* tmpMsg;
 
   if(mInfoBitfield & 0x80) // Sitting on chair
   {
-    PMessage* tmpMsg;
-    tmpMsg = MsgBuilder->BuildCharSittingMsg(nClient, mChairItemID);
-    ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
+    //tmpMsg = MsgBuilder->BuildCharSittingMsg(nClient, mChairItemID);
+    //tmpMsg = MsgBuilder->BuildCharSittingMsg(nClient);
+    //ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
     tmpMsg = MsgBuilder->BuildCharPosUpdateMsg(nClient);
     ClientManager->UDPBroadcast(tmpMsg, nClient, 5000); // TODO: Get the range from config
   }
@@ -178,12 +180,6 @@ bool PUdpCharPosUpdate::DoAction()
     // bits:  00000000
     //        BFWRL.K.
 
-    PMessage* tmpMsg;
-    if(mInfoBitfield == 0x7f)
-    {  
-      tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg(nClient);
-      ClientManager->UDPBroadcast(tmpMsg, nClient);
-    }
     if(IsRealMove)
     {
       nChar->SetDirtyFlag();
@@ -215,6 +211,12 @@ bool PUdpCharPosUpdate::DoAction()
 //if(IsRealMove)
 //Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
 
+  if(mInfoBitfield >= 0x7f)
+  {  
+    tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg(nClient);
+    ClientManager->UDPBroadcast(tmpMsg, nClient);
+  }
+    
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -246,7 +248,7 @@ bool PUdpCharExitChair::DoAction()
   u32 tNowTime = GameServer->GetGameTime();
   bool ReadyToExit = false;
 
-  if(nClient->GetDebugMode(DBG_SUBWAY))
+  if(nClient->GetDebugMode(DBG_SUBWAY) && (cSeatType == seat_subway))
   {
     char DbgMessage[80];
     u8 tCabId;
@@ -263,9 +265,11 @@ bool PUdpCharExitChair::DoAction()
 
   if(cSeatType)
   {
+		PWorld* tWorld = Worlds->GetWorld(tChar->GetLocation());
+		
     if(cSeatType == seat_chair)
     {
-      Worlds->GetWorld(tChar->GetLocation())->CharLeaveChair(nClient->GetLocalID(), cSeatObjectId);
+      tWorld->CharLeaveChair(nClient->GetLocalID(), cSeatObjectId);
       tChar->SetSeatInUse(seat_none);
       ReadyToExit = true;
     }
@@ -280,20 +284,32 @@ bool PUdpCharExitChair::DoAction()
       }
       else
       {
-        tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, cSeatObjectId);
+        tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, cSeatObjectId); // "Damn, locked"
         nClient->SendUDPMessage(tmpMsg);
       }
     }
+		else if(cSeatType == seat_vhc)
+    {
+			PSpawnedVehicle* tVhc = tWorld->GetSpawnedVehicules()->GetVehicle(cSeatObjectId);
+			if(tVhc)
+			{
+				PVhcCoordinates tCoords = tVhc->GetPosition();
+				tVhc->UnsetSeatUser(cSeatId, tChar->GetID());
+				tChar->SetSeatInUse(seat_none);
+				tChar->Coords.SetPosition(tCoords.GetY(), tCoords.GetZ(), tCoords.GetX()); // to complete with LR
+				ReadyToExit = true;
+			}
+		}
     else
     {
-      Console->Print(RED, BLACK, "[Notice] PUdpCharExitChair::DoAction : Leaving this kind of seat is not implemented");
+      Console->Print(RED, BLACK, "Error: PUdpCharExitChair::DoAction : Invalid seat type %d", cSeatType);
     }
 
     if(ReadyToExit)
     {
       tChar->SetSeatInUse(seat_none);
   
-      tmpMsg = MsgBuilder->BuildCharExitChairMsg(nClient);
+      tmpMsg = MsgBuilder->BuildCharExitSeatMsg(nClient);
       ClientManager->UDPBroadcast(tmpMsg, nClient);
 
 if (gDevDebug) Console->Print("Localchar %d get up from chair %d.", nClient->GetLocalID(), cSeatObjectId);

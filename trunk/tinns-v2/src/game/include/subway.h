@@ -31,9 +31,6 @@
 #ifndef SUBWAY_H
 #define SUBWAY_H
 
-#define SUBWAY_VHC_BASE_ID 0x03f2
-#define SUBWAY_VHC_NB 11
-
 class PSubway
 {
   friend class PMsgBuilder;
@@ -49,6 +46,7 @@ class PSubway
   public:
     static const u16 mCabsNumber = 11;
     static const u32 mCabsBaseId = 0x03f2;
+    static const u32 mCabsBaseHealth = 100; //should take that from .def instead...
     static const u8 mStationsNumber = 8;
     
   private:

@@ -44,8 +44,8 @@ class PUdpCharPosUpdate : public PUdpMsgAnalyser
     u8 mNewLR;
     u8 mNewAct;
     u8 mNewUnknown;
-    u16 mChairItemID; // u16 or u32 ???
-    u16 mChairItemType;
+    u32 mChairItemID; // u16 or u32 ???
+    u8 mChairItemSeat;
 
   public:
     PUdpCharPosUpdate(PMsgDecodeData* nDecodeData);

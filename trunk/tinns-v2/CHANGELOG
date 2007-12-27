@@ -1592,3 +1592,17 @@ Hammag; 18.11.2007 18:45 GMT+2
   decoder/udp_charmove.cpp/.h , decoder/udp_useobject.cpp/.h : Various changes for subway use
   chars.cpp/.h : moved PCharPosition class out of PChar, and added some required methods to it
   decoder/udp_terminal.h/.cpp : started some work on that
+
+Hammag; 28.12.2007 00:50 GMT+2
+----------
+[rev. 96]
+<General changes>
+  Basic vehicle is in place.
+  One vhc of each type is available to every character. No prereq limitation.
+  Only pilot access available, and for the owner only.
+  No zoning yet.
+  Orientation issues from the others chars point of view.
+  Many things not implemented (and a good part still to be decoded)
+  
+[GAME]
+  Many changes in decoders and char, client and vehicle code.

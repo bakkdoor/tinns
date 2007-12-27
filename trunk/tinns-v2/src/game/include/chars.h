@@ -337,7 +337,6 @@ class PChars
 		PChars();
 		~PChars();
 
-		//void SQLLoad(); // TO BE REMOVED
 		bool LoadChar(u32 CharID);
     bool AddChar(PChar* nChar);
     PChar* RemoveChar(u32 CharID);
@@ -345,8 +344,6 @@ class PChars
 		PChar* GetChar(u32 CharID) const;
 		PChar* GetChar(const std::string &Name) const;
 		bool CharExist(const std::string &Name) const;
-		//PChar* CreateChar(u32 Account, const std::string &Name, u32 Gender, u32 Profession, u32 Faction,
-    //  u32 Head, u32 Torso, u32 Legs, u8 NZSNb, const char *NonZeroSubskills, u32 Slot);
 
 		void SQLSave();
 		void Update();

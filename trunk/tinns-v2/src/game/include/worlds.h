@@ -31,13 +31,11 @@
 #ifndef WORLDS_H
 #define WORLDS_H
 
-#define NC_SUBWAY_WORLD_ID 1000
-#define APT_BASE_WORLD_ID 100000
-
 #include "worlddatatemplate.h"
+#include "vehicle.h"
 
 typedef std::map<u32, int> PChairsInUseMap;
-  
+
 class PWorld
 {
   friend class PWorlds;
@@ -47,6 +45,7 @@ class PWorld
     int mUseCount;
     PWorldDataTemplate* mWorldDataTemplate;
     PChairsInUseMap mChairsInUseMap;
+    PSpawnedVehicles mSpawnedVehicles;
 
     inline void IncreaseUseCount() { ++mUseCount; }
     inline int DecreaseUseCount() { return (mUseCount ? --mUseCount : 0); }
@@ -67,6 +66,9 @@ class PWorld
     
     bool CharUseChair(int CharLocalID, u32 nItemID);
     void CharLeaveChair(int CharLocalID, u32 nItemID);
+    
+    inline PSpawnedVehicles* GetSpawnedVehicules() { return &mSpawnedVehicles; }
+    
 };
 
 
@@ -76,6 +78,11 @@ typedef std::map<std::string, PWorldDataTemplate*> PWorldDataTemplatesMap;
 class PWorlds
 {
   friend class PWorld;
+  
+  public:
+    static const u32 mNcSubwayWorldId = 1000;
+    static const u32 mAptBaseWorldId = 100000;
+    
   private:
     bool mPreloadWorldsTemplates;
     bool mPreloadStaticWorlds;
@@ -100,7 +107,7 @@ class PWorlds
     PWorld* GetWorld(u32 nWorldID);
     void ReleaseWorld(u32 nWorldID);
     bool IsAppartment(u32 nWorldID);
-    bool IsPotentialAppartement(u32 nWorldID) { return (nWorldID > APT_BASE_WORLD_ID); }
+    inline bool IsPotentialAppartement(u32 nWorldID) { return (nWorldID > PWorlds::mAptBaseWorldId); }
     
     void Update();
     void Shutdown();

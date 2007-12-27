@@ -52,7 +52,6 @@ extern class PMsgBuilder *MsgBuilder;
 extern class PWorlds *Worlds;
 extern class PAppartements* Appartements;
 extern class PWorldActors* WorldActors;
-extern class PSubway* Subway;
 extern class PTerminal* Terminal;
 //extern class gmMachine machine;   // Virtual Machine instance
 
@@ -70,6 +69,7 @@ extern class PMySQL* MySQL;
 
 //Vehicles
 extern class PVehicles *Vehicles;
+extern class PSubway* Subway;
 
 //Infoserver update
 extern class PISC *ISC;

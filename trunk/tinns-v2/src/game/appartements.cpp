@@ -144,7 +144,7 @@ int PAppartements::GetAptID(unsigned int AptLoc, const u8 *pass)
         MySQL->FreeGameSQLResult(result);
     }
 
-    return (type + APT_BASE_WORLD_ID);
+    return (type + PWorlds::mAptBaseWorldId);
 }
 
 int PAppartements::GetAptType(int AptID)
@@ -154,7 +154,7 @@ int PAppartements::GetAptType(int AptID)
     MYSQL_ROW row;
     char query[255];
 
-    sprintf(query, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - APT_BASE_WORLD_ID);
+    sprintf(query, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - PWorlds::mAptBaseWorldId);
     result = MySQL->GameResQuery(query);
 
     if(!result)
@@ -186,7 +186,7 @@ int PAppartements::GetAptOwner(int loc)
     MYSQL_ROW row;
     char query[255];
 
-    sprintf (query, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - APT_BASE_WORLD_ID);
+    sprintf (query, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - PWorlds::mAptBaseWorldId);
 
     result = MySQL->GameResQuery(query);
     if(!result)
@@ -218,8 +218,8 @@ int PAppartements::GetAptLocation(int loc)
     MYSQL_ROW row;
     char query[255];
 
-    if(loc > APT_BASE_WORLD_ID)
-        loc = loc - APT_BASE_WORLD_ID;
+    if((u32)loc > PWorlds::mAptBaseWorldId)
+        loc = loc - PWorlds::mAptBaseWorldId;
 
     sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
 

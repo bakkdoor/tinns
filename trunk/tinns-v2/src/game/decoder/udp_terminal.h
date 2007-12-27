@@ -38,7 +38,7 @@
 class PUdpReceiveDB : public PUdpMsgAnalyser
 {
   private:
-    static const u8 mMaxOptions = 3;
+    static const u8 mMaxOptions = 4;
     u16 mTerminalSessionId;
     std::string mCommandName;
     std::string mOptions[mMaxOptions];
@@ -47,6 +47,9 @@ class PUdpReceiveDB : public PUdpMsgAnalyser
     u16 mUnknown1;
     u16 mUnknown2;
     
+		bool ActionVehicleListing();
+		bool ActionVehicleControl();
+		
   public:
     PUdpReceiveDB(PMsgDecodeData* nDecodeData);
     //~PUdpReceiveDB();
@@ -75,13 +78,17 @@ class PUdpTryAccessDB : public PUdpMsgAnalyser
 class PUdpQueryDB : public PUdpMsgAnalyser
 {
   private:
-    static const u8 mMaxOptions = 3;
+    static const u8 mMaxOptions = 4;
     u16 mTerminalSessionId;
     std::string mDBCommandName;
     std::string mCommandName;
     std::string mOptions[mMaxOptions];
     u8 mOptionsCount;
-  
+
+		bool ActionSpawnVehicle();
+		bool ActionRepairVehicle();
+		bool ActionDismissVehicle();
+		  
   public:
     PUdpQueryDB(PMsgDecodeData* nDecodeData);
     //~PUdpQueryDB();

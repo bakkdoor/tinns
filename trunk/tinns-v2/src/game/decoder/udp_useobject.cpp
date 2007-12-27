@@ -41,6 +41,8 @@
 #include "container.h"
 #include "subway.h"
 
+u32 gVhcId = 0x3ff;
+
 /**** PUdpVhcMove ****/
 
 PUdpUseObject::PUdpUseObject(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
@@ -72,7 +74,7 @@ bool PUdpUseObject::DoAction()
     u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
 
     tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
+    mDecodeData->mClient->SendUDPMessage(tmpMsg);*/
 
     if(nClient->IsInRemoveActorMode() == true)
     {
@@ -127,7 +129,7 @@ bool PUdpUseObject::DoAction()
                 if (tDoor->IsTriggeredDoor())
                 {
                     tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
-                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                    nClient->SendUDPMessage(tmpMsg);
                 }
                 else
                 {
@@ -141,11 +143,46 @@ bool PUdpUseObject::DoAction()
         }
         if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
         {
-            if (gDevDebug)
+            //if (gDevDebug)
               Console->Print("Clicking on char, npc or vhc %d (%x) - time = %d", mRawItemID, mRawItemID, GameServer->GetGameTime());
             
+            if(PSpawnedVehicles::IsPotentialSpawnedVehicle(mRawItemID))
+            {
+Console->Print("Using vhc");
+							PSeatType cSeatType = tChar->GetSeatInUse();
+							if(cSeatType == seat_none)
+							{
+								PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
+							  if(CurrentWorld)
+							  {
+							    PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle(mRawItemID);
+							    if(tVhc)
+							    {
+										u8 nSeatId = 0;
+										if ((nSeatId == 0) &&  (tVhc->GetInformation().GetOwnerCharId() !=  tChar->GetID())) //pilot
+										{
+											tmpMsg = MsgBuilder->BuildText100Msg(nClient, 17, mRawItemID); // "Not owner" msg
+											nClient->SendUDPMessage(tmpMsg);										
+										}
+										else if (!tVhc->GetSeatUser(nSeatId) && tVhc->SetSeatUser(nSeatId, tChar->GetID())) //char could sit
+										{
+											tChar->SetSeatInUse(seat_vhc, mRawItemID, nSeatId);
+                      tmpMsg = MsgBuilder->BuildCharUseSeatMsg(nClient, mRawItemID, nSeatId);
+                      ClientManager->UDPBroadcast(tmpMsg, nClient);
+										}
+										else
+	                  {
+	                      tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
+	                      nClient->SendUDPMessage(tmpMsg);
+	                  }
+									}
+									// else error: invalid vhc
+                }
+								// else error: invalid location
+/****/					} // else char alreay sitting
+            } else
             
-            if((tChar->GetLocation() == NC_SUBWAY_WORLD_ID) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
+            if((tChar->GetLocation() == PWorlds::mNcSubwayWorldId) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
             {
               
               if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
@@ -154,19 +191,19 @@ bool PUdpUseObject::DoAction()
                 if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
                 {
                   tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
-                  tmpMsg = MsgBuilder->BuildCharUseChairMsg (nClient, mRawItemID, freeSeat);
+                  tmpMsg = MsgBuilder->BuildCharUseSeatMsg (nClient, mRawItemID, freeSeat);
                   ClientManager->UDPBroadcast(tmpMsg, nClient);
                 }
                 else
                 {
                   tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
-                  nClient->getUDPConn()->SendMessage(tmpMsg);
+                  nClient->SendUDPMessage(tmpMsg);
                 }
               }
               else
               {
                 tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
-                nClient->getUDPConn()->SendMessage(tmpMsg);
+                nClient->SendUDPMessage(tmpMsg);
               }
             }
             
@@ -243,13 +280,13 @@ bool PUdpUseObject::DoAction()
                           //(tChar->Coords).mLR = WorldActors->GetFrontLR();
                       }
   
-                      tmpMsg = MsgBuilder->BuildCharUseChairMsg(nClient, mRawItemID);
+                      tmpMsg = MsgBuilder->BuildCharUseSeatMsg(nClient, mRawItemID);
                       ClientManager->UDPBroadcast(tmpMsg, nClient);
                   }
                   else
                   {
                       tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
-                      nClient->getUDPConn()->SendMessage(tmpMsg);
+                      nClient->SendUDPMessage(tmpMsg);
                   }
                 }
 
@@ -288,7 +325,7 @@ bool PUdpUseObject::DoAction()
                         }
 
                         tmpMsg = MsgBuilder->BuildCharUseGenrepMsg(nClient, mRawItemID, nLocation, nEntity);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -296,7 +333,7 @@ bool PUdpUseObject::DoAction()
                     case 7: //GoGuardian
                     {
                         tmpMsg = MsgBuilder->BuildCharUseGogoMsg(nClient);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -304,7 +341,7 @@ bool PUdpUseObject::DoAction()
                     case 9: //Appartement Eingang
                     {
                         tmpMsg = MsgBuilder->BuildCharUseLiftMsg(nClient, mRawItemID, tFurnitureModel->GetFunctionValue());
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -312,7 +349,7 @@ bool PUdpUseObject::DoAction()
                     case 10: //Appartement Ein/Ausgang
                     {
                         tmpMsg = MsgBuilder->BuildCharUseLiftMsg(nClient, mRawItemID, 0);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -332,7 +369,7 @@ bool PUdpUseObject::DoAction()
                                 u8 SewerLevel = 0;
 
                                 tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, 0); //mRawItemID
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                                 if (gDevDebug)
                                     Console->Print("%s Client[%d] Char[%s] moving to zone %d (%s)", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
                                 if (gDevDebug)
@@ -375,7 +412,7 @@ bool PUdpUseObject::DoAction()
                             }
 
                             tmpMsg = MsgBuilder->BuildChangeLocationMsg(nClient, Location, Entity, SewerLevel, mRawItemID); //mRawItemID
-                            nClient->getUDPConn()->SendMessage(tmpMsg);
+                            nClient->SendUDPMessage(tmpMsg);
                             if (gDevDebug)
                             {
                                 Console->Print("%s Client[%d] Char[%s] moving to zone %d, %s", Console->ColorText(GREEN, BLACK, "[Debug]"), nClient->GetID(), tChar->GetName().c_str(), Location, nAppPlace->GetName().c_str());
@@ -399,10 +436,16 @@ bool PUdpUseObject::DoAction()
                     case 17: //HOLOMATCH HEAL & Recreation units
                     case 26: //Outpost Switch
                     case 28: //Fahrzeug Depot Interface
+                    {
+                        tmpMsg = MsgBuilder->BuildCharUseVhcTerminalMsg (nClient, mRawItemID);
+                        nClient->SendUDPMessage(tmpMsg);
+                        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+                        break;
+                    }
                     case 31: //Venture Warp Station
                     {
                         tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -421,7 +464,7 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
                             }
                             else
@@ -434,7 +477,7 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
                             }
                         }
@@ -459,7 +502,7 @@ bool PUdpUseObject::DoAction()
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
                         else
@@ -472,7 +515,7 @@ bool PUdpUseObject::DoAction()
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -492,14 +535,14 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 106); // Damn, locked!
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
 
                             }
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
                         else
@@ -515,14 +558,14 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 106); // Damn, locked!
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
 
                             }
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -541,7 +584,7 @@ bool PUdpUseObject::DoAction()
                                 {
                                     u32 NewCash = tChar->SetCash(OldCash - DoorFee);
                                     PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(nClient, NewCash);
-                                    nClient->getUDPConn()->SendMessage(tmpMsg_cash);
+                                    nClient->SendUDPMessage(tmpMsg_cash);
                                     tmpMsg_cash = NULL;
                                     tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+tFurnitureTemplate->GetLinkedObjectID(), CurrentWorld->GetDoor(tFurnitureTemplate->GetLinkedObjectID())->IsDoubleDoor());
                                     ClientManager->UDPBroadcast(tmpMsg, nClient);
@@ -549,13 +592,13 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 12);  // You dont have enough money!
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
                             }
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
                         else
@@ -569,7 +612,7 @@ bool PUdpUseObject::DoAction()
                                 {
                                     u32 NewCash = tChar->SetCash(OldCash - DoorFee);
                                     PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(nClient, NewCash);
-                                    nClient->getUDPConn()->SendMessage(tmpMsg_cash);
+                                    nClient->SendUDPMessage(tmpMsg_cash);
                                     tmpMsg_cash = NULL;
                                     tmpMsg = MsgBuilder->BuildDoorOpenMsg(0x80+linkobjID, CurrentWorld->GetDoor(linkobjID)->IsDoubleDoor());
                                     ClientManager->UDPBroadcast(tmpMsg, nClient);
@@ -577,13 +620,13 @@ bool PUdpUseObject::DoAction()
                                 else
                                 {
                                     tmpMsg = MsgBuilder->BuildTextIniMsg(nClient, 6, 12);  // You dont have enough money!
-                                    nClient->getUDPConn()->SendMessage(tmpMsg);
+                                    nClient->SendUDPMessage(tmpMsg);
                                 }
                             }
                             else
                             {
                                 tmpMsg = MsgBuilder->BuildText100Msg(nClient, 0, mRawItemID);
-                                nClient->getUDPConn()->SendMessage(tmpMsg);
+                                nClient->SendUDPMessage(tmpMsg);
                             }
                         }
 
@@ -595,7 +638,7 @@ bool PUdpUseObject::DoAction()
                         // TODO: Add check if container is already open
                         // PContainer* tContainer = World->GetContainer(mRawItemID);
                         PContainer* tContainer = new PContainerAutoCompactOnClose(INV_CABINET_MAXSLOTS);
-                        tContainer->RandomFill(INV_CABINET_MAXSLOTS / 2);
+                        tContainer->RandomFill(INV_CABINET_MAXSLOTS);
                                                 
                         /*nItem = new PItem(19, 1, 250, 250, 250, 250, 250, 250);
                         if(nItem->GetItemID());
@@ -607,15 +650,16 @@ if(gDevDebug) Console->Print(YELLOW, BLACK, "[Info] Temporary container created"
                           tChar->SetContainerInExclusiveUse(tContainer);
                           tmpMsg = MsgBuilder->BuildCharOpenContainerMsg(nClient, mRawItemID, tContainer);
 //tmpMsg->Dump();
+                          nClient->FragmentAndSendUDPMessage(tmpMsg, 0x05);
                         }
                         else
                         {
                           tmpMsg = MsgBuilder->BuildFurnitureActivateMsg(nClient, mRawItemID, 10);
                           nClient->SendUDPMessage(tmpMsg);
                           tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID);
+                          nClient->SendUDPMessage(tmpMsg);
                         }
 
-                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
@@ -633,7 +677,7 @@ if(gDevDebug) Console->Print(YELLOW, BLACK, "[Info] Temporary container created"
                     //case 30: //Static FX (Value=Type. 1=Fire 2=Smoke 3=Steam 4=Sparkle)
                     {
                         tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-                        nClient->getUDPConn()->SendMessage(tmpMsg);
+                        nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }

@@ -37,6 +37,7 @@ class PClient;
 class PMessage;
 class PContainerEntry;
 class PContainer;
+class PSpawnedVehicle;
 
 class PMsgBuilder
 {
@@ -53,18 +54,21 @@ class PMsgBuilder
   PMessage* BuildCharHealthUpdateMsg (PClient* nClient);
   PMessage* BuildCharPosUpdateMsg (PClient* nClient);
   PMessage* BuildCharPosUpdate2Msg (PClient* nClient, u8 InfoBitfield = 0x7f);
-  PMessage* BuildCharSittingMsg (PClient* nClient, u16 nData);
-  PMessage* BuildCharExitChairMsg (PClient* nClient);
+  PMessage* BuildCharSittingMsg (PClient* nClient);
+  PMessage* BuildCharExitSeatMsg (PClient* nClient);
   PMessage* BuildCharJumpingMsg (PClient* nClient);
-  PMessage* BuildCharEnteringVhcMsg (PClient* nClient, u16 nVehicleID, u8 nVehicleSeat);
   PMessage* BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor = false);
-  PMessage* BuildCharUseChairMsg (PClient* nClient, u32 nRawChairID, u8 nChairSubId = 0);
+  PMessage* BuildCharUseSeatMsg (PClient* nClient, u32 nRawObjectId, u8 nSeatId = 0);
   PMessage* BuildCharShowGlowCircleMsg (PClient* nClient);
   PMessage* BuildCharVanishMsg (PClient* nClient);
 
   PMessage* BuildSpawnWorldObjectMsg (u16 nModelID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ);
   PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);
-
+  
+  PMessage* BuildSubwaySingleUpdateMsg (u32 nVehicleID, u16 nPosition, u8 nDoorOpened);
+  PMessage* BuildVhcHealthUpdateMsg (PSpawnedVehicle* nVehicle);
+  PMessage* BuildVhcPosUpdateMsg (PSpawnedVehicle* nVehicle);
+  
   // Following methods for unicast messages DO include UDP_ID increment and
   // UDP_ID / SessionID setting when needed (at least for now)
   PMessage* BuildReqInfoAnswerMsg (PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength);
@@ -98,6 +102,7 @@ class PMsgBuilder
 
   PMessage* BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue);
   PMessage* BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID);
+  PMessage* BuildCharUseVhcTerminalMsg (PClient* nClient, u32 nRawObjectID);
   PMessage* BuildCharUseGogoMsg (PClient* nClient);
   PMessage* BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity);
   PMessage* BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace);
@@ -120,7 +125,7 @@ class PMsgBuilder
   
   PMessage* BuildSubwaySpawnMsg(PClient* nClient, bool IsSecondMessage);
   //PMessage* BuildSubwayFullUpdateMsg(PClient* nClient);
-  PMessage* BuildSubwaySingleUpdateMsg(PClient* nClient, u32 nVehicleID, u16 nPosition, u8 nDoorOpened);
+  PMessage* BuildVhcInfoMsg (PClient* nClient, PSpawnedVehicle* nVehicle);
   
   PMessage* BuildDBRequestStatusMsg(PClient* nClient, std::string* nCommandName, u8 nStatus, u16 nErrCode);
   PMessage* BuildDBAnswerMsg(PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols);

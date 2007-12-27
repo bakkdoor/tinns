@@ -57,7 +57,6 @@
 #include "mysql.h"
 #include "sql.h"
 
-#include "vehicle.h"
 #include "filesystem.h"
 #include "defparser.h"
 
@@ -70,7 +69,6 @@
 #include "server.h"
 #include "misc.h"
 #include "gameserver.h"
-#include "globals.h"
 #include "zoning.h"
 #include "item.h"
 #include "inventory.h"

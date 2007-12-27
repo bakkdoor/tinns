@@ -202,13 +202,15 @@ int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxD
     int skipVal = -1;
 
     // Dont send NPC alive messages when client is not ready for them
-    if(nClient->IsAcceptingNPCUpdates() == false && nNPCPing == true)
+    if(!nClient->IsAcceptingNPCUpdates() && nNPCPing)
         return 0;
+    // !!! This test is wrong as only 1 client is tested !!!
 
-    if(nSkipSource == true)
+    if(nSkipSource)
     {
         skipVal = nClient->GetCharID();
     }
+    
     if (nClient && (nChar = nClient->GetChar()))
     {
         return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist, skipVal);
@@ -262,7 +264,7 @@ int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
                 nClient->SendUDPMessage(tmpMsg);
 
                 //Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
-                /*tmpMsg = MsgBuilder->BuildCharUseChairMsg(itClient, (itChar->GetChairInUse()+1)*1024);
+                /*tmpMsg = MsgBuilder->BuildCharUseSeatMsg(itClient, (itChar->GetChairInUse()+1)*1024);
                 nClient->FillInUDP_ID(tmpMsg);
                 nClient->SendUDPMessage(tmpMsg);*/
             }
