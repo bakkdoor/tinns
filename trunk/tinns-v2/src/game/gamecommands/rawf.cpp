@@ -97,7 +97,7 @@ void PCommands::doCmdrawf()
     {
         char output[100];
         Console->Print("IngameCommand: Unable to send file %s", file_to_send);
-        sprintf(output, "File not found: %s", file_to_send);
+        snprintf(output, 100, "File not found: %s", file_to_send);
         Chat->send(source, CHAT_DIRECT, "System", output);
     }
 }

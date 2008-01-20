@@ -135,7 +135,7 @@ PAccount::PAccount(const u32 AccountId)
 {
   char query[256];
   mID = 0;
-  sprintf(query, "SELECT * FROM accounts WHERE a_id = %d LIMIT 1;", AccountId);
+  snprintf(query, 256, "SELECT * FROM accounts WHERE a_id = %d LIMIT 1;", AccountId);
   LoadFromQuery(query);
 }
 
@@ -144,7 +144,9 @@ PAccount::PAccount(const char *Username)
   char query[256];
   mID = 0;
   if(IsUsernameWellFormed(Username)) {
-    sprintf(query, "SELECT * FROM accounts WHERE a_username = '%s' LIMIT 1;", Username);
+    char escUsername[256];
+    MySQL->EscapeString(Username, escUsername, 256);
+    snprintf(query, 256, "SELECT * FROM accounts WHERE a_username = '%s' LIMIT 1;", escUsername);
     LoadFromQuery(query);
   }
 }
@@ -346,10 +348,15 @@ bool PAccount::Create()
 
 bool PAccount::Save(bool CreateMode)
 {
+  char escUsername[256];
+  char escPassword[256];
+  MySQL->EscapeString(mName.c_str(), escUsername, 256);
+  MySQL->EscapeString(mPassword.c_str(), escPassword, 256);
+    
   std::string Query;
   Query = CreateMode ? "INSERT INTO" : "UPDATE";
   Query += "accounts SET ";
-  Query += Ssprintf(" accounts SET a_username='%s', a_password = '%s'", mName.c_str(), mPassword.c_str());
+  Query += Ssprintf(" accounts SET a_username='%s', a_password = '%s'", escUsername, escPassword);
   Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
   if(!CreateMode )
   {
@@ -373,7 +380,7 @@ u32 PAccount::GetCharIdBySlot(const u32 SlotId)
   MYSQL_ROW row = 0;
   MYSQL_RES *result = 0;
   
-  sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d AND c_slot = %d LIMIT 1;", mID, SlotId);  
+  snprintf(query, 256, "SELECT c_id FROM characters WHERE a_id = %d AND c_slot = %d LIMIT 1;", mID, SlotId);  
 
   result = MySQL->GameResQuery(query);
   if(result == NULL)
@@ -393,7 +400,7 @@ u32 PAccount::GetCharIdBySlot(const u32 SlotId)
   /*** Temporary workaround to cope with DB where c_slot is not set ***/
   if(!CharId)
   {
-    sprintf(query, "SELECT c_id FROM characters WHERE a_id = %d ORDER BY c_slot ASC, c_id ASC LIMIT %d, 1;", mID, SlotId);
+    snprintf(query, 256, "SELECT c_id FROM characters WHERE a_id = %d ORDER BY c_slot ASC, c_id ASC LIMIT %d, 1;", mID, SlotId);
   
     result = MySQL->GameResQuery(query);
     if(result == NULL)

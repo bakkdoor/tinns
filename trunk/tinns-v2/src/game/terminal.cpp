@@ -61,7 +61,7 @@ u8 PTerminal::GetNewEmailCount(PClient* nClient)
     MYSQL_ROW row;
     char query[100];
 
-    sprintf(query, "SELECT count(*) FROM emails WHERE e_toid = %d AND e_new = 1", nClient->GetCharID());
+    snprintf(query, 100, "SELECT count(*) FROM emails WHERE e_toid = %d AND e_new = 1", nClient->GetCharID());
     if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)

@@ -664,22 +664,22 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
 					if ((CharID != 0) && (Chars->GetChar(CharID) == NULL))
 					{
 						char query[100];
-						sprintf(query, "DELETE FROM characters WHERE c_id = %d LIMIT 1", CharID);
+						snprintf(query, 100, "DELETE FROM characters WHERE c_id = %d LIMIT 1", CharID);
 						if(MySQL->GameQuery(query))
 							Console->Print(RED, BLACK, "[Notice] Char %d not deleted!", CharID);
 						else
 						{
 						  Console->Print(GREEN, BLACK, "[Info] Char %d deleted!", CharID);
 
-						  sprintf(query, "DELETE FROM buddy_list WHERE bud_charid = %d", CharID);
+						  snprintf(query, 100, "DELETE FROM buddy_list WHERE bud_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's buddy list not removed!", CharID);
 
-						  sprintf(query, "DELETE FROM genrep WHERE g_charid = %d", CharID);
+						  snprintf(query, 100, "DELETE FROM genrep WHERE g_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's genrep list not removed!", CharID);
 
-						  sprintf(query, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
+						  snprintf(query, 100, "DELETE FROM inventory WHERE inv_charid = %d", CharID);
 							if(MySQL->GameQuery(query))
 							  Console->Print(YELLOW, BLACK, "[Notice] Char %d's inventory not removed!", CharID);
 

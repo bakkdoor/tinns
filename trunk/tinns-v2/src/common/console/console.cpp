@@ -70,7 +70,7 @@ void PConsole::Print(const char *Fmt, ...)
 	std::tm *now = std::localtime(&mLastLogTime);
 
 	static char datestr[64];
-	std::sprintf(datestr, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+	std::snprintf(datestr, 64, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
 	std::stringstream str;
 	str << datestr << Str << std::endl;
 
@@ -89,14 +89,14 @@ void PConsole::Print(COLORS foreground, COLORS background, const char *Fmt, ...)
 
     char c_color[13];
     char c_reset[13];
-    std::sprintf(c_color, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
-    std::sprintf(c_reset, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
+    std::snprintf(c_color, 13, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
+    std::snprintf(c_reset, 13, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
 
 	std::time(&mLastLogTime);
 	std::tm *now = std::localtime(&mLastLogTime);
 
 	static char datestr[64];
-	std::sprintf(datestr, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+	std::snprintf(datestr, 64, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
 	std::stringstream str;
 	str << datestr << c_color << Str << c_reset << std::endl;
 
@@ -114,15 +114,15 @@ char *PConsole::ColorText(COLORS foreground, COLORS background, const char *Fmt,
 	vsnprintf(Str, 2047, Fmt, args);
 	va_end(args);
 
-    char c_color[13];
-    char c_reset[13];
-    std::sprintf(c_color, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
-    std::sprintf(c_reset, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
+  char c_color[13];
+  char c_reset[13];
+  std::snprintf(c_color, 13, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
+  std::snprintf(c_reset, 13, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
 
-    static char returnbuffer[2048];
-	strcpy (returnbuffer, c_color);
-	strcat (returnbuffer, Str);
-	strcat (returnbuffer, c_reset);
+  static char returnbuffer[2048];
+	strncpy (returnbuffer, c_color, 2048);
+	strncat (returnbuffer, Str, 2047 - strlen(returnbuffer));
+	strncat (returnbuffer, c_reset, 2047 - strlen(returnbuffer));
 
 	return returnbuffer;
 }
@@ -139,7 +139,7 @@ void PConsole::LPrint(const char *Fmt, ...)
 	std::tm *now = std::localtime(&mLastLogTime);
 
 	static char datestr[64];
-	std::sprintf(datestr, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+	std::snprintf(datestr, 64, "%02i/%02i %02i:%02i:%02i ", now->tm_mon+1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
 	std::stringstream str;
 	str << datestr << Str;
 
@@ -158,8 +158,8 @@ void PConsole::LPrint(COLORS foreground, COLORS background, const char *Fmt, ...
 
     char c_color[13];
     char c_reset[13];
-    std::sprintf(c_color, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
-    std::sprintf(c_reset, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
+    std::snprintf(c_color, 13, "%c[%d;%d;%dm", 0x1B, 0, foreground + 30, background + 40);
+    std::snprintf(c_reset, 13, "%c[%d;%d;%dm", 0x1B, 0, 37, 40);
 
 	std::stringstream str;
 	str << c_color << Str << c_reset;

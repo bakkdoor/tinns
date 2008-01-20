@@ -109,5 +109,7 @@ class PMySQL
         
         inline u32 GetLastGameInsertId() { return mysql_insert_id(game_dbHandle); };
         inline u32 GetLastInfoInsertId() { return mysql_insert_id(info_dbHandle); };
+        
+        u32 EscapeString(const char* nText, char* dText, u32 dMaxLength);
 };
 #endif

@@ -402,7 +402,7 @@ u32 PPatchServer::StartPatch(PPatchState *State)
 {
 	/*std::*/stringstream path;
 	char patchname[13];
-	sprintf(patchname, "sp%06d.pat", State->mCurrentPatch);
+	snprintf(patchname, 13, "sp%06d.pat", State->mCurrentPatch);
 	path << Config->GetOption("patches_path") << "/" << patchname << '\0';
 	State->mPatchFile = std::fopen(path.str().c_str(), "rb");
 	if(State->mPatchFile)

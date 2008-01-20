@@ -133,8 +133,8 @@ bool InitTinNS()
     std::string MyName = Config->GetOption("server_name");
     std::string IP = Config->GetOption("server_ip");
     char myCname[100], myCip[100];
-    strcpy (myCname, Console->ColorText(CYAN, BLACK, MyName.c_str()));
-    strcpy (myCip, Console->ColorText(CYAN, BLACK, IP.c_str()));
+    strncpy (myCname, Console->ColorText(CYAN, BLACK, MyName.c_str()), 100);
+    strncpy (myCip, Console->ColorText(CYAN, BLACK, IP.c_str()), 100);
     Console->Print("My name is '%s', and my address is %s", myCname, myCip);
 
     MySQL = new PMySQL();

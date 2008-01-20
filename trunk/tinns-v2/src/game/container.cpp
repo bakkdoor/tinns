@@ -302,7 +302,7 @@ bool PContainer::SQLLoad()
     return false;
   }*/
 
-  sprintf(query, "SELECT * FROM inventory WHERE inv_charid='%d' AND inv_loc='%d' ORDER BY inv_x ASC", mCharID, mInvLoc);
+  snprintf(query, 1024, "SELECT * FROM inventory WHERE inv_charid='%d' AND inv_loc='%d' ORDER BY inv_x ASC", mCharID, mInvLoc);
   result = MySQL->GameResQuery(query);
   if(result == NULL)
   {

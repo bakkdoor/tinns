@@ -104,20 +104,20 @@ bool PUdpReqInfo::DoAction()
     {
         case 0: //Name Request
         //Console->Print("Client %d (char %d): Character Name Request for CharID %i", mDecodeData->mClient->GetID(), mDecodeData->mClient->GetCharID(), mInfoId);
-        sprintf (query, "SELECT c_name FROM characters WHERE c_id = %i", mInfoId);
+        snprintf (query, 255, "SELECT c_name FROM characters WHERE c_id = %i", mInfoId);
         break;
         case 1: //Clan Long Name
         //Console->Print("Client %d : Clan Long Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        sprintf (query, "SELECT cl_lname FROM clans WHERE cl_id = %i", mInfoId);
+        snprintf (query, 255, "SELECT cl_lname FROM clans WHERE cl_id = %i", mInfoId);
         break;
         case 4: //Clan Short name
         //Console->Print("Client %d : Clan Short Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        sprintf (query, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
         break;
         case 5: //Clan Rank
         //Console->Print("Client %d : Clan Rank Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        //sprintf (query, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
-        sprintf(txtmsg, "Undef");
+        //snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        snprintf(txtmsg, 32, "Undef");
         Answer = txtmsg;
         break;
         case 7: //World Map
@@ -137,14 +137,14 @@ bool PUdpReqInfo::DoAction()
         {
             Console->Print(RED, BLACK, "%s Cannot get do SQL query %s ; MySQL returned", Console->ColorText(RED, BLACK, "[Error]"), query);
             MySQL->ShowGameSQLError();
-            sprintf(txtmsg, "Error");
+            snprintf(txtmsg, 32, "Error");
             Answer = txtmsg;
         }
         else
         {
             if(mysql_num_rows(result) == 0)
             {
-                sprintf(txtmsg, "Unknown");
+                snprintf(txtmsg, 32, "Unknown");
                 Answer = txtmsg;
             }
             else

@@ -475,7 +475,7 @@ bool PChar::SQLLoad(int CharID) {
     MYSQL_ROW row;
     char query[1024];
 
-    sprintf(query, "SELECT * FROM characters WHERE c_id = %d LIMIT 1", CharID);
+    snprintf(query, 1024, "SELECT * FROM characters WHERE c_id = %d LIMIT 1", CharID);
     result = MySQL->GameResQuery(query);
     if(result == NULL)
     {
@@ -900,7 +900,7 @@ void PChar::SetOnlineStatus(bool IsOnline)
         mIsOnline = false;
     }
 
-//    sprintf(query, "UPDATE charlist SET c_isonline = %d WHERE a_id = %d AND c_id = %d", onlinestatus, mAccount, mID);
+//    snprintf(query, 255, "UPDATE charlist SET c_isonline = %d WHERE a_id = %d AND c_id = %d", onlinestatus, mAccount, mID);
 //    if(MySQL->Query(query))
 //    {
 //        Console->Print("Error: Cant set onlinestatus to '%d' for Account: %d, Char: %d", onlinestatus, mAccount, mID);
@@ -1132,7 +1132,9 @@ bool PChars::CharExist(const std::string &Name) const
   int EntriesNb;
   MYSQL_RES *result = 0;
   
-  sprintf(query, "SELECT 1 FROM characters WHERE c_name = '%s' LIMIT 1;", Name.c_str());
+  char escUsername[256];
+  MySQL->EscapeString(Name.c_str(), escUsername, 256);
+  snprintf(query, 256, "SELECT 1 FROM characters WHERE c_name = '%s' LIMIT 1;", escUsername);
 
   result = MySQL->GameResQuery(query);
   if(result == NULL)
@@ -1182,7 +1184,7 @@ int PChars::GetCharProfiles(const u32 AccountID, PCharProfile* CharSlotsArray, c
   MYSQL_ROW row = 0;
   MYSQL_RES *result = 0;
   
-  sprintf(query, "SELECT * FROM characters WHERE a_id = %d ORDER BY c_slot ASC", AccountID);
+  snprintf(query, 256, "SELECT * FROM characters WHERE a_id = %d ORDER BY c_slot ASC", AccountID);
 
   result = MySQL->GameResQuery(query);
   if(result == NULL)

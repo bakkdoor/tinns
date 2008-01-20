@@ -1606,3 +1606,14 @@ Hammag; 28.12.2007 00:50 GMT+2
   
 [GAME]
   Many changes in decoders and char, client and vehicle code.
+
+Hammag; 20.01.2008 20:00 GMT+2
+----------
+[rev. 97]
+<General changes>
+  [GAME + INFO]
+    sql.cpp/.h : added EscapeString() methode to PMySQL class, to permit string escape in SQL queries
+    *.cpp : escape all strings used in SQL queries, which is now mandatory.
+  [GAME + INFO + PATCH]
+    *.cpp : replaced strcpy(), strcat(), sprintf() with respectively strncpy(), strncat(), snprintf()
+      The first ones are now forbidden.

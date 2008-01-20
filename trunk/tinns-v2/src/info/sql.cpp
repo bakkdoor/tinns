@@ -24,10 +24,10 @@
 PMySQL::PMySQL()
 {
     port = Config->GetOptionInt("sql_port");
-    strcpy(host, Config->GetOption("sql_host").c_str());
-    strcpy(userName, Config->GetOption("sql_username").c_str());
-    strcpy(password, Config->GetOption("sql_password").c_str());
-    strcpy(database, Config->GetOption("global_sql_database").c_str());
+    strncpy(host, Config->GetOption("sql_host").c_str(), 100);
+    strncpy(userName, Config->GetOption("sql_username").c_str(), 100);
+    strncpy(password, Config->GetOption("sql_password").c_str(), 100);
+    strncpy(database, Config->GetOption("global_sql_database").c_str(), 100);
 
     mKeepaliveDelay = (std::time_t) (Config->GetOptionInt("mysql_wait_timeout") * 0.9) ; // we take 90% of the wait_timeout to trigger keepalive
     if (mKeepaliveDelay == 0)
@@ -56,7 +56,7 @@ void PMySQL::Update()
     {
       MYSQL_RES *result;
       char query[24];
-      sprintf (query, "SELECT NOW()");
+      snprintf (query, 24, "SELECT NOW()");
 
       result = ResQuery(query);
       if(!result)
@@ -141,4 +141,16 @@ void PMySQL::ShowSQLError()
 void PMySQL::FreeSQLResult(MYSQL_RES *res)
 {
   mysql_free_result(res);
+}
+
+u32 PMySQL::EscapeString(const char* nText, char* dText, u32 dMaxLength)
+{
+  u32 nLength = strlen(nText);
+  u32 tMax = (dMaxLength - 1)/2;
+  if(nLength > tMax)
+  {
+    nLength = tMax;
+  }
+  
+  return mysql_real_escape_string(dbHandle, dText, nText, nLength);
 }

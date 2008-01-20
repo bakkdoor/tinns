@@ -51,5 +51,7 @@ class PMySQL
         void ShowSQLError();
         void FreeSQLResult(MYSQL_RES *res);
         inline u32 GetLastInsertId() { return mysql_insert_id(dbHandle); };
+        
+        u32 EscapeString(const char* nText, char* dText, u32 dMaxLength);
 };
 #endif

@@ -447,12 +447,12 @@ void PMessage::Dump()
   Console->Print("Buffer from pool %d (max size %d), used 0x%04hx (%d) , data at 0x%08x", mPoolId, smMsgSizes[mPoolId], mUsedSize, mUsedSize, tmpBuff);
   for (i = 0; i < mUsedSize; i += 16)
   {
-    sprintf(tmpStr, "\t%04hx:",i);
+    snprintf(tmpStr, 64, "\t%04hx:",i);
     sDump = tmpStr;
     sAsciiDump = "";
     for (j = 0; (j < 16) && ((i+j) < mUsedSize); j++)
     {
-      sprintf(tmpStr, " %02hx",(u8)tmpBuff[i+j]);
+      snprintf(tmpStr, 64, " %02hx",(u8)tmpBuff[i+j]);
       sDump += tmpStr;
       sAsciiDump += ((tmpBuff[i+j]>'\x19') && (tmpBuff[i+j]<'\x7F')) ? tmpBuff[i+j] : '.';
     }

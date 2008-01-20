@@ -116,7 +116,7 @@ void PChat::sendConnectedList(PClient* receiver, bool debugOut)
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
   		  char counterText[5];
-  		  sprintf(counterText, "%d", counter);
+  		  snprintf(counterText, 5, "%d", counter);
 
         PChar* receiverChar = Chars->GetChar(it->second->GetCharID());
         send(receiver, CHAT_DIRECT, (receiverChar ? receiverChar->GetName().c_str() : "*"), counterText, debugOut);

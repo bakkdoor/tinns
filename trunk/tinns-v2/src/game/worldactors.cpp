@@ -64,7 +64,7 @@ u32 PWorldActors::GetNextFreeWAID()
     MYSQL_ROW row;
     char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` ORDER BY `wa_actor_id` DESC LIMIT 1");
+    snprintf(query, 100, "SELECT * FROM `world_actors` ORDER BY `wa_actor_id` DESC LIMIT 1");
     if (gDevDebug) Console->Print("DEBUG: Executing query %s", query);
 
     result = MySQL->GameResQuery(query);
@@ -107,7 +107,7 @@ void PWorldActors::InitWorld(PClient* nClient)
     MYSQL_ROW row;
     char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d", tZone);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d", tZone);
     //if (gDevDebug) Console->Print("DEBUG: Executing query: %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -248,11 +248,11 @@ u32 PWorldActors::AddWorldActor(u32 nWorldID, u16 nActorID, u16 nFuncID, u16 nPo
 
 void PWorldActors::DelWorldActor(PClient* nClient, u32 nWAid)
 {
-    char query[200];
+    char query[100];
     u16 tLoc = nClient->GetChar()->GetLocation();
     if (gDevDebug) Console->Print("DEBUG: Removing worldactor %d from world %d", nWAid, tLoc);
 
-    sprintf(query, "DELETE FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", tLoc, nWAid);
+    snprintf(query, 100, "DELETE FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", tLoc, nWAid);
     //if (gDevDebug) Console->Print("DEBUG: Executing query %s", query);
     if(MySQL->GameQuery(query))
     {
@@ -269,12 +269,12 @@ void PWorldActors::GetWAoption(u32 nWAid, u16 nWorld, u16 &nValue1, u16 &nValue2
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
-    char query[200];
+    char query[100];
 
     nValue1 = 0;
     nValue2 = 0;
     nValue3 = 0;
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", nWorld, nWAid);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", nWorld, nWAid);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -303,9 +303,9 @@ int PWorldActors::GetWASQLID(u32 nWAid, u32 nWorld)
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
-    char query[200];
+    char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", nWorld, nWAid);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_map` = %d AND `wa_actor_id` = %d", nWorld, nWAid);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -332,9 +332,9 @@ int PWorldActors::GetWASQLID(u32 nWAid, u32 nWorld)
 bool PWorldActors::IsDynamicActor(u32 nWAid)
 {
     MYSQL_RES *result = NULL;
-    char query[200];
+    char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAid);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAid);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -407,9 +407,9 @@ int PWorldActors::GetWorldActorFunctionID(u32 nWAid)
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
-    char query[200];
+    char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAid);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAid);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -437,13 +437,13 @@ void PWorldActors::GetFrontPos(u32 nWAID, u16* mX, u16* mY, u16* mZ)
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
-    char query[200];
+    char query[100];
 
     u16 tNewX = 0;
     u16 tNewY = 0;
     u16 tNewZ = 0;
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAID);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAID);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -478,9 +478,9 @@ int PWorldActors::GetLinkedObjectID(u32 nWAID)
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
-    char query[200];
+    char query[100];
 
-    sprintf(query, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAID);
+    snprintf(query, 100, "SELECT * FROM `world_actors` WHERE `wa_actor_id` = %d", nWAID);
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -581,9 +581,9 @@ void PWorldActors::DoActorCheck()
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
     char query[200];
-    char query2[200];
+    char query2[100];
 
-    sprintf(query, "SELECT COUNT(`wa_actor_id`),`wa_actor_id` FROM `world_actors` GROUP BY `wa_actor_id` HAVING COUNT(`wa_actor_id`)>1");
+    snprintf(query, 200, "SELECT COUNT(`wa_actor_id`),`wa_actor_id` FROM `world_actors` GROUP BY `wa_actor_id` HAVING COUNT(`wa_actor_id`)>1");
 
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -607,12 +607,12 @@ void PWorldActors::DoActorCheck()
         tCount = std::atoi(row[0]);
         tID = std::atoi(row[1]);
         Console->Print("%s found double worldactor ID! (ID: %d Count: %d) Now erasing...", Console->ColorText(YELLOW, BLACK, "[Notice]"), tID, tCount);
-        sprintf(query2, "DELETE FROM `world_actors` WHERE `wa_actor_id` = %d", tID);
+        snprintf(query2, 100, "DELETE FROM `world_actors` WHERE `wa_actor_id` = %d", tID);
         if(MySQL->GameQuery(query2))
         {
             Console->Print(RED, BLACK, "PWorldActors::DoActorCheck unable to delete double entry %d", tID);
             Console->Print("Query was:");
-            Console->Print("%s", query);
+            Console->Print("%s", query2);
             MySQL->ShowGameSQLError();
         }
     }

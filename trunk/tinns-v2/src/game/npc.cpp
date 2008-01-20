@@ -43,7 +43,7 @@ bool PNPC::SQL_Load()
     MYSQL_ROW row;
     char query[100];
 
-    sprintf(query, "SELECT * FROM `npc_spawns` WHERE `npc_id` = %d", mID);
+    snprintf(query, 100, "SELECT * FROM `npc_spawns` WHERE `npc_id` = %d", mID);
     if(gDevDebug) Console->Print("[DEBUG] Executing query %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)
@@ -416,7 +416,7 @@ PNPCWorld::PNPCWorld(u16 nWorldID)
     MYSQL_ROW row;
     char query[100];
 
-    sprintf(query, "SELECT * FROM `npc_spawns` WHERE `npc_location` = %d", nWorldID);
+    snprintf(query, 100, "SELECT * FROM `npc_spawns` WHERE `npc_location` = %d", nWorldID);
     //if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
     result = MySQL->GameResQuery(query);
     if(result == NULL)

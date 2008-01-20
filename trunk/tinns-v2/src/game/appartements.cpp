@@ -73,8 +73,10 @@ if (gDevDebug) Console->Print("Apt n° %d chosen in %d for faction %d", j+1, Cand
 
 if (gDevDebug) Console->Print("Choosed Apt of type %d in place %d", CandidateApts[j].first, CandidateApts[j].second);    
 
+    char escPassword[256];
+    MySQL->EscapeString(nPassword.c_str(), escPassword, 256);
     char query[256];
-    snprintf(query, 256, "INSERT INTO apartments (apt_id,apt_location,apt_type,apt_password, apt_owner) VALUES (NULL,'%d','%d','%s','%d');", CandidateApts[j].second, CandidateApts[j].first, nPassword.c_str(), nCharID);
+    snprintf(query, 256, "INSERT INTO apartments (apt_id,apt_location,apt_type,apt_password, apt_owner) VALUES (NULL,'%d','%d','%s','%d');", CandidateApts[j].second, CandidateApts[j].first, escPassword, nCharID);
     if ( MySQL->GameQuery(query) )
     {
         Console->Print(RED, BLACK, "PAppartements::CreateBaseAppartement could not add some appartement entry in the database");
@@ -122,7 +124,9 @@ int PAppartements::GetAptID(unsigned int AptLoc, const u8 *pass)
     if(!strcmp((const char*)pass, "Exit"))
         return 1;
 
-    sprintf(query, "SELECT apt_id FROM apartments WHERE apt_location = %i AND apt_password = \"%s\"", AptLoc, pass);
+    char escPassword[255];
+    MySQL->EscapeString((char*)pass, escPassword, 255);
+    snprintf(query, 255, "SELECT apt_id FROM apartments WHERE apt_location = %i AND apt_password = '%s'", AptLoc, escPassword);
     result = MySQL->GameResQuery(query);
 
     if(!result)
@@ -154,7 +158,7 @@ int PAppartements::GetAptType(int AptID)
     MYSQL_ROW row;
     char query[255];
 
-    sprintf(query, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - PWorlds::mAptBaseWorldId);
+    snprintf(query, 225, "SELECT apt_type FROM apartments WHERE apt_id = %i", AptID - PWorlds::mAptBaseWorldId);
     result = MySQL->GameResQuery(query);
 
     if(!result)
@@ -186,7 +190,7 @@ int PAppartements::GetAptOwner(int loc)
     MYSQL_ROW row;
     char query[255];
 
-    sprintf (query, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - PWorlds::mAptBaseWorldId);
+    snprintf (query, 255, "SELECT apt_owner FROM apartments WHERE apt_id = %i", loc - PWorlds::mAptBaseWorldId);
 
     result = MySQL->GameResQuery(query);
     if(!result)
@@ -221,7 +225,7 @@ int PAppartements::GetAptLocation(int loc)
     if((u32)loc > PWorlds::mAptBaseWorldId)
         loc = loc - PWorlds::mAptBaseWorldId;
 
-    sprintf (query, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
+    snprintf (query, 255, "SELECT apt_location FROM apartments WHERE apt_id = %i", loc);
 
 //Console->Print("Q: %s", query);
     result = MySQL->GameResQuery(query);

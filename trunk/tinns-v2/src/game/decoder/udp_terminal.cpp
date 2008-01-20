@@ -303,7 +303,8 @@ bool PUdpTryAccessDB::DoAction()
     tCmdNr = tMessage->U16Data(tSubMsgStart+20);
 
     // Get area to check from incomming packet
-    strcpy(tArea, tMessage->GetMessageData()+tSubMsgStart+24);
+    strncpy(tArea, tMessage->GetMessageData()+tSubMsgStart+24, 100);
+    tArea[99] = '\0';
 
     // Better way to get the lenght
     tCmdLen = strlen(tArea) + 1; // Dont forget the '\0' char at string-end
@@ -320,7 +321,8 @@ Console->Print("tMsglen %d tCmdLen %d tCmdNr %d area %s", tMsgLen, tCmdLen, tCmd
         // - 2 is the lenght byte (u16) of the second string
 
         //tOpt1Len = tMessage->U8Data(tSubMsgStart+24+tCmdLen);
-        strcpy(tOption1, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2);
+        strncpy(tOption1, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2, 100);
+        tOption1[99] = '\0';
         tOpt1Len = strlen(tOption1) + 1; // Dont forget the '\0' char at string-end
 
         Console->Print("tOpt1Len %d tOption1 %s", tOpt1Len, tOption1);
@@ -336,7 +338,8 @@ Console->Print("tMsglen %d tCmdLen %d tCmdNr %d area %s", tMsgLen, tCmdLen, tCmd
             // - tOpt1Len is the lenght of the second string
 
             //tOpt2Len = tMessage->U8Data(tSubMsgStart+24+tCmdLen+2+tOpt1Len);
-            strcpy(tOption2, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2+tOpt1Len+2);
+            strncpy(tOption2, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2+tOpt1Len+2, 100);
+            tOption2[99] = '\0';
             tOpt2Len = strlen(tOption2) + 1; // Dont forget the '\0' char at string-end
 
             Console->Print("tOpt2Len %d tOption2 %s", tOpt2Len, tOption2);
@@ -352,7 +355,8 @@ Console->Print("tMsglen %d tCmdLen %d tCmdNr %d area %s", tMsgLen, tCmdLen, tCmd
                 // - tOpt1Len is the lenght of the second string
 
                 //tOpt3Len = tMessage->U8Data(tSubMsgStart+24+tCmdLen+2+tOpt1Len+2+tOpt2Len);
-                strcpy(tOption3, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2+tOpt1Len+2+tOpt2Len+2);
+                strncpy(tOption3, tMessage->GetMessageData()+tSubMsgStart+24+tCmdLen+2+tOpt1Len+2+tOpt2Len+2, 100);
+                tOption3[99] = '\0';
                 tOpt3Len = strlen(tOption3) + 1; // Dont forget the '\0' char at string-end
 
                 Console->Print("tOpt3Len %d tOption3 %s", tOpt3Len, tOption3);

@@ -65,16 +65,16 @@ PMySQL::PMySQL()
     InfoDBInuse = 0;
     GameDBInuse = 0;
     info_port = Config->GetOptionInt("info_sql_port");
-    strcpy(info_host, Config->GetOption("info_sql_host").c_str());
-    strcpy(info_userName, Config->GetOption("info_sql_username").c_str());
-    strcpy(info_password, Config->GetOption("info_sql_password").c_str());
-    strcpy(info_database, Config->GetOption("info_sql_database").c_str());
+    strncpy(info_host, Config->GetOption("info_sql_host").c_str(), 100);
+    strncpy(info_userName, Config->GetOption("info_sql_username").c_str(), 100);
+    strncpy(info_password, Config->GetOption("info_sql_password").c_str(), 100);
+    strncpy(info_database, Config->GetOption("info_sql_database").c_str(), 100);
 
     game_port = Config->GetOptionInt("game_sql_port");
-    strcpy(game_host, Config->GetOption("game_sql_host").c_str());
-    strcpy(game_userName, Config->GetOption("game_sql_username").c_str());
-    strcpy(game_password, Config->GetOption("game_sql_password").c_str());
-    strcpy(game_database, Config->GetOption("game_sql_database").c_str());
+    strncpy(game_host, Config->GetOption("game_sql_host").c_str(), 100);
+    strncpy(game_userName, Config->GetOption("game_sql_username").c_str(), 100);
+    strncpy(game_password, Config->GetOption("game_sql_password").c_str(), 100);
+    strncpy(game_database, Config->GetOption("game_sql_database").c_str(), 100);
 
     mKeepaliveDelay = (std::time_t) (Config->GetOptionInt("mysql_wait_timeout") * 0.9) ; // we take 90% of the wait_timeout to trigger keepalive
     if (mKeepaliveDelay == 0)
@@ -106,7 +106,7 @@ void PMySQL::Update()
     {
       MYSQL_RES *result;
       char query[24];
-      sprintf (query, "SELECT NOW()");
+      snprintf (query, 24, "SELECT NOW()");
 
       result = GameResQuery(query);
       if(!result)
@@ -302,6 +302,19 @@ void PMySQL::FreeGameSQLResult(MYSQL_RES *res)
     else
         Console->Print("PMySQL::FreeGameSQLResult: Nothing to free...");
 }
+
+u32 PMySQL::EscapeString(const char* nText, char* dText, u32 dMaxLength)
+{
+  u32 nLength = strlen(nText);
+  u32 tMax = (dMaxLength - 1)/2;
+  if(nLength > tMax)
+  {
+    nLength = tMax;
+  }
+  
+  return mysql_real_escape_string(game_dbHandle, dText, nText, nLength);
+}
+
 // ----------------------------------------------------
 /*
 int PMySQL::GetWorldItemType(unsigned short ID, int Location)
@@ -315,12 +328,12 @@ int PMySQL::GetWorldItemType(unsigned short ID, int Location)
       //int nAppLoc = GetAptLocation(Location);
       int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
       if (nAppLoc)
-        sprintf(query, "SELECT ai_type FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", ID, nAppLoc);
+        snprintf(query, 2048, "SELECT ai_type FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", ID, nAppLoc);
       else
         return 0;
     }
     else
-      sprintf(query, "SELECT wi_type FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", ID, Location);
+      snprintf(query, 2048, "SELECT wi_type FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", ID, Location);
 
     result = GameResQuery(query);
     if(!result)
@@ -373,12 +386,12 @@ int PMySQL::GetWorldItemOption(unsigned short ID, int Location, int option)
       //int nAppLoc = GetAptLocation(Location);
       int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
       if (nAppLoc)
-        sprintf(query, "SELECT ai_option%d FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", option, ID, nAppLoc);
+        snprintf(query, 2048, "SELECT ai_option%d FROM apt_items WHERE ai_apt_id = %d AND ai_apt_map = %d", option, ID, nAppLoc);
       else
         return 0;
     }
     else
-      sprintf(query, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
+      snprintf(query, 2048, "SELECT wi_option%d FROM world_items WHERE wi_worlditem_id = %d AND wi_worlditem_map = %d", option, ID, Location);
 
     result = GameResQuery(query);
     if(!result)
@@ -429,13 +442,13 @@ Console->Print(RED, BLACK, "PMySQL::GetWorldDoorType: DATABASE MUST NOT BE USED 
       //int nAppLoc = GetAptLocation(Location);
       int nAppLoc = Location - 100000; // temp as DB doesn't link with App world ID, but with app ID
       if (nAppLoc)
-        sprintf(query, "SELECT ad_type FROM apt_doors, apartments WHERE apt_doors.ad_apt_map = apartments.apt_type AND apt_doors.ad_apt_id = %i AND apartments.apt_id = %i", ID, nAppLoc);
+        snprintf(query, 2048, "SELECT ad_type FROM apt_doors, apartments WHERE apt_doors.ad_apt_map = apartments.apt_type AND apt_doors.ad_apt_id = %i AND apartments.apt_id = %i", ID, nAppLoc);
       else
         return 0;
     }
     else
     {
-        sprintf(query, "SELECT wd_type FROM world_doors WHERE wd_world_id = %d AND wd_world_map = %d", ID, Location);
+        snprintf(query, 2048, "SELECT wd_type FROM world_doors WHERE wd_world_id = %d AND wd_world_map = %d", ID, Location);
     }
     result = GameResQuery(query);
 
