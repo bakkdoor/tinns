@@ -35,9 +35,12 @@
           - Added SetBannedStatus(<unix timestamp>) to ban/unban an account (use SetBannedStatus(0) to unban a player)
 	MODIFIED: 03 Oct 2006 Hammag
 	REASON: - Fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
-
 	MODIFIED: 27 May 2007 Hammag
 	REASON: - Full changes for on-demand account access (no more memory-resident account data)
+	
+	
+	MODIFIED: 2 Feb 2008 Hammag
+	REASON: - Correction of the account creation/update SQL query (thank to drhawk ;) )
 */
 
 
@@ -359,8 +362,8 @@ bool PAccount::Save(bool CreateMode)
     
   std::string Query;
   Query = CreateMode ? "INSERT INTO" : "UPDATE";
-  Query += "accounts SET ";
-  Query += Ssprintf(" accounts SET a_username='%s', a_password = '%s'", escUsername, escPassword);
+  Query += " accounts SET ";
+  Query += Ssprintf(" a_username='%s', a_password = '%s'", escUsername, escPassword);
   Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
   if(!CreateMode )
   {

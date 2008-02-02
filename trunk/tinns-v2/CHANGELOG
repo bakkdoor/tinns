@@ -1617,3 +1617,10 @@ Hammag; 20.01.2008 20:00 GMT+2
   [GAME + INFO + PATCH]
     *.cpp : replaced strcpy(), strcat(), sprintf() with respectively strncpy(), strncat(), snprintf()
       The first ones are now forbidden.
+
+Hammag; 2.02.2008 16:15 GMT+2
+----------
+[rev. 98]
+
+[Infoserver]
+accounts.cpp : Correction of the account creation/update SQL query - thank to drhawk ;)
