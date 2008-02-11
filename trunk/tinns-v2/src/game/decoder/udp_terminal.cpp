@@ -539,8 +539,8 @@ bool PUdpQueryDB::ActionDismissVehicle()
 		PVehicleInformation nInfo;
 		
 		PSpawnedVehicle* tVhc = Vehicles->GetSpawnedVehicle(VhcId);
-		u32 tLocalId;
-		u32 tLocation;
+		u32 tLocalId = 0;
+		u32 tLocation = 0;
 		if(tVhc)
 		{
 			tLocalId = tVhc->GetLocalId();
