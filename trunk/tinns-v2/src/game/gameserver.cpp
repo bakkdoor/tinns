@@ -717,8 +717,7 @@ bool PGameServer::HandleCharList(PClient *Client, PGameState *State, const u8 *P
         if(PChar::IsCharnameWellFormed(TempName))
         {
   				// check for already used char name - should not happen though
-  				PChar *Char = Chars->GetChar(TempName);
-  				if (!Char)
+  				if (! Chars->CharExist(std::string(TempName)))
   				{
   					PAccount Acc(Client->GetAccountID());
   					PChar* nChar = new PChar();

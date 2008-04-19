@@ -74,6 +74,21 @@ PItem::PItem(u32 ItemID, u8 nStackSize, u8 CurDur, u8 MaxDur, u8 Dmg, u8 Freq, u
   }
 }
 
+void PItem::MakeStandardItem(u8 GlobalQualityMin, u8 GlobalQualityMax)
+{
+  if(GlobalQualityMin > GlobalQualityMax) GlobalQualityMin = GlobalQualityMax;
+  
+  u8 GlobalQual = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+
+  mCurDuration = 255;
+  mMaxDuration = 255;
+  mDamages = GlobalQual;
+  mFrequency = GlobalQual;
+  mHandling = GlobalQual;
+  mRange = GlobalQual;
+  
+}
+
 u8 PItem::AddToStack(u8 ItemNb)
 {
   u8 addedItems = 0;

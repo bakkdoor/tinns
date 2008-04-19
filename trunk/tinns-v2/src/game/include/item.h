@@ -98,7 +98,8 @@ class PItem
   public:
     PItem(u32 ItemID, u8 nStackSize = 1, u8 CurDur = 0, u8 MaxDur = 0, u8 Dmg = 0, u8 Freq = 0, u8 Hand = 0, u8 Rng = 0);
     //~PItem();
-    
+    void MakeStandardItem(u8 GlobalQualityMin = 120, u8 GlobalQualityMax = 180);
+        
     inline u32 GetItemID() {return mItemID; }
     
     inline int const GetType() { return mDefItem->GetType(); }

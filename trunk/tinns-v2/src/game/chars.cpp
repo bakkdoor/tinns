@@ -463,9 +463,14 @@ void PChar::SetBaseInventory()
 if (gDevDebug) Console->Print(GREEN, BLACK, "Adding item %d to base inventory", BaseItemID);
       PItem* NewItem = new PItem(BaseItemID);
       if (NewItem->GetItemID())
+      {
+        NewItem->MakeStandardItem(120, 180); // global quality range
         mInventory.AddItem(NewItem);
+      }
       else
-        Console->Print(RED, BLACK, "Invalid item ID !");
+      {
+        Console->Print(RED, BLACK, "Invalid item ID %d in base inventory for profession %d", BaseItemID, mProfession);
+      }
     }
   }
 }
@@ -739,7 +744,7 @@ bool PChar::CreateNewChar(u32 Account, const std::string &Name, u32 Gender, u32 
     mStartApt = mPrimaryApt = Appartements->CreateBaseAppartement(mID, mName, mFaction);
     mInventory.SetCharId(mID);
     
-	  if (mStartApt && SQLSave())
+	  if (mStartApt && SQLSave() && mInventory.SQLSave())
 	  {
       return true;
     }

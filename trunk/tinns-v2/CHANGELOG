@@ -1624,3 +1624,19 @@ Hammag; 2.02.2008 16:15 GMT+2
 
 [Infoserver]
 accounts.cpp : Correction of the account creation/update SQL query - thank to drhawk ;)
+
+Hammag; 11.02.2008 20:30 GMT+2
+----------
+[rev. 99]
+Correction of an initialization issue that caused compilation error on some environments.
+
+Hammag; 20.04.2008 00:50 GMT+1
+----------
+[rev. 100]
+
+<Gameserver>
+msgbuilder.h/.cpp: added method PMessage* BuildTraderItemListMsg() (test version)
+decoded/upd_useobject.cpp: change so that only vhc terminal opens vhc interface
+client.cpp: added fragmented message type 0xac for traders
+chars.cpp: fixed initial inventory saving
+item.cpp/.h: added new method PItem::MakeStandardItem()

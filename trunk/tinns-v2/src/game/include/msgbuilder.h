@@ -100,6 +100,8 @@ class PMsgBuilder
   PMessage* BuildText100Msg (PClient* nClient, u8 nTxtMsgId, u32 nRawObjectID);
   PMessage* BuildTextIniMsg (PClient* nClient, u8 nTxtGroupID, u16 nTxtID);
 
+  PMessage* BuildCharInteractionMenuMsg (PClient* nClient, u32 nRawTargetID);
+    
   PMessage* BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue);
   PMessage* BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID);
   PMessage* BuildCharUseVhcTerminalMsg (PClient* nClient, u32 nRawObjectID);
@@ -129,6 +131,8 @@ class PMsgBuilder
   
   PMessage* BuildDBRequestStatusMsg(PClient* nClient, std::string* nCommandName, u8 nStatus, u16 nErrCode);
   PMessage* BuildDBAnswerMsg(PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols);
+    
+  PMessage* BuildTraderItemListMsg(PClient* nClient, u32 nTraderNpcID);
 };
 
 #endif

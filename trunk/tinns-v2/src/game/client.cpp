@@ -192,6 +192,15 @@ void PClient::FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType)
       {
         break;
       }
+      case 0xac: //BuildTraderItemListMsg with header & UDP_ID incremented
+      {
+        StartIncUDPIDOnChunk = 1;
+        IncludedHeaderSize = 9;
+        ReplaceFirstByte = true;
+        ReplaceFirstByteValue = 0x15;
+        MultiTriggeringSize = 230;
+        break;
+      }
       default: //BaselineMsg (with no header)
       {
         Console->Print(RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Message type 0x%02x not managed", nType);

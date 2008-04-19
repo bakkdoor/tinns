@@ -1598,6 +1598,25 @@ PMessage* PMsgBuilder::BuildTextIniMsg (PClient* nClient, u8 nTxtGroupID, u16 nT
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildCharInteractionMenuMsg (PClient* nClient, u32 nRawTargetID)
+{
+    PMessage* tmpMsg = new PMessage(17);
+
+    nClient->IncreaseUDP_ID();
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+    *tmpMsg << (u8)0x0b; // Message length
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x4d;
+    *tmpMsg << (u32)nRawTargetID;
+
+    return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildFurnitureActivateMsg (PClient* nClient, u32 nRawObjectID, u8 nActionValue)
 {
     PMessage* tmpMsg = new PMessage(12);
@@ -2051,7 +2070,9 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
 }
 
 PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID, PContainer* nContainer)
-{    
+{
+    PMessage* ContentList = BuildContainerContentList(nContainer, INV_LOC_BOX);
+        
     PMessage* tmpMsg = new PMessage();
     nClient->IncreaseUDP_ID();
 
@@ -2070,13 +2091,13 @@ PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContain
     *tmpMsg << (u8)0x00; // Always the same on item containers?
     *tmpMsg << (u8)0x08; // 0x08 when container is filled, 0x00 when not? At least it works..
 
-    PMessage* ContentList = BuildContainerContentList(nContainer, INV_LOC_BOX);
     *tmpMsg << (u16)(ContentList->GetSize());
     *tmpMsg << *ContentList;
-    delete ContentList;
     
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-    
+
+    delete ContentList;
+        
     return tmpMsg;
 }
 
@@ -2448,7 +2469,7 @@ PMessage* PMsgBuilder::BuildVhcHealthUpdateMsg (PSpawnedVehicle* nVehicle)
 
 // NB: same as BuildCharSittingMsg. To be merged later when classes are adapted
 PMessage* PMsgBuilder::BuildVhcPosUpdateMsg (PSpawnedVehicle* nVehicle)
-{;
+{
   PMessage* tmpMsg = new PMessage(33);
   PVhcCoordinates VhcPos = nVehicle->GetPosition();
   
@@ -2477,6 +2498,63 @@ PMessage* PMsgBuilder::BuildVhcPosUpdateMsg (PSpawnedVehicle* nVehicle)
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
   return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildTraderItemListMsg(PClient* nClient, u32 nTraderNpcID) //, PContainer* nContainer)
+{    
+//    PMessage* ContentList = BuildContainerContentList(nContainer, INV_LOC_BOX);
+// Tmp manual content list:
+    PMessage* ContentList = new PMessage();
+    f32 PriceCoef = 1/1.379942;
+    u8 Quality = 255; // Range 0 - 255
+    
+    //Item 1:
+    *ContentList << (u16)0x05e6; // Item Id "Clan key for CityAdmin"
+    *ContentList << (u32)304567; // Base (?) Item price = item.def price / 1.97
+                                 // Displayed price is this price * 1.38 . Is this faction/barter factor ?
+    //Item 2:
+    *ContentList << (u16)0x05e7; // Item Id "Clan key for Diamond Real Estate"
+    *ContentList << (u32)(420285 * PriceCoef);
+    //Item 3:
+    *ContentList << (u16)0x05e8; // Item Id "Clan key for N.E.X.T."
+    *ContentList << (u32)(420285 * PriceCoef);
+    //Item 4:
+    *ContentList << (u16)0x060f; // Item Id "PLAZA - 2nd Lev. Apartment"
+    *ContentList << (u32)(245166 * PriceCoef);
+    //Item 5:
+    *ContentList << (u16)0x065c; // Item Id "Normal Viarosso Apartment Alamo Living"
+    *ContentList << (u32)(840571 * PriceCoef);    
+    //Item 6:
+    *ContentList << (u16)0x065d; // Item Id "Luxus Viarosso Apartment Alamo Living"
+    *ContentList << (u32)(1260856 * PriceCoef);
+
+    //Item 7:
+    *ContentList << (u16)355; // Item Id "HEW ‘Liquid Fire’ Rifle"
+    *ContentList << (u32)(1260856 * PriceCoef);
+        
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+    *tmpMsg << (u8)0x00; // Message length
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x26;
+    *tmpMsg << nTraderNpcID;
+    *tmpMsg << (u8)0x01; // Traders inventory
+    *tmpMsg << (u16)(ContentList->GetSize()/6); // List entries
+    *tmpMsg << (u8)Quality; // Items quality
+    *tmpMsg << *ContentList;
+    
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    delete ContentList;
+
+    return tmpMsg;
 }
 
 /*

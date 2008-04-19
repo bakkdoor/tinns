@@ -180,19 +180,41 @@ Console->Print("Using vhc");
                 }
 								// else error: invalid location
 /****/					} // else char alreay sitting
-            } else
-            
-            if((tChar->GetLocation() == PWorlds::mNcSubwayWorldId) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
+            }
+            else
             {
-              
-              if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
+              // Is it a NPC ?
+              PNPC* targetNPC = 0;
+              PNPCWorld* currentNPCWorld = NPCManager->GetWorld(tChar->GetLocation());
+              if(currentNPCWorld)
               {
-                u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
-                if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
+                targetNPC = currentNPCWorld->GetNPC(mRawItemID);
+              }
+              if(targetNPC)
+              {
+                /*if(gDevDebug)*/ Console->Print(YELLOW, BLACK, "[Info] using NPC %d as test trader", mRawItemID);
+  //if(gDevDebug) tContainer->Dump();                      
+                tmpMsg = MsgBuilder->BuildTraderItemListMsg(nClient, mRawItemID);
+  //tmpMsg->Dump();
+                nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
+              }
+              else if((tChar->GetLocation() == PWorlds::mNcSubwayWorldId) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
+              {
+                
+                if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
                 {
-                  tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
-                  tmpMsg = MsgBuilder->BuildCharUseSeatMsg (nClient, mRawItemID, freeSeat);
-                  ClientManager->UDPBroadcast(tmpMsg, nClient);
+                  u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
+                  if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
+                  {
+                    tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
+                    tmpMsg = MsgBuilder->BuildCharUseSeatMsg (nClient, mRawItemID, freeSeat);
+                    ClientManager->UDPBroadcast(tmpMsg, nClient);
+                  }
+                  else
+                  {
+                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
+                    nClient->SendUDPMessage(tmpMsg);
+                  }
                 }
                 else
                 {
@@ -200,15 +222,9 @@ Console->Print("Using vhc");
                   nClient->SendUDPMessage(tmpMsg);
                 }
               }
-              else
-              {
-                tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
-                nClient->SendUDPMessage(tmpMsg);
-              }
-            }
+          }
             
-            
-            mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+          mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
         }
     }
     else // furniture objects
@@ -435,16 +451,17 @@ Console->Print("Using vhc");
                     case 16: //HOLOMATCH REFRESH
                     case 17: //HOLOMATCH HEAL & Recreation units
                     case 26: //Outpost Switch
-                    case 28: //Fahrzeug Depot Interface
+                    case 31: //Venture Warp Station
                     {
-                        tmpMsg = MsgBuilder->BuildCharUseVhcTerminalMsg (nClient, mRawItemID);
+                        tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
                         nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
-                    case 31: //Venture Warp Station
+                    
+                    case 28: //Fahrzeug Depot Interface
                     {
-                        tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
+                        tmpMsg = MsgBuilder->BuildCharUseVhcTerminalMsg (nClient, mRawItemID);
                         nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
@@ -717,6 +734,7 @@ bool PUdpCloseItemContainer::DoAction()
 {
 //  PClient* nClient = mDecodeData->mClient;
 //  PChar* tChar = nClient->GetChar();
+
   PChar* tChar = mDecodeData->mClient->GetChar();
   PContainer* tContainer = tChar->GetContainerInExclusiveUse();
   if(tContainer)
