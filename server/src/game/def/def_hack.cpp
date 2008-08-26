@@ -60,7 +60,7 @@ bool PDefHack::LoadFromDef(PTokenList *Tokens)
 
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 
 		}

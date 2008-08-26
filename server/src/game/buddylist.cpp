@@ -128,7 +128,7 @@ bool PBuddyList::SQLLoad()
 
         while((row = mysql_fetch_row(result)))
         {
-            mCharIDList[mListSize++] = std::atoi(row[bud_buddyid]);
+            mCharIDList[mListSize++] = atoi(row[bud_buddyid]);
             //Console->Print(GREEN, BLACK, "PBuddyList::SQLLoad Buddylist entry %d : char %d", mListSize, mCharIDList[mListSize-1]);
         }
     }

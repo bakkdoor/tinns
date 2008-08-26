@@ -50,19 +50,19 @@ bool PDefAppPlace::LoadFromDef(PTokenList *Tokens)
 					continue;
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2: // name
 				mName = *i; break;
 
 			case 3: // Exit World
-				mExitWorldID = std::atoi(i->c_str()); break;
+				mExitWorldID = atoi(i->c_str()); break;
 				
 			case 4: // Exit World entity
-				mExitWorldEntity = std::atoi(i->c_str()); break;
+				mExitWorldEntity = atoi(i->c_str()); break;
 
 			case 5: // Sewer level
-				mSewerLevel = std::atoi(i->c_str()); break;
+				mSewerLevel = atoi(i->c_str()); break;
 		}
 	}
 

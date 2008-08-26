@@ -168,12 +168,12 @@ bool PAccount::LoadFromQuery(char* query)
 
   if((row = mysql_fetch_row(result)))
   {
-    mID = std::atoi(row[a_id]);
+    mID = atoi(row[a_id]);
     mName = row[a_username];
     mPassword = row[a_password];
 
-    mBannedUntil = std::atoi(row[a_bandate]);
-    if(mBannedUntil > std::time(NULL))
+    mBannedUntil = atoi(row[a_bandate]);
+    if(mBannedUntil > time(NULL))
     {
       mStatus = PAS_BANNED;
       mLevel = PAL_BANNED;
@@ -181,7 +181,7 @@ bool PAccount::LoadFromQuery(char* query)
     else
     {
       mStatus = PAS_OFFLINE;
-      mLevel = std::atoi(row[a_priv]);
+      mLevel = atoi(row[a_priv]);
     }
 
     FinalResult = true;
@@ -392,7 +392,7 @@ u32 PAccount::GetCharIdBySlot(const u32 SlotId)
 
   if((row = mysql_fetch_row(result)))
   {
-    CharId = std::atoi(row[0]);
+    CharId = atoi(row[0]);
   }
   
   MySQL->FreeGameSQLResult(result);
@@ -412,7 +412,7 @@ u32 PAccount::GetCharIdBySlot(const u32 SlotId)
     
     if((row = mysql_fetch_row(result)))
     {
-      CharId = std::atoi(row[0]);
+      CharId = atoi(row[0]);
     }
     
     MySQL->FreeGameSQLResult(result);    

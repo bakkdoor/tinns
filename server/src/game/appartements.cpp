@@ -144,7 +144,7 @@ int PAppartements::GetAptID(unsigned int AptLoc, const u8 *pass)
     else
     {
         row = mysql_fetch_row(result);
-        type = std::atoi(row[0]);
+        type = atoi(row[0]);
         MySQL->FreeGameSQLResult(result);
     }
 
@@ -176,7 +176,7 @@ int PAppartements::GetAptType(int AptID)
     else
     {
         row = mysql_fetch_row(result);
-        type = std::atoi(row[0]);
+        type = atoi(row[0]);
         MySQL->FreeGameSQLResult(result);
     }
 
@@ -208,7 +208,7 @@ int PAppartements::GetAptOwner(int loc)
     else
     {
         row = mysql_fetch_row(result);
-        owner = std::atoi(row[0]);
+        owner = atoi(row[0]);
         MySQL->FreeGameSQLResult(result);
     }
 
@@ -244,7 +244,7 @@ int PAppartements::GetAptLocation(int loc)
     else
     {
         row = mysql_fetch_row(result);
-        Location = std::atoi(row[0]);
+        Location = atoi(row[0]);
         MySQL->FreeGameSQLResult(result);
     }
 

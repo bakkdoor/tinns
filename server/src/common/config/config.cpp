@@ -213,7 +213,7 @@ int PConfig::GetOptionInt(const std::string Name) const
 {
 	OptionsMap::const_iterator i = mOptions.find(Name);
 	if(i!=mOptions.end())
-		return std::atoi(i->second.c_str());
+		return atoi(i->second.c_str());
 
 	return 0;
 }

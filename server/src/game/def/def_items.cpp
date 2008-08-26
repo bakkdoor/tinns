@@ -82,54 +82,54 @@ bool PDefItems::LoadFromDef(PTokenList *Tokens)
 			case 0:	// setentry
 					continue;
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 			case 2: // name
 				mName = *i; break;
 			case 3:
-        // mModel = std::atoi(i->c_str()); // used for IG display
+        // mModel = atoi(i->c_str()); // used for IG display
         break;
 			case 4:
-        mType = std::atoi(i->c_str()); break;          
+        mType = atoi(i->c_str()); break;          
 			case 5:
-        mValue1 = std::atoi(i->c_str()); break;
+        mValue1 = atoi(i->c_str()); break;
 			case 6:
-        mValue2 = std::atoi(i->c_str()); break;
+        mValue2 = atoi(i->c_str()); break;
 			case 7:
-        mValue3 = std::atoi(i->c_str()); break;
+        mValue3 = atoi(i->c_str()); break;
 			case 8:
-        // mBmNum = std::atoi(i->c_str()); // used IG for inventory display
+        // mBmNum = atoi(i->c_str()); // used IG for inventory display
         break;
 			case 9:
-        // mmBmNumIndex = std::atoi(i->c_str()); // used IG for inventory display
+        // mmBmNumIndex = atoi(i->c_str()); // used IG for inventory display
         break;
 			case 10:
-        mSizeX = std::atoi(i->c_str()); break;
+        mSizeX = atoi(i->c_str()); break;
 			case 11:
-        mSizeY = std::atoi(i->c_str()); break;
+        mSizeY = atoi(i->c_str()); break;
 			case 12:
-        // mSmallbmnum = std::atoi(i->c_str()); // used IG for inventory display
+        // mSmallbmnum = atoi(i->c_str()); // used IG for inventory display
         break;
 			case 13:
-        mWeight = std::atof(i->c_str()); break;
+        mWeight = atof(i->c_str()); break;
 			case 14:
-        mStackable = std::atoi(i->c_str()); break;
+        mStackable = atoi(i->c_str()); break;
 			case 15:
-        mFillWeight = std::atof(i->c_str()); break;
+        mFillWeight = atof(i->c_str()); break;
 			case 16:
-        mQualifier = std::atoi(i->c_str()); break;
+        mQualifier = atoi(i->c_str()); break;
 			case 17:
-        // mGfxmods = std::atoi(i->c_str()); // used IG ?
+        // mGfxmods = atoi(i->c_str()); // used IG ?
         break;
 			case 18:
-        mItemGroupID = std::atoi(i->c_str()); break;
+        mItemGroupID = atoi(i->c_str()); break;
 			case 19:
-        mTextDescID = std::atoi(i->c_str()); break;
+        mTextDescID = atoi(i->c_str()); break;
 			case 20:
-        mBasePrice = std::atoi(i->c_str()); break;
+        mBasePrice = atoi(i->c_str()); break;
 			case 21:
-        mTechlevel = std::atoi(i->c_str()); break;
+        mTechlevel = atoi(i->c_str()); break;
 			case 22:
-        mItemflags = std::atoi(i->c_str()); break;
+        mItemflags = atoi(i->c_str()); break;
 			case 23:
         // mShortname = *i; // used IG for display on inventories Icons
         break;

@@ -62,7 +62,7 @@ bool PDefSubSkill::LoadFromDef(PTokenList *Tokens)
 				continue;
 
 			case 1 :
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2 :
 				mName = *i; break;
@@ -71,11 +71,11 @@ bool PDefSubSkill::LoadFromDef(PTokenList *Tokens)
 				mShortName = *i; break;
 
 			case 4 :
-				mStrengthenFactor = static_cast<float>(std::atof(i->c_str())); break;
+				mStrengthenFactor = static_cast<float>(atof(i->c_str())); break;
 
 			case 5 :
 			{
-				mNumActionModifiers = std::atoi(i->c_str());
+				mNumActionModifiers = atoi(i->c_str());
 				mActionModifiers = new int[mNumActionModifiers];
 				std::memset(mActionModifiers, 0, sizeof(int)*mNumActionModifiers);
 				break;
@@ -83,7 +83,7 @@ bool PDefSubSkill::LoadFromDef(PTokenList *Tokens)
 		}
 
 		if(Idx>=6)
-			mActionModifiers[Idx-6]=std::atoi(i->c_str());
+			mActionModifiers[Idx-6] = atoi(i->c_str());
 	}
 
 	return true;

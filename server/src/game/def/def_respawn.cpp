@@ -52,16 +52,16 @@ bool PDefRespawn::LoadFromDef(PTokenList *Tokens)
 					continue;
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2: // value
-				mWorldID = std::atoi(i->c_str()); break;
+				mWorldID = atoi(i->c_str()); break;
 
 			case 3: // value
-				mEntityID = std::atoi(i->c_str()); break;
+				mEntityID = atoi(i->c_str()); break;
 
 			case 4: // value
-				mHazardLevel = std::atoi(i->c_str()); break;
+				mHazardLevel = atoi(i->c_str()); break;
 				  				  				  				  
 			case 5: // name
 				mName = *i; break;

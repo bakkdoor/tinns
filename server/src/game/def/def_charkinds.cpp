@@ -79,20 +79,20 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 				continue;
 
 			case 1 :
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2 :
 				mName = *i; break;
 
 			case 3 :
-				mType = std::atoi(i->c_str()); break;
+				mType = atoi(i->c_str()); break;
 
 		}
 
 		if((Idx >= SkillInfoStart) && (Idx < TrainPtsStart)) // skill info
 		{
 			int SkillIdx = (Idx-SkillInfoStart)/3;
-			int Value = std::atoi(i->c_str());
+			int Value = atoi(i->c_str());
 
 			// start, max, grow per skill
 			switch((Idx-SkillInfoStart)%3)
@@ -109,7 +109,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 			int Index = Idx-TrainPtsStart;
 			if((Index&1)==0)
 			{
-				SkillIndex = std::atoi(i->c_str());
+				SkillIndex = atoi(i->c_str());
 			} else
 			{
 				if(SkillIndex >= 1000)	// skill
@@ -120,7 +120,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 						int Index = Skill->GetIndex()-1;
 						PSkillPtsInfo *CurrentSkillPts = new PSkillPtsInfo();
 						CurrentSkillPts->mSkill = Index;
-						CurrentSkillPts->mPoints = std::atoi(i->c_str());
+						CurrentSkillPts->mPoints = atoi(i->c_str());
 						mSkillPts.insert(std::make_pair(Index, CurrentSkillPts));
 					} else
 					{
@@ -135,7 +135,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 						int Index = SubSkill->GetIndex()-1;
 						PSubSkillPtsInfo *CurrentSubSkillPts = new PSubSkillPtsInfo();
 						CurrentSubSkillPts->mSubSkill = Index;
-						CurrentSubSkillPts->mPoints = std::atoi(i->c_str());
+						CurrentSubSkillPts->mPoints = atoi(i->c_str());
 						mSubSkillPts.insert(std::make_pair(Index, CurrentSubSkillPts));
 					} else
 					{
@@ -152,7 +152,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 			int Index = Idx-NumSkills*3+4+(32*2);
 			if((Index&1)==0)
 			{
-				LevelIndex = std::atoi(i->c_str());
+				LevelIndex = atoi(i->c_str());
 			} else
 			{
 				if(LevelIndex > 0)
@@ -162,7 +162,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 					{
 						PStartLevelInfo *Level = new PStartLevelInfo();
 						Level->mSubSkill = SubSkill->GetIndex();
-						Level->mLevel = std::atoi(i->c_str());
+						Level->mLevel = atoi(i->c_str());
 						mStartLevels.insert(std::make_pair(Level->mSubSkill, Level));
 					} else
 					{
@@ -174,12 +174,12 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 		// money
 		if((Idx >= MoneyStart) && (Idx < InventoryStart))
 		{
-			mMoney = std::atoi(i->c_str());
+			mMoney = atoi(i->c_str());
 		} else
 		// inventory
 		if((Idx >= InventoryStart) && (Idx < InventoryStart+8))
 		{
-			mInventory[Idx-InventoryStart] = std::atoi(i->c_str());
+			mInventory[Idx-InventoryStart] = atoi(i->c_str());
 		}
 	}
 	

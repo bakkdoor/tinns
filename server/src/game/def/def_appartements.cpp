@@ -53,7 +53,7 @@ bool PDefAppartement::LoadFromDef(PTokenList *Tokens)
 					continue;
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2: // name
 				mName = *i; break;
@@ -62,10 +62,10 @@ bool PDefAppartement::LoadFromDef(PTokenList *Tokens)
 				mWorldName = *i; break;
 				
 			case 4: // value
-				mValue = std::atoi(i->c_str()); break;
+				mValue = atoi(i->c_str()); break;
 
 			case 5: // number of places
-				mPlaceCount = std::atoi(i->c_str()); break;
+				mPlaceCount = atoi(i->c_str()); break;
 				  
 		  case 6:
 		  case 7:
@@ -75,10 +75,10 @@ bool PDefAppartement::LoadFromDef(PTokenList *Tokens)
 		  case 11:
 		  case 12:
 		  case 13:
-		    mPlace[Idx-6] = std::atoi(i->c_str()); break;
+		    mPlace[Idx-6] = atoi(i->c_str()); break;
 		      
 			case 14: // faction if base appartement
-				mFaction = std::atoi(i->c_str()); break;		      
+				mFaction = atoi(i->c_str()); break;		      
 		}
 	}
 //Console->Print("%04d:%s file:%s val:%d places:%d pl1:%d pl2:%d pl8:%d faction:%d",

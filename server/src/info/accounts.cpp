@@ -173,11 +173,11 @@ bool PAccount::LoadFromQuery(char* query)
 
   if((row = mysql_fetch_row(result)))
   {
-    mID = std::atoi(row[a_id]);
+    mID = atoi(row[a_id]);
     mName = row[a_username];
     mPassword = row[a_password];
 
-    mBannedUntil = std::atoi(row[a_bandate]);
+    mBannedUntil = atoi(row[a_bandate]);
     if(mBannedUntil > std::time(NULL))
     {
       mStatus = PAS_BANNED;
@@ -186,7 +186,7 @@ bool PAccount::LoadFromQuery(char* query)
     else
     {
       mStatus = PAS_OFFLINE;
-      mLevel = std::atoi(row[a_priv]);
+      mLevel = atoi(row[a_priv]);
     }
 
     FinalResult = true;

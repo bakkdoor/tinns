@@ -50,25 +50,25 @@ bool PDefWorldModel::LoadFromDef(PTokenList *Tokens)
 					continue;
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2: // name
 				mName = *i; break;
 
 			case 3: // use flag
-				mUseFlags = std::atoi(i->c_str()); break;
+				mUseFlags = atoi(i->c_str()); break;
 				
 			case 4: // function type
-				mFunctionType = std::atoi(i->c_str()); break;
+				mFunctionType = atoi(i->c_str()); break;
 
 			case 5: // function value
-				mFunctionValue = std::atoi(i->c_str()); break;
+				mFunctionValue = atoi(i->c_str()); break;
 				  
 			case 6: // hack difficulty
-				mHackDifficulty = std::atoi(i->c_str()); break;
+				mHackDifficulty = atoi(i->c_str()); break;
 
 			case 7: // hack penalty
-				mHackPenalty = std::atoi(i->c_str()); break;
+				mHackPenalty = atoi(i->c_str()); break;
 		}
 	}
 

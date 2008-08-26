@@ -127,8 +127,8 @@ bool PGenrepList::SQLLoad()
 
         while((row = mysql_fetch_row(result)))
         {
-            mGenrepList[mListSize].mWorldID = std::atoi(row[g_worldid]);
-            mGenrepList[mListSize++].mStationID = std::atoi(row[g_stationid]);
+            mGenrepList[mListSize].mWorldID = atoi(row[g_worldid]);
+            mGenrepList[mListSize++].mStationID = atoi(row[g_stationid]);
             //Console->Print(GREEN, BLACK, "PGenrepList::SQLLoad Genrep list entry %d : world %d station %d", mListSize, mGenrepList[mListSize-1].mWorldID,mGenrepList[mListSize-1].mStationID);
         }
     }

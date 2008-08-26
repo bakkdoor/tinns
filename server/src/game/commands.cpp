@@ -374,7 +374,7 @@ int PCommands::GetArgInt(int ArgNum)
         return 0;
 
     int tmpIntRet = 0;
-    tmpIntRet = std::atoi(ArgV[ArgNum - 1]);
+    tmpIntRet = atoi(ArgV[ArgNum - 1]);
     return tmpIntRet;
 }
 

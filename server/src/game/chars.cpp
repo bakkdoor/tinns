@@ -494,10 +494,10 @@ bool PChar::SQLLoad(int CharID) {
     {
         SetID(CharID);
         SetName(row[c_name]);
-        SetAccount(std::atoi(row[a_id]));
+        SetAccount(atoi(row[a_id]));
 
         // Gender
-        int genvalue = std::atoi(row[c_sex]);
+        int genvalue = atoi(row[c_sex]);
         if((genvalue == 0) || (genvalue == 1))
             mGender = static_cast<u32>(genvalue);
         else
@@ -507,11 +507,11 @@ bool PChar::SQLLoad(int CharID) {
         }
 
         // Profession
-        int profvalue = std::atoi(row[c_profession]);
+        int profvalue = atoi(row[c_profession]);
         SetProfession( static_cast<u32>(profvalue));
 
         // Class
-        //int classvalue = std::atoi(row[c_class]);
+        //int classvalue = atoi(row[c_class]);
         //if(classvalue < 4)
         //    mClass = static_cast<u32>(classvalue);
         //else
@@ -521,19 +521,19 @@ bool PChar::SQLLoad(int CharID) {
         //}
 
         // Faction
-        int facvalue = std::atoi(row[c_faction]);
+        int facvalue = atoi(row[c_faction]);
         if(GameDefs->GetFactionDef(facvalue))
             mFaction = static_cast<u32>(facvalue);
         else
             mFaction = 1;
 
         /* // Model
-        int modvalue = std::atoi(row[c_model]);
+        int modvalue = atoi(row[c_model]);
         mModel = static_cast<u32>(modvalue);
         mModel = 10; */
-        int headvalue = std::atoi(row[c_head]);
-        int torsovalue = std::atoi(row[c_torso]);
-        int legsvalue = std::atoi(row[c_legs]);
+        int headvalue = atoi(row[c_head]);
+        int torsovalue = atoi(row[c_torso]);
+        int legsvalue = atoi(row[c_legs]);
         SetRealLook(static_cast<u32>(headvalue), static_cast<u32>(torsovalue), static_cast<u32>(legsvalue));
 
         // Type
@@ -543,88 +543,88 @@ bool PChar::SQLLoad(int CharID) {
         //mType = 1; */
 
         // Location
-        int locvalue = std::atoi(row[c_location]);
+        int locvalue = atoi(row[c_location]);
         mLocation = static_cast<u32>(locvalue);
 
 //This assumption is not so good ... hardcoding jailed state linked with location ...
         if(mLocation == 550 || mLocation == 551)
             mJailed = true;
 
-        int posvalue = std::atoi(row[c_pos_x]);
+        int posvalue = atoi(row[c_pos_x]);
         Coords.mX = static_cast<u16>(posvalue);
-        posvalue = std::atoi(row[c_pos_y]);
+        posvalue = atoi(row[c_pos_y]);
         Coords.mY = static_cast<u16>(posvalue);
-        posvalue = std::atoi(row[c_pos_z]);
+        posvalue = atoi(row[c_pos_z]);
         Coords.mZ = static_cast<u16>(posvalue);
-        posvalue = std::atoi(row[c_angle_ud]);
+        posvalue = atoi(row[c_angle_ud]);
         Coords.mUD = static_cast<u8>(posvalue);
-        posvalue = std::atoi(row[c_angle_lr]);
+        posvalue = atoi(row[c_angle_lr]);
         Coords.mLR = static_cast<u8>(posvalue);
 
-        int primapt = std::atoi(row[c_apt]);
+        int primapt = atoi(row[c_apt]);
         mPrimaryApt = static_cast<u32>(primapt);
         mStartApt = mPrimaryApt;
 
         // Cash
-        f32 cashvalue = std::atof(row[c_cash]);
+        f32 cashvalue = atof(row[c_cash]);
         mCash = static_cast<u32>(cashvalue);
 
         // ---------------------------------------------
         // Loading skills --- MAIN Skills with SP and XP
         // ---------------------------------------------
-        Skill->SetMainSkill(MS_INT, std::atoi(row[c_int_lvl]));
-        Skill->SetMainSkill(MS_CON, std::atoi(row[c_con_lvl]));
-        Skill->SetMainSkill(MS_DEX, std::atoi(row[c_dex_lvl]));
-        Skill->SetMainSkill(MS_STR, std::atoi(row[c_str_lvl]));
-        Skill->SetMainSkill(MS_PSI, std::atoi(row[c_psi_lvl]));
+        Skill->SetMainSkill(MS_INT, atoi(row[c_int_lvl]));
+        Skill->SetMainSkill(MS_CON, atoi(row[c_con_lvl]));
+        Skill->SetMainSkill(MS_DEX, atoi(row[c_dex_lvl]));
+        Skill->SetMainSkill(MS_STR, atoi(row[c_str_lvl]));
+        Skill->SetMainSkill(MS_PSI, atoi(row[c_psi_lvl]));
         // ---------------------------------------------
-        Skill->SetSP(MS_INT, (short)std::atoi(row[c_int_pts]));
-        Skill->SetSP(MS_CON, (short)std::atoi(row[c_con_pts]));
-        Skill->SetSP(MS_DEX, (short)std::atoi(row[c_dex_pts]));
-        Skill->SetSP(MS_STR, (short)std::atoi(row[c_str_pts]));
-        Skill->SetSP(MS_PSI, (short)std::atoi(row[c_psi_pts]));
+        Skill->SetSP(MS_INT, (short)atoi(row[c_int_pts]));
+        Skill->SetSP(MS_CON, (short)atoi(row[c_con_pts]));
+        Skill->SetSP(MS_DEX, (short)atoi(row[c_dex_pts]));
+        Skill->SetSP(MS_STR, (short)atoi(row[c_str_pts]));
+        Skill->SetSP(MS_PSI, (short)atoi(row[c_psi_pts]));
         // ---------------------------------------------
-        Skill->SetXP(MS_INT, std::atof(row[c_int_xp]));
-        Skill->SetXP(MS_CON, std::atof(row[c_con_xp]));
-        Skill->SetXP(MS_DEX, std::atof(row[c_dex_xp]));
-        Skill->SetXP(MS_STR, std::atof(row[c_str_xp]));
-        Skill->SetXP(MS_PSI, std::atof(row[c_psi_xp]));
+        Skill->SetXP(MS_INT, atof(row[c_int_xp]));
+        Skill->SetXP(MS_CON, atof(row[c_con_xp]));
+        Skill->SetXP(MS_DEX, atof(row[c_dex_xp]));
+        Skill->SetXP(MS_STR, atof(row[c_str_xp]));
+        Skill->SetXP(MS_PSI, atof(row[c_psi_xp]));
         // ---------------------------------------------
         // SubSkills
         // ---------------------------------------------
-        Skill->SetSubSkill(SK_MC, std::atoi(row[c_mc]));
-        Skill->SetSubSkill(SK_HC, std::atoi(row[c_hc]));
-        Skill->SetSubSkill(SK_TRA, std::atoi(row[c_tra]));
-        Skill->SetSubSkill(SK_FOR, std::atoi(row[c_for]));
-        Skill->SetSubSkill(SK_PC, std::atoi(row[c_pc]));
-        Skill->SetSubSkill(SK_RC, std::atoi(row[c_rc]));
-        Skill->SetSubSkill(SK_TC, std::atoi(row[c_tc]));
-        Skill->SetSubSkill(SK_VHC, std::atoi(row[c_vhc]));
-        Skill->SetSubSkill(SK_AGL, std::atoi(row[c_agl]));
-        Skill->SetSubSkill(SK_REP, std::atoi(row[c_rep]));
-        Skill->SetSubSkill(SK_REC, std::atoi(row[c_rec]));
-        Skill->SetSubSkill(SK_RCL, std::atoi(row[c_rcl]));
-        Skill->SetSubSkill(SK_ATL, std::atoi(row[c_atl]));
-        Skill->SetSubSkill(SK_END, std::atoi(row[c_end]));
-        Skill->SetSubSkill(SK_FIR, std::atoi(row[c_fir]));
-        Skill->SetSubSkill(SK_ENR, std::atoi(row[c_enr]));
-        Skill->SetSubSkill(SK_XRR, std::atoi(row[c_xrr]));
-        Skill->SetSubSkill(SK_POR, std::atoi(row[c_por]));
-        Skill->SetSubSkill(SK_HLT, std::atoi(row[c_hlt]));
-        Skill->SetSubSkill(SK_HCK, std::atoi(row[c_hck]));
-        Skill->SetSubSkill(SK_BRT, std::atoi(row[c_brt]));
-        Skill->SetSubSkill(SK_PSU, std::atoi(row[c_psu]));
-        Skill->SetSubSkill(SK_WEP, std::atoi(row[c_wep]));
-        Skill->SetSubSkill(SK_CST, std::atoi(row[c_cst]));
-        Skill->SetSubSkill(SK_RES, std::atoi(row[c_res]));
-        Skill->SetSubSkill(SK_IMP, std::atoi(row[c_imp]));
-        Skill->SetSubSkill(SK_PPU, std::atoi(row[c_ppu]));
-        Skill->SetSubSkill(SK_APU, std::atoi(row[c_apu]));
-        Skill->SetSubSkill(SK_MST, std::atoi(row[c_mst]));
-        Skill->SetSubSkill(SK_PPW, std::atoi(row[c_ppw]));
-        Skill->SetSubSkill(SK_PSR, std::atoi(row[c_psr]));
-        Skill->SetSubSkill(SK_WPW, std::atoi(row[c_wpw]));
-        // ---------------------------------------------
+        Skill->SetSubSkill(SK_MC, atoi(row[c_mc]));
+        Skill->SetSubSkill(SK_HC, atoi(row[c_hc]));
+        Skill->SetSubSkill(SK_TRA, atoi(row[c_tra]));
+        Skill->SetSubSkill(SK_FOR, atoi(row[c_for]));
+        Skill->SetSubSkill(SK_PC, atoi(row[c_pc]));
+        Skill->SetSubSkill(SK_RC, atoi(row[c_rc]));
+        Skill->SetSubSkill(SK_TC, atoi(row[c_tc]));
+        Skill->SetSubSkill(SK_VHC, atoi(row[c_vhc]));
+        Skill->SetSubSkill(SK_AGL, atoi(row[c_agl]));
+        Skill->SetSubSkill(SK_REP, atoi(row[c_rep]));
+        Skill->SetSubSkill(SK_REC, atoi(row[c_rec]));
+        Skill->SetSubSkill(SK_RCL, atoi(row[c_rcl]));
+        Skill->SetSubSkill(SK_ATL, atoi(row[c_atl]));
+        Skill->SetSubSkill(SK_END, atoi(row[c_end]));
+        Skill->SetSubSkill(SK_FIR, atoi(row[c_fir]));
+        Skill->SetSubSkill(SK_ENR, atoi(row[c_enr]));
+        Skill->SetSubSkill(SK_XRR, atoi(row[c_xrr]));
+        Skill->SetSubSkill(SK_POR, atoi(row[c_por]));
+        Skill->SetSubSkill(SK_HLT, atoi(row[c_hlt]));
+        Skill->SetSubSkill(SK_HCK, atoi(row[c_hck]));
+        Skill->SetSubSkill(SK_BRT, atoi(row[c_brt]));
+        Skill->SetSubSkill(SK_PSU, atoi(row[c_psu]));
+        Skill->SetSubSkill(SK_WEP, atoi(row[c_wep]));
+        Skill->SetSubSkill(SK_CST, atoi(row[c_cst]));
+        Skill->SetSubSkill(SK_RES, atoi(row[c_res]));
+        Skill->SetSubSkill(SK_IMP, atoi(row[c_imp]));
+        Skill->SetSubSkill(SK_PPU, atoi(row[c_ppu]));
+        Skill->SetSubSkill(SK_APU, atoi(row[c_apu]));
+        Skill->SetSubSkill(SK_MST, atoi(row[c_mst]));
+        Skill->SetSubSkill(SK_PPW, atoi(row[c_ppw]));
+        Skill->SetSubSkill(SK_PSR, atoi(row[c_psr]));
+        Skill->SetSubSkill(SK_WPW, atoi(row[c_wpw]));
+        // --------------------------------------------
         // Inventory
         // ---------------------------------------------
         mInventory.SetCharId(mID);
@@ -1206,22 +1206,22 @@ int PChars::GetCharProfiles(const u32 AccountID, PCharProfile* CharSlotsArray, c
   
   while((row = mysql_fetch_row(result)))
   {
-    SlotID = std::atoi(row[c_slot]);
-    CharID = std::atoi(row[c_id]);
+    SlotID = atoi(row[c_slot]);
+    CharID = atoi(row[c_id]);
     if((SlotID >= 0) && (SlotID < ArraySize))
     {
       if(!CharSlotsArray[SlotID].in_use)
       {
         tmpChar->SetID(CharID);
-        tmpChar->SetGender(std::atoi(row[c_sex]));
-        tmpChar->SetProfession(std::atoi(row[c_profession]));
+        tmpChar->SetGender(atoi(row[c_sex]));
+        tmpChar->SetProfession(atoi(row[c_profession]));
         
         CharSlotsArray[SlotID].CharID = CharID;
 				CharSlotsArray[SlotID].Type = tmpChar->GetType();
-				CharSlotsArray[SlotID].Location = static_cast<u32> (std::atoi(row[c_location]));
-			  CharSlotsArray[SlotID].Head = std::atoi(row[c_head]);
-			  CharSlotsArray[SlotID].Torso = std::atoi(row[c_torso]);
-			  CharSlotsArray[SlotID].Legs = std::atoi(row[c_legs]);
+				CharSlotsArray[SlotID].Location = static_cast<u32> (atoi(row[c_location]));
+			  CharSlotsArray[SlotID].Head = atoi(row[c_head]);
+			  CharSlotsArray[SlotID].Torso = atoi(row[c_torso]);
+			  CharSlotsArray[SlotID].Legs = atoi(row[c_legs]);
 				CharSlotsArray[SlotID].Name = row[c_name];
 				CharSlotsArray[SlotID].NameLen = CharSlotsArray[SlotID].Name.length()+1;
 

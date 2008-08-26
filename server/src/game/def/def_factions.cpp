@@ -59,18 +59,18 @@ bool PDefFaction::LoadFromDef(PTokenList *Tokens)
 				continue;
 
 			case 1 :
-				mIndex = std::atol(i->c_str()); break;
+				mIndex = atol(i->c_str()); break;
 
 			case 2 :
-				mStartValue = std::atol(i->c_str()); break;
+				mStartValue = atol(i->c_str()); break;
 
 			case 3 :
-				mAffected = std::atol(i->c_str())!=0; break;
+				mAffected = atol(i->c_str())!=0; break;
 
 			default :
 			{
 				if(Idx-4 < NUMFACTIONS)
-					mRelations[Idx-4]=std::atol(i->c_str()); break;
+					mRelations[Idx-4] = atol(i->c_str()); break;
 			}
 		}
 	}

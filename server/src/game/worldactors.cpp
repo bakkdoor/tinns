@@ -81,7 +81,7 @@ u32 PWorldActors::GetNextFreeWAID()
     u32 newWAid;
     if(mysql_num_rows(result) == 1)
     {
-        newWAid = std::atoi(row[wa_actor_id]);
+        newWAid = atoi(row[wa_actor_id]);
         newWAid++;
     }
     else
@@ -138,9 +138,9 @@ void PWorldActors::InitWorld(PClient* nClient)
 
     while((row = mysql_fetch_row(result)))
     {
-        tFuncID = (u16)std::atoi(row[wa_actor_type]);
-        tOpt1 = (u16)std::atoi(row[wa_option1]);
-        tActorID = (u32)std::atoi(row[wa_actor_id]);
+        tFuncID = (u16)atoi(row[wa_actor_type]);
+        tOpt1 = (u16)atoi(row[wa_option1]);
+        tActorID = (u32)atoi(row[wa_actor_id]);
         // First make sure we have an VALID worldactor here
         tActorOk = false;
         if(IsValidWAFunction(tFuncID) == true)
@@ -168,13 +168,13 @@ void PWorldActors::InitWorld(PClient* nClient)
             *tmpActorSpawn << (u8)0x1b;
             *tmpActorSpawn << tActorID;
             *tmpActorSpawn << (u8)0x19;
-            *tmpActorSpawn << (u16)std::atoi(row[wa_posY]);
-            *tmpActorSpawn << (u16)std::atoi(row[wa_posZ]);
-            *tmpActorSpawn << (u16)std::atoi(row[wa_posX]);
-            *tmpActorSpawn << (u8)std::atoi(row[wa_rotY]);
-            *tmpActorSpawn << (u8)std::atoi(row[wa_rotZ]);
-            *tmpActorSpawn << (u8)std::atoi(row[wa_rotX]);
-            *tmpActorSpawn << (u16)std::atoi(row[wa_actor_model]);
+            *tmpActorSpawn << (u16)atoi(row[wa_posY]);
+            *tmpActorSpawn << (u16)atoi(row[wa_posZ]);
+            *tmpActorSpawn << (u16)atoi(row[wa_posX]);
+            *tmpActorSpawn << (u8)atoi(row[wa_rotY]);
+            *tmpActorSpawn << (u8)atoi(row[wa_rotZ]);
+            *tmpActorSpawn << (u8)atoi(row[wa_rotX]);
+            *tmpActorSpawn << (u16)atoi(row[wa_actor_model]);
             *tmpActorSpawn << tFuncID;
             if((tmpActorSpawn->GetSize() + 23) >= (tmpActorSpawn->GetMaxSize() - tmpActorSpawn->GetSize()))
             {
@@ -292,9 +292,9 @@ void PWorldActors::GetWAoption(u32 nWAid, u16 nWorld, u16 &nValue1, u16 &nValue2
     }
 
     row = mysql_fetch_row(result);
-    nValue1 = std::atoi(row[wa_option1]);
-    nValue2 = std::atoi(row[wa_option2]);
-    nValue3 = std::atoi(row[wa_option3]);
+    nValue1 = atoi(row[wa_option1]);
+    nValue2 = atoi(row[wa_option2]);
+    nValue3 = atoi(row[wa_option3]);
 
     MySQL->FreeGameSQLResult(result);
 }
@@ -323,7 +323,7 @@ int PWorldActors::GetWASQLID(u32 nWAid, u32 nWorld)
     }
 
     row = mysql_fetch_row(result);
-    int tWAid = std::atoi(row[wa_id]);
+    int tWAid = atoi(row[wa_id]);
     MySQL->FreeGameSQLResult(result);
 
     return tWAid;
@@ -427,7 +427,7 @@ int PWorldActors::GetWorldActorFunctionID(u32 nWAid)
     }
 
     row = mysql_fetch_row(result);
-    int tFuncID = std::atoi(row[wa_actor_type]);
+    int tFuncID = atoi(row[wa_actor_type]);
     MySQL->FreeGameSQLResult(result);
 
     return tFuncID;
@@ -461,9 +461,9 @@ void PWorldActors::GetFrontPos(u32 nWAID, u16* mX, u16* mY, u16* mZ)
     }
 
     row = mysql_fetch_row(result);
-    tNewX = (u16)std::atoi(row[wa_posX]);
-    tNewY = (u16)std::atoi(row[wa_posY]);
-    tNewZ = (u16)std::atoi(row[wa_posZ]);
+    tNewX = (u16)atoi(row[wa_posX]);
+    tNewY = (u16)atoi(row[wa_posY]);
+    tNewZ = (u16)atoi(row[wa_posZ]);
 
     if(tNewX > 0) *mX = tNewX - 768;
     if(tNewY > 0) *mY = tNewY - 768;
@@ -498,7 +498,7 @@ int PWorldActors::GetLinkedObjectID(u32 nWAID)
     }
 
     row = mysql_fetch_row(result);
-    int tLinkID = std::atoi(row[wa_option1]);
+    int tLinkID = atoi(row[wa_option1]);
     MySQL->FreeGameSQLResult(result);
 
     return tLinkID;
@@ -604,8 +604,8 @@ void PWorldActors::DoActorCheck()
     int tID = 0;
     while((row = mysql_fetch_row(result)))
     {
-        tCount = std::atoi(row[0]);
-        tID = std::atoi(row[1]);
+        tCount = atoi(row[0]);
+        tID = atoi(row[1]);
         Console->Print("%s found double worldactor ID! (ID: %d Count: %d) Now erasing...", Console->ColorText(YELLOW, BLACK, "[Notice]"), tID, tCount);
         snprintf(query2, 100, "DELETE FROM `world_actors` WHERE `wa_actor_id` = %d", tID);
         if(MySQL->GameQuery(query2))

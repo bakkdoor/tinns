@@ -62,7 +62,7 @@ bool PDefWorldFile::LoadFromDef(PTokenList *Tokens)
 				continue;
 
 			case 1:	// index
-				mIndex = std::atoi(i->c_str()); break;
+				mIndex = atoi(i->c_str()); break;
 
 			case 2: // name
 			{

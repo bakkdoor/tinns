@@ -62,7 +62,7 @@ bool PDefSkill::LoadFromDef(PTokenList *Tokens)
 				continue;
 
 			case 1 :
-				mIndex = std::atol(i->c_str()); break;
+				mIndex = atol(i->c_str()); break;
 
 			case 2 :
 				mName = *i; break;
@@ -72,7 +72,7 @@ bool PDefSkill::LoadFromDef(PTokenList *Tokens)
 
 			case 4 :
 			{
-				mNumSubSkills = std::atol(i->c_str());
+				mNumSubSkills = atol(i->c_str());
 				mSubSkills = new int[mNumSubSkills];
 				std::memset(mSubSkills, 0, sizeof(int)*mNumSubSkills);
 				break;
@@ -81,7 +81,7 @@ bool PDefSkill::LoadFromDef(PTokenList *Tokens)
 
 		if(Idx >= 5)
 		{
-			mSubSkills[Idx-5]=std::atoi(i->c_str());
+			mSubSkills[Idx-5] = atoi(i->c_str());
 			if(!GameDefs->GetSubSkillDef(mSubSkills[Idx-5]))
 			{
 				Console->Print("Skill def error: skill %s refers to nonexistant subskill %i", mShortName.c_str(), mSubSkills[Idx-5]);

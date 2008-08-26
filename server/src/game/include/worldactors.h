@@ -129,7 +129,7 @@ class PWorldActors
             wa_option3
         };
 
-        void SpawnWA(u32 nWorld, u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotX);
+        void SpawnWA(u32 nWorld, u16 nActorID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ);
         void VanishWA(u32 nWorld, u32 nWAid);
 
         // Get next availeable WorldactorID. First, try to find ID in known .dat files, then

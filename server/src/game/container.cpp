@@ -48,20 +48,20 @@ PContainerEntry::PContainerEntry(PItem* nItem, u8 X, u8 Y, u32 nInvID, bool SetD
 PContainerEntry::PContainerEntry(MYSQL_ROW row)
 {
   mItem = NULL;
-  mInvID = std::atoi(row[i_invid]);
-  mPosX = std::atoi(row[i_x]);
-  mPosY = std::atoi(row[i_y]);
+  mInvID = atoi(row[i_invid]);
+  mPosX = atoi(row[i_x]);
+  mPosY = atoi(row[i_y]);
   mDirtyFlag = false;
 
-  u32 nItemID = std::atoi(row[i_itemid]);
-  u8 nStackSize = std::atoi(row[i_qty]);
+  u32 nItemID = atoi(row[i_itemid]);
+  u8 nStackSize = atoi(row[i_qty]);
   //     = std::atoi(row[i_type]);
-  u8 CurDur = std::atoi(row[i_curdur]);
-  u8 Dmg = std::atoi(row[i_dmg]);
-  u8 Freq = std::atoi(row[i_freq]);
-  u8 Hand = std::atoi(row[i_hand]);
-  u8 Rng = std::atoi(row[i_rng]);
-  u8 Dur = std::atoi(row[i_maxdur]);
+  u8 CurDur = atoi(row[i_curdur]);
+  u8 Dmg = atoi(row[i_dmg]);
+  u8 Freq = atoi(row[i_freq]);
+  u8 Hand = atoi(row[i_hand]);
+  u8 Rng = atoi(row[i_rng]);
+  u8 Dur = atoi(row[i_maxdur]);
   
   mItem = new PItem(nItemID, nStackSize, CurDur, Dur, Dmg, Freq, Hand, Rng);
 }

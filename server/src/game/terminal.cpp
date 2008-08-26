@@ -81,7 +81,7 @@ u8 PTerminal::GetNewEmailCount(PClient* nClient)
     if(gDevDebug) Console->Print("[DEBUG] Found new email, sending notice");
 
     row = mysql_fetch_row(result);
-    u8 tRetVal = (u8)std::atoi(row[0]);
+    u8 tRetVal = (u8)atoi(row[0]);
     MySQL->FreeGameSQLResult(result);
 
     SendNewMailNotice(nClient, tRetVal);

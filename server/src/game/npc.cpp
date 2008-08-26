@@ -69,15 +69,15 @@ bool PNPC::SQL_Load()
     if(gDevDebug) Console->Print("[DEBUG] One NPC found for my ID. Now grabbing data...");
     row = mysql_fetch_row(result);
 
-    mWorldID = std::atoi(row[npc_worldid]);
-    mNameID = std::atoi(row[npc_nameid]);
-    mTypeID = std::atoi(row[npc_typeid]);
-    mClothing = std::atoi(row[npc_clothing]);
-    mPosX = std::atoi(row[npc_x]);
-    mPosY = std::atoi(row[npc_y]);
-    mPosZ = std::atoi(row[npc_z]);
-    mAngle = std::atoi(row[npc_angle]);
-    mLoot = std::atoi(row[npc_loot]);
+    mWorldID = atoi(row[npc_worldid]);
+    mNameID = atoi(row[npc_nameid]);
+    mTypeID = atoi(row[npc_typeid]);
+    mClothing = atoi(row[npc_clothing]);
+    mPosX = atoi(row[npc_x]);
+    mPosY = atoi(row[npc_y]);
+    mPosZ = atoi(row[npc_z]);
+    mAngle = atoi(row[npc_angle]);
+    mLoot = atoi(row[npc_loot]);
 
     if(row[npc_name] != NULL)
         mName = row[npc_name];
@@ -439,8 +439,8 @@ PNPCWorld::PNPCWorld(u16 nWorldID)
     int tSQLID = 0;
     while((row = mysql_fetch_row(result)))
     {
-        tRawID = std::atoi(row[PNPC::npc_worldid]);
-        tSQLID = std::atoi(row[PNPC::npc_id]);
+        tRawID = atoi(row[PNPC::npc_worldid]);
+        tSQLID = atoi(row[PNPC::npc_id]);
         tmpNpc = new PNPC(tSQLID);
         if(tmpNpc->mSuccess == true)
         {
