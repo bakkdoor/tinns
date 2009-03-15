@@ -67,15 +67,15 @@ void PVhcCoordinates::SetPosition(u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 n
 // PVehicleInformation
 //Tmp
 const u8 VhcTypes[] = {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-												11, 12, 13, 50, 60, 61, 62, 63, 64, 65,
-												70 };
+	11, 12, 13, 50, 60, 61, 62, 63, 64, 65,
+	70 };
 const u8 VhcTypesNum = 21;
-                  
+
 bool PVehicleInformation::Load(u32 nVehicleId)
 {
   u8 i;
   u8 nVId = nVehicleId % 100; //Tmp
-  for(i=0; (i < VhcTypesNum) && (VhcTypes[i] < nVId); i++); //Tmp
+  for(i=0; (i < VhcTypesNum) && (VhcTypes[i] < nVId); i++) ; //Tmp
   if((i < VhcTypesNum) && (VhcTypes[i] == nVId)) //Tmp
   {
 	  mVehicleId = nVehicleId;

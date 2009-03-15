@@ -60,10 +60,10 @@ class PDoorTemplate
     PDoorTemplate();
     ~PDoorTemplate();
 
-    inline const u16 GetID() { return mDoorID; }
-    inline const u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
-    inline const u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
-    inline const int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
+    inline u16 GetID() { return mDoorID; }
+    inline u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
+    inline u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
+    inline int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
     inline const std::string& GetName() const { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
     inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
     

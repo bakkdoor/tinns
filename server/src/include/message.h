@@ -83,7 +83,7 @@ class PMessage
         inline bool EOM() {return (mNextByteOffset >= mUsedSize);} // End Of Message
 
       // Writing methods
-        char* GetMessageDataPointer(u16 nUsedSize); // extends buffer as needed by nUsedSize, and sets UsedSize at min nUsedSize
+        u8* GetMessageDataPointer(u16 nUsedSize); // extends buffer as needed by nUsedSize, and sets UsedSize at min nUsedSize
         PMessage& Fill(u8 Value = 0, u16 StartOffset = 0, u16 FillSize = 0); // !!! Does NOT update UsedSize, fills only up to current maxSize
         inline PMessage& Clear() { mNextByteOffset = mUsedSize = 0; return *this; }
         PMessage& Write(const void* nData, u16 nLength);
@@ -117,7 +117,7 @@ class PMessage
         PMessage* GetChunk(u16 StartOffset, u16 ChunkSize, u16 ChunkNumber = 0);
 
         // Return pointer to the START of message data.
-        inline char* const GetMessageData() {return (char*) (mData->mBuffer); }
+        inline u8 const* GetMessageData() { return mData->mBuffer; }
 
         //Following methods do NOT extend message or Used, and return 0/empty string if over UsedSize
         PMessage& operator >> (std::string& nString); //read up to null or EOM

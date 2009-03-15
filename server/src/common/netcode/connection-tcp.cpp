@@ -157,7 +157,7 @@ bool ConnectionTCP::update() // non optimal read-algorithm atm, but well ... :p
 {
   PMessage* tmpMsg;
   int numBytes;
-  u8* DataStart;
+  u8 const* DataStart;
   u16 DataSize;
   u8* MsgStart;
   u16 MsgOffset;
@@ -173,7 +173,7 @@ bool ConnectionTCP::update() // non optimal read-algorithm atm, but well ... :p
     }
     
     DataSize = mReceiveBufferMsg->GetSize();
-    numBytes = recv(mSockfd, mReceiveBufferMsg->GetMessageDataPointer(RECVBUFFERSIZE - DataSize) + DataSize, RECVBUFFERSIZE - DataSize, 0); // get the data
+    numBytes = recv(mSockfd, (char*) mReceiveBufferMsg->GetMessageDataPointer(RECVBUFFERSIZE - DataSize) + DataSize, RECVBUFFERSIZE - DataSize, 0); // get the data
 
     if(numBytes > 0)
     {
@@ -184,7 +184,7 @@ bool ConnectionTCP::update() // non optimal read-algorithm atm, but well ... :p
       
       while(mReceiveBufferMsg && mReceiveBufferMsg->GetSize())
       {
-        DataStart = (u8*)mReceiveBufferMsg->GetMessageData();
+        DataStart = mReceiveBufferMsg->GetMessageData();
         DataSize = mReceiveBufferMsg->GetSize();
         MsgStart = (u8*)memchr(DataStart, 0xfe, DataSize);
         
@@ -250,7 +250,7 @@ bool ConnectionTCP::update() // non optimal read-algorithm atm, but well ... :p
 	{
 //Console->Print("ConnectionUDP::update() - OUT Data avail");
 	  tmpMsg = mQueueOut.front();
-		int numBytes = send(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0);
+		int numBytes = send(mSockfd, (char*) tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0);
 		if(numBytes == -1) // error while sending data -> output error-msg to console
 		{
 		  if (errno == EAGAIN)
@@ -356,7 +356,7 @@ const u8* ConnectionTCP::read(int* size)
 		*size=min(*size, (s32)_size);
 	}
 
-	u8* ptr = (u8*) (tmpMsg->GetMessageData() + tmpMsg->GetNextByteOffset());
+	u8 const* ptr = tmpMsg->GetMessageData() + tmpMsg->GetNextByteOffset();
 	tmpMsg->SetNextByteOffset(tmpMsg->GetNextByteOffset()+ *size);
 //Console->Print(GREEN, BLACK, "ConnectionTCP::read() - %d bytes read", *size);
 	return ptr;

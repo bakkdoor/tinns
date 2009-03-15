@@ -804,7 +804,7 @@ bool PContainer2DWorkaround::FindValid2DPos(PContainerEntry* nEntry)
 //Console->Print(YELLOW, BLACK, "Searching line %d", dPosY);
       for (; dPosX <= (mMaxCols-SizeX); ++dPosX)
       {
-        if (Found = Is2DFree(dPosX, dPosY, SizeX, SizeY))
+        if ((Found = Is2DFree(dPosX, dPosY, SizeX, SizeY)))
           break;
       }
       if (Found)

@@ -1,3 +1,4 @@
+
 /*
 	TinNS (TinNS is not a Neocron Server)
 	Copyright (C) 2005 Linux Addicted Community
@@ -86,7 +87,7 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
     exit(-1);
   }
   mMaxSize = smMsgSizes[mPoolId];
-//Console->Print("Using Pool n° %d (size %d)", mPoolId, smMsgSizes[mPoolId]);
+//Console->Print("Using Pool nï¿½ %d (size %d)", mPoolId, smMsgSizes[mPoolId]);
 
   if ((mData = smMsgPoolHead[mPoolId]) == NULL)
   {
@@ -149,13 +150,13 @@ void PMessage::ForceSize(u16 nUsedSize)
 }
 
 // Writing methods
-char* PMessage::GetMessageDataPointer(u16 nUsedSize)
+u8* PMessage::GetMessageDataPointer(u16 nUsedSize)
 {
   if (nUsedSize > mMaxSize)
     CheckAndExtend(nUsedSize);
   if (nUsedSize > mUsedSize)
     mUsedSize = nUsedSize;
-  return (char*) (mData->mBuffer);
+  return (u8*) (mData->mBuffer);
 }
 
 PMessage& PMessage::Fill(u8 Value, u16 StartOffset, u16 FillSize)
@@ -441,7 +442,7 @@ void PMessage::Dump()
   std::string sDump;
   std::string sAsciiDump;
   int i, j;
-  char* tmpBuff = GetMessageData();
+  char* tmpBuff = (char*) GetMessageData();
 
   Console->Print("--- Message data (MsgData 0x%08x) ---", mData);
   Console->Print("Buffer from pool %d (max size %d), used 0x%04hx (%d) , data at 0x%08x", mPoolId, smMsgSizes[mPoolId], mUsedSize, mUsedSize, tmpBuff);
@@ -466,7 +467,7 @@ void PMessage::Dump()
 void PMessage::DumpHead(char* nComment)
 {
 
-  char* tmpBuff = GetMessageData();
+  char* tmpBuff = (char*) GetMessageData();
 
   Console->Print("%s T:%02hx UID:%04hx UHID:%04hx Fnct:%02hx Seq:%04hx Cmd:%02hx Cmd2:%02hx Cmd3:%02hx",
       nComment, (u8)tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], (u8)tmpBuff[6], *(u16*)&tmpBuff[7], (u8)tmpBuff[9], (u8)tmpBuff[10], (u8)tmpBuff[12] );

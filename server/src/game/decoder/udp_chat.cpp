@@ -51,7 +51,7 @@ PUdpMsgAnalyser* PUdpChatLocal::Analyse()
 bool PUdpChatLocal::DoAction()
 {
   // temp
-  Chat->HandleGameChat(mDecodeData->mClient, (u8*)mDecodeData->mMessage->GetMessageData() + mDecodeData->Sub0x13Start);
+  Chat->HandleGameChat(mDecodeData->mClient, mDecodeData->mMessage->GetMessageData() + mDecodeData->Sub0x13Start);
     /*PMessage* cMsg = mDecodeData->mMessage;
     u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
     
@@ -88,7 +88,7 @@ PUdpMsgAnalyser* PUdpChatGlobal::Analyse()
 bool PUdpChatGlobal::DoAction()
 {
   // Temp
-  Chat->HandleGameChat(mDecodeData->mClient, (u8*)mDecodeData->mMessage->GetMessageData() + mDecodeData->Sub0x13Start);
+  Chat->HandleGameChat(mDecodeData->mClient, mDecodeData->mMessage->GetMessageData() + mDecodeData->Sub0x13Start);
 /*  PMessage* tmpMsg = MsgBuilder->BuildCharEnteringVhcMsg (mDecodeData->mClient, mVehicleID, mVehicleSeat);
   ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
 */

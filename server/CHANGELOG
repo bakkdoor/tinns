@@ -1640,3 +1640,12 @@ decoded/upd_useobject.cpp: change so that only vhc terminal opens vhc interface
 client.cpp: added fragmented message type 0xac for traders
 chars.cpp: fixed initial inventory saving
 item.cpp/.h: added new method PItem::MakeStandardItem()
+
+Hammag; 15.03.2009 19:25 GMT+1
+----------
+[rev. 103]
+Fixed various warnings due to C++ compiler being more picky.
+  TinNS should now compile without warning on gcc version 4.3.2
+  Abort compliation on warning reactivated in makefile (-Werror)
+
+Added file options.local.exemple to set custom complilation options (read it for more info)

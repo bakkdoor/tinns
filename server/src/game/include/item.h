@@ -102,22 +102,22 @@ class PItem
         
     inline u32 GetItemID() {return mItemID; }
     
-    inline int const GetType() { return mDefItem->GetType(); }
-    inline u8 const GetItemflags() { return mDefItem->GetItemflags(); }
+    inline int GetType() { return mDefItem->GetType(); }
+    inline u8 GetItemflags() { return mDefItem->GetItemflags(); }
     inline const std::string &GetName() const { return mDefItem->GetName(); }
-    inline u8 const GetSizeX() { return mDefItem->GetSizeX(); }
-    inline u8 const GetSizeY() { return mDefItem->GetSizeY(); }
-    inline float const GetWeight() { return mStackSize * mDefItem->GetWeight(); }
-    inline float const GetSingleUnitWeight() { return mDefItem->GetWeight(); }
-    inline float const GetFillWeight() { return mDefItem->GetFillWeight(); }
-    inline u32 const GetBasePrice() { return mDefItem->GetBasePrice(); }
-    inline u16 const GetTechlevel() { return mDefItem->GetTechlevel(); }
-    inline int const GetValue1() { return mDefItem->GetValue1(); }
-    inline int const GetValue2() { return mDefItem->GetValue2(); }
-    inline int const GetValue3() { return mDefItem->GetValue3(); }
-    inline int const GetQualifier() { return mDefItem->GetQualifier(); }        
+    inline u8 GetSizeX() { return mDefItem->GetSizeX(); }
+    inline u8 GetSizeY() { return mDefItem->GetSizeY(); }
+    inline float GetWeight() { return mStackSize * mDefItem->GetWeight(); }
+    inline float GetSingleUnitWeight() { return mDefItem->GetWeight(); }
+    inline float GetFillWeight() { return mDefItem->GetFillWeight(); }
+    inline u32 GetBasePrice() { return mDefItem->GetBasePrice(); }
+    inline u16 GetTechlevel() { return mDefItem->GetTechlevel(); }
+    inline int GetValue1() { return mDefItem->GetValue1(); }
+    inline int GetValue2() { return mDefItem->GetValue2(); }
+    inline int GetValue3() { return mDefItem->GetValue3(); }
+    inline int GetQualifier() { return mDefItem->GetQualifier(); }        
     
-    inline bool const IsStackable() { return mDefItem->IsStackable(); }
+    inline bool IsStackable() { return mDefItem->IsStackable(); }
     inline u8 GetStackSize() { return mStackSize; }
     u8 AddToStack(u8 ItemNb); // return the nb of added items
     u8 TakeFromStack(u8 ItemNb); // return the nb of retreived items        

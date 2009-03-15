@@ -74,22 +74,22 @@ class PDefItems
 
 		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
-    inline const int GetType() const { return mType; }
-    inline const int GetValue1() const { return mValue1; }
-    inline const int GetValue2() const { return mValue2; }
-    inline const int GetValue3() const { return mValue3; }
-    inline const int GetSizeX() const { return mSizeX; }
-    inline const int GetSizeY() const { return mSizeY; }
-    inline const float GetWeight() const { return mWeight; }
-    inline const bool IsStackable() const { return (mStackable == 1); }
-    inline const float GetFillWeight() const { return mFillWeight; }
-    inline const int GetQualifier() const { return mQualifier; }
-    inline const int GetGfxMods() const { return mGfxMods; }
-    inline const int GetItemGroupID() const { return mItemGroupID; }	
-    inline const int GetTextDescID() const { return mTextDescID; }
-    inline const int GetBasePrice() const { return mBasePrice; }
-    inline const int GetTechlevel() const { return mTechlevel; }
-    inline const int GetItemflags() const { return mItemflags; }
+		inline int GetType() const { return mType; }
+		inline int GetValue1() const { return mValue1; }
+		inline int GetValue2() const { return mValue2; }
+		inline int GetValue3() const { return mValue3; }
+		inline int GetSizeX() const { return mSizeX; }
+		inline int GetSizeY() const { return mSizeY; }
+		inline float GetWeight() const { return mWeight; }
+		inline bool IsStackable() const { return (mStackable == 1); }
+		inline float GetFillWeight() const { return mFillWeight; }
+		inline int GetQualifier() const { return mQualifier; }
+		inline int GetGfxMods() const { return mGfxMods; }
+		inline int GetItemGroupID() const { return mItemGroupID; }	
+		inline int GetTextDescID() const { return mTextDescID; }
+		inline int GetBasePrice() const { return mBasePrice; }
+		inline int GetTechlevel() const { return mTechlevel; }
+		inline int GetItemflags() const { return mItemflags; }
 };
 
 #endif

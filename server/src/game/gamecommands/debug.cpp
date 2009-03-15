@@ -24,9 +24,9 @@ void PCommands::doCmddebug()
 {
     PDebugMode nWhat = DBG_ALL;
     int nHow = -1;
-    char* DbgTarget = "all";
+    const char* DbgTarget = "all";
     char DbgMessage[80];
-    char* Usage = "@debug [loc[ation] | it[emid] | sub[way]] [0|1]";
+    const char* Usage = "@debug [loc[ation] | it[emid] | sub[way]] [0|1]";
     
     if(ArgC > 0)
     {

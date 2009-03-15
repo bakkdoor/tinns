@@ -243,7 +243,7 @@ PUdpMsgAnalyser* PUdpAppartmentAccess::Analyse()
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 9);
   mAppartmentPlace = nMsg->U16Data(mDecodeData->Sub0x13Start + 9);
-  mPassword = nMsg->GetMessageData() + mDecodeData->Sub0x13Start + 14;
+  mPassword = (char*)nMsg->GetMessageData() + mDecodeData->Sub0x13Start + 14;
   // NO SIZE ????? DO SIZE CHECK !
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;

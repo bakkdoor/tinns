@@ -60,44 +60,44 @@ class PChat
             bool cmpr(const u8 *Array1, const u8 *Array2);
 
             // this function is called by the other more specific functions and simply sends the data to the receiver-client
-            bool send(PClient* receiver, const u8* Channel, const char* AuthorNickName, char* text, bool debugOut=false);
+            bool send(PClient* receiver, const u8* Channel, const char* AuthorNickName, const char* text, bool debugOut=false);
 
             // this is for debugging and sends the current connected playerlist to the receiver-client
             void sendConnectedList(PClient* receiver, bool debugOut=false);
 
             // specific channel functions:
-            void sendBuddy(PClient* author, char* text, bool debugOut=false);
-            void sendLocal(PClient* author, char* text, bool debugOut=false);
-            void sendClan(PClient* author, char* text, bool debugOut=false);
-            void sendTeam(PClient* author, char* text, bool debugOut=false);
-            void sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut=false);
-            void sendZone(PClient* author, char* text, bool debugOut=false);
-            void sendFrak(PClient* author, char* text, bool debugOut=false);
-            void sendTradeCS(PClient* author, char* text, bool debugOut=false);
-            void sendTradeMB(PClient* author, char* text, bool debugOut=false);
-            void sendTradeNC(PClient* author, char* text, bool debugOut=false);
-            void sendTradeTH(PClient* author, char* text, bool debugOut=false);
-            void sendTradeWL(PClient* author, char* text, bool debugOut=false);
-            void sendOOC(PClient* author, char* text, bool debugOut=false);
-            void sendHelp(PClient* author, char* text, bool debugOut=false);
-            void sendClanSearch(PClient* author, char* text, bool debugOut=false);
-            void sendServicesCS(PClient* author, char* text, bool debugOut=false);
-            void sendServicesMB(PClient* author, char* text, bool debugOut=false);
-            void sendServicesNC(PClient* author, char* text, bool debugOut=false);
-            void sendServicesTH(PClient* author, char* text, bool debugOut=false);
-            void sendServicesWL(PClient* author, char* text, bool debugOut=false);
-            void sendTeam10(PClient* author, char* text, bool debugOut=false);
-            void sendTeam30(PClient* author, char* text, bool debugOut=false);
-            void sendTeam50(PClient* author, char* text, bool debugOut=false);
-            void sendTeam70(PClient* author, char* text, bool debugOut=false);
-            void sendAdmin(PClient* author, char* text, bool debugOut=false);
-            void sendGM(PClient* author, char* text, bool debugOut=false);
-            void sendGMAdmin(PClient* author, char* text, bool debugOut=false);
+            void sendBuddy(PClient* author, const char* text, bool debugOut=false);
+            void sendLocal(PClient* author, const char* text, bool debugOut=false);
+            void sendClan(PClient* author, const char* text, bool debugOut=false);
+            void sendTeam(PClient* author, const char* text, bool debugOut=false);
+            void sendDirect(PClient* author, PClient* receiver, const char* text, bool debugOut=false);
+            void sendZone(PClient* author, const char* text, bool debugOut=false);
+            void sendFrak(PClient* author, const char* text, bool debugOut=false);
+            void sendTradeCS(PClient* author, const char* text, bool debugOut=false);
+            void sendTradeMB(PClient* author, const char* text, bool debugOut=false);
+            void sendTradeNC(PClient* author, const char* text, bool debugOut=false);
+            void sendTradeTH(PClient* author, const char* text, bool debugOut=false);
+            void sendTradeWL(PClient* author, const char* text, bool debugOut=false);
+            void sendOOC(PClient* author, const char* text, bool debugOut=false);
+            void sendHelp(PClient* author, const char* text, bool debugOut=false);
+            void sendClanSearch(PClient* author, const char* text, bool debugOut=false);
+            void sendServicesCS(PClient* author, const char* text, bool debugOut=false);
+            void sendServicesMB(PClient* author, const char* text, bool debugOut=false);
+            void sendServicesNC(PClient* author, const char* text, bool debugOut=false);
+            void sendServicesTH(PClient* author, const char* text, bool debugOut=false);
+            void sendServicesWL(PClient* author, const char* text, bool debugOut=false);
+            void sendTeam10(PClient* author, const char* text, bool debugOut=false);
+            void sendTeam30(PClient* author, const char* text, bool debugOut=false);
+            void sendTeam50(PClient* author, const char* text, bool debugOut=false);
+            void sendTeam70(PClient* author, const char* text, bool debugOut=false);
+            void sendAdmin(PClient* author, const char* text, bool debugOut=false);
+            void sendGM(PClient* author, const char* text, bool debugOut=false);
+            void sendGMAdmin(PClient* author, const char* text, bool debugOut=false);
 
-            void sendBroadcast(char* text, bool debugOut=false);
-            void sendOOCBroadcast(char* text, bool debugOut=false);
-            void sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut=false);
-            void sendLocalchat(PClient* receiver, PClient* author, char* text, bool debugOut=false);
+            void sendBroadcast(const char* text, bool debugOut=false);
+            void sendOOCBroadcast(const char* text, bool debugOut=false);
+            void sendPlayerDirect(PClient* author, const char* text, u32 destination, bool debugOut=false);
+            void sendLocalchat(PClient* receiver, PClient* author, const char* text, bool debugOut=false);
             bool chanEnabled(PClient* Client, u32 channel);
 
 };

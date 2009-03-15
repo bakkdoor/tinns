@@ -98,7 +98,7 @@ u32 PSubway::GetTimeOffset(u32 nVhcId, u32 nTime)
   if(!GetInfoIndex(nVhcId, &tIndex))
   {
     Console->Print(RED, BLACK, "[Error] PSubway::GetTimeOffset : invalid cab VhcId %d", nVhcId);
-    return 0;  
+    return 0;
   }
 
   return ((nTime + mCabLoopTime - mCab0TimeOffset + mTimingAdjust + (tIndex * mCabIntervalTime)) % mCabLoopTime);
@@ -114,7 +114,7 @@ u8 PSubway::GetStation(u32 nVhcId, u32 nTime, u32* TimeOffset)
     *TimeOffset = tTimeOffset;
   }
    
-  for(i = mStationsNumber-1; (i >= 0) && (tTimeOffset < mOpenDoorOffset[i]); --i);
+  for(i = mStationsNumber-1; (i >= 0) && (tTimeOffset < mOpenDoorOffset[i]); --i) ;
 
   return i;
 }

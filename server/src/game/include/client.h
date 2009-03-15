@@ -85,7 +85,7 @@ enum PDebugMode
 class PClient
 {
 	private :
-    ConnectionTCP* m_TCPConnection;
+		ConnectionTCP* m_TCPConnection;
 		ConnectionUDP* m_UDPConnection;
 
 		u32 mAccountID;
@@ -102,31 +102,31 @@ class PClient
 		int mConnection;
 		int mRemotePort;
 
-    bool mDebugMode[DEBUG_MODES];
+		bool mDebugMode[DEBUG_MODES];
 		// new multiuser-chat implementation //
-    int m_ZoneID;
+		int m_ZoneID;
 		//int[4] m_IP;
 
     //*******
-    bool mActorRemoveMode;
+		bool mActorRemoveMode;
     //*******
-    bool mAwaitingWarpto;
-    u16 mTargetX;
-    u16 mTargetY;
-    u16 mTargetZ;
+		bool mAwaitingWarpto;
+		u16 mTargetX;
+		u16 mTargetY;
+		u16 mTargetZ;
     //*******
-    bool mAcceptNPCUpdates;
+		bool mAcceptNPCUpdates;
 
 	protected :
 	public :
 		PClient(int Index);
 		~PClient();
 
-    inline const bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
-    void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+		inline bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
+		void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
 
-    inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
-    inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
+		inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
+		inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
 
 		inline int GetIndex() const { return mIndex; } // better use GetID()
 		inline int GetID() const { return mIndex; } // for better coherency with other classes
@@ -137,8 +137,8 @@ class PClient
 
 		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 
-    inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
-    inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
+		inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
+		inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
 
 		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
 		inline void SetCharID(int id) { mCharID=id; }//NEW added
@@ -157,31 +157,31 @@ class PClient
     // All outgoing ID's and stuff is now part of the ConnectionUDP class itself!
     //    (which is not so good.... comment from Hammag)
     // However, we still have full access to it through these functions
-    u16 GetUDP_ID();
-    void SetUDP_ID(int id);
-    void IncreaseUDP_ID();
+		u16 GetUDP_ID();
+		void SetUDP_ID(int id);
+		void IncreaseUDP_ID();
 
-    u16 GetSessionID();
+		u16 GetSessionID();
 
-    u16 GetTransactionID();
-    void ResetTransactionID();
-    void IncreaseTransactionID(u8 nInc = 1);
+		u16 GetTransactionID();
+		void ResetTransactionID();
+		void IncreaseTransactionID(u8 nInc = 1);
 
-    void FillInUDP_ID(PMessage* nMessage);
-            
+		void FillInUDP_ID(PMessage* nMessage);
+
 // ************************************************************************ //
         // AccountLevel handling is part of accounts.cpp
 		//inline PClientLevel GetLevel() const { return mLevel; }
 
-    inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
-    inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
+		inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
+		inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
 
-    inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
-    inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
-    
-    inline void SendTCPMessage(PMessage* nMessage) { if(m_TCPConnection) { m_TCPConnection->SendMessage(nMessage); } }
-    void FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType);
-    inline void SendUDPMessage(PMessage* nMessage, bool nVIP = false) { if(m_UDPConnection) { m_UDPConnection->SendMessage(nMessage, nVIP); } }
+		inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
+		inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
+
+		inline void SendTCPMessage(PMessage* nMessage) { if(m_TCPConnection) { m_TCPConnection->SendMessage(nMessage); } }
+		void FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType);
+		inline void SendUDPMessage(PMessage* nMessage, bool nVIP = false) { if(m_UDPConnection) { m_UDPConnection->SendMessage(nMessage, nVIP); } }
       
 		inline int GetConnection() const { return mConnection; }
 		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
@@ -190,7 +190,7 @@ class PClient
 
 		void GameDisconnect();
 
-    void RefreshAccountInfo(PAccount* Account);
+		void RefreshAccountInfo(PAccount* Account);
 		inline void LoggedIn(PAccount* Account) { RefreshAccountInfo(Account); }
 		void Update();
 
@@ -198,14 +198,14 @@ class PClient
 		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
 		//inline int*	getIP() const { return (int*) m_IP; }
 
-    inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
-    {
-        mAwaitingWarpto = yesno;
-        mTargetX = NewX;
-        mTargetY = NewY;
-        mTargetZ = NewZ;
-    }
-    bool GetCharAwaitingWarpto(u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL);
+		inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
+		{
+			mAwaitingWarpto = yesno;
+			mTargetX = NewX;
+			mTargetY = NewY;
+			mTargetZ = NewZ;
+		}
+		bool GetCharAwaitingWarpto(u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL);
 
 
 		// used for dynamic ingame testing

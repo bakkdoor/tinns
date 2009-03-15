@@ -90,7 +90,7 @@ DONE    void sendGM(PClient* author, char* text, bool debugOut=false);
 */
 
 
-void PChat::sendBuddy(PClient* author, char* text, bool debugOut)
+void PChat::sendBuddy(PClient* author, const char* text, bool debugOut)
 {
     PChar* authorChar = Chars->GetChar(author->GetCharID());
     // send the message to all Buddys in list
@@ -107,7 +107,7 @@ void PChat::sendBuddy(PClient* author, char* text, bool debugOut)
 
 void PChat::sendConnectedList(PClient* receiver, bool debugOut)
 {
-	char* text = "Connected Players are:]";
+	const char* text = "Connected Players are:]";
     send(receiver, CHAT_DIRECT, "[System", text, debugOut);
 
     int counter = 1;
@@ -126,7 +126,7 @@ void PChat::sendConnectedList(PClient* receiver, bool debugOut)
 }
 
 
-void PChat::sendFrak(PClient* author, char* text, bool debugOut)
+void PChat::sendFrak(PClient* author, const char* text, bool debugOut)
 {
     // send the message to all clients that have same FactionID
     PChar* authorChar = Chars->GetChar(author->GetCharID());
@@ -147,7 +147,7 @@ void PChat::sendFrak(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendZone(PClient* author, char* text, bool debugOut)
+void PChat::sendZone(PClient* author, const char* text, bool debugOut)
 {
     // send the message to all clients that have same ZoneID
     PChar* authorChar = Chars->GetChar(author->GetCharID());
@@ -168,7 +168,7 @@ void PChat::sendZone(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendLocal(PClient* author, char* text, bool debugOut)
+void PChat::sendLocal(PClient* author, const char* text, bool debugOut)
 {
     PChar* authorChar = Chars->GetChar(author->GetCharID());
     u32 ZID = authorChar->GetLocation(); // get LocationID of author
@@ -193,7 +193,7 @@ void PChat::sendLocal(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendGM(PClient* author, char* text, bool debugOut)
+void PChat::sendGM(PClient* author, const char* text, bool debugOut)
 {
     if(author->GetAccountLevel() >= PAL_GM) // Only send GM> chat when user is an Gamemaster or higher
     {
@@ -213,7 +213,7 @@ void PChat::sendGM(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendGMAdmin(PClient* author, char* text, bool debugOut)
+void PChat::sendGMAdmin(PClient* author, const char* text, bool debugOut)
 {
     if(author->GetAccountLevel() >= PAL_GM) // Only send GM> chat when user is an Gamemaster or higher
     {
@@ -232,7 +232,7 @@ void PChat::sendGMAdmin(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
+void PChat::sendAdmin(PClient* author, const char* text, bool debugOut)
 {
     if(author->GetAccountLevel() >= PAL_ADMIN) // Only send ADMIN> chat when user is an serveradmin
     {
@@ -251,7 +251,7 @@ void PChat::sendAdmin(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendBroadcast(char* text, bool debugOut)
+void PChat::sendBroadcast(const char* text, bool debugOut)
 {
     // send the message to ALL users online
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -264,7 +264,7 @@ void PChat::sendBroadcast(char* text, bool debugOut)
     }
 }
 
-void PChat::sendOOCBroadcast(char* text, bool debugOut)
+void PChat::sendOOCBroadcast(const char* text, bool debugOut)
 {
     // send the message to ALL users online
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -278,7 +278,7 @@ void PChat::sendOOCBroadcast(char* text, bool debugOut)
     }
 }
 
-void PChat::sendClan(PClient* author, char* text, bool debugOut)
+void PChat::sendClan(PClient* author, const char* text, bool debugOut)
 {
     /**
         NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS SUPERGLOBAL TILL THEN
@@ -303,7 +303,7 @@ void PChat::sendClan(PClient* author, char* text, bool debugOut)
 
 }
 
-void PChat::sendTeam(PClient* author, char* text, bool debugOut)
+void PChat::sendTeam(PClient* author, const char* text, bool debugOut)
 {
     /**
         NOT ABLE TO IMPLEMENT THIS CHATTYPE YET, ITS SUPERGLOBAL TILL THEN
@@ -328,7 +328,7 @@ void PChat::sendTeam(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool debugOut)
+void PChat::sendPlayerDirect(PClient* author, const char* text, u32 destination, bool debugOut)
 {
     bool tmpTargetOnline = false;
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -359,7 +359,7 @@ void PChat::sendPlayerDirect(PClient* author, char* text, u32 destination, bool 
     }
 }
 
-void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debugOut)
+void PChat::sendDirect(PClient* author, PClient* receiver, const char* text, bool debugOut)
 {
     PChar* authorChar = Chars->GetChar(author->GetCharID());
 
@@ -427,7 +427,7 @@ void PChat::sendDirect(PClient* author, PClient* receiver, char* text, bool debu
     delete[] DChatPacket;
 }
 
-void PChat::sendLocalchat(PClient* receiver, PClient* author, char* text, bool debugOut)
+void PChat::sendLocalchat(PClient* receiver, PClient* author, const char* text, bool debugOut)
 {
     return; // IncreaseUDP could cause OOO here. Since this function is doing nothing, we disabled it
     char *LocalChatPacket;
@@ -478,7 +478,7 @@ void PChat::sendLocalchat(PClient* receiver, PClient* author, char* text, bool d
     delete[] LocalChatPacket;
 }
 
-void PChat::sendTradeCS(PClient* author, char* text, bool debugOut)
+void PChat::sendTradeCS(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -494,7 +494,7 @@ void PChat::sendTradeCS(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTradeMB(PClient* author, char* text, bool debugOut)
+void PChat::sendTradeMB(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -510,7 +510,7 @@ void PChat::sendTradeMB(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTradeNC(PClient* author, char* text, bool debugOut)
+void PChat::sendTradeNC(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -526,7 +526,7 @@ void PChat::sendTradeNC(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTradeTH(PClient* author, char* text, bool debugOut)
+void PChat::sendTradeTH(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -542,7 +542,7 @@ void PChat::sendTradeTH(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTradeWL(PClient* author, char* text, bool debugOut)
+void PChat::sendTradeWL(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -558,7 +558,7 @@ void PChat::sendTradeWL(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendOOC(PClient* author, char* text, bool debugOut)
+void PChat::sendOOC(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -574,7 +574,7 @@ void PChat::sendOOC(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendHelp(PClient* author, char* text, bool debugOut)
+void PChat::sendHelp(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -590,7 +590,7 @@ void PChat::sendHelp(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendClanSearch(PClient* author, char* text, bool debugOut)
+void PChat::sendClanSearch(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -606,7 +606,7 @@ void PChat::sendClanSearch(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendServicesCS(PClient* author, char* text, bool debugOut)
+void PChat::sendServicesCS(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -622,7 +622,7 @@ void PChat::sendServicesCS(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendServicesMB(PClient* author, char* text, bool debugOut)
+void PChat::sendServicesMB(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -638,7 +638,7 @@ void PChat::sendServicesMB(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendServicesNC(PClient* author, char* text, bool debugOut)
+void PChat::sendServicesNC(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -654,7 +654,7 @@ void PChat::sendServicesNC(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendServicesTH(PClient* author, char* text, bool debugOut)
+void PChat::sendServicesTH(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -670,7 +670,7 @@ void PChat::sendServicesTH(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendServicesWL(PClient* author, char* text, bool debugOut)
+void PChat::sendServicesWL(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -686,7 +686,7 @@ void PChat::sendServicesWL(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTeam10(PClient* author, char* text, bool debugOut)
+void PChat::sendTeam10(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -702,7 +702,7 @@ void PChat::sendTeam10(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTeam30(PClient* author, char* text, bool debugOut)
+void PChat::sendTeam30(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -718,7 +718,7 @@ void PChat::sendTeam30(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTeam50(PClient* author, char* text, bool debugOut)
+void PChat::sendTeam50(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -734,7 +734,7 @@ void PChat::sendTeam50(PClient* author, char* text, bool debugOut)
     }
 }
 
-void PChat::sendTeam70(PClient* author, char* text, bool debugOut)
+void PChat::sendTeam70(PClient* author, const char* text, bool debugOut)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
@@ -766,7 +766,7 @@ bool PChat::chanEnabled(PClient* Client, u32 channel)
         return false;
 }
 
-bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickName, char* text, bool debugOut)
+bool PChat::send(PClient* receiver, const u8* Channel, const char* AuthorNickName, const char* text, bool debugOut)
 {
     char *ChatPacket;
     unsigned int packetsize = 0, c;

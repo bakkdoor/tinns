@@ -88,18 +88,18 @@ class PFurnitureItemTemplate
     PFurnitureItemTemplate();
     ~PFurnitureItemTemplate();
 
-    inline const u32 GetID() { return mObjectID; }
-    inline const u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
-    inline const u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
-    inline const int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
+    inline u32 GetID() { return mObjectID; }
+    inline u16 GetUseFlags() { return (mDefWorldModel ? mDefWorldModel->GetUseFlags() : 0); }
+    inline u16 GetFunctionType() { return (mDefWorldModel ? mDefWorldModel->GetFunctionType() : 0); }
+    inline int GetFunctionValue() { return (mDefWorldModel ?  mDefWorldModel->GetFunctionValue() : 0); }
     inline const std::string& GetName() { return (mDefWorldModel ?  mDefWorldModel->GetName() : EmptyString ); } /// !!!!
     inline const PDefWorldModel* GetDefWorldModel() const { return mDefWorldModel; }
-    inline const u8 GetFrontLR() const { return mFrontLR; }
+    inline u8 GetFrontLR() const { return mFrontLR; }
     inline void GetFrontPos(u16* nFrontPosX, u16* nFrontPosY, u16* nFrontPosZ) const { *nFrontPosY = mFrontPosY; *nFrontPosZ = mFrontPosZ; *nFrontPosX = mFrontPosX;}
     inline void GetPos(f32* nPosX, f32* nPosY, f32* nPosZ) const { *nPosY = mPosY; *nPosZ = mPosZ; *nPosX = mPosX;}
     
     inline void SetLinkedObjectID(u32 nID) { mLinkedObjectID = nID; }
-    inline const u32 GetLinkedObjectID() const { return mLinkedObjectID; }
+    inline u32 GetLinkedObjectID() const { return mLinkedObjectID; }
 
 };
 
@@ -119,7 +119,7 @@ class PFurnitureItemTemplate
 //	8 - Hackterminal	
 //	9 - Appartement Eingang	
 //	10 - Appartement Ein/Ausgang	
-//	11 - Appartement Klingel/Öffner	
+//	11 - Appartement Klingel/ï¿½ffner	
 //	12 - Standard Button	
 //	13 - Hack Button	
 //	14 - HOLOMATCH ENTRANCE	

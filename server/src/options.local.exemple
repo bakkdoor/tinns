@@ -1,0 +1,12 @@
+#
+# Local Makefile custom options
+# not in SVN !
+#
+# Copy this file as options.local to add you custom complation options
+#  so that you don't need to change the main Makefile
+# You can also uncomment some of the lines below that fit you needs
+#
+#DO_DEBUG = y
+#CXXFLAGS += -Werror
+#CXXFLAGS += -march=native
+#CXXFLAGS += -fstack-protector-all

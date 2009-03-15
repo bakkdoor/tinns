@@ -245,7 +245,7 @@ bool ConnectionUDP::update()
                 InsertUDPMessage(tmpMsg);
             }
             //int numBytes = send(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0);
-            int numBytes = sendto(mSockfd, tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0, (struct sockaddr *)&mRemoteAddr, sizeof(struct sockaddr));
+            int numBytes = sendto(mSockfd, (char*) tmpMsg->GetMessageData(), tmpMsg->GetSize(), 0, (struct sockaddr *)&mRemoteAddr, sizeof(struct sockaddr));
             if(numBytes > 0)
             {
                 //Console->Print(GREEN, BLACK, "ConnectionUDP::update() - Data sent");
@@ -293,7 +293,7 @@ bool ConnectionUDP::update()
             //struct sockaddr_in tempAddr;  // need to built in check,
             // if the incoming data is coming from the client or someone else!
             //numBytes = recv(mSockfd, tmpMsg->GetMessageDataPointer(RECVBUFFERSIZE), RECVBUFFERSIZE, 0); // get the data
-            numBytes = recvfrom(mSockfd, tmpMsg->GetMessageDataPointer(RECVBUFFERSIZE), RECVBUFFERSIZE, 0, (struct sockaddr *)&mRemoteAddr, &addrlen);
+            numBytes = recvfrom(mSockfd, (char*) tmpMsg->GetMessageDataPointer(RECVBUFFERSIZE), RECVBUFFERSIZE, 0, (struct sockaddr *)&mRemoteAddr, &addrlen);
             if(numBytes > 0)
             {
                 //Console->Print(GREEN, BLACK, "ConnectionUDP::update() - Data received");
@@ -409,7 +409,7 @@ const u8* ConnectionUDP::read(int* size)
         *size=min(*size, (s32)_size);
     }
 
-    u8* ptr = (u8*) (tmpMsg->GetMessageData() + tmpMsg->GetNextByteOffset());
+    u8 const* ptr = tmpMsg->GetMessageData() + tmpMsg->GetNextByteOffset();
     tmpMsg->SetNextByteOffset(tmpMsg->GetNextByteOffset()+ *size);
     //Console->Print(GREEN, BLACK, "ConnectionUDP::read() - %d bytes read", *size);
     return ptr;
