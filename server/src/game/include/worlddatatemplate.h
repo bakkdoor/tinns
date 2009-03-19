@@ -31,6 +31,8 @@
 #ifndef WORLDDATATEMPLATE_H
 #define WORLDDATATEMPLATE_H
 
+#define WORLDDATATEMPLATE_MAXPOSITEMS 11
+
 class PFurnitureItemTemplate;
 typedef std::map<u32, PFurnitureItemTemplate*> PFurnitureItemsMap;
 
@@ -44,7 +46,7 @@ class PWorldDataTemplate
     std::string mBspName; // (bsp file) relative path+filename without leading ./ or ./worlds/ nor .bsp extension
     PFurnitureItemsMap mFurnitureItems;
     PDoorsMap mDoors;
-    PFurnitureItemTemplate* mPositionItems[10];
+    PFurnitureItemTemplate* mPositionItems[WORLDDATATEMPLATE_MAXPOSITEMS];
     
     int mUseCount;
     

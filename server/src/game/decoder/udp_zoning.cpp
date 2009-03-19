@@ -56,12 +56,12 @@ PUdpMsgAnalyser* PUdpZoning1::Analyse()
   //mNewEntity = cMsg->U16Data(mDecodeData->Sub0x13Start+15);
       
   cMsg->SetNextByteOffset(mDecodeData->Sub0x13Start+7);
-  *cMsg >> dumb8; // u8 = 0x01 in NC1, other in NC2.2
+  *cMsg >> dumb8; // u8 = 0x01 in NC1, other in NC2.2 ?
   *cMsg >> mUnknown; //u8
   *cMsg >> dumb16; //u16 unkown use
   *cMsg >> mNewLocation; //u32
   *cMsg >> mNewEntity; //u16
-  //cMsg >> dumb16; //u16 0x0000
+  //*cMsg >> dumb16; //u16 0x0000
 //Console->Print("Zoning Stage 1: New location: %d, Entity %d, Unknown %d", mNewLocation, mNewEntity, (u16)mUnknown);
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 
@@ -164,23 +164,76 @@ PUdpMsgAnalyser* PUdpAptGRZoning::Analyse()
 
 bool PUdpAptGRZoning::DoAction()
 {
-  PMessage* cMsg = mDecodeData->mMessage;
+  //PMessage* cMsg = mDecodeData->mMessage;
   PClient* nClient = mDecodeData->mClient;
 
-  u32 newLocation = cMsg->U16Data(mDecodeData->Sub0x13Start+12);
-  u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
+  //u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // always 0x0047 ? Not a location/entity anyway...
 
+  u32 newLocation = PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment();
+  u16 nData = 0;
+  
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
-	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  if (! nClient->ChangeCharLocation(PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment()))
-    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment(), newLocation);
+  if (! nClient->ChangeCharLocation(newLocation))
+    Console->Print("Client[%d]: Bad Apartment location %d", nClient->GetID(), newLocation);
+
+  //Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
+  /*if (! nClient->ChangeCharLocation(newLocation))
+    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment(), newLocation);*/
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
   nClient->getUDPConn()->SendMessage(tmpMsg);
 
 if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+/**** PUdpVentureWarpConfirm ****/
+
+PUdpVentureWarpConfirm::PUdpVentureWarpConfirm(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x09";
+}
+
+PUdpMsgAnalyser* PUdpVentureWarpConfirm::Analyse()
+{
+  mDecodeData->mName << "=Venture Warp confirmation";
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+
+  PMessage* cMsg = mDecodeData->mMessage;
+  cMsg->SetNextByteOffset(mDecodeData->Sub0x13Start+12);
+  (*cMsg) >> mUnknown1;
+  (*cMsg) >> mUnknown2;
+  (*cMsg) >> mUnknown3;
+  (*cMsg) >> mRawItemId;
+  (*cMsg) >> mStatus;
+
+  return this;
+}
+
+bool PUdpVentureWarpConfirm::DoAction()
+{
+  PClient* nClient = mDecodeData->mClient;
+
+  if(mStatus == 1)
+  {
+	u32 newLocation;
+	do
+	{
+	  newLocation = 2000 + 20 * GameServer->GetRandom(10, 0) + GameServer->GetRandom(16, 1);
+	} while (! Worlds->IsValidWorld(newLocation));
+	
+	u16 nEntity = 10;
+	u16 nEntityType = 1;
+	
+	PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (nClient, newLocation, nEntity, nEntityType);
+	nClient->getUDPConn()->SendMessage(tmpMsg);
+	
+	if (gDevDebug) Console->Print("Client[%d]: Venture Warping to zone %d (entity %d/%d)", nClient->GetID(), newLocation, nEntity, nEntityType);
+  }
+
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

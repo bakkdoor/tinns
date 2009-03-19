@@ -106,6 +106,7 @@ class PMsgBuilder
   PMessage* BuildCharUseFurnitureMsg (PClient* nClient, u32 nRawObjectID);
   PMessage* BuildCharUseVhcTerminalMsg (PClient* nClient, u32 nRawObjectID);
   PMessage* BuildCharUseGogoMsg (PClient* nClient);
+  PMessage* BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObjectID);
   PMessage* BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity);
   PMessage* BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, u16 nAptPlace);
   PMessage* BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType);

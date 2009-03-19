@@ -1336,13 +1336,6 @@ PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
-    u8 msgPart2[] = { // What is really this part for ???
-                        0x1b, 0x22, 0x01, 0x00, 0x00, 0x1f, 0x49, 0x82, 0x81, 0x81,
-                        0xe5, 0x6b, 0x04, 0xd5, 0x76, 0x01, 0x00, 0x00, 0x00, 0x11,
-                        0x11};
-    *tmpMsg << (u8)sizeof(msgPart2); // (0x15) Message length placeholder;
-    tmpMsg->Write(msgPart2, sizeof(msgPart2));
-
     return tmpMsg;
 }
 
@@ -1702,9 +1695,37 @@ PMessage* PMsgBuilder::BuildCharUseGogoMsg (PClient* nClient)
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x3d;
-    *tmpMsg << (u32)0x0000000d; // ?
+    *tmpMsg << (u32)0x0000000d; // cmd
 
     //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObjectID)
+{
+    PMessage* tmpMsg = new PMessage(17);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+	
+    *tmpMsg << (u8)0x0b; // Message length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x3d;
+	*tmpMsg << (u32)0x00000008; // cmd
+    *tmpMsg << (u32)0x00000007; // ?
+	*tmpMsg << (u32)0x00000002; // ?
+	*tmpMsg << (u16)0x0004; // ?
+	*tmpMsg << nRawObjectID; 
+	// *tmpMsg << (u8)0x13; // ? Seems we can do without...
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
     return tmpMsg;
 }
@@ -1794,7 +1815,7 @@ PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
     *tmpMsg << (u8)0x08;    // Len (static, always 0x08
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
-    *tmpMsg << (u8)0x1f;    
+    *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x3c; // Command SHOW GLOWING CIRCLE (kinda ^^)
     *tmpMsg << (u8)0x01; // "on" ?
@@ -1816,10 +1837,10 @@ PMessage* PMsgBuilder::BuildCharMoneyUpdateMsg (PClient* nClient, u32 nCredits)
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x25; // ??
-    *tmpMsg << (u8)0x13; // ??
+    *tmpMsg << (u8)0x25; // cmd
+    *tmpMsg << (u8)0x13; // cmd
     *tmpMsg << (u16)nClient->GetTransactionID();
-    *tmpMsg << (u8)0x04; // ??
+    *tmpMsg << (u8)0x04; // cmd
     *tmpMsg << nCredits;
 
     return tmpMsg;
@@ -2529,7 +2550,7 @@ PMessage* PMsgBuilder::BuildTraderItemListMsg(PClient* nClient, u32 nTraderNpcID
     *ContentList << (u32)(1260856 * PriceCoef);
 
     //Item 7:
-    *ContentList << (u16)355; // Item Id "HEW ‘Liquid Fire’ Rifle"
+    *ContentList << (u16)355; // Item Id "HEW ï¿½Liquid Fireï¿½ Rifle"
     *ContentList << (u32)(1260856 * PriceCoef);
         
     PMessage* tmpMsg = new PMessage();

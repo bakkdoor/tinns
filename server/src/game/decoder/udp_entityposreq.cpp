@@ -52,7 +52,7 @@ PUdpMsgAnalyser* PUdpEntityPosRequest::Analyse()
 
   *nMsg >> mEntityID; //(u16 ... or u32 ???)
 
-  if(mEntityID > 9)
+  if(mEntityID >= WORLDDATATEMPLATE_MAXPOSITEMS)
   {
     mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
     mDecodeData->mErrorDetail = Ssprintf("Invalid position entity ID (%d)", mEntityID);
@@ -77,7 +77,7 @@ bool PUdpEntityPosRequest::DoAction()
 
   if(currentWorld)
   {
-    if((mEntityID < 10) &&currentWorld->getPositionItemPosition(mEntityID, &fpX, &fpY, &fpZ))
+    if((mEntityID < WORLDDATATEMPLATE_MAXPOSITEMS) && currentWorld->getPositionItemPosition(mEntityID, &fpX, &fpY, &fpZ))
     {
       pX = (u16) (fpX + 32000);
       pY = (u16) (fpY + 32000);

@@ -163,7 +163,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     case 0x3d:
     {
       mDecodeData->mName << "/0x3d";
-      switch(MsgSubType)
+      switch(MsgSubType) // In fact MsgSubType is U32, but only lower byte is used
       {
         case 0x02:
         {
@@ -178,6 +178,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         case 0x04:
         {
           nextAnalyser = new PUdpGenrepZoning(mDecodeData);
+          break;
+        }
+        case 0x09:
+        {
+          nextAnalyser = new PUdpVentureWarpConfirm(mDecodeData);
           break;
         }
         case 0x0a:

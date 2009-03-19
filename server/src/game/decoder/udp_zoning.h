@@ -73,6 +73,21 @@ class PUdpAptGRZoning : public PUdpMsgAnalyser
     bool DoAction();
 };
 
+class PUdpVentureWarpConfirm : public PUdpMsgAnalyser
+{
+  private:
+    u32 mRawItemId;
+    u16 mStatus;
+    u32 mUnknown1;
+	u32 mUnknown2;
+	u16 mUnknown3;
+  public:
+    PUdpVentureWarpConfirm(PMsgDecodeData* nDecodeData);
+    //~PUdpVentureWarpConfirm();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
 class PUdpAddGenrepToList : public PUdpMsgAnalyser
 {
   private:

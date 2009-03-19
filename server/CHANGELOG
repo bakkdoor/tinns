@@ -1649,3 +1649,11 @@ Fixed various warnings due to C++ compiler being more picky.
   Abort compliation on warning reactivated in makefile (-Werror)
 
 Added file options.local.exemple to set custom complilation options (read it for more info)
+
+Hammag; 19.03.2009 13:00 GMT+1
+----------
+[rev. 104]
+
+<Gameserver>
+  Fixed some errors in apartment Genrep'ing code
+  Implemted Venture Warp

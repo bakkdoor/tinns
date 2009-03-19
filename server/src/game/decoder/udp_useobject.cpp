@@ -56,7 +56,6 @@ PUdpMsgAnalyser* PUdpUseObject::Analyse()
 
     mRawItemID = mDecodeData->mMessage->U32Data(mDecodeData->Sub0x13Start+8);
     mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-
     return this;
 }
 
@@ -148,7 +147,7 @@ bool PUdpUseObject::DoAction()
             
             if(PSpawnedVehicles::IsPotentialSpawnedVehicle(mRawItemID))
             {
-Console->Print("Using vhc");
+Console->Print("Potential vhc");
 							PSeatType cSeatType = tChar->GetSeatInUse();
 							if(cSeatType == seat_none)
 							{
@@ -451,14 +450,21 @@ Console->Print("Using vhc");
                     case 16: //HOLOMATCH REFRESH
                     case 17: //HOLOMATCH HEAL & Recreation units
                     case 26: //Outpost Switch
-                    case 31: //Venture Warp Station
                     {
                         tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
                         nClient->SendUDPMessage(tmpMsg);
                         mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
                         break;
                     }
-                    
+
+                    case 31: //Venture Warp Station
+                    {
+                        tmpMsg = MsgBuilder->BuildCharUseVentureWarpMsg(nClient, mRawItemID);
+                        nClient->SendUDPMessage(tmpMsg);
+                        mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+                        break;
+                    }
+
                     case 28: //Fahrzeug Depot Interface
                     {
                         tmpMsg = MsgBuilder->BuildCharUseVhcTerminalMsg (nClient, mRawItemID);
@@ -467,7 +473,7 @@ Console->Print("Using vhc");
                         break;
                     }
 
-                    case 11: //Appartement Klingel/Öffner
+                    case 11: //Appartement Klingel/ï¿½ffner
                     {
                         if (Appartements->CanFreelyEnter(tChar, tChar->GetLocation()))
                         {

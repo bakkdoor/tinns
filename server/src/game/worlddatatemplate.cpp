@@ -38,7 +38,7 @@
 PWorldDataTemplate::PWorldDataTemplate()
 {
   mUseCount = 0;
-  for (int i = 0; i<10; ++i)
+  for (int i = 0; i < WORLDDATATEMPLATE_MAXPOSITEMS; ++i)
   {
     mPositionItems[i] = NULL;
   }
@@ -114,11 +114,19 @@ if (gDevDebug) Console->Print("Furniture item %d added to world template", nItem
       if (nItem->GetFunctionType() == 21)
       {
         int v = nItem->GetFunctionValue();
-        if((v >= 0) && (v < 10))
+        if((v >= 0) && (v < WORLDDATATEMPLATE_MAXPOSITEMS))
         {
           if(mPositionItems[v])
           {
-            Console->Print("% Same position %d for two position items ID %d and %d. Only last one kept.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, mPositionItems[v]->GetID(), nItem->GetID());
+			if((v == WORLDDATATEMPLATE_MAXPOSITEMS-2) && !mPositionItems[v+1]) // We allow that only for Pos 9 in order not to mess with other pos
+			{
+				Console->Print("%s Same position %d for two position items ID %d and %d. Last one will be put on next position.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, mPositionItems[v]->GetID(), nItem->GetID());
+				++v;
+			}
+			else
+			{
+				Console->Print("%s Same position %d for two position items ID %d and %d. Only last one kept.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, mPositionItems[v]->GetID(), nItem->GetID());
+			}
           }
 
           mPositionItems[v] = nItem;
@@ -135,7 +143,7 @@ Console->Print("Position Y=%f (0x%04x) Z=%f (0x%04x) X=%f (0x%04x)", fpY, pY, fp
         }
         else
         {
-          Console->Print("% Invalid position %d for position item ID %d. Position ignored.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, nItem->GetID());
+          Console->Print("%s Invalid position %d for position item ID %d. Position ignored.", Console->ColorText(YELLOW, BLACK, "[Notice]"), v, nItem->GetID());
         }
       }
       return nItem->GetID();
@@ -159,7 +167,7 @@ const PFurnitureItemTemplate* PWorldDataTemplate::GetFurnitureItem(u32 ItemID)
 
 bool PWorldDataTemplate::getPositionItemPosition(u8 PosID, f32* pX, f32* pY, f32* pZ)
 {
-  if((PosID < 10) && mPositionItems[PosID])
+  if((PosID < WORLDDATATEMPLATE_MAXPOSITEMS) && mPositionItems[PosID])
   {
     mPositionItems[PosID]->GetPos(pX, pY, pZ) ;
     return true;
