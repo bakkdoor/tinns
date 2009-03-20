@@ -1657,3 +1657,10 @@ Hammag; 19.03.2009 13:00 GMT+1
 <Gameserver>
   Fixed some errors in apartment Genrep'ing code
   Implemted Venture Warp
+
+Hammag; 19.03.2009 13:00 GMT+1
+----------
+[rev. 105]
+
+<Gameserver>
+  Implemted Outfitter (not persistent yet. No need for that now)

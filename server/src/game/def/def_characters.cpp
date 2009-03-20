@@ -81,9 +81,15 @@ bool PDefCharacter::LoadFromDef(PTokenList *Tokens)
 				  
 			case 7 :
 				mLegs = atoi(i->c_str()); break;
+				
+			case 8 :
+				mColor = atoi(i->c_str()); break;
+				
+			case 9 :
+				mBrightness = atoi(i->c_str()); break;
 		}
 
-		if(Idx==7)
+		if(Idx==9)
 			return true;
 	}
 

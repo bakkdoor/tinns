@@ -334,6 +334,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
 {
   int iHead, iTorso, iLegs;
   u32 nSkin, nHead, nTorso, nLegs;
+  u8 nColor, nBrightness;
 
   const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
   if (nDefCharacter)
@@ -342,11 +343,13 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
     iHead = nDefCharacter->GetHead();
     iTorso = nDefCharacter->GetTorso();
     iLegs = nDefCharacter->GetLegs();
+	nColor = (u8)(0xff & nDefCharacter->GetColor());
+	nBrightness = (u8)(0xff & nDefCharacter->GetBrightness());
 
+	
     if ((iHead < 0) || (iTorso < 0) || (iLegs < 0))
     {
-      // do something !
-      nHead = nTorso = nLegs = 0xff;
+	  nHead = nTorso = nLegs = 0;
     }
     else
     {
@@ -356,6 +359,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
     }
 
     SetCurrentLook(nSkin, nHead, nTorso, nLegs);
+	SetCurrentBodyColor(nColor, nColor, nColor, nBrightness, nBrightness, nBrightness);
   }
 }
 

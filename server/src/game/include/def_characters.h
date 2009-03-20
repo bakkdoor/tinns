@@ -47,6 +47,8 @@ class PDefCharacter
 		int mHead;
 		int mTorso;
 		int mLegs;
+		int mColor;
+		int mBrightness;
 		
 	public :
 		PDefCharacter();
@@ -60,6 +62,8 @@ class PDefCharacter
 		inline int GetHead() const { return mHead; }
 		inline int GetTorso() const { return mTorso; }
 		inline int GetLegs() const { return mLegs; }
+		inline int GetColor() const { return mColor; }
+		inline int GetBrightness() const { return mBrightness; }
 };
 
 #endif

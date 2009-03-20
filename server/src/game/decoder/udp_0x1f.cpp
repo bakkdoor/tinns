@@ -43,6 +43,7 @@
 #include "udp_quickaccessbelt.h"
 #include "udp_itemmove.h"
 #include "udp_hack.h"
+#include "udp_outfitter.h"
 
 /**** PUdp0x1f ****/
 
@@ -134,12 +135,16 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         nextAnalyser = new PUdpHackSuccess(mDecodeData);
         break;
     }
-    case 0x2C:
+    case 0x2c:
     {
         nextAnalyser = new PUdpHackFail(mDecodeData);
         break;
     }
-
+    case 0x2e:
+    {
+        nextAnalyser = new PUdpOutfitter(mDecodeData);
+        break;
+    }
     case 0x33:
     {
       nextAnalyser = new PUdpChatListAdd(mDecodeData);
