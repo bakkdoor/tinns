@@ -68,15 +68,17 @@ class PMsgBuilder
   PMessage* BuildSubwaySingleUpdateMsg (u32 nVehicleID, u16 nPosition, u8 nDoorOpened);
   PMessage* BuildVhcHealthUpdateMsg (PSpawnedVehicle* nVehicle);
   PMessage* BuildVhcPosUpdateMsg (PSpawnedVehicle* nVehicle);
+  // Temp. NPC update message for testing
+  PMessage* BuildNpcDeathMsg (PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e);
   
-  // Following methods for unicast messages DO include UDP_ID increment and
-  // UDP_ID / SessionID setting when needed (at least for now)
+  
+// Following methods for unicast messages DO include UDP_ID increment and
+// UDP_ID / SessionID setting when needed (at least for now)
   PMessage* BuildReqInfoAnswerMsg (PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength);
 
   PMessage* BuildPacket0Msg (PClient* nClient);
   PMessage* BuildPingMsg (PClient* nClient, u32 nClientTime);
   PMessage* BuildBaselineMsg (PClient* nClient);
-  //PMessage* BuildCharInfo3Msg (PClient* nClient); // Removed because same as Zoning2Msg
 
   PMessage* BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown = 0);
   PMessage* BuildZoningTCPReadyMsg ();

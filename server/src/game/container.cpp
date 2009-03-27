@@ -528,7 +528,7 @@ u8 PContainer::RandomFill(u8 nItemCount)
       nItem = new PItem(nItemDef->GetIndex(), 1, 255, 255, 255, 255, 255, 255);
       if(nItem->GetItemID())
       {
-        if(this->AddItem(nItem, i))
+        if(this->AddItem(nItem))
         {
           ++CreatedCount;
         }

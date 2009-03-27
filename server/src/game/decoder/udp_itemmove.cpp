@@ -74,8 +74,8 @@ bool PUdpItemMove::DoAction()
   u8 origDstX = mDstX;
   u8 origDstY = mDstY;
   PContainerEntry* tEntry;
-  
-PItem* tItem = NULL;
+
+  PItem* tItem = NULL;
 
   PContainer* SrcContainer = GetContainerByLoc(tChar, mSrcLoc);
   if(SrcContainer)
@@ -124,8 +124,8 @@ if(mSrcY || mDstY)
     }
     nClient->SendUDPMessage(tmpMsg);
 
-/*Console->Print(YELLOW, BLACK, "[Success] Item move %u:%u-%u => %u:%u-%u : %u %s", mSrcLoc, mSrcX, mSrcY, mDstLoc, origDstX, origDstY, mItemCnt, tItem ? tItem->GetName().c_str() : "");    
-Console->Print(YELLOW, BLACK, "--- Worn Inventory ---");
+Console->Print(YELLOW, BLACK, "[Success] Item move %u:%u-%u => %u:%u-%u : %u %s", mSrcLoc, mSrcX, mSrcY, mDstLoc, origDstX, origDstY, mItemCnt, tItem ? tItem->GetName().c_str() : "");    
+/*Console->Print(YELLOW, BLACK, "--- Worn Inventory ---");
 tChar->GetInventory()->GetContainer(INV_LOC_WORN)->Dump();
 Console->Print(YELLOW, BLACK, "--- Backpack Inventory ---");
 tChar->GetInventory()->GetContainer(INV_LOC_BACKPACK)->Dump();
@@ -190,7 +190,7 @@ PContainer* PUdpItemMove::GetContainerByLoc(PChar* nChar, u8 nLoc)
   return tContainer;
 }
 
-  
+
 /**** PUdpItemMoveBP ****/
 
 PUdpItemMoveBP::PUdpItemMoveBP(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
@@ -227,7 +227,7 @@ bool PUdpItemMoveBP::DoAction()
   {
 if(mDumb)
   Console->Print(RED, BLACK, "[Warning] PUdpItemMoveBP: Dumb != 0 (%d)", mDumb);
-//Console->Print(YELLOW, BLACK, "PUdpItemMoveBP: Tyring Item move: slot %u => %u-%u", mSrcSlotId, mDstX, mDstY);
+Console->Print(YELLOW, BLACK, "PUdpItemMoveBP: Tyring Item move: slot %u => %u-%u", mSrcSlotId, mDstX, mDstY);
     PContainerEntry* tEntry = SrcContainer->GetEntry(mSrcSlotId);
     if(tEntry)
     {
@@ -249,6 +249,135 @@ if(mDumb)
 
 // No answer to confirm ?
 //tmpMsg = NULL;
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+  
+/**** PUdpItemDropOnItem ****/
+
+PUdpItemDropOnItem::PUdpItemDropOnItem(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x17";
+}
+
+PUdpMsgAnalyser* PUdpItemDropOnItem::Analyse()
+{
+  mDecodeData->mName << "=Dropping item on item";
+
+  PMessage* nMsg = mDecodeData->mMessage;
+  nMsg->SetNextByteOffset(mDecodeData->Sub0x13Start + 9);
+
+  *nMsg >> mSrcLoc;
+  *nMsg >> mSrcX; // Linear Idx
+  *nMsg >> mSrcY; // 0
+  *nMsg >> mDstLoc;
+  *nMsg >> mDstX; // Linear Idx
+  *nMsg >> mDstY; // 0
+
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpItemDropOnItem::DoAction()
+{
+  PClient* nClient = mDecodeData->mClient;
+  PChar* tChar = nClient->GetChar();
+Console->Print(YELLOW, BLACK, "PUdpItemDropOnItem: %u:%u-%u => %u:%u-%u", mSrcLoc, mSrcX, mSrcY, mDstLoc, mDstX, mDstY);
+  PContainer* SrcContainer = PUdpItemMove::GetContainerByLoc(tChar, mSrcLoc);
+  PContainer* DstContainer = PUdpItemMove::GetContainerByLoc(tChar, mDstLoc);
+  if(SrcContainer && DstContainer)
+  {
+    PItem* sItem = SrcContainer->GetItem(mSrcX);
+	PItem* dItem = DstContainer->GetItem(mDstX);
+
+Console->Print(YELLOW, BLACK, "Drop item %s on %s", sItem ? sItem->GetName().c_str() : "???", dItem ? dItem->GetName().c_str() : "???");
+  }
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+  
+/**** PUdpManualReloadItem ****/
+
+PUdpManualReloadItem::PUdpManualReloadItem(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+{
+  nDecodeData->mName << "/0x18";
+}
+
+PUdpMsgAnalyser* PUdpManualReloadItem::Analyse()
+{
+  mDecodeData->mName << "=Reloading item (manual)";
+
+  //PMessage* nMsg = mDecodeData->mMessage;
+  mUnknown = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 9);
+
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpManualReloadItem::DoAction()
+{
+  PClient* nClient = mDecodeData->mClient;
+  //PChar* tChar = nClient->GetChar();
+  PMessage* tmpMsg = new PMessage(32);
+
+  nClient->IncreaseUDP_ID();
+  nClient->IncreaseTransactionID();
+      
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  
+  *tmpMsg << (u8)0x00; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x25;
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x0a; // cmd=Ammo count update
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u8)0x02;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u8)0x00;
+  *tmpMsg << (u8)0x00;
+  nClient->IncreaseTransactionID();
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x05; // cmd=Ammo count update
+  *tmpMsg << (u8)INV_LOC_BACKPACK;
+  *tmpMsg << (u8)0x0e; // X
+  *tmpMsg << (u8)0x00; //(Y)
+  *tmpMsg << (u8)0x03; // Ammo count
+  nClient->IncreaseTransactionID();
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x05; // cmd=Ammo count update
+  *tmpMsg << (u8)INV_LOC_WORN;
+  *tmpMsg << (u8)0x03; // X
+  *tmpMsg << (u8)0x00; //(Y)
+  *tmpMsg << (u8)0x02; // Ammo count
+  
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+tmpMsg->Dump();
+  nClient->SendUDPMessage(tmpMsg);
+
+	/* Resp:
+03:33:00:1f:01:00:25:13
+	c2:01:0a:00:02:00:00:00 ?? set ammo type ?
+	c3:01:05:03:00:00:12 Update ammo left
+	c4:01:05:02:00:00:0c Update ammo left
+  
+	tt:tt:02:loc:x:y delete item
+	*/
+	
+/* manual reload
+  srv resp : 13:58:00:d6:d4:08:03:58:00:1f:01:00:25:16 (do start reload anim - even if no relaod needed or no more ammo avail)
+  cli resp: 13:3f:00:bd:d4:08:03:3f:00:1f:01:00:25:25 (reload anim done , also when reaload not possible because mission ammo)
+  srv resp: 13:59:00:d7:d4:16:03:59:00:1f:01:00:25:13:8d:22:05:03:11:00:16:8e:22:05:02:00:00:0c : update inv if needed
+*/
+  if(mUnknown != 0x0e)
+	Console->Print(YELLOW, BLACK, "PUdpManualReloadItem: additionnal byte differs from 0x0e : %2x", mUnknown);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

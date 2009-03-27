@@ -140,6 +140,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
             nextAnalyser = new PUdp0x2b(mDecodeData);
             break;
           }
+          case 0x24: // ? 06 03 03 00 24 01 00
           default:
           {
             mDecodeData->mUnknownType = MsgSubType;

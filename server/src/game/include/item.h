@@ -49,7 +49,22 @@
 #define ITEM_TYPE_PSIMODREADY 11
 #define ITEM_TYPE_REPAIR 12
 #define ITEM_TYPE_RECYCLER 13
-#define ITEM_TYPE_DATACUBE 14																		
+#define ITEM_TYPE_DATACUBE 14
+#define ITEM_TYPE_CONSTRUCTOR 15
+#define ITEM_TYPE_RESEARCHER 16
+#define ITEM_TYPE_IMPLANTER 17
+#define ITEM_TYPE_APARTMENTKEY 19
+#define ITEM_TYPE_CLANKEY 19
+#define ITEM_TYPE_CASHCUBE 20
+#define ITEM_TYPE_AUTOWEAPON 21
+#define ITEM_TYPE_VHCKEY 22
+#define ITEM_TYPE_UNIDENTPART 24
+#define ITEM_TYPE_WRECKEDPART 25
+#define ITEM_TYPE_SALVAGE 26
+#define ITEM_TYPE_VHCCOMPONENT 27
+#define ITEM_TYPE_RECORDABLE 28
+
+																		
 
 // gfxmodflags																						
 #define ITEM_MOD_FLASHLIGHT 1	
@@ -98,7 +113,7 @@ class PItem
   public:
     PItem(u32 ItemID, u8 nStackSize = 1, u8 CurDur = 0, u8 MaxDur = 0, u8 Dmg = 0, u8 Freq = 0, u8 Hand = 0, u8 Rng = 0);
     //~PItem();
-    void MakeStandardItem(u8 GlobalQualityMin = 120, u8 GlobalQualityMax = 180);
+    void MakeItemStandard(u8 GlobalQualityMin = 120, u8 GlobalQualityMax = 180);
         
     inline u32 GetItemID() {return mItemID; }
     
@@ -119,7 +134,7 @@ class PItem
     
     inline bool IsStackable() { return mDefItem->IsStackable(); }
     inline u8 GetStackSize() { return mStackSize; }
-    u8 AddToStack(u8 ItemNb); // return the nb of added items
+    u8 AddToStack(u8 ItemNb); // return the nb of items NOT added
     u8 TakeFromStack(u8 ItemNb); // return the nb of retreived items        
 
     //mItemGroupID = def->GetItemGroupID();

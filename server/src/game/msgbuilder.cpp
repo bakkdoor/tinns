@@ -325,36 +325,6 @@ PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient)
     return tmpMsg;
 }
 
-/*PMessage* PMsgBuilder::BuildCharSittingMsg (PClient* nClient, u16 nData)
-{
-  PMessage* tmpMsg = new PMessage(32);
-
- *tmpMsg << (u8)0x13;
- *tmpMsg << (u16)0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
- *tmpMsg << (u16)0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
- *tmpMsg << (u8)0x00; // Message length placeholder;
- *tmpMsg << (u8)0x32;
- *tmpMsg << (u16)nData; // Chair object ID
- *tmpMsg << (u8)0x03;
- *tmpMsg << (u8)0xad; // ????
- *tmpMsg << (u8)0x80;
- *tmpMsg << (u8)0xf9;
- *tmpMsg << (u8)0x85;
- *tmpMsg << (u8)0x6a;
- *tmpMsg << (u8)0x98;
- *tmpMsg << (u8)0x7c;
- *tmpMsg << (u8)0x3f;
- *tmpMsg << (u8)0x8b;
- *tmpMsg << (u8)0x14;
- *tmpMsg << (u8)0x7e;
-  *tmpMsg << (u16)nClient->GetLocalID();
-  *tmpMsg << (u16)0x0000;
-
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-  return tmpMsg;
-}*/
-
 PMessage* PMsgBuilder::BuildCharUseSeatMsg (PClient* nClient, u32 nRawObjectId, u8 nSeatId)
 {
     PMessage* tmpMsg = new PMessage(18);
@@ -1068,37 +1038,6 @@ SectionMsg << (u8)0x03;      // Data
     return BaselineMsg;
 }
 
-// Removed because same as Zoning2Msg
-/*PMessage* PMsgBuilder::BuildCharInfo3Msg (PClient* nClient)
-{
-    PMessage* tmpMsg = new PMessage(22);
-
-    nClient->IncreaseUDP_ID();
-
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x00; // Message length placeholder;
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x0d;
-    *tmpMsg << (u32)GameServer->GetGameTime(); // offset 10 (NeoX) or 11 ????
-
-    *tmpMsg << (u8)0x47; // ???
-    *tmpMsg << (u8)0xc0;
-    *tmpMsg << (u8)0x22;
-    *tmpMsg << (u8)0x00;
-
-    *tmpMsg << (u8)0xe5; // ???
-    *tmpMsg << (u8)0x0a;
-    *tmpMsg << (u8)0xbb;
-    *tmpMsg << (u8)0x00;
-
-    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-    return tmpMsg;
-}*/
-
 PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnknown)
 {
     PMessage* tmpMsg = new PMessage(42);
@@ -1122,7 +1061,7 @@ PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnkno
     // *tmpMsg << (u32)AptWorldID; // len ?
     // nClient->IncreaseTransactionID();
     // *tmpMsg << (u16)nClient->GetTransactionID();
-    *tmpMsg << (u8)0x0e; // ?? from NeoX
+    *tmpMsg << (u8)0x0e; // cmd => but not for zoning, because used in non-zoning situation
     *tmpMsg << (u8)0x02; // ?? from NeoX
     //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
@@ -1880,8 +1819,8 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg2 (PClient* nClient, u16 nV1, u16 nV
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x25; // ??
-    *tmpMsg << (u8)0x22; // ??
+    *tmpMsg << (u8)0x25; // cmd
+    *tmpMsg << (u8)0x22; // cmd
     *tmpMsg << nV1;
     *tmpMsg << nV2;
     *tmpMsg << nV3;
@@ -1922,10 +1861,10 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg3 (PClient* nClient, u8 nSlot)
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x25; // ??
-    *tmpMsg << (u8)0x13; // ??
+    *tmpMsg << (u8)0x25; // cmd
+    *tmpMsg << (u8)0x13; // cmd
     *tmpMsg << (u16)nClient->GetTransactionID();
-    *tmpMsg << (u8)0x0b; // ??
+    *tmpMsg << (u8)0x0b; // cmd
     *tmpMsg << nSlot; // ??
     *tmpMsg << (u8)0x00; // ??
 
@@ -1959,7 +1898,7 @@ PMessage* PMsgBuilder::BuildContainerContentList (PContainer* nContainer, u8 nLo
   PContainerEntry* tEntry;
   PMessage* entryMsg;
  
-
+//Console->Print(YELLOW, BLACK, "BuildContainerContentList for loc %d", nLocType);
   if(nLocType != INV_LOC_BOX)
   {
     if(nLocType == INV_LOC_BACKPACK)
@@ -1972,6 +1911,11 @@ PMessage* PMsgBuilder::BuildContainerContentList (PContainer* nContainer, u8 nLo
   {
     tEntry = Entries->at(i);
     entryMsg = BuildContainerContentEntry(tEntry, nLocType);
+//if(tEntry->mItem->mItemID == 390)
+//{
+//Console->Print(YELLOW, BLACK, "BuildContainerContentList entry %d - size %d", i, entryMsg->GetSize());
+//entryMsg->Dump();
+//}
     *tmpMsg << *entryMsg;
     delete entryMsg;
   }
@@ -1984,24 +1928,64 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
 {
   PMessage* tmpMsg = new PMessage(16);
   PItem* tItem;
-  u8 Flags, Qualifier;
+  u8 dataFlags, Qualifier;
   
   tItem = nEntry->mItem;
-  Flags = 0x00 ; // tItem->mPropertiesFlags;
-  switch(tItem->GetQualifier()) // 1=tradeable (0 for medals, dogtags=>personnal stuff), 31=weapon, 15=mod,datacube,slotenh
+  dataFlags = Qualifier = 0x00 ;
+
+/*  switch(tItem->GetQualifier()) // 1=tradeable (0 for medals, dogtags=>personnal stuff), 31=weapon, 15=mod,datacube,slotenh
   {
     case 1:
       Qualifier = 2;
-      Flags |= 0x02;
+      dataFlags |= 0x02;
       break;
     case 31:
       Qualifier = 6;
-      Flags |= 0x02;
+      dataFlags |= 0x02;
+      break;
+    default:
+      Qualifier = 0;
+      break; 
+  }*/
+
+  if((tItem->mItemID == 390) /* testing */ || tItem->mLoadedAmmoNb)
+  {
+    dataFlags |= 0x01;
+  }
+  if((tItem->GetType() == ITEM_TYPE_WEAPON) && (tItem->mItemID == 390)) // testing loaded ammo type
+  {
+    dataFlags |= 0x20;
+  }
+
+  switch(tItem->GetType())
+  {
+    case ITEM_TYPE_WEAPON:
+	case ITEM_TYPE_AUTOWEAPON:
+      Qualifier = 6;
+      dataFlags |= 0x02;
+      break;
+	case ITEM_TYPE_IMPLANT:
+	case ITEM_TYPE_ARMOR:
+      Qualifier = 2;
+      dataFlags |= 0x02;
       break;
     default:
       Qualifier = 0;
       break; 
   }
+  
+  if(tItem->IsStackable() && tItem->mStackSize)
+  {
+	  dataFlags |= 0x04;
+  }
+  
+  if((tItem->mModificators) || (tItem->mItemID == 390)) // TEST
+	  dataFlags |= 0x10;
+
+  if(tItem->mMaxSlots || (tItem->mItemID == 390)) // TEST
+	  dataFlags |= 0x40;
+ 
+  
   
   if(nLocType == INV_LOC_BOX)
     *tmpMsg << (u8)0x00;     // Size of item placeholder
@@ -2024,20 +2008,23 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
       break;
     case INV_LOC_BOX:
     case INV_LOC_BOX2:
-      break;      
-    default:      
+      break;
+    default:
       break;
   }
    
   *tmpMsg << (u16)tItem->mItemID; // ItemID
-  *tmpMsg << (u8)Flags; // (0x01|0x02|0x10|0x40);      // Datatype
+  *tmpMsg << (u8)dataFlags; // (0x01|0x02|0x04|0x10|0x20|0x40|0x80); // Datatypes
   
-  if(Flags & 0x01)
+  if(dataFlags & 0x01)
   {
-    *tmpMsg << (u8)tItem->mLoadedAmmoNb; // Remaining ammos
+	if(tItem->GetType()==ITEM_TYPE_WEAPON) // TESTING
+		*tmpMsg << (u8)6; // Remaining ammos
+	else
+		*tmpMsg << (u8)tItem->mLoadedAmmoNb; // Remaining ammos
   }
 
-  if(Flags & 0x02)
+  if(dataFlags & 0x02)
   {
     *tmpMsg << (u8)Qualifier; // Qual entries
     if(Qualifier >= 2)
@@ -2054,40 +2041,62 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
     }
   }
 
-  if(Flags & 0x04)
+  if(dataFlags & 0x04)
   {
     *tmpMsg << (u32)tItem->mStackSize;
   }
 
-  if(Flags & 0x10)
+  if(dataFlags & 0x10)
   {
-    *tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
+	  if(tItem->mItemID == 390)
+		*tmpMsg << (u8)4;
+	  else
+		*tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
   }
 
-//    if(Flags & 0x20)
-//    {
-//      
-//    }
-                  
-  if(Flags & 0x40)
+  
+  if(dataFlags & 0x40)
   {
+	  if(tItem->mItemID == 390)
+	  {
+		  *tmpMsg << (u8)3;
+		  *tmpMsg << (u8)3;
+		  *tmpMsg << (u16)0x000b; // enlarged
+		  *tmpMsg << (u16)0x05de; // phosophore
+		  *tmpMsg << (u16)(-3); // silencer
+	  }
+	  else
+	  {
+			
     *tmpMsg << (u8)tItem->mUsedSlots; // used slots
     *tmpMsg << (u8)tItem->mMaxSlots; // max slots
     for(u8 j = 0; j < tItem->mMaxSlots; ++j)
-      *tmpMsg << (u16)tItem->mSlot[j]; // mod in slot
+      *tmpMsg << (u16)( (j < tItem->mUsedSlots) ? tItem->mSlot[j] : 0 ); // mod in slot
+	  }
   }
   
-//    if(Flags & 0x80)
-//    {
-//      *tmpMsg << (u8)0x01; // use ???
-//    }
+  if(dataFlags & 0x20) // loaded ammo type ????
+  {
+    *tmpMsg << (u8)0x04;
+	*tmpMsg << (u8)0x00;
+	*tmpMsg << (u8)0x01;
+    *tmpMsg << (u8)0x04;
+    *tmpMsg << (u8)0x00; // + baseammo => current ammoId
+	*tmpMsg << (u8)0x0c; // supported ammos bitmap
+  }
+
   
+//    if(dataFlags & 0x80)
+//    {
+//      *tmpMsg << (u8)0x01; // name id for named/BP/rare part ???
+//    }
+
   if(nLocType == INV_LOC_BOX)
     tmpMsg->U8Data(0) = tmpMsg->GetSize() - 1;
   else
     tmpMsg->U16Data(0) = tmpMsg->GetSize() - 2;
-    
-  return tmpMsg;  
+
+  return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildCharOpenContainerMsg (PClient* nClient, u32 nContainerID, PContainer* nContainer)
@@ -2195,6 +2204,52 @@ PMessage* PMsgBuilder::BuildBoxItemMoveMsg (PClient* nClient, PContainerEntry* n
   return tmpMsg;
 }
 
+/*PMessage* PMsgBuilder::BuildItemAmmoUpdateMsg (PClient* nClient, PContainerEntry* nEntry, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt)
+{
+  PMessage* tmpMsg = new PMessage(64);
+  PMessage* entryMsg = BuildContainerContentEntry(nEntry, INV_LOC_BOX2);
+
+  nClient->IncreaseUDP_ID();
+  nClient->IncreaseTransactionID();
+      
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u16)nClient->GetSessionID();
+  
+  *tmpMsg << (u8)0x09; // Message length
+  *tmpMsg << (u8)0x03;
+  *tmpMsg << (u16)nClient->GetUDP_ID();
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)nClient->GetLocalID();
+  *tmpMsg << (u8)0x25;
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)nClient->GetTransactionID();
+  *tmpMsg << (u8)0x17; // BoxItemMove Answer Src
+  *tmpMsg << (u8)INV_LOC_BOX; // Src = Box
+  *tmpMsg << nSrcX;
+  *tmpMsg << nSrcY;
+  *tmpMsg << nItemCnt;
+  *tmpMsg << (u8)0x00; // Qty high
+  *tmpMsg << (u8)0x18; // BoxItemMove Answer Dst
+  *tmpMsg << nDestination;
+  *tmpMsg << nDestX;
+  *tmpMsg << nDestY;
+  *tmpMsg << *entryMsg;
+  *tmpMsg << (u8)0x12; // ? vary ...
+  *tmpMsg << (u8)0x00;
+  
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+  
+  delete entryMsg;
+  return tmpMsg;
+}*/
+	/* Resp:
+03:33:00:1f:01:00:25:13
+	c2:01:0a:00:02:00:00:00 ??
+	c3:01:05:03:00:00:12 Update ammo left
+	c4:01:05:02:00:00:0c Update ammo left
+	*/
+			  
 PMessage* PMsgBuilder::BuildStartHackGameMsg(PClient* nClient, u32 nWorldObjID, u8 nHackDifficult)
 {
     PMessage* tmpMsg = new PMessage(22);
@@ -2576,6 +2631,38 @@ PMessage* PMsgBuilder::BuildTraderItemListMsg(PClient* nClient, u32 nTraderNpcID
     delete ContentList;
 
     return tmpMsg;
+}
+
+// For testing - packet to be broadcasted to zone
+PMessage* PMsgBuilder::BuildNpcDeathMsg (PClient* nClient, u32 nNpcId, u8 unknown1, u8 unknown2)
+{
+  PMessage* tmpMsg = new PMessage(19);
+  PChar *nChar = nClient->GetChar();
+
+  *tmpMsg << (u8)0x13;
+  *tmpMsg << (u16)0x0000; // placeholder for UDP_ID;
+  *tmpMsg << (u16)0x0000; // placeholder for SessionID();	
+
+  *tmpMsg << (u8)0x00;  // Message length placeholder;
+  *tmpMsg << (u8)0x1b;
+  *tmpMsg << (u32)nNpcId;
+  *tmpMsg << (u8)0x1f;
+  *tmpMsg << (u16)(nChar->Coords.mY + 768 + 30); //move Npc near to char :p
+  *tmpMsg << (u16)(nChar->Coords.mZ + 768 + 0);
+  *tmpMsg << (u16)(nChar->Coords.mX + 768 + 30);
+  *tmpMsg << (u8)2; // ??? 0x01=look at target, 0x02=?, 0x10 = kneel, 0x80 = die
+  *tmpMsg << (u8)1; //0=> dead on health 0 / else alive on health 0. Changes in caps
+  *tmpMsg << (u8)96; // health => 0 alive if prec >0 1-127 alive, <0 dead (ie u8 128-255 = neg signed values)
+  *tmpMsg << (u16)259; // targetId (N)PC - Here: left copbot at NC entrance (zone 2008)
+  *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
+  *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
+  *tmpMsg << (u8)0; // ? changes in caps
+  *tmpMsg << (u8)0; // ? changes in cpas
+
+  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+  unknown2 = unknown1; // so that gcc doesn't complain if these vars are not used
+  return tmpMsg;
 }
 
 /*

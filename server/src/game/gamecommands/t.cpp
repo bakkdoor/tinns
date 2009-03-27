@@ -20,7 +20,52 @@
 */
 #include "main.h"
 
-/*
+void PCommands::doCmd_dev_t()
+{
+  const char* usage = "Usage: @t r <rawid> (to remove object) | @t d <rawid> [<v1=74> [<v2=29>]] (to send death packet to object with args v1 v2)";
+  char tmpStr[128];
+  const char* textMsg = usage;
+  PMessage* tmpMsg = NULL;
+  char Arg1[30];
+
+  if(IsAdmin() == false)
+        return;
+
+  Arg1[0] = tmpStr[0] = '\0';
+
+  if(ArgC >=2)
+  {
+      GetArgText(1, Arg1, 30);
+      u32 targetObjectId = GetArgInt(2) & 0xffffffff;
+      if(Arg1[0] == 'r')
+      {
+        tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg (targetObjectId);
+        snprintf(tmpStr, 127, "Removing world object id 0x%08x", targetObjectId);
+        textMsg = tmpStr;
+      }
+      else if(Arg1[0] == 'd')
+      {
+        u8 val1 = 0x4a; // default values
+        u8 val2 = 0x1e;
+
+        if(ArgC >= 3)
+          val1 = GetArgInt(3) & 0xff;
+        if(ArgC >= 4)
+          val2 = GetArgInt(4) & 0xff;
+        tmpMsg = MsgBuilder->BuildNpcDeathMsg (source, targetObjectId, val1, val2);
+        snprintf(tmpStr, 127, "Sending Death update to object id 0x%08x with values 0x%02x 0x%02x", targetObjectId, val1, val2);
+        textMsg = tmpStr;
+      }
+  }
+
+  tmpStr[127] = '\0';
+  Chat->send(source, CHAT_DIRECT, "System", textMsg);
+
+  if(tmpMsg)
+    ClientManager->UDPBroadcast(tmpMsg, source);
+}
+
+/*** Packet fields testing. Please do not delete (Hammag)
 void PCommands::doCmd_dev_t()
 {
     if(IsAdmin() == false)
@@ -86,8 +131,9 @@ void PCommands::doCmd_dev_t()
     //ClientManager->UDPBroadcast(SendMsg, source);
     source->SendUDPMessage(SendMsg);
 }
-*/
+***/
 
+/*** Subwy testing. Please do not delete (Hammag)
 void PCommands::doCmd_dev_t()
 {
   if(IsAdmin() == false)
@@ -276,3 +322,4 @@ source->SendUDPMessage(msg);
   tmpStr[127] = '\0';
   Chat->send(source, CHAT_DIRECT, "System", tmpStr);
 }
+***/

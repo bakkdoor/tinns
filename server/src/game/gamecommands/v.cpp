@@ -35,7 +35,7 @@ void PCommands::doCmd_dev_v()
     }
 
     char tmpStr[128];
-    int testmode = 0; // change here only for u8/u16/u32 testvalue use
+    int testmode = 1; // change here only for u8/u16/u32 testvalue use
 
     if(Arg1[0] != '\0')
     {

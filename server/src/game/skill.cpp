@@ -424,21 +424,17 @@ int PSkillHandler::GetSKPCost(SUB_SKILLS Skill)
     {
         return 1;
     }
-    else if(skillvalue > 49 && skillvalue < 75)
+    else if(skillvalue < 75)
     {
         return 2;
     }
-    else if(skillvalue > 74 && skillvalue < 100)
+    else if(skillvalue < 100)
     {
         return 3;
     }
-    else if(skillvalue > 99)
-    {
-        return 5;
-    }
     else
     {
-        return 1;
+        return 5;
     }
 }
 

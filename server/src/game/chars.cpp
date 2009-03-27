@@ -199,7 +199,7 @@ PChar::PChar()
 	mQuickBeltActiveSlot = INV_WORN_QB_NONE;
 
 	mLookingAt = 0;
-	mLookAtTimer = 0;
+	mLookAtTimestamp = 0;
 
 	mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
 
@@ -468,7 +468,7 @@ if (gDevDebug) Console->Print(GREEN, BLACK, "Adding item %d to base inventory", 
       PItem* NewItem = new PItem(BaseItemID);
       if (NewItem->GetItemID())
       {
-        NewItem->MakeStandardItem(120, 180); // global quality range
+        NewItem->MakeItemStandard(120, 180); // global quality range
         mInventory.AddItem(NewItem);
       }
       else
@@ -992,10 +992,20 @@ void PChar::SetSeatInUse(PSeatType nSeatType, u32 nObjectId, u8 nSeatId)
 {
   mSeatInUseType = nSeatType;
   mSeatInUseObjectId = nObjectId; 
-  mSeatInUseSeatId = nSeatId;  
+  mSeatInUseSeatId = nSeatId;
 }
-       
-    
+
+void PChar::SetLookingAt(u16 nCharID)
+{
+  mLookingAt = nCharID;
+  mLookAtTimestamp = std::time(NULL);
+}
+
+u16 PChar::GetLookingAt(u16 nMaxDelaySec)
+{
+  return ( ((mLookAtTimestamp + nMaxDelaySec) >= std::time(NULL)) ? mLookingAt : 0 );
+}
+
 // ===================================
 
 PChars::PChars()

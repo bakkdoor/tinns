@@ -372,7 +372,7 @@ bool PUdpCharTargeting::DoAction()
 
     tChar->SetLookingAt(CharID);
 
-    if (gDevDebug) Console->Print("Char %d targeting char %d. // %d %d %d", mDecodeData->mClient->GetID(), strangeval1, strangeval2, strangeval3);
+    if (gDevDebug) Console->Print("Char %d targeting char %d. // %d %d %d", mDecodeData->mClient->GetID(), CharID, strangeval1, strangeval2, strangeval3);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

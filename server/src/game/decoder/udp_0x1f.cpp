@@ -44,6 +44,7 @@
 #include "udp_itemmove.h"
 #include "udp_hack.h"
 #include "udp_outfitter.h"
+#include "udp_helditemaction.h"
 
 /**** PUdp0x1f ****/
 
@@ -66,6 +67,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
       nextAnalyser = new PUdpHackInit(mDecodeData);
       break;
     }
+    case 0x01:
+    {
+      nextAnalyser = new PUdpHeldItemAction(mDecodeData);
+      break;
+	}
     case 0x02:
     {
       nextAnalyser = new PUdpCharJump(mDecodeData);
@@ -115,7 +121,19 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         {
           nextAnalyser = new PUdpItemMoveBP(mDecodeData);
           break;
-        }   
+        }
+		case 0x17: // Item drop on item
+        {
+          nextAnalyser = new PUdpItemDropOnItem(mDecodeData);
+          break;
+        }
+        case 0x18: // And Next byte = 0x0e
+        {
+          nextAnalyser = new PUdpManualReloadItem(mDecodeData);
+          break;
+        }
+        case 0x1d: // ? before Packet0: 0b 03 01 00 1f 00 00 25 1d 00 00 01
+        case 0x1e: // ? before Packet0: 0d 03 02 00 1f 00 00 25 1e ff ff ff ff 00
         default:
         {
           mDecodeData->mUnknownType = MsgSubType;

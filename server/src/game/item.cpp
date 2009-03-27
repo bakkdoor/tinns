@@ -41,7 +41,16 @@ PItem::PItem(u32 ItemID, u8 nStackSize, u8 CurDur, u8 MaxDur, u8 Dmg, u8 Freq, u
     mItemID = ItemID;
     mStackable = mDefItem->IsStackable();
     mStackSize = mStackable ? nStackSize : 1;
+
+    mLoadedAmmoId = 0;
+    mLoadedAmmoNb = 0;
+
+    mPropertiesFlags = 0;
+
+    mUsedSlots = mMaxSlots = 0;
+    mModificators = 0;
     
+    mConstructorId = 0;
     //mType = mDefItem->GetType();
     //mValue1 = mDefItem->GetValue1();
     //mValue2 = mDefItem->GetValue2();
@@ -74,35 +83,47 @@ PItem::PItem(u32 ItemID, u8 nStackSize, u8 CurDur, u8 MaxDur, u8 Dmg, u8 Freq, u
   }
 }
 
-void PItem::MakeStandardItem(u8 GlobalQualityMin, u8 GlobalQualityMax)
+void PItem::MakeItemStandard(u8 GlobalQualityMin, u8 GlobalQualityMax)
 {
   if(GlobalQualityMin > GlobalQualityMax) GlobalQualityMin = GlobalQualityMax;
-  
-  u8 GlobalQual = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
 
   mCurDuration = 255;
   mMaxDuration = 255;
-  mDamages = GlobalQual;
-  mFrequency = GlobalQual;
-  mHandling = GlobalQual;
-  mRange = GlobalQual;
+  if(GlobalQualityMin == GlobalQualityMax)
+  {
+	mDamages = GlobalQualityMin;
+	mFrequency = GlobalQualityMin;
+	mHandling = GlobalQualityMin;
+	mRange = GlobalQualityMin;
+  }
+  else
+  {
+	mDamages = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mFrequency = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mHandling = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mRange = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+  }
   
 }
 
-u8 PItem::AddToStack(u8 ItemNb)
+u8 PItem::AddToStack(u8 ItemNb) // returns nb of items not added
 {
   u8 addedItems = 0;
   if (mStackable)
   {
-    addedItems = min(mStackSize + ItemNb, MAX_ITEMSTACK_SIZE) - mStackSize;
+    addedItems = (ItemNb <= (MAX_ITEMSTACK_SIZE - mStackSize)) ? ItemNb : (MAX_ITEMSTACK_SIZE - mStackSize);
     mStackSize += addedItems;
   }
-  return addedItems;
+  return (ItemNb - addedItems);
 }
 
 u8 PItem::TakeFromStack(u8 ItemNb)
 {
-  u8 retreivedItems = min(mStackSize, ItemNb);
-  mStackSize -= retreivedItems;
+  u8 retreivedItems = 0;
+  if (mStackable)
+  {
+	retreivedItems = min(mStackSize, ItemNb);
+	mStackSize -= retreivedItems;
+  }
   return retreivedItems; 
 }

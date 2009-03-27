@@ -43,14 +43,14 @@ class PUdpItemMove : public PUdpMsgAnalyser
     u8 mDstX;
     u8 mDstY;
     u8 mItemCnt;
- 
-    PContainer* GetContainerByLoc(PChar* nChar, u8 nLoc);
-    
+
   public:
       PUdpItemMove(PMsgDecodeData* nDecodeData);
       //~PUdpItemMove();
       PUdpMsgAnalyser* Analyse();
       bool DoAction();
+
+	  static PContainer* GetContainerByLoc(PChar* nChar, u8 nLoc);
 };
 
 class PUdpItemMoveBP : public PUdpMsgAnalyser
@@ -68,4 +68,33 @@ class PUdpItemMoveBP : public PUdpMsgAnalyser
       bool DoAction();
 };
 
+class PUdpItemDropOnItem : public PUdpMsgAnalyser
+{
+  private:
+    u8 mSrcLoc;
+    u8 mSrcX;
+    u8 mSrcY;
+    u8 mDstLoc;
+    u8 mDstX;
+    u8 mDstY;
+
+  public:
+	PUdpItemDropOnItem(PMsgDecodeData* nDecodeData);
+	//~PUdpItemDropOnItem();
+	PUdpMsgAnalyser* Analyse();
+	bool DoAction();
+};
+
+
+class PUdpManualReloadItem : public PUdpMsgAnalyser
+{
+  private:
+    u8 mUnknown;
+
+  public:
+      PUdpManualReloadItem(PMsgDecodeData* nDecodeData);
+      //~PUdpManualReloadItem();
+      PUdpMsgAnalyser* Analyse();
+      bool DoAction();
+};
 #endif

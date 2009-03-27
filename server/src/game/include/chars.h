@@ -161,7 +161,7 @@ class PChar
 		u8 mQuickBeltActiveSlot; // QB SlotID of item "in hand", or INV_WORN_QB_HAND or INV_WORN_QB_NONE
 
 		u16 mLookingAt;  // Zone charID of currently targeted player
-    std::time_t mLookAtTimer; // Lifetimer of lookat var
+    std::time_t mLookAtTimestamp; // Lifetimer of lookat var
 
     bool mIsOnline;
 		bool mDirtyFlag;
@@ -208,8 +208,8 @@ class PChar
     inline void SetBodyEffect(u8 nEffect, u8 nDensity = 0) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
     inline void SetSpeedOverride(u8 nSpeed = 255) { mSpeedOverride = nSpeed; }
 
-    inline void SetLookingAt(u16 nCharID) { mLookingAt = nCharID; mLookAtTimer = std::time(NULL) + 1; };
-    inline u16 GetLookingAt() { if(mLookAtTimer < std::time(NULL)) return mLookingAt; else return 0; };
+    void SetLookingAt(u16 nCharID);
+    u16 GetLookingAt(u16 nMaxDelaySec = 1);
 
     inline PInventory* GetInventory() { return &mInventory; }
 		inline u32 GetID() const { return mID; }
