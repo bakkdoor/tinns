@@ -69,6 +69,8 @@ class PNPC
             npc_angle,
             npc_clothing,
             npc_loot,
+            npc_unknown,
+            npc_trader,  // trader.def entry, or clan/faction data!
             npc_customname,
             npc_customscript
         };
@@ -84,6 +86,8 @@ class PNPC
         u16 mPosZ;
         s8 mAngle;
         u16 mLoot;
+        u16 mUnknown;
+        u16 mTrader;
         std::string mName;
         std::string mCustomName;
         std::string mCustomLua;

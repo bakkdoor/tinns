@@ -1658,9 +1658,26 @@ Hammag; 19.03.2009 13:00 GMT+1
   Fixed some errors in apartment Genrep'ing code
   Implemted Venture Warp
 
-Hammag; 19.03.2009 13:00 GMT+1
+Hammag; 20.03.2009 14:20 GMT+1
 ----------
 [rev. 105]
 
 <Gameserver>
   Implemted Outfitter (not persistent yet. No need for that now)
+
+Hammag; 21.03.2009 14:20 GMT+1
+----------
+[rev. 106 - 108]
+
+<Database> (by Sting)
+  Slight changes to npcspawn table in Game Database.
+  Removal of most npc out of J01
+
+<Gameserver>
+  Fixed inventory so that items found in boxes and put in inventory are saved as expected
+  Some testing code for inventory
+  Fixed entry in Subway cabs, which had been broken during addition of vhc
+  
+<SVN>
+  Removed zipped database sql files, and put a non-compressed version instead. this will allow to track the changes made to these file.
+  Nota: We should later split these files in database structure files on the one hand, and database data on the other hand.

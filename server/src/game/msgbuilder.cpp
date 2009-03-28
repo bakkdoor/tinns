@@ -1868,26 +1868,11 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
   tItem = nEntry->mItem;
   dataFlags = Qualifier = 0x00 ;
 
-/*  switch(tItem->GetQualifier()) // 1=tradeable (0 for medals, dogtags=>personnal stuff), 31=weapon, 15=mod,datacube,slotenh
-  {
-    case 1:
-      Qualifier = 2;
-      dataFlags |= 0x02;
-      break;
-    case 31:
-      Qualifier = 6;
-      dataFlags |= 0x02;
-      break;
-    default:
-      Qualifier = 0;
-      break; 
-  }*/
-
   if((tItem->mItemID == 390) /* testing */ || tItem->mLoadedAmmoNb)
   {
     dataFlags |= 0x01;
   }
-  if((tItem->GetType() == ITEM_TYPE_WEAPON) && (tItem->mItemID == 390)) // testing loaded ammo type
+  if((tItem->GetType() == ITEM_TYPE_WEAPON) || (tItem->GetType() == ITEM_TYPE_BLUEPRINT) /*|| (tItem->GetType() == ITEM_TYPE_APARTMENTKEY) || (tItem->GetType() == ITEM_TYPE_CLANKEY)*/ ) // testing loaded ammo type & BP attributes
   {
     dataFlags |= 0x20;
   }
@@ -1976,14 +1961,9 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
     }
   }
 
-  if(dataFlags & 0x04)
-  {
-    *tmpMsg << (u32)tItem->mStackSize;
-  }
-
   if(dataFlags & 0x10)
   {
-	  if(tItem->mItemID == 390)
+	  if(tItem->mItemID == 390) // test
 		*tmpMsg << (u8)4;
 	  else
 		*tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
@@ -1992,7 +1972,7 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
   
   if(dataFlags & 0x40)
   {
-	  if(tItem->mItemID == 390)
+	  if(tItem->mItemID == 390) // test
 	  {
 		  *tmpMsg << (u8)3;
 		  *tmpMsg << (u8)3;
@@ -2012,12 +1992,60 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
   
   if(dataFlags & 0x20) // loaded ammo type ????
   {
-    *tmpMsg << (u8)0x04;
-	*tmpMsg << (u8)0x00;
-	*tmpMsg << (u8)0x01;
-    *tmpMsg << (u8)0x04;
-    *tmpMsg << (u8)0x00; // + baseammo => current ammoId. 0xff => undefined
-	*tmpMsg << (u8)0x0c; // supported ammos bitmap
+    u16 lengthFieldOffset = tmpMsg->GetNextByteOffset();
+    *tmpMsg << (u16)0x0000; // length placeholder
+
+    if(tItem->GetType() == ITEM_TYPE_WEAPON)
+    {
+      *tmpMsg << (u8)0x01; // ammo info
+      *tmpMsg << (u8)0x04; // total length ?
+      *tmpMsg << (u8)0x00; // + baseammo => current ammoId. 0xff => undefined
+      *tmpMsg << (u8)0xff; // supported ammos bitmap (all here)
+    }
+
+    if(false && (tItem->GetType() == ITEM_TYPE_APARTMENTKEY)) // Apartment key
+    {
+      *tmpMsg << (u8)0x02; // ammo info
+      *tmpMsg << (u8)0x06; // total length
+      *tmpMsg << (u32)123456; // Owner CharID
+    }
+
+    if(false && (tItem->GetType() == ITEM_TYPE_CLANKEY)) // ClanKey
+    {
+      *tmpMsg << (u8)0x04; // BP of... info
+      *tmpMsg << (u8)0x0a; // total length
+      *tmpMsg << (u32)1234; // ClanID ?
+      *tmpMsg << (u32)123456; // Clan leader CharID ?
+    }
+
+    if(tItem->GetType() == ITEM_TYPE_BLUEPRINT) // BP
+    {
+      *tmpMsg << (u8)0x05; // BP of... info
+      *tmpMsg << (u8)0x06; // total length
+      *tmpMsg << (u32)486; // ItemID ("Tangent Sniper Rifle")
+    }
+
+    if(tItem->GetType() == ITEM_TYPE_BLUEPRINT) // BP
+    {
+      *tmpMsg << (u8)0x05; // BP of... info
+      *tmpMsg << (u8)0x06; // total length
+      *tmpMsg << (u32)486; // ItemID ("Tangent Sniper Rifle")
+    }
+
+    if((tItem->mConstructorId) || (tItem->mItemID == 390)) // itemId 390: test
+    {
+      *tmpMsg << (u8)0x0a; // constructor info
+      *tmpMsg << (u8)0x06; // total length
+      //*tmpMsg << (u32)tItem->mConstructorId; // charID
+      *tmpMsg << (u32)2;
+    }
+    
+    tmpMsg->U16Data(lengthFieldOffset) = tmpMsg->GetNextByteOffset() - lengthFieldOffset - 2;
+  }
+
+  if(dataFlags & 0x04)
+  {
+    *tmpMsg << (u32)tItem->mStackSize;
   }
 
   
@@ -2592,7 +2620,7 @@ PMessage* PMsgBuilder::BuildNpcDeathMsg (PClient* nClient, u32 nNpcId, u8 unknow
   *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
   *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
   *tmpMsg << (u8)0; // ? changes in caps
-  *tmpMsg << (u8)0; // ? changes in cpas
+  *tmpMsg << (u8)0; // ? changes in caps
 
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 

@@ -78,6 +78,9 @@ bool PNPC::SQL_Load()
     mPosZ = atoi(row[npc_z]);
     mAngle = atoi(row[npc_angle]);
     mLoot = atoi(row[npc_loot]);
+    mUnknown = atoi(row[npc_unknown]);
+    mTrader = atoi(row[npc_trader]);
+
 
     if(row[npc_name] != NULL)
         mName = row[npc_name];
@@ -88,7 +91,7 @@ bool PNPC::SQL_Load()
     if(row[npc_customscript] != NULL)
         mCustomLua = row[npc_customscript];
 
-    if(gDevDebug) Console->Print("[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str());
+    if(gDevDebug) Console->Print("[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str());
     MySQL->FreeGameSQLResult(result);
     return true;
 }
@@ -126,6 +129,8 @@ PNPC::PNPC(int nSQLID)
     mPosY = 0;
     mPosZ = 0;
     mAngle = 0;
+    mUnknown = 0;
+    mTrader = 0;
     mLoot = 0;
     mName = "";
     mCustomName = "";
@@ -251,10 +256,8 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
             *npc_initmsg << (u16)tNPC->mPosZ;
             *npc_initmsg << (u16)tNPC->mPosX;
             *npc_initmsg << (u8)0x00; // Was always 0x00 in all logs
-            *npc_initmsg << (u8)0x57; // ??
-            *npc_initmsg << (u8)0x00; // ??
-            *npc_initmsg << (u8)0x6E; // Clan/FactionID
-            *npc_initmsg << (u8)0x00; // Clan/FactionID
+            *npc_initmsg << (u16)tNPC->mUnknown;
+            *npc_initmsg << (u16)tNPC->mTrader;
             *npc_initmsg << tNPC->mName.c_str();
             *npc_initmsg << tAngleStr.c_str();
             if(tUseCustomName == true)
