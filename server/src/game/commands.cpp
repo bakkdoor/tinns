@@ -466,7 +466,7 @@ void PCommands::InitWarpCircle(PClient* nClient)
 
 void PCommands::InitCharVanish(PClient* nClient)
 {
-    PMessage* tmpMsg_vanish = MsgBuilder->BuildCharVanishMsg (nClient);
+    PMessage* tmpMsg_vanish = MsgBuilder->BuildRemoveWorldObjectMsg (nClient->GetLocalID());
     ClientManager->UDPBroadcast(tmpMsg_vanish, nClient, 0, true);
     tmpMsg_vanish = NULL;
 }

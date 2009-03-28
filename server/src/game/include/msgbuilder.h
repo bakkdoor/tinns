@@ -60,7 +60,6 @@ class PMsgBuilder
   PMessage* BuildDoorOpenMsg (u32 nRawItemID, bool nDoubleDoor = false);
   PMessage* BuildCharUseSeatMsg (PClient* nClient, u32 nRawObjectId, u8 nSeatId = 0);
   PMessage* BuildCharShowGlowCircleMsg (PClient* nClient);
-  PMessage* BuildCharVanishMsg (PClient* nClient);
 
   PMessage* BuildSpawnWorldObjectMsg (u16 nModelID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ);
   PMessage* BuildRemoveWorldObjectMsg (u32 nWOID);

@@ -142,72 +142,57 @@ bool PUdpUseObject::DoAction()
         }
         if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // else might be PC, NPC, VHC
         {
-            //if (gDevDebug)
-              Console->Print("Clicking on char, npc or vhc %d (%x) - time = %d", mRawItemID, mRawItemID, GameServer->GetGameTime());
-            
-            if(PSpawnedVehicles::IsPotentialSpawnedVehicle(mRawItemID))
+          //if (gDevDebug)
+            Console->Print("Clicking on char, npc or vhc %d (%x) - time = %d", mRawItemID, mRawItemID, GameServer->GetGameTime());
+          
+          if(PSpawnedVehicles::IsPotentialSpawnedVehicle(mRawItemID))
+          {
+            bool vhcFound = false;
+            PSeatType cSeatType = tChar->GetSeatInUse();
+            if(cSeatType == seat_none)
             {
-Console->Print("Potential vhc");
-							PSeatType cSeatType = tChar->GetSeatInUse();
-							if(cSeatType == seat_none)
-							{
-								PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
-							  if(CurrentWorld)
-							  {
-							    PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle(mRawItemID);
-							    if(tVhc)
-							    {
-										u8 nSeatId = 0;
-										if ((nSeatId == 0) &&  (tVhc->GetInformation().GetOwnerCharId() !=  tChar->GetID())) //pilot
-										{
-											tmpMsg = MsgBuilder->BuildText100Msg(nClient, 17, mRawItemID); // "Not owner" msg
-											nClient->SendUDPMessage(tmpMsg);										
-										}
-										else if (!tVhc->GetSeatUser(nSeatId) && tVhc->SetSeatUser(nSeatId, tChar->GetID())) //char could sit
-										{
-											tChar->SetSeatInUse(seat_vhc, mRawItemID, nSeatId);
-                      tmpMsg = MsgBuilder->BuildCharUseSeatMsg(nClient, mRawItemID, nSeatId);
-                      ClientManager->UDPBroadcast(tmpMsg, nClient);
-										}
-										else
-	                  {
-	                      tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
-	                      nClient->SendUDPMessage(tmpMsg);
-	                  }
-									}
-									// else error: invalid vhc
-                }
-								// else error: invalid location
-/****/					} // else char alreay sitting
-            }
-            else
-            {
-              // Is it a NPC ?
-              PNPC* targetNPC = 0;
-              PNPCWorld* currentNPCWorld = NPCManager->GetWorld(tChar->GetLocation());
-              if(currentNPCWorld)
+              PWorld* CurrentWorld = Worlds->GetWorld(nClient->GetChar()->GetLocation());
+              if(CurrentWorld)
               {
-                targetNPC = currentNPCWorld->GetNPC(mRawItemID);
-              }
-              if(targetNPC)
-              {
-                /*if(gDevDebug)*/ Console->Print(YELLOW, BLACK, "[Info] using NPC %d as test trader", mRawItemID);
-  //if(gDevDebug) tContainer->Dump();                      
-                tmpMsg = MsgBuilder->BuildTraderItemListMsg(nClient, mRawItemID);
-  //tmpMsg->Dump();
-                nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
-              }
-              else if((tChar->GetLocation() == PWorlds::mNcSubwayWorldId) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway cab
-              {
-                
-                if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
+                PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle(mRawItemID);
+                if(tVhc)
                 {
-                  u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
-                  if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
+                  vhcFound = true;
+                  u8 nSeatId = 0;
+                  if ((nSeatId == 0) &&  (tVhc->GetInformation().GetOwnerCharId() !=  tChar->GetID())) //pilot
                   {
-                    tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
-                    tmpMsg = MsgBuilder->BuildCharUseSeatMsg (nClient, mRawItemID, freeSeat);
+                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 17, mRawItemID); // "Not owner" msg
+                    nClient->SendUDPMessage(tmpMsg);
+                  }
+                  else if (!tVhc->GetSeatUser(nSeatId) && tVhc->SetSeatUser(nSeatId, tChar->GetID())) //char could sit
+                  {
+                    tChar->SetSeatInUse(seat_vhc, mRawItemID, nSeatId);
+                    tmpMsg = MsgBuilder->BuildCharUseSeatMsg(nClient, mRawItemID, nSeatId);
                     ClientManager->UDPBroadcast(tmpMsg, nClient);
+                  }
+                  else
+                  {
+                    tmpMsg = MsgBuilder->BuildText100Msg(nClient, 1, mRawItemID); // "Already in use" msg
+                    nClient->SendUDPMessage(tmpMsg);
+                  }
+                }
+                else if((tChar->GetLocation() == PWorlds::mNcSubwayWorldId) && Subway->IsValidSubwayCab(mRawItemID) && (tChar->GetSeatInUse() == seat_none)) // Entering subway
+                {
+                  vhcFound = true;
+                  if(Subway->IsDoorOpen(mRawItemID, GameServer->GetGameTime()))
+                  {
+                    u8 freeSeat = Subway->GetFreeSeat(mRawItemID);
+                    if(freeSeat && Subway->SetSeatUser(mRawItemID, freeSeat, tChar->GetID()))
+                    {
+                      tChar->SetSeatInUse(seat_subway, mRawItemID, freeSeat);
+                      tmpMsg = MsgBuilder->BuildCharUseSeatMsg (nClient, mRawItemID, freeSeat);
+                      ClientManager->UDPBroadcast(tmpMsg, nClient);
+                    }
+                    else
+                    {
+                      tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
+                      nClient->SendUDPMessage(tmpMsg);
+                    }
                   }
                   else
                   {
@@ -215,14 +200,33 @@ Console->Print("Potential vhc");
                     nClient->SendUDPMessage(tmpMsg);
                   }
                 }
-                else
-                {
-                  tmpMsg = MsgBuilder->BuildText100Msg(nClient, 6, mRawItemID);
-                  nClient->SendUDPMessage(tmpMsg);
-                }
+                // else error: invalid vhc
               }
+              // else error: invalid location
+            } // else char alreay sitting
+            if(vhcFound)
+              mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
           }
-            
+
+          if (!(mDecodeData->mState & DECODE_ACTION_DONE)) // not a vhc
+          {
+            // Is it a NPC ?
+            PNPC* targetNPC = 0;
+            PNPCWorld* currentNPCWorld = NPCManager->GetWorld(tChar->GetLocation());
+            if(currentNPCWorld)
+            {
+              targetNPC = currentNPCWorld->GetNPC(mRawItemID);
+            }
+            if(targetNPC)
+            {
+              /*if(gDevDebug)*/ Console->Print(YELLOW, BLACK, "[Info] using NPC %d as test trader", mRawItemID);
+//if(gDevDebug) tContainer->Dump();                      
+              tmpMsg = MsgBuilder->BuildTraderItemListMsg(nClient, mRawItemID);
+//tmpMsg->Dump();
+              nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
+            }
+          }
+
           mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
         }
     }

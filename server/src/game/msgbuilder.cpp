@@ -666,54 +666,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
 
     PMessage* ContentList = BuildContainerContentList(nChar->GetInventory()->GetContainer(INV_LOC_BACKPACK), INV_LOC_BACKPACK);
     SectionMsg << *ContentList;
-//ContentList->Dump();
     delete ContentList;
-
-    //SectionMsg << (u16)0x00;
-/*
-    SectionMsg << (u16)0x0001; // Backpack items nb  // section content at offset 3
-
-    SectionMsg << (u16)0x0006; // data size of item
-    SectionMsg << (u8)0x00; // Spare on inventory
-    SectionMsg << (u8)0x02; // pos X
-    SectionMsg << (u8)0x00; // pos Y
-    SectionMsg << (u16)0x0051; // item id (torch)
-    SectionMsg << (u8)0x01;  // type
-    SectionMsg << (u8)0x00;
-*/
-/*
-     //
-     //Section 5
-     //
-     StatsBuffer[len] = 0x05;
-     *(unsigned short*)&StatsBuffer[len+3] = 0; //Reset number of items
-     plen = 5;
-     for (i=0;i<MAX_INVENTORY;i++)
-     {
-      for (t=0;t<MAX_BACKPACK;t++)
-      {
-       if (CurrentChar.Inventory[t]-1 != i)
-        continue;
-
-       y=0;
-       while (y*10 < t)
-        y++;
-       y--;
-       x = t-(y*10);
-       *(unsigned short*)&StatsBuffer[len+plen] = 7;      //Data size of item
-       StatsBuffer[len+plen+2] = 0x00;
-       StatsBuffer[len+plen+3] = x;          //X position in Inventory
-       StatsBuffer[len+plen+4] = y;          //Y position in Inventory
-       *(unsigned short*)&StatsBuffer[len+plen+5] = CurrentChar.ItemList[CurrentChar.Inventory[t]-1].ItemID; //Item ID
-       StatsBuffer[len+plen+7] = 0;          //Type
-       StatsBuffer[len+plen+8] = CurrentChar.ItemList[CurrentChar.Inventory[t]-1].Qty;   //Quantity
-       plen += 9;
-       *(unsigned short*)&StatsBuffer[len+3] += 1;       //Add to item
-       break;
-      }
-     }
-     *(unsigned short*)&StatsBuffer[len+1] = plen-3;   //Size
-     */
 
     *BaselineMsg << (u16)SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
@@ -724,7 +677,6 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
 
     ContentList = BuildContainerContentList(nChar->GetInventory()->GetContainer(INV_LOC_WORN), INV_LOC_WORN);
     SectionMsg << *ContentList;
-//ContentList->Dump();
     delete ContentList;
     
 /*    SectionMsg << (u8)0x04; // QB/Armor/Implants items nb  // section content at offset 3
@@ -1727,23 +1679,6 @@ PMessage* PMsgBuilder::BuildCharUseLiftMsg (PClient* nClient, u32 nRawObjectID, 
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharVanishMsg (PClient* nClient)
-{
-    PMessage* tmpMsg = new PMessage(14);
-
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)0x0000; // UDP ID placeholder
-    *tmpMsg << (u16)0x0000; // SessionID placeholder
-    *tmpMsg << (u8)0x08;    // Len (static, always 0x08
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)0x0000; // Sub UDP ID placeholder
-    *tmpMsg << (u8)0x26;    // Command FADE AWAY CHAR (kinda ^^)
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u16)0x0000;   // No idea yet...
-
-    return tmpMsg;
-}
-
 PMessage* PMsgBuilder::BuildCharShowGlowCircleMsg (PClient* nClient)
 {
     PMessage* tmpMsg = new PMessage(14);
@@ -2081,7 +2016,7 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
 	*tmpMsg << (u8)0x00;
 	*tmpMsg << (u8)0x01;
     *tmpMsg << (u8)0x04;
-    *tmpMsg << (u8)0x00; // + baseammo => current ammoId
+    *tmpMsg << (u8)0x00; // + baseammo => current ammoId. 0xff => undefined
 	*tmpMsg << (u8)0x0c; // supported ammos bitmap
   }
 

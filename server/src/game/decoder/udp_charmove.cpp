@@ -75,7 +75,7 @@ Console->Print(YELLOW, BLACK, "[DEBUG] PUdpCharPosUpdate: Client %d sent Mixed f
       mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 //mDecodeData->mTraceKnownMsg = true;
 //mDecodeData->mTraceDump = true;
-Console->Print(YELLOW, BLACK, "[DEBUG] Localid %d sitting on object %d (0x%08x) seat %d", mDecodeData->mClient->GetLocalID(), mChairItemID, mChairItemID, mChairItemSeat);
+if(gDevDebug) Console->Print(YELLOW, BLACK, "[DEBUG] Localid %d sitting on object %d (0x%08x) seat %d", mDecodeData->mClient->GetLocalID(), mChairItemID, mChairItemID, mChairItemSeat);
     }
   }
   else
