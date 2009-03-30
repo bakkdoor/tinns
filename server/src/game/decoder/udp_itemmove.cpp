@@ -324,11 +324,11 @@ bool PUdpManualReloadItem::DoAction()
 
   nClient->IncreaseUDP_ID();
   nClient->IncreaseTransactionID();
-      
+
   *tmpMsg << (u8)0x13;
   *tmpMsg << (u16)nClient->GetUDP_ID();
   *tmpMsg << (u16)nClient->GetSessionID();
-  
+
   *tmpMsg << (u8)0x00; // Message length
   *tmpMsg << (u8)0x03;
   *tmpMsg << (u16)nClient->GetUDP_ID();
@@ -370,7 +370,7 @@ tmpMsg->Dump();
   
 	tt:tt:02:loc:x:y delete item
 	*/
-	
+
 /* manual reload
   srv resp : 13:58:00:d6:d4:08:03:58:00:1f:01:00:25:16 (do start reload anim - even if no relaod needed or no more ammo avail)
   cli resp: 13:3f:00:bd:d4:08:03:3f:00:1f:01:00:25:25 (reload anim done , also when reaload not possible because mission ammo)

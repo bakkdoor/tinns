@@ -58,7 +58,7 @@ PDefItems::PDefItems()
   mStackable = 0;
   mFillWeight = 0;
   mQualifier = 0;
-  //mGfxmods = 0;
+  mGfxMods = 0;
   mItemGroupID = 0;	
   mTextDescID = 0;
   mBasePrice = 0;
@@ -118,8 +118,7 @@ bool PDefItems::LoadFromDef(PTokenList *Tokens)
 			case 16:
         mQualifier = atoi(i->c_str()); break;
 			case 17:
-        // mGfxmods = atoi(i->c_str()); // used IG ?
-        break;
+        mGfxMods = atoi(i->c_str()); break;
 			case 18:
         mItemGroupID = atoi(i->c_str()); break;
 			case 19:

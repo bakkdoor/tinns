@@ -1872,7 +1872,7 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
   {
     dataFlags |= 0x01;
   }
-  if((tItem->GetType() == ITEM_TYPE_WEAPON) || (tItem->GetType() == ITEM_TYPE_BLUEPRINT) /*|| (tItem->GetType() == ITEM_TYPE_APARTMENTKEY) || (tItem->GetType() == ITEM_TYPE_CLANKEY)*/ ) // testing loaded ammo type & BP attributes
+  if((tItem->GetType() == ITEM_TYPE_WEAPON) || (tItem->GetType() == ITEM_TYPE_BLUEPRINT) || (tItem->GetType() == ITEM_TYPE_WRECKEDPART)/*|| (tItem->GetType() == ITEM_TYPE_APARTMENTKEY) || (tItem->GetType() == ITEM_TYPE_CLANKEY) || (tItem->GetType() == ITEM_TYPE_VHCKEY) */ ) // testing loaded ammo type & BP attributes
   {
     dataFlags |= 0x20;
   }
@@ -1969,7 +1969,6 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
 		*tmpMsg << (u8)tItem->mModificators; // addons bitflag: flashlight=1, scope, silencer, laserpointer
   }
 
-  
   if(dataFlags & 0x40)
   {
 	  if(tItem->mItemID == 390) // test
@@ -2003,19 +2002,19 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
       *tmpMsg << (u8)0xff; // supported ammos bitmap (all here)
     }
 
-    if(false && (tItem->GetType() == ITEM_TYPE_APARTMENTKEY)) // Apartment key
+    if(false && (tItem->GetType() == ITEM_TYPE_APARTMENTKEY)) // activated Apartment key
     {
       *tmpMsg << (u8)0x02; // ammo info
       *tmpMsg << (u8)0x06; // total length
-      *tmpMsg << (u32)123456; // Owner CharID
+      *tmpMsg << (u32)123456; // apartmentObjectID ?
     }
 
-    if(false && (tItem->GetType() == ITEM_TYPE_CLANKEY)) // ClanKey
+    if(false && (tItem->GetType() == ITEM_TYPE_CLANKEY)) // activated ClanKey
     {
       *tmpMsg << (u8)0x04; // BP of... info
       *tmpMsg << (u8)0x0a; // total length
       *tmpMsg << (u32)1234; // ClanID ?
-      *tmpMsg << (u32)123456; // Clan leader CharID ?
+      *tmpMsg << (u32)123456; // apartmentObjectID ?
     }
 
     if(tItem->GetType() == ITEM_TYPE_BLUEPRINT) // BP
@@ -2025,14 +2024,23 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
       *tmpMsg << (u32)486; // ItemID ("Tangent Sniper Rifle")
     }
 
-    if(tItem->GetType() == ITEM_TYPE_BLUEPRINT) // BP
+    if(false && (tItem->GetType() == ITEM_TYPE_VHCKEY)) // activated VHC Key
     {
-      *tmpMsg << (u8)0x05; // BP of... info
-      *tmpMsg << (u8)0x06; // total length
-      *tmpMsg << (u32)486; // ItemID ("Tangent Sniper Rifle")
+      *tmpMsg << (u8)0x08; // VHC Key
+      *tmpMsg << (u8)0x0a; // total length
+      *tmpMsg << (u32)654321; // vhcObjectID ?
+      *tmpMsg << (u32)123456; // Owner CharID ?
     }
 
-    if((tItem->mConstructorId) || (tItem->mItemID == 390)) // itemId 390: test
+    if(false && (tItem->GetType() == ITEM_TYPE_WRECKEDPART)) // Identified rare part
+    {
+      *tmpMsg << (u8)0x09; // Rare part
+      *tmpMsg << (u8)0x05; // total length
+      *tmpMsg << (u16)453; // Rare Item ID ? REDEEMER
+      *tmpMsg << (u8)0; // ??
+    }
+
+    if((tItem->mConstructorId) || (tItem->mItemID == 390)) // Named item /itemId 390: test
     {
       *tmpMsg << (u8)0x0a; // constructor info
       *tmpMsg << (u8)0x06; // total length
@@ -2048,11 +2056,6 @@ PMessage* PMsgBuilder::BuildContainerContentEntry(PContainerEntry* nEntry, u8 nL
     *tmpMsg << (u32)tItem->mStackSize;
   }
 
-  
-//    if(dataFlags & 0x80)
-//    {
-//      *tmpMsg << (u8)0x01; // name id for named/BP/rare part ???
-//    }
 
   if(nLocType == INV_LOC_BOX)
     tmpMsg->U8Data(0) = tmpMsg->GetSize() - 1;

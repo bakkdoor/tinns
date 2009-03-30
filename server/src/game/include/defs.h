@@ -47,6 +47,7 @@
 #include "def_appartements.h"
 #include "def_respawn.h"
 #include "def_worldfile.h"
+#include "def_weapons.h"
 #include "gamedefs.h"
 
 using namespace std;
