@@ -57,4 +57,11 @@ class PDefRespawn
 
 };
 
+
+class PDefRespawnsMap : public PDefMap<PDefRespawn>
+{
+  public:
+    int GetRespawnEntity( u32 nWorldID, u16 nGROrder ) const;
+};
+
 #endif

@@ -47,110 +47,67 @@
 #pragma once
 #endif
 
+#include "defs.h"
 
-typedef std::map<int, PDefCharacter*> PDefCharacterMap;
-typedef std::map<int, PDefSkill*> PDefSkillMap;
-typedef std::map<int, PDefSubSkill*> PDefSubSkillMap;
-typedef std::map<int, PDefCharKind*> PDefCharKindMap;
-typedef std::map<int, PDefWorld*> PDefWorldMap;
-typedef std::map<int, PDefFaction*> PDefFactionMap;
-typedef std::map<int, PDefHack*> PDefHackMap;
-typedef std::map<int, PDefItems*> PDefItemsMap;
-typedef std::map<int, PDefWorldModel*> PDefWorldModelMap;
-typedef std::map<int, PDefAppPlace*> PDefAppPlaceMap;
-typedef std::map<int, PDefAppartement*> PDefAppartementMap;
-typedef std::map<int, PDefRespawn*> PDefRespawnMap;
-typedef std::map<int, PDefWorldFile*> PDefWorldFileMap;
-typedef std::map<int, PDefWeapon*> PDefWeaponMap;
+typedef PDefMap<PDefCharacter> PDefCharactersMap;
+typedef PDefMap<PDefSkill> PDefSkillsMap;
+typedef PDefMap<PDefSubSkill> PDefSubSkillsMap;
+typedef PDefMap<PDefCharKind> PDefCharKindsMap;
+typedef PDefMap<PDefWorld> PDefWorldsMap;
+typedef PDefMap<PDefFaction> PDefFactionsMap;
+typedef PDefMap<PDefHack> PDefHacksMap;
+class PDefItemsMap; // Derived classes for addition of specific members
+typedef PDefMap<PDefWorldModel> PDefWorldModelsMap;
+typedef PDefMap<PDefAppPlace> PDefAppPlacesMap;
+class PDefAppartementsMap;
+class PDefRespawnsMap;
+class PDefWorldFilesMap;
+typedef PDefMap<PDefWeapon> PDefWeaponsMap;
+// ___Add new entries here___
+
 
 class PGameDefs
 {
   private :
-    PDefCharacterMap mCharDefs;
-    PDefSkillMap mSkillDefs;
-    PDefSubSkillMap mSubSkillDefs;
-    PDefCharKindMap mCharKindDefs;
-    PDefWorldMap mWorldDefs;
-    PDefFactionMap mFactionDefs;
-    PDefHackMap mHackDefs;
+    PDefCharactersMap mCharsDefs;
+    PDefSkillsMap mSkillsDefs;
+    PDefSubSkillsMap mSubSkillsDefs;
+    PDefCharKindsMap mCharKindsDefs;
+    PDefWorldsMap mWorldsDefs;
+    PDefFactionsMap mFactionsDefs;
+    PDefHacksMap mHacksDefs;
     PDefItemsMap mItemsDefs;
-    PDefWorldModelMap mWorldModelDefs;
-    PDefAppPlaceMap mAppPlaceDefs;
-    PDefAppartementMap mAppartementDefs;
-    PDefRespawnMap mRespawnDefs;
-    PDefWeaponMap mWeaponDefs;
-    PDefWorldFileMap mWorldFileDefs;
+    PDefWorldModelsMap mWorldModelsDefs;
+    PDefAppPlacesMap mAppPlacesDefs;
+    PDefAppartementsMap mAppartementsDefs;
+    PDefRespawnsMap mRespawnsDefs;
+    PDefWorldFilesMap mWorldFilesDefs;
+    PDefWeaponsMap mWeaponsDefs;
+    // ___Add new entries here___
 
-    PDefItemsMap::const_iterator* DefItemsMapItCache;
-    int DefItemsMapItCacheCount;
-
-    bool LoadCharDefs();
-    bool LoadSkillDefs();
-    bool LoadSubSkillDefs();
-    bool LoadCharKindDefs();
-    bool LoadWorldDefs();
-    bool LoadFactionDefs();
-    bool LoadHackDefs();
-    bool LoadItemsDefs();
-    bool LoadWorldModelDefs();
-    bool LoadAppPlaceDefs();
-    bool LoadAppartementDefs();
-    bool LoadRespawnDefs();
-    bool LoadWorldFileDefs();
-    bool LoadWeaponDefs();
-    void BuildDefItemsMapItCache();
 
   public :
     PGameDefs();
     ~PGameDefs();
 
-    void Init();
+    bool Init();
 
-    inline int GetNumCharDefs() const { return mCharDefs.size(); }
-    const PDefCharacter *GetCharDef( int Index ) const;
-    inline int GetNumCharKindDefs() const { return mCharKindDefs.size(); }
-    const PDefCharKind *GetCharKindDef( int Index ) const;
+    inline const PDefCharactersMap* Chars() const { return &mCharsDefs; }
+    inline const PDefSkillsMap* Skills() const { return &mSkillsDefs; }
+    inline const PDefSubSkillsMap* SubSkills() const { return &mSubSkillsDefs; }
+    inline const PDefCharKindsMap* CharKinds() const { return &mCharKindsDefs; }
+    inline const PDefWorldsMap* Worlds() const { return &mWorldsDefs; }
+    inline const PDefFactionsMap* Factions() const { return &mFactionsDefs; }
+    inline const PDefHacksMap* Hacks() const { return &mHacksDefs; }
+    inline const PDefItemsMap* Items() const { return &mItemsDefs; }
+    inline const PDefWorldModelsMap* WorldModels() const { return &mWorldModelsDefs; }
+    inline const PDefAppPlacesMap* AppPlaces() const { return &mAppPlacesDefs; }
+    inline const PDefAppartementsMap* Appartements() const { return &mAppartementsDefs; }
+    inline const PDefRespawnsMap* Respawns() const { return &mRespawnsDefs; }
+    inline const PDefWeaponsMap* Weapons() const { return &mWeaponsDefs; } 
+    inline const PDefWorldFilesMap* WorldFiles() const { return &mWorldFilesDefs; }
+    // ___Add new entries here___
 
-    inline int GetNumFactionDefs() const { return mFactionDefs.size(); }
-    const PDefFaction *GetFactionDef( int Index ) const;
-
-    inline int GetNumSkillDefs() const { return mSkillDefs.size(); }
-    const PDefSkill *GetSkillDef( int Index ) const;
-    inline int GetNumSubSkillDefs() const { return mSubSkillDefs.size(); }
-    const PDefSubSkill *GetSubSkillDef( int Index ) const;
-
-    inline int GetNumWorldDefs() const { return mWorldDefs.size(); }
-    const PDefWorld *GetWorldDef( int Index ) const;
-
-    inline int GetNumHackDefs() const { return mHackDefs.size(); }
-    const PDefHack *GetHackDef( int Index ) const;
-
-    inline int GetNumItemsDefs() const { return mItemsDefs.size(); }
-    const PDefItems *GetItemsDef( int Index ) const;
-    const PDefItems *GetItemsDefBySeqIndex( int SeqIndex ) const;
-
-    inline int GetNumWorldModelDefs() const { return mWorldModelDefs.size(); }
-    const PDefWorldModel *GetWorldModelDef( int Index ) const;
-
-    inline int GetNumAppPlaceDefs() const { return mAppPlaceDefs.size(); }
-    const PDefAppPlace *GetAppPlaceDef( int Index ) const;
-
-    inline int GetNumAppartementDefs() const { return mAppartementDefs.size(); }
-    const PDefAppartement *GetAppartementDef( int Index ) const;
-    inline PDefAppartementMap::const_iterator GetAppartementDefsConstIteratorBegin() {return mAppartementDefs.begin(); }
-    inline PDefAppartementMap::const_iterator GetAppartementDefsConstIteratorEnd() {return mAppartementDefs.end(); }
-
-    inline int GetNumRespawnDefs() const { return mRespawnDefs.size(); }
-    const PDefRespawn *GetRespawnDef( int Index ) const;
-    int GetRespawnEntity( u32 nWorldID, u16 nGROrder ) const;
-
-    inline int GetNumWeaponDefs() const { return mWeaponDefs.size(); }
-    const PDefWeapon *GetWeaponDef( int Index ) const;
-
-    inline int GetNumWorldFileDefs() const { return mWorldFileDefs.size(); }
-    const PDefWorldFile *GetWorldFileDef( int Index ) const;
-    inline PDefWorldFileMap::const_iterator GetWorldFileDefsConstIteratorBegin() {return mWorldFileDefs.begin(); }
-    inline PDefWorldFileMap::const_iterator GetWorldFileDefsConstIteratorEnd() {return mWorldFileDefs.end(); }
 };
 
 #endif

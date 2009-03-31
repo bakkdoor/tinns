@@ -517,13 +517,13 @@ u8 PContainer::RandomFill(u8 nItemCount)
   if(!nItemCount)
     nItemCount = CONTAINER_MAX_SIZE;
 
-  int NumItemsDefs = GameDefs->GetNumItemsDefs();
+  int NumItemsDefs = GameDefs->Items()->GetNumDefs();
    
   for(u8 i = 0; i < nItemCount; ++i)
   {
     nItemSeqId = GameServer->GetRandom(NumItemsDefs, 1);
     
-    if((nItemDef = GameDefs->GetItemsDefBySeqIndex(nItemSeqId)))
+    if((nItemDef = GameDefs->Items()->GetDefBySeqIndex(nItemSeqId)))
     {                        
       nItem = new PItem(nItemDef->GetIndex(), 1, 255, 255, 255, 255, 255, 255);
       if(nItem->GetItemID())

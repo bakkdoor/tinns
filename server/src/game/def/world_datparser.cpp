@@ -222,7 +222,7 @@ bool PWorldDatParser::ProcessSec2ElemType3(u32 nSize) // furniture
   
   if (DataA.mWorldmodelID)
   {
-    nWorldModel = GameDefs->GetWorldModelDef(DataA.mWorldmodelID);    
+    nWorldModel = GameDefs->WorldModels()->GetDef(DataA.mWorldmodelID);    
     if(nWorldModel)
       nName = nWorldModel->GetName();
     else
@@ -345,7 +345,7 @@ bool PWorldDatParser::ProcessSec2ElemType5(u32 nSize) // doors
  
   if (Data.mWorldmodelID)
   {
-    nWorldModel = GameDefs->GetWorldModelDef(Data.mWorldmodelID);    
+    nWorldModel = GameDefs->WorldModels()->GetDef(Data.mWorldmodelID);    
     if(nWorldModel)
       nName = nWorldModel->GetName();
     else

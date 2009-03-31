@@ -34,7 +34,6 @@
 #pragma once
 #endif
 
-// siiifiiiiififiiffiiifiiiifiiiiiiiiiiiifsffffffiiiiii
 
 class PDefWeapon
 {

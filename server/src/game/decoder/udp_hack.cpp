@@ -91,7 +91,7 @@ bool PUdpHackSuccess::DoAction()
         int tFunctionVal = WorldActors->GetWorldActorFunctionID(mRawItemID);
 
         // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc. Here: Hack difficult
-        tFurnitureModel = GameDefs->GetWorldModelDef(tFunctionVal);
+        tFurnitureModel = GameDefs->WorldModels()->GetDef(tFunctionVal);
         tHandleDynamicActor = true;
     }
     else
@@ -193,7 +193,7 @@ bool PUdpHackStart::DoAction()
         int tFunctionVal = WorldActors->GetWorldActorFunctionID(mRawItemID);
 
         // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc. Here: Hack difficult
-        tFurnitureModel = GameDefs->GetWorldModelDef(tFunctionVal);
+        tFurnitureModel = GameDefs->WorldModels()->GetDef(tFunctionVal);
     }
     else
     {

@@ -59,8 +59,8 @@ PDefCharKind::~PDefCharKind()
 
 bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 {
-	int NumSkills = GameDefs->GetNumSkillDefs();
-	//int NumSubSkills = GameDefs->GetNumSubSkillDefs();
+	int NumSkills = GameDefs->Skills()->GetNumDefs();
+	//int NumSubSkills = GameDefs->SubSkills()->GetNumDefs();
 
 	int SkillInfoStart = 4;
 	int TrainPtsStart = SkillInfoStart+NumSkills*3;
@@ -114,7 +114,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 			{
 				if(SkillIndex >= 1000)	// skill
 				{
-					const PDefSkill *Skill = GameDefs->GetSkillDef(SkillIndex-1000);
+					const PDefSkill *Skill = GameDefs->Skills()->GetDef(SkillIndex-1000);
 					if(Skill)
 					{
 						int Index = Skill->GetIndex()-1;
@@ -129,7 +129,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 					}
 				} else	// subskill
 				{
-					const PDefSubSkill *SubSkill = GameDefs->GetSubSkillDef(SkillIndex);
+					const PDefSubSkill *SubSkill = GameDefs->SubSkills()->GetDef(SkillIndex);
 					if(SubSkill)
 					{
 						int Index = SubSkill->GetIndex()-1;
@@ -157,7 +157,7 @@ bool PDefCharKind::LoadFromDef(PTokenList *Tokens)
 			{
 				if(LevelIndex > 0)
 				{
-					const PDefSubSkill *SubSkill = GameDefs->GetSubSkillDef(LevelIndex);
+					const PDefSubSkill *SubSkill = GameDefs->SubSkills()->GetDef(LevelIndex);
 					if(SubSkill)
 					{
 						PStartLevelInfo *Level = new PStartLevelInfo();

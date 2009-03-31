@@ -510,7 +510,7 @@ bool PWorldActors::IsValidWAFunction(int nFunctionID)
         return true;
 
     // Check if given WO function is a valid one
-    const PDefWorldModel* tFurnitureModel = GameDefs->GetWorldModelDef(nFunctionID);
+    const PDefWorldModel* tFurnitureModel = GameDefs->WorldModels()->GetDef(nFunctionID);
     if(tFurnitureModel == NULL)
         return false;
     else

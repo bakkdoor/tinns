@@ -50,7 +50,7 @@ u32 PAppartements::CreateBaseAppartement(u32 nCharID, std::string nPassword, u8 
   u16 j;
   int AppType;
   
-  for (PDefAppartementMap::const_iterator i=GameDefs->GetAppartementDefsConstIteratorBegin(); i!=GameDefs->GetAppartementDefsConstIteratorEnd(); i++)
+  for (std::map<int, PDefAppartement*>::const_iterator i=GameDefs->Appartements()->ConstIteratorBegin(); i!=GameDefs->Appartements()->ConstIteratorEnd(); i++)
   {
     if (i->second->GetFaction() == nFactionID)
     {
@@ -69,7 +69,7 @@ if (gDevDebug) Console->Print("Added potential Apt of type %d in place %d", AppT
   if(CandidateApts.size())
   {
     j = GameServer->GetRandom(CandidateApts.size()-1);
-if (gDevDebug) Console->Print("Apt n° %d chosen in %d for faction %d", j+1, CandidateApts.size(), nFactionID);
+if (gDevDebug) Console->Print("Apt nï¿½ %d chosen in %d for faction %d", j+1, CandidateApts.size(), nFactionID);
 
 if (gDevDebug) Console->Print("Choosed Apt of type %d in place %d", CandidateApts[j].first, CandidateApts[j].second);    
 

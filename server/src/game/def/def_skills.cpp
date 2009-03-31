@@ -82,7 +82,7 @@ bool PDefSkill::LoadFromDef(PTokenList *Tokens)
 		if(Idx >= 5)
 		{
 			mSubSkills[Idx-5] = atoi(i->c_str());
-			if(!GameDefs->GetSubSkillDef(mSubSkills[Idx-5]))
+			if(!GameDefs->SubSkills()->GetDef(mSubSkills[Idx-5]))
 			{
 				Console->Print("Skill def error: skill %s refers to nonexistant subskill %i", mShortName.c_str(), mSubSkills[Idx-5]);
 				return false;

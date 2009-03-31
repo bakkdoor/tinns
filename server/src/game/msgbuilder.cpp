@@ -465,7 +465,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg (PClient* nClient)
     PMessage SectionMsg(256);
 
     PChar *nChar = nClient->GetChar();
-    const PDefCharKind *def = GameDefs->GetCharKindDef(nChar->GetProfession());
+    const PDefCharKind *def = GameDefs->CharKinds()->GetDef(nChar->GetProfession());
     PSkillHandler *Skill = nChar->Skill;
 
     nClient->IncreaseTransactionID(3);

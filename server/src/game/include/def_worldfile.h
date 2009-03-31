@@ -53,5 +53,13 @@ class PDefWorldFile
 		inline const std::string GetBasicFileName() const { return (mFileInWorldsDir ? (std::string("worlds/") + mName) : mName); };
 };
 
-#endif
 
+class PDefWorldFilesMap : public PDefMap<PDefWorldFile>
+{
+  public:
+    bool Load(const char* nName, const char* nFilename);
+    inline std::map<int, PDefWorldFile*>::const_iterator ConstIteratorBegin() const { return mDefs.begin(); }
+    inline std::map<int, PDefWorldFile*>::const_iterator ConstIteratorEnd() const { return mDefs.end(); }
+};
+
+#endif

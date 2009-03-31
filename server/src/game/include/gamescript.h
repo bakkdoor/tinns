@@ -42,6 +42,6 @@ class PGameScript
         bool LoadScripts();
         bool Rehash();
         void TriggerHook(PHookTypes hook);
-}
+};
 
 #endif

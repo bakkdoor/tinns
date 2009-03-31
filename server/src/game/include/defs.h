@@ -34,6 +34,8 @@
 
 #include "defparser.h"
 
+#include "defmap.h"
+
 #include "def_characters.h"
 #include "def_subskills.h"
 #include "def_skills.h"

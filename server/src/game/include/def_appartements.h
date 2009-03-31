@@ -59,5 +59,12 @@ class PDefAppartement
 		inline int GetFaction() const { return mFaction; }
 };
 
-#endif
 
+class PDefAppartementsMap : public PDefMap<PDefAppartement>
+{
+  public:
+    inline std::map<int, PDefAppartement*>::const_iterator ConstIteratorBegin() const { return mDefs.begin(); }
+    inline std::map<int, PDefAppartement*>::const_iterator ConstIteratorEnd() const { return mDefs.end(); }
+};
+
+#endif

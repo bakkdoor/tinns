@@ -1688,3 +1688,11 @@ Hammag; 30.03.2009 14:20 GMT+1
 
 <Gameserver>
   Added support for weapons.def
+
+Hammag; 31.03.2009 02:35 GMT+1
+----------
+[rev. 110]
+
+<Gameserver>
+  Modified the gamedefs system to allow easier, cleaner and C++ oriented integration of currently missing def files support.
+  Access to gamedefs data has changed a (little) bit, so take a look at changes in exiting code.

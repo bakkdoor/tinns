@@ -38,6 +38,7 @@
 	#pragma once
 #endif
 
+
 class PDefItems
 {
 	private :
@@ -92,5 +93,20 @@ class PDefItems
 		inline int GetItemflags() const { return mItemflags; }
 };
 
-#endif
 
+class PDefItemsMap : public PDefMap<PDefItems>
+{
+  private:
+    std::map<int, PDefItems*>::const_iterator* mMapItCache;
+    int mMapItCacheCount;
+
+    void BuildMapItCache();
+
+  public:
+    PDefItemsMap();
+    ~PDefItemsMap();
+    bool Load(const char* nName, const char* nFilename);
+    const PDefItems* GetDefBySeqIndex( int SeqIndex ) const;
+};
+
+#endif

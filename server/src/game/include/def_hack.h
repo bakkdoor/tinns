@@ -35,6 +35,8 @@
 	#pragma once
 #endif
 
+extern const std::string EmptyString;
+
 class PDefHack
 {
 	private :
@@ -47,6 +49,7 @@ class PDefHack
 		bool LoadFromDef(PTokenList *Tokens);
 
 		inline int GetIndex() const { return mIndex; }
+        inline const std::string &GetName() const { return EmptyString; }
 		//qui aggiungere funzioni per i gets
 };
 

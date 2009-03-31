@@ -259,7 +259,7 @@ bool PUdpUseObject::DoAction()
             int tFunctionVal = WorldActors->GetWorldActorFunctionID(mRawItemID);
 
             // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc
-            tFurnitureModel = GameDefs->GetWorldModelDef(tFunctionVal);
+            tFurnitureModel = GameDefs->WorldModels()->GetDef(tFunctionVal);
 
             // Print it!
             Console->Print("Processing dynmic actor %d with Functionvalue %d", mRawItemID, tFunctionVal);
@@ -333,11 +333,11 @@ bool PUdpUseObject::DoAction()
                             int nEntityInt = 0;
                             if(tHandleDynamicActor == false && tFurnitureTemplate != NULL)
                             {
-                                nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
+                                nEntityInt = GameDefs->Respawns()->GetRespawnEntity(tChar->GetLocation(), tFurnitureTemplate->GetLinkedObjectID());
                             }
                             else
                             {
-                                nEntityInt = GameDefs->GetRespawnEntity(tChar->GetLocation(), WorldActors->GetLinkedObjectID(mRawItemID));
+                                nEntityInt = GameDefs->Respawns()->GetRespawnEntity(tChar->GetLocation(), WorldActors->GetLinkedObjectID(mRawItemID));
                             }
 
                             nEntity = (nEntityInt < 0 ? 0xffff : (u16)nEntityInt);
@@ -377,10 +377,10 @@ bool PUdpUseObject::DoAction()
                     { // temp hack + wrong entity... guess it works same as function 20
                         u32 HoloNum = tChar->GetLocation() - 90000; // value 1 to 16, to transalte to 540..547 550..557 for worldmodel.def
 
-                        const PDefWorldModel* tHoloExitModel = GameDefs->GetWorldModelDef( 539 + HoloNum + (HoloNum > 8 ? 2 : 0 ));
+                        const PDefWorldModel* tHoloExitModel = GameDefs->WorldModels()->GetDef( 539 + HoloNum + (HoloNum > 8 ? 2 : 0 ));
                         if ( tHoloExitModel && (tHoloExitModel->GetFunctionType() == 14)) // we use the Holomatch entry. Takes care of bad zone id
                         {
-                            const PDefAppPlace* nAppPlace = GameDefs->GetAppPlaceDef(tHoloExitModel->GetFunctionValue());
+                            const PDefAppPlace* nAppPlace = GameDefs->AppPlaces()->GetDef(tHoloExitModel->GetFunctionValue());
                             if(nAppPlace)
                             {
                                 u32 Location = nAppPlace->GetExitWorldID();
@@ -413,11 +413,11 @@ bool PUdpUseObject::DoAction()
                         const PDefAppPlace* nAppPlace;
                         if (tFurnitureModel->GetFunctionType() == 29)
                         {
-                            nAppPlace = GameDefs->GetAppPlaceDef(tChar->GetLocation()); // special for UG exit
+                            nAppPlace = GameDefs->AppPlaces()->GetDef(tChar->GetLocation()); // special for UG exit
                         }
                         else
                         {
-                            nAppPlace = GameDefs->GetAppPlaceDef(tFurnitureModel->GetFunctionValue());
+                            nAppPlace = GameDefs->AppPlaces()->GetDef(tFurnitureModel->GetFunctionValue());
                         }
                         if(nAppPlace)
                         {

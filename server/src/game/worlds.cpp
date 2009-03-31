@@ -61,7 +61,7 @@ bool PWorld::Load(u32 nWorldID)
     std::string tFileName;
     bool tCheckOK;
 
-    if (nWorldID > PWorlds::mAptBaseWorldId)
+    if ( nWorldID > PWorlds::mAptBaseWorldId )
     {
         //int AptTmplID = Appartements->GetAptType(nWorldID - PWorlds::mAptBaseWorldId);
         int AptTmplID = Appartements->GetAptType(nWorldID);
@@ -70,7 +70,7 @@ bool PWorld::Load(u32 nWorldID)
             Console->Print("PWorld::Load - invalid apt %d", nWorldID - PWorlds::mAptBaseWorldId);
             return false;
         }
-        const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
+        const PDefAppartement* nAppDef = GameDefs->Appartements()->GetDef(AptTmplID);
         if (!nAppDef)
         {
             Console->Print("PWorld::Load - invalid apt type %d", AptTmplID);
@@ -109,13 +109,13 @@ bool PWorld::Load(u32 nWorldID)
         }
         else
         {
-            nWorldFileDef = GameDefs->GetWorldFileDef(nWorldID);
+            nWorldFileDef = GameDefs->WorldFiles()->GetDef(nWorldID);
             if (!nWorldFileDef)
                 return false;
             WorldTemplateName = nWorldFileDef->GetName();
         }
 
-        const PDefWorld* tWorldDef = GameDefs->GetWorldDef(nWorldID);
+        const PDefWorld* tWorldDef = GameDefs->Worlds()->GetDef(nWorldID);
         if (tWorldDef) // should always be true here
         {
             if(!(tWorldDef->GetDatFile().empty()))
@@ -341,9 +341,9 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     InvalideFiles;
 
     // Appartment templates checking or preloading
-    PDefAppartementMap::const_iterator itAptStart = GameDefs->GetAppartementDefsConstIteratorBegin();
-    PDefAppartementMap::const_iterator itAptEnd = GameDefs->GetAppartementDefsConstIteratorEnd();
-    for (PDefAppartementMap::const_iterator i=itAptStart; i!=itAptEnd; i++)
+    std::map<int, PDefAppartement*>::const_iterator itAptStart = GameDefs->Appartements()->ConstIteratorBegin();
+    std::map<int, PDefAppartement*>::const_iterator itAptEnd = GameDefs->Appartements()->ConstIteratorEnd();
+    for (std::map<int, PDefAppartement*>::const_iterator i=itAptStart; i!=itAptEnd; i++)
     {
         tCheckOK = false;
         tBspName = i->second->GetWorldName();
@@ -395,13 +395,13 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
     // Static worlds & static worlds templates checking or preloading
     ValidCount = InvalidCount = 0;
     const PDefWorldFile* tDefWorldFile;
-    PDefWorldFileMap::const_iterator itFilStart = GameDefs->GetWorldFileDefsConstIteratorBegin();
-    PDefWorldFileMap::const_iterator itFilEnd = GameDefs->GetWorldFileDefsConstIteratorEnd();
-    for (PDefWorldFileMap::const_iterator i=itFilStart; i!=itFilEnd; i++)
+    std::map<int, PDefWorldFile*>::const_iterator itFilStart = GameDefs->WorldFiles()->ConstIteratorBegin();
+    std::map<int, PDefWorldFile*>::const_iterator itFilEnd = GameDefs->WorldFiles()->ConstIteratorEnd();
+    for (std::map<int, PDefWorldFile*>::const_iterator i=itFilStart; i!=itFilEnd; i++)
     {
         tDefWorldFile = i->second;
 
-        tDefWorld = GameDefs->GetWorldDef(tDefWorldFile->GetIndex());
+        tDefWorld = GameDefs->Worlds()->GetDef(tDefWorldFile->GetIndex());
         if (tDefWorld) // we only care for worlds that are present in worldinfo.def too
         {
             tBspName = tDefWorldFile->GetName();
@@ -456,7 +456,7 @@ bool PWorlds::LoadWorlds() // once Load is done, only WorldDataTemplate registre
             MatchID = 6; // holomatch 7 and 8 are same as 6
         snprintf(worldName, 19, "holomatch/neofrag%d", MatchID);
 
-        tDefWorld = GameDefs->GetWorldDef(90000 + i);
+        tDefWorld = GameDefs->Worlds()->GetDef(90000 + i);
         if (tDefWorld) // we only care for worlds that are present in worldinfo.def too
         {
             if(!(tDefWorld->GetDatFile().empty()))
@@ -527,7 +527,7 @@ bool PWorlds::IsValidWorld(u32 nWorldID)
             if (!AptTmplID)
                 return false;
 
-            const PDefAppartement* nAppDef = GameDefs->GetAppartementDef(AptTmplID);
+            const PDefAppartement* nAppDef = GameDefs->Appartements()->GetDef(AptTmplID);
             if (!nAppDef)
                 return false;
 

@@ -282,7 +282,7 @@ bool PChar::IsCharnameWellFormed(const char *Charname)
 
 void PChar::SetProfession(u32 Profession)
 {
-  const PDefCharKind *def = GameDefs->GetCharKindDef(Profession);
+  const PDefCharKind *def = GameDefs->CharKinds()->GetDef(Profession);
   if (def == NULL)
   {
     Console->Print(RED, BLACK, "Char %d: Invalid profession %d", mID, Profession);
@@ -299,7 +299,7 @@ void PChar::SetProfession(u32 Profession)
 
 u32 PChar::GetSkinFromCharType(u32 nType)
 {
-  const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
+  const PDefCharacter* nDefCharacter = GameDefs->Chars()->GetDef(nType);
   if (nDefCharacter)
   {
     return ((u32)(nDefCharacter->GetModel()));
@@ -336,7 +336,7 @@ void PChar::SetCurrentLookFromCharType(u32 nType)
   u32 nSkin, nHead, nTorso, nLegs;
   u8 nColor, nBrightness;
 
-  const PDefCharacter* nDefCharacter = GameDefs->GetCharDef(nType);
+  const PDefCharacter* nDefCharacter = GameDefs->Chars()->GetDef(nType);
   if (nDefCharacter)
   {
     nSkin = (u32) nDefCharacter->GetModel();
@@ -410,7 +410,7 @@ void PChar::GetCurrentBodyColor(u8 &nHeadColor, u8 &nTorsoColor, u8 &nLegsColor,
 
 void PChar::SetBaseSkills()
 {
-  const PDefCharKind *def = GameDefs->GetCharKindDef(mProfession);
+  const PDefCharKind *def = GameDefs->CharKinds()->GetDef(mProfession);
   //Console->Print(YELLOW, BLACK, "PChar::SetBaseSkills() Profession: %d",def->GetIndex());
   if (def == NULL)
   {
@@ -455,7 +455,7 @@ void PChar::SetBaseInventory()
 {
   u8 i;
   u32 BaseItemID;
-  const PDefCharKind *def = GameDefs->GetCharKindDef(mProfession);
+  const PDefCharKind *def = GameDefs->CharKinds()->GetDef(mProfession);
 
   //mCash = 5000;
   mCash = def->GetStartMoney();
@@ -526,7 +526,7 @@ bool PChar::SQLLoad(int CharID) {
 
         // Faction
         int facvalue = atoi(row[c_faction]);
-        if(GameDefs->GetFactionDef(facvalue))
+        if(GameDefs->Factions()->GetDef(facvalue))
             mFaction = static_cast<u32>(facvalue);
         else
             mFaction = 1;

@@ -36,7 +36,7 @@
 
 PItem::PItem(u32 ItemID, u8 nStackSize, u8 CurDur, u8 MaxDur, u8 Dmg, u8 Freq, u8 Hand, u8 Rng)
 {
-  mDefItem = GameDefs->GetItemsDef(ItemID);
+  mDefItem = GameDefs->Items()->GetDef(ItemID);
   if (mDefItem) {
     mItemID = ItemID;
     mStackable = mDefItem->IsStackable();

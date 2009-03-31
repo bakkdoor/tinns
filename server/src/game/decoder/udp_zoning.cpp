@@ -316,7 +316,7 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
   if ((Location > PWorlds::mAptBaseWorldId) && (!strcmp ("Exit", mPassword)))
   {
     AppLoc = Appartements->GetAptLocation(Location);
-    const PDefAppPlace* nAppPlace = (AppLoc ? GameDefs->GetAppPlaceDef(AppLoc) : 0);
+    const PDefAppPlace* nAppPlace = (AppLoc ? GameDefs->AppPlaces()->GetDef(AppLoc) : 0);
     if(nAppPlace)
     {
       Location = nAppPlace->GetExitWorldID();
