@@ -1696,3 +1696,11 @@ Hammag; 31.03.2009 02:35 GMT+1
 <Gameserver>
   Modified the gamedefs system to allow easier, cleaner and C++ oriented integration of currently missing def files support.
   Access to gamedefs data has changed a (little) bit, so take a look at changes in exiting code.
+
+Hammag; 04.04.2009 02:35 GMT+1
+----------
+[rev. 111]
+
+<Gameserver>
+  Added all .h files and declarations for all needed .def files.
+  Added all corresponding .cpp file with skeleton. Effective file parsing method still needed to be implemented for each .def. TinNS should complile and run however, with only a bunch of .def loading error at server start (but that's not blocking)

@@ -34,14 +34,12 @@
 #ifndef DEF_CHARACTERS_H
 #define DEF_CHARACTERS_H
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#include "def.h"
 
-class PDefCharacter
+class PDefCharacter : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		std::string mName;
 		int mModel;
 		int mHead;
@@ -52,11 +50,10 @@ class PDefCharacter
 		
 	public :
 		PDefCharacter();
-		~PDefCharacter();
+		//~PDefCharacter();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetModel() const { return mModel; }
 		inline int GetHead() const { return mHead; }

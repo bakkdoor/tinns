@@ -40,12 +40,6 @@
 
 PDefHack::PDefHack()
 {
-	mIndex = 0;
-}
-
-PDefHack::~PDefHack()
-{
-
 }
 
 bool PDefHack::LoadFromDef(PTokenList *Tokens)

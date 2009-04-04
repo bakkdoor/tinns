@@ -31,9 +31,7 @@
 #ifndef DEF_CHARKINDS_H
 #define DEF_CHARKINDS_H
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#include "def.h"
 
 struct PSkillInfo
 {
@@ -81,14 +79,14 @@ struct PStartLevelInfo
 
 };
 
-class PDefCharKind
+class PDefCharKind : public PDef
 {
 	private :
 		typedef std::map<int, PSkillPtsInfo*> PSkillPtsMap;
 		typedef std::map<int, PSubSkillPtsInfo*> PSubSkillPtsMap;
 		typedef std::map<int, PStartLevelInfo*> PStartLevelMap;
 
-		int mIndex;
+		//int mIndex;
 		std::string mName;
 		int mType;
 
@@ -106,7 +104,6 @@ class PDefCharKind
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetType() const { return mType; }
 		inline const PSkillInfo &GetSkillInfo(int Skill) const { return mSkillInfo[Skill-1]; }

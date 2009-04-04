@@ -32,10 +32,12 @@
 #ifndef DEF_RESPAWN_H
 #define DEF_RESPAWN_H
 
-class PDefRespawn
+#include "def.h"
+
+class PDefRespawn : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		int mWorldID;
 		int mEntityID; // Station ID
 		int mHazardLevel;
@@ -44,11 +46,10 @@ class PDefRespawn
 
 	public :
 		PDefRespawn();
-		~PDefRespawn();
+		//~PDefRespawn();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline int GetWorldID() const { return mWorldID; }
 		inline int GetEntityID() const { return mEntityID; }
 		inline int GetHazardLevel() const { return mHazardLevel; }

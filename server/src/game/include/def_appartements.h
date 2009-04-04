@@ -32,10 +32,12 @@
 #ifndef DEF_APPARTEMENTS_H
 #define DEF_APPARTEMENTS_H
 
-class PDefAppartement
+#include "def.h"
+
+class PDefAppartement : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		std::string mName;
 		std::string mWorldName;
 		int mValue;
@@ -45,11 +47,10 @@ class PDefAppartement
 
 	public :
 		PDefAppartement();
-		~PDefAppartement();
+		//~PDefAppartement();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; } // to be removed
 		inline int GetID() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline const std::string &GetWorldName() const { return mWorldName; }

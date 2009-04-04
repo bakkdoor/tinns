@@ -31,12 +31,6 @@
 
 PDefAppPlace::PDefAppPlace()
 {
-	mIndex = 0;
-}
-
-PDefAppPlace::~PDefAppPlace()
-{
-
 }
 
 bool PDefAppPlace::LoadFromDef(PTokenList *Tokens)

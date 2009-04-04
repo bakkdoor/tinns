@@ -27,14 +27,15 @@
 	REASON: -
 */
 
-#ifndef DEF_WorldModelS_H
-#define DEF_WorldModelS_H
+#ifndef DEF_WORLDMODELS_H
+#define DEF_WORLDMODELS_H
 
+#include "def.h"
 
-class PDefWorldModel
+class PDefWorldModel : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		std::string mName;
 		int mUseFlags;
 		int mFunctionType;
@@ -44,11 +45,10 @@ class PDefWorldModel
 		
 	public :
 		PDefWorldModel();
-		~PDefWorldModel();
+		//~PDefWorldModel();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline int GetID() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetUseFlags() const { return mUseFlags; }

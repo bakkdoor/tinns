@@ -33,12 +33,6 @@
 
 PDefRespawn::PDefRespawn()
 {
-  mIndex = 0;
-}
-
-PDefRespawn::~PDefRespawn()
-{
-
 }
 
 bool PDefRespawn::LoadFromDef( PTokenList *Tokens )

@@ -42,12 +42,6 @@
 
 PDefWorld::PDefWorld()
 {
-	mIndex = 0;
-}
-
-PDefWorld::~PDefWorld()
-{
-
 }
 
 bool PDefWorld::LoadFromDef(PTokenList *Tokens)

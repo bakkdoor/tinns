@@ -58,6 +58,8 @@
 #include "defparser.h"
 #include "defs.h"
 
+
+// The following defines are NOT used anymore
 #define DEF_CHARACTERS "defs/characters.def"
 #define DEF_SKILLS "defs/skills.def"
 #define DEF_SUBSKILLS "defs/subskill.def"
@@ -87,7 +89,6 @@
 #define DEF_TRADER "defs/trader.def"
 #define DEF_VEHICLES "defs/vehicles.def"
 #define DEF_VEHICLESEATS "defs/vehiclesits.def"
-
 #define WRLD_WORLDFILE "worlds/worlds.ini"
 
 using namespace std;

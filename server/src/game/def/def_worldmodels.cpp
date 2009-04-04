@@ -31,12 +31,6 @@
 
 PDefWorldModel::PDefWorldModel()
 {
-	mIndex = 0;
-}
-
-PDefWorldModel::~PDefWorldModel()
-{
-
 }
 
 bool PDefWorldModel::LoadFromDef(PTokenList *Tokens)

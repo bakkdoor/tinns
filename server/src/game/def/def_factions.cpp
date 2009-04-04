@@ -40,12 +40,7 @@
 
 PDefFaction::PDefFaction()
 {
-	mIndex = 0;
-	memset(mRelations, 0, sizeof(mRelations));
-}
-
-PDefFaction::~PDefFaction()
-{
+	memset(mRelations, 0, sizeof(mRelations)); // ... array members supposed to by auto-initialized by C++
 }
 
 bool PDefFaction::LoadFromDef(PTokenList *Tokens)

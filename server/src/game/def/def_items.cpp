@@ -45,8 +45,8 @@
 
 PDefItems::PDefItems()
 {
-  mIndex = 0;
-  //mModel = 0;
+  //mIndex = 0;
+  mModel = 0;
   mType = 0;
   mValue1 = 0;
   mValue2 = 0;
@@ -69,11 +69,6 @@ PDefItems::PDefItems()
   // std::mShortname = "";
 }
 
-PDefItems::~PDefItems()
-{
-
-}
-
 bool PDefItems::LoadFromDef( PTokenList *Tokens )
 {
   int Idx = 0;
@@ -88,7 +83,7 @@ bool PDefItems::LoadFromDef( PTokenList *Tokens )
       case 2: // name
         mName = *i; break;
       case 3:
-        // mModel = atoi(i->c_str()); // used for IG display
+        mModel = atoi(i->c_str()); // used for IG display
         break;
       case 4:
         mType = atoi( i->c_str() ); break;

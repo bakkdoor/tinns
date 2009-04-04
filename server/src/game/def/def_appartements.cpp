@@ -33,12 +33,6 @@
 
 PDefAppartement::PDefAppartement()
 {
-	mIndex = 0;
-}
-
-PDefAppartement::~PDefAppartement()
-{
-
 }
 
 bool PDefAppartement::LoadFromDef(PTokenList *Tokens)

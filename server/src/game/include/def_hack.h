@@ -31,25 +31,19 @@
 #ifndef DEF_HACK_H
 #define DEF_HACK_H
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#include "def.h"
 
-extern const std::string EmptyString;
-
-class PDefHack
+class PDefHack : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		//qui aggiungere valori
 	public :
 		PDefHack();
-		~PDefHack();
+		//~PDefHack();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
-        inline const std::string &GetName() const { return EmptyString; }
 		//qui aggiungere funzioni per i gets
 };
 

@@ -38,13 +38,7 @@
 
 PDefWorldFile::PDefWorldFile()
 {
-	mIndex = 0;
 	mFileInWorldsDir = false;
-}
-
-PDefWorldFile::~PDefWorldFile()
-{
-
 }
 
 bool PDefWorldFile::LoadFromDef(PTokenList *Tokens)

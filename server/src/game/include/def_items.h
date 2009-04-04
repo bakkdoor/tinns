@@ -34,18 +34,15 @@
 #ifndef DEF_ITEMS_H
 #define DEF_ITEMS_H
 
-#ifdef _MSC_VER
-	#pragma once
-#endif
+#include "def.h"
 
-
-class PDefItems
+class PDefItems : public PDef
 {
 	private :
 
-    int mIndex;//1
+    //int mIndex;//1
     std::string mName;//2
-    //int mModel; // used for IG display
+    int mModel; // used for IG display
     int mType;
     int mValue1;
     int mValue2;
@@ -69,12 +66,12 @@ class PDefItems
 
 	public :
 		PDefItems();
-		~PDefItems();
+		//~PDefItems();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
+        inline int GetModel() const { return mModel; }
 		inline int GetType() const { return mType; }
 		inline int GetValue1() const { return mValue1; }
 		inline int GetValue2() const { return mValue2; }

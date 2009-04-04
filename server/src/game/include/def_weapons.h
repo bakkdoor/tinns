@@ -30,15 +30,12 @@
 #ifndef DEF_WEAPONS_H
 #define DEF_WEAPONS_H
 
-#ifdef _MSC_VER
-#pragma once
-#endif
+#include "def.h"
 
-
-class PDefWeapon
+class PDefWeapon : public PDef
 {
   private :
-    int mIndex;
+    //int mIndex;
     std::string mName;
     //int mFpsmodel;
     //int mAttachmodel;
@@ -68,7 +65,7 @@ class PDefWeapon
     //int customclasstype; // ?
     //int unknown // ?
     int mShotCnt;
-    //float shotduration; // maybe useful later
+    //float shotduration; // maybe useful later ?
     //std::string shotfx;
     //float attachposx;
     //float attachposy;
@@ -85,11 +82,10 @@ class PDefWeapon
 
   public :
     PDefWeapon();
-    ~PDefWeapon();
+    //~PDefWeapon();
 
     bool LoadFromDef( PTokenList *Tokens );
 
-    inline int GetIndex() const { return mIndex; }
     inline const std::string &GetName() const { return mName; }
     inline int GetItemID() const { return mItemIndex; }
     inline int GetAmmoUse() const { return mAmmoUse; }

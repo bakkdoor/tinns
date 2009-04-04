@@ -30,11 +30,12 @@
 #ifndef DEF_APPPLACES_H
 #define DEF_APPPLACES_H
 
+#include "def.h"
 
-class PDefAppPlace
+class PDefAppPlace : public PDef
 {
 	private :
-		int mIndex;
+		//int mIndex;
 		std::string mName;
 		int mExitWorldID;
 		int mExitWorldEntity;
@@ -42,11 +43,10 @@ class PDefAppPlace
 		
 	public :
 		PDefAppPlace();
-		~PDefAppPlace();
+		//~PDefAppPlace();
 
 		bool LoadFromDef(PTokenList *Tokens);
 
-		inline int GetIndex() const { return mIndex; }
 		inline const std::string &GetName() const { return mName; }
 		inline int GetExitWorldID() const { return mExitWorldID; }
 		inline int GetExitWorldEntity() const { return mExitWorldEntity; }

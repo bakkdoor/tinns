@@ -47,10 +47,6 @@ PDefCharacter::PDefCharacter()
 	mModel = -1;
 }
 
-PDefCharacter::~PDefCharacter()
-{
-}
-
 bool PDefCharacter::LoadFromDef(PTokenList *Tokens)
 {
 	int Idx=0;

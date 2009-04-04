@@ -82,7 +82,8 @@ template <class T> bool PDefMap<T>::Load(const char* nName, const char* nFilenam
     for ( PDefTokenList::const_iterator i = t.begin(); i != t.end(); i++ )
     {
       T* entry = new T();
-      bool loadfail = !entry->LoadFromDef( *i ), insertfail = false;
+      bool insertfail = false;
+      bool loadfail = ! entry->LoadFromDef( *i );
 
       if ( !loadfail )
         insertfail = ! mDefs.insert( std::make_pair( entry->GetIndex(), entry ) ).second;

@@ -1,0 +1,55 @@
+/*
+ TinNS (TinNS is not a Neocron Server)
+ Copyright (C) 2005 Linux Addicted Community
+ maintainer Akiko <akiko@gmx.org>
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301, USA.
+*/
+
+/*
+ def_itemmod.cpp
+
+    CREATED: 04 Avr 2009 Hammag
+*/
+
+#include "main.h"
+#include "def_itemmod.h"
+
+PDefItemMod::PDefItemMod()
+{
+}
+
+// Not implemented yet
+bool PDefItemMod::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
+
+/*
+class PDefItemMod : public PDef
+{
+  private :
+    //int mIndex;
+	int mType; // if mType > 0, it refers to a weapon type from weapons.def +1
+	//int mDuration; // "implant base build time" = ???? always 0 anyway...
+	int mChangeNum;
+    int mChangeTarget[4]; // qualifier id	0 - 7	item qualifier id	4=range	
+    float mChangeValue[4]; // float ??? always int in .def
+	int mChangeScale[4];
+	std::string mName;
+	//int mIconId;
+
+  public :
+    PDefItemMod();
+    //~PDefItemMod();
+*/

@@ -27,6 +27,7 @@
 */
 
 #include "main.h"
+#include "def_weapons.h"
 
 PDefWeapon::PDefWeapon()
 {
@@ -38,10 +39,6 @@ PDefWeapon::PDefWeapon()
   mAmmoTypes[4] = mAmmoTypes[5] =mAmmoTypes[6] =mAmmoTypes[7] = 0;
   mItemModGroup = mItemModGroupFlags = mRareWeaponFx = 0;
   mStaminaUse = mSkillFactor = mDamageMultiplicator = 0;
-}
-
-PDefWeapon::~PDefWeapon()
-{
 }
 
 bool PDefWeapon::LoadFromDef( PTokenList *Tokens )
