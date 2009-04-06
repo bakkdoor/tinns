@@ -65,7 +65,7 @@ class PDefVhc : public PDef
     */
     int mHealth;
     int mArmor;
-    //int mSoundStartindex; // field 35
+    //int mSoundStartindex; // field 36
 
   public :
     PDefVhc();

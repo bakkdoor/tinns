@@ -30,32 +30,49 @@
 
 PDefVhcSeat::PDefVhcSeat()
 {
+  mTL = mWeaponId = mType = 0;
+  mName = "undefined";
+  for(int i=0; i<3; ++i)
+    mLeaveAngle[i] = mLeavePos[i] = 0;
+  mDamageFactor = 0;
 }
 
-// Not implemented yet
-bool PDefVhcSeat::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefVhcSeat : public PDef
+bool PDefVhcSeat::LoadFromDef( PTokenList *Tokens )
 {
-  private :
-    //int mIndex; //Field 1
-    int mType;
-    std::string mName; //Field 3
-    //BasePosX Y Z
-    //BaseAngleX Y Z
-    float mLeavePos[3]; //X Y Z - Fields 10-12
-    float mLeaveAngle[3]; //X Y Z - Fields 13-15
-    //FirePosX Y Z //Field 16
-    //XLock Ylock MinX MaxX TurnSpeed ForceExternalCam ShowActor 
-    //SitBone RotXBone RotYBone WeaponBone
-    int mWeaponId; //Field 30
-    int mTL;
-    float mDamageFactor;
-    //SitAnimType SitYOffset //Field 33
-    //SitFlags
+  int Idx = 0;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi( i->c_str() ); break;
+      case 2 :
+        mType = atoi( i->c_str() ); break;
+      case 3 :
+        mName = *i; break;
+      case 30 :
+        mWeaponId = atoi( i->c_str() ); break;
+      case 31 :
+        mTL = atoi( i->c_str() ); break;
+      case 32 :
+        mDamageFactor = atof( i->c_str() ); break;
+      default :
+        if( (Idx >= 10) && (Idx <= 12) )
+        {
+          mLeavePos[Idx - 10] = atof( i->c_str() );
+        }
+        else if( (Idx >= 13) && (Idx <= 15) )
+        {
+          mLeaveAngle[Idx - 13] = atof( i->c_str() );
+        }
+        break;
+    }
 
-  public :
-    PDefVhcSeat();
-    //~PDefVhcSeat();
-*/
+    if ( Idx >= 34 )
+      break;
+  }
+
+  return ((Idx >= 34));
+}

@@ -137,7 +137,7 @@ bool PUdpVhcMove::DoAction()
       ClientManager->UDPBroadcast(tmpMsg, mDecodeData->mClient);
     }
     else
-      Console->Print(RED, BLACK, "[Error] PUdpRequestSeatInfo: Inexistant vhc Id %d", mVhcLocalId);
+      Console->Print(RED, BLACK, "[Error] PUdpVhcMove: Inexistant vhc Id %d", mVhcLocalId);
   }
    
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

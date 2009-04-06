@@ -62,7 +62,7 @@ class PUdpVhcUse : public PUdpMsgAnalyser
     
   public:
     PUdpVhcUse(PMsgDecodeData* nDecodeData);
-    //~PUdpVhcMove();
+    //~PUdpVhcUse();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

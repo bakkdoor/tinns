@@ -30,51 +30,42 @@
 
 PDefVhc::PDefVhc()
 {
+    mArmor = mHealth = mModel = 0;
+    mName = "undefined";
+    for(int i=0; i<8; ++i)
+      mSeatId[i] = -1;
 }
 
-// Not implemented yet
-bool PDefVhc::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefVhc : public PDef
+bool PDefVhc::LoadFromDef( PTokenList *Tokens )
 {
-  private :
-    //int mIndex; // field 1
-    int mModel;
-    std::string mName;
-    
-    //float mLeftFront; // field 4
-    //float mFront;
-    //float mRightBack;
-    //float mBack;
-    //float mSideFriction;
-    //float mDownFriction;
-    //float mForwardFriction;
-    //float mAcceleration;
-    //float mBrakeFactor;
-    //float mTurnSpeed;
-    //float mFullTurnDelay;
-    //int mAnimClass; // field 15
+  int Idx = 0;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi( i->c_str() ); break;
+      case 2 :
+        mModel = atoi( i->c_str() ); break;
+      case 3 :
+        mName = *i; break;
+      case 34 :
+        mHealth = atoi( i->c_str() ); break;
+      case 35 :
+        mArmor = atoi( i->c_str() ); break;
+      default :
+        if( (Idx >= 16) && (Idx <= 23) )
+        {
+          mSeatId[Idx - 16] = atoi( i->c_str() );
+        }
+        break;
+    }
 
-    int mSeatId[8]; // fields 16 - 23
+    if ( Idx >= 36 )
+      break;
+  }
 
-    //float mSpeedTiltFactor; // field 24
-    //float mSpeedGlideFactor;
-   // float mMinHover;
-    //float mMaxHover;
-    //float mHoverLoopLen;
-    //int mWheelCnt;
-    //float mWheelSpeed;
-    //float mMaxDive;
-    //int mEffectsID;
-    //int mShowDebugBouncer; // field 33
-
-    int mHealth;
-    int mArmor;
-    //int mSoundStartindex; // field 35
-
-  public :
-    PDefVhc();
-    //~PDefVhc();
-
-*/
+  return ((Idx >= 35));
+}

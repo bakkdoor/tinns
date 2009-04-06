@@ -1145,9 +1145,7 @@ PMessage* PMsgBuilder::BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation,
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x3d;
-    *tmpMsg << (u8)0x02;
-    *tmpMsg << (u16)0x0000;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u32)0x00000002;
     *tmpMsg << (u32)nLocation;
     *tmpMsg << (u16)nEntity;
 
@@ -1178,31 +1176,6 @@ PMessage* PMsgBuilder::BuildGenrepDenyBrokenMsg (PClient* nClient)
 
     return tmpMsg;
 }
-
-/*
-char VehicleUse[] = {0x13, 0x52, 0x00, 0x94, 0xae, 		
-		0x13, 		
-		0x03, 0x51, 0x00, 0x1f, 0x01, 0x00, 0x3d, 0x0e, 0x00, 0x00, 		
-		0x00, 0xfc, 0x03, 0x00, 0x00, 0x05, 0x00, 0x0f, 0x00}; 		
-	//       | Item ID               |Vehicle|	
-
-	GetSpawnedVehicle (&Vehicle, ItemID, Client_Sockets[ClientNum].CharInfo.Location);
-	if (Vehicle.WorldId == ItemID)
-	{
-		AddToLog (LOG_DEBUG, "User %i: Vehicle ID %i, Location %i", ClientNum, ItemID, Client_Sockets[ClientNum].CharInfo.Location);
-		//Network_IncrementUDP (ClientNum);									
-		// *(unsigned short*)&VehicleUse[1] = Client_Sockets[ClientNum].UDP_ID;
-		// *(unsigned short*)&VehicleUse[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
-		// *(unsigned short*)&VehicleUse[7] = Client_Sockets[ClientNum].UDP_ID;
-
-		*(unsigned int *)&VehicleUse[17] = ItemID;
-
-		//Map ID
-		*(unsigned short*)&VehicleUse[10] = Client_Sockets[ClientNum].CharInfo.MapID;
-
-		VehicleUse[21] = Vehicle.Type;
-		// to be broadcasted
-*/
 
 PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType)
 {
@@ -1328,10 +1301,7 @@ PMessage* PMsgBuilder::BuildCharAptLocInfoMsg (PClient* nClient)
     *tmpMsg << (u8)0x1f;
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x3d;
-    *tmpMsg << (u8)0x0b;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u32)0x0000000b;
     *tmpMsg << (u32)AptLocation;
 
     return tmpMsg;
@@ -2426,7 +2396,32 @@ PMessage* PMsgBuilder::BuildDBAnswerMsg(PClient* nClient, std::string* nCommandN
   return tmpMsg; 
 }
 
-// Must not use Char info in final, but vhc object info
+PMessage* PMsgBuilder::BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType)
+{
+    PMessage* tmpMsg = new PMessage(24);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+
+    *tmpMsg << (u8)0x13; // Message length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x3d;
+    *tmpMsg << (u32)0x0000000e; // cmd
+    *tmpMsg << nRawObjectID;
+    *tmpMsg << nVhcType;
+    *tmpMsg << (u16)0x0003; // Vhc Owner Id ???
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildVhcInfoMsg (PClient* nClient, PSpawnedVehicle* nVehicle)
 {
     PMessage* tmpMsg = new PMessage(32);
@@ -2622,8 +2617,8 @@ PMessage* PMsgBuilder::BuildNpcDeathMsg (PClient* nClient, u32 nNpcId, u8 unknow
   *tmpMsg << (u16)259; // targetId (N)PC - Here: left copbot at NC entrance (zone 2008)
   *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
   *tmpMsg << (u8)0x00; // ? doesn't seem to change in caps
-  *tmpMsg << (u8)0; // ? changes in caps
-  *tmpMsg << (u8)0; // ? changes in caps
+  *tmpMsg << (u8)0; // ? changes in caps 
+  *tmpMsg << (u8)0; // ? changes in caps // moving speed somewhere ?
 
   (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
