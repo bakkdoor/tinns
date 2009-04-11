@@ -30,41 +30,65 @@
 
 PDefNpc::PDefNpc()
 {
+  mFlags = 0;
 }
 
-// Not implemented yet
-bool PDefNpc::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefNpc : public PDef
+bool PDefNpc::LoadFromDef( PTokenList *Tokens )
 {
-  private :
-    //int mIndex;
-    int mModel; // <0: from characters.def, >0: from models.ini, [players] section (?)
-    //int mSoundId; // always 0: not used
-    int mNGT; // ? 1 - 4
-    int mGender; // 0 - 1
-    int mFaction;
-    int mHealth;
-    int mArmorId; // -1 or ref to NpcArmor
-    int mWeaponId;
-    std::string mDialogScript;
-    int mCombat; // ? 20 - 800
-    int mLoot; // 0 or ref to ItemContained
-    int mMovementEnd; // 0 - 4
-    int mFunctionType; // 0 - 4
-    float mModelScaling; // 0 - 0.9
-    int mMoneyLoose; // 0 - 190
-    float mSkillScale; // 0 - 120
-    std::string mStandardScript; 
-    std::string mStandardParameter;
-    int mMass; // 1 - 10000
-    //int mStartHour; // not used
-    //int mEndHour; // not used
-    //std::string mTempScript; // not used
-    int mFlags; // values: 513, 259, 256, 128, 64, 48, 35, 34, 33, 32, 2, 1, 0
+  int Idx = 0;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi( i->c_str() ); break;
+      case 2 :
+        mModel = atoi( i->c_str() ); break;
+      case 4 :
+        mNGT = atoi( i->c_str() ); break;
+      case 5 :
+        mGender = atoi( i->c_str() ); break;
+      case 6 :
+        mFaction = atoi( i->c_str() ); break;
+      case 7 :
+        mHealth = atoi( i->c_str() ); break;
+      case 8 :
+        mArmorId = atoi( i->c_str() ); break;
+      case 9 :
+        mWeaponId = atoi( i->c_str() ); break;
+      case 10 :
+        mDialogScript = *i; break;
+      case 11 :
+        mCombat = atoi( i->c_str() ); break;
+      case 12 :
+        mLoot = atoi( i->c_str() ); break;
+      case 13 :
+        mMovementEnd = atoi( i->c_str() ); break;
+      case 14 :
+        mFunctionType = atoi( i->c_str() ); break;
+      case 15 :
+        mModelScaling = atof( i->c_str() ); break;
+      case 16 :
+        mMoneyLoose = atoi( i->c_str() ); break;
+      case 17 :
+        mSkillScale = atof( i->c_str() ); break;
+      case 18 :
+        mStandardScript = *i; break;
+      case 19 :
+        mStandardParameter = *i; break;
+      case 20 :
+        mMass = atoi( i->c_str() ); break;
+      case 24 :
+        mFlags = atoi( i->c_str() ); break;
+      default :
+        break;
+    }
 
-  public :
-    PDefNpc();
-    //~PDefNpc();
-*/
+    if ( Idx >= 24 )
+      break;
+  }
+
+  return ((Idx >= 20));
+}

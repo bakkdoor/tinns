@@ -30,22 +30,35 @@
 
 PDefAmmo::PDefAmmo()
 {
+  mShotId = mMagSize = mWeaponShotId = mDamageId = 0;
 }
 
-// Not implemented yet
-bool PDefAmmo::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefAmmo : public PDef
+bool PDefAmmo::LoadFromDef( PTokenList *Tokens )
 {
-  private :
-    //int mIndex;
-	int mDamageId; // related to damage.def
-	int mWeaponShotId; // related to shots.def ?
-	int mMagSize;
-    int mShotId; // related to shots.def ??? strange: hardly ever set in ammo.def
+  int Idx = 0;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi( i->c_str() ); break;
+      case 2 :
+        mDamageId = atoi( i->c_str() ); break;
+      case 3 :
+        mWeaponShotId = atoi( i->c_str() ); break;
+      case 4 :
+        mMagSize = atoi( i->c_str() ); break;
+      case 5 :
+        mShotId = atoi( i->c_str() ); break;
+      default :
+        break;
+    }
 
-  public :
-    PDefAmmo();
-    //~PDefAmmo();
-*/
+    if ( Idx >= 5 )
+      break;
+  }
+
+  return ((Idx >= 4));
+}

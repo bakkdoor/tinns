@@ -140,6 +140,7 @@ PDefItemsMap::PDefItemsMap()
 {
   mMapItCache = NULL;
   mMapItCacheCount = 0;
+  mMaxItemGroupId = -1;
 }
 
 PDefItemsMap::~PDefItemsMap()
@@ -176,36 +177,80 @@ void PDefItemsMap::BuildMapItCache()
   }
 }
 
+void PDefItemsMap::BuildItemGroups()
+{
+  //std::map<int, std::vector<int> > mItemGroups;
+  // Implementation more complicated than needed but avoid too many realloc
+  
+  // Group size conting
+  std::map<int, int> groupSize;
+  for ( std::map<int, PDefItems*>::const_iterator i = mDefs.begin(); i != mDefs.end(); i++ )
+    groupSize[ i->second->GetItemGroupID() ]++;
+
+  // Item group vectors size reservation
+  mItemGroups.clear();
+  for ( std::map<int, int>::const_iterator i = groupSize.begin(); i != groupSize.end(); i++ )
+  {
+    mItemGroups[i->first].reserve(i->second);
+    if(i->first > mMaxItemGroupId)
+      mMaxItemGroupId = i->first;
+    //Console->Print("Item group %d : %d items", i->first, i->second);
+  }
+  
+  // Effective groups building
+  for ( std::map<int, PDefItems*>::const_iterator i = mDefs.begin(); i != mDefs.end(); i++ )
+    mItemGroups[ i->second->GetItemGroupID() ].push_back(i->first); // i->first is ItemIndex
+}
+
 bool PDefItemsMap::Load(const char* nName, const char* nFilename)
 {
   if( PDefMap<PDefItems>::Load( nName, nFilename) )
   {
     BuildMapItCache();
+    BuildItemGroups();
     return ( true );
   }
   else
     return ( false );
 }
 
-const PDefItems* PDefItemsMap::GetDefBySeqIndex( int SeqIndex ) const
+const PDefItems* PDefItemsMap::GetDefBySeqIndex( int nSeqIndex ) const
 {
-  int CacheEntryIdx = SeqIndex / GAMEDEFS_DEFITEMSMAXSEQ;
+  int CacheEntryIdx = nSeqIndex / GAMEDEFS_DEFITEMSMAXSEQ;
   if ( CacheEntryIdx >= mMapItCacheCount )
     return NULL;
 
   std::map<int, PDefItems*>::const_iterator It = mMapItCache[CacheEntryIdx];
   int EntrySeqIdx = CacheEntryIdx * GAMEDEFS_DEFITEMSMAXSEQ;
 
-  while (( EntrySeqIdx < SeqIndex ) && ( It != mDefs.end() ) )
+  while (( EntrySeqIdx < nSeqIndex ) && ( It != mDefs.end() ) )
   {
     EntrySeqIdx++;
     It++;
   }
 
-  if (( EntrySeqIdx == SeqIndex ) && ( It != mDefs.end() ) )
+  if (( EntrySeqIdx == nSeqIndex ) && ( It != mDefs.end() ) )
   {
     return It->second;
   }
   else
     return NULL;
+}
+
+int PDefItemsMap::GetRandomItemIdFromGroup( int nGroupId ) const
+{
+  if( (nGroupId >= 0) && (nGroupId <= mMaxItemGroupId) )
+  {
+    std::map<int, std::vector<int> >::const_iterator selectedEntry = mItemGroups.find(nGroupId);
+    if(selectedEntry != mItemGroups.end())
+    {
+      int groupSize = selectedEntry->second.size();
+      if( groupSize )
+      {
+        return selectedEntry->second[GetRandom(groupSize - 1, 0)];
+      }
+    }
+  }
+
+  return 0;
 }

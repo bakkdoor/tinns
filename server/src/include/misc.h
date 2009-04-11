@@ -60,5 +60,8 @@ u16 DistanceApprox(const u16 x1, const u16 y1, const u16 z1, const u16 x2, const
 f32 Distance(const f32 x1, const f32 y1, const f32 z1, const f32 x2, const f32 y2, const f32 z2);
 f32 Distance(const f32 x1, const f32 y1, const f32 x2, const f32 y2); // 2D only version
 
+void InitRandom(u32 nInitialisationValue);
+u16 GetRandom(u16 MaxVal, u16 MinVal = 0); // u16 value between MinVal and MaxVal (inclusive) with max range 32768
+f32 GetRandomFloat(); // f32 value between 0 and 1
 #endif
 

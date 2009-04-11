@@ -96,14 +96,17 @@ class PDefItemsMap : public PDefMap<PDefItems>
   private:
     std::map<int, PDefItems*>::const_iterator* mMapItCache;
     int mMapItCacheCount;
-
+    std::map<int, std::vector<int> > mItemGroups;
+    int mMaxItemGroupId;
     void BuildMapItCache();
+    void BuildItemGroups();
 
   public:
     PDefItemsMap();
     ~PDefItemsMap();
     bool Load(const char* nName, const char* nFilename);
-    const PDefItems* GetDefBySeqIndex( int SeqIndex ) const;
+    const PDefItems* GetDefBySeqIndex( int nSeqIndex ) const;
+    int GetRandomItemIdFromGroup( int nGroupId ) const;
 };
 
 #endif

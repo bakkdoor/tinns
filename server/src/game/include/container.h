@@ -123,7 +123,7 @@ class PContainer // Holes allowed, no autofind free slots
     bool MoveItem(u8 srcSlotId, u8 nCount, PContainer* dstContainer, u8 dstSlotId = 0, u8 nPosX = 0, u8 nPosY = 0);
 	  virtual void SetEntryPosXY(PContainerEntry* nEntry, u8 nSlotId, u8 nPosX = 0, u8 nPosY = 0);
 
-    virtual u8 RandomFill(u8 nItemCount = 0);
+    virtual u8 RandomFill(u8 nItemCount = 0, int nItemContainerDefIndex = -1);
     
     PContainerEntry* GetEntry(u8 nSlotId);
     std::vector< PContainerEntry* >* GetEntries();

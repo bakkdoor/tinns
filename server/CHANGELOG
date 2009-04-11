@@ -1704,3 +1704,13 @@ Hammag; 04.04.2009 02:35 GMT+1
 <Gameserver>
   Added all .h files and declarations for all needed .def files.
   Added all corresponding .cpp file with skeleton. Effective file parsing method still needed to be implemented for each .def. TinNS should complile and run however, with only a bunch of .def loading error at server start (but that's not blocking)
+
+
+Hammag; 11.04.2009 23:40 GMT+1
+----------
+[rev. 112-113]
+
+<Gameserver>
+  Implemented support for more .def files
+  Moved random number generation methods out of PGameServer to global functions in common/misc
+  Content of item boxes, trashcans, bags, etc. is now based on .def files. Cabinet content is kept as before, i.e generating fully random items.

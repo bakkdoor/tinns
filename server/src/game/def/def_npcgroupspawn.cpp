@@ -30,10 +30,54 @@
 
 PDefNpcGroupSpawn::PDefNpcGroupSpawn()
 {
+  mNumNpc = 0;
+  for(int i=0; i<8; ++i)
+    mSpawnChance[i] = mFunctionValue[i] = mNpcType[i] = 0;
+
 }
 
-// Not implemented yet
-bool PDefNpcGroupSpawn::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
+
+bool PDefNpcGroupSpawn::LoadFromDef( PTokenList *Tokens )
+{
+  int Idx = 0;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi( i->c_str() ); break;
+      case 2 :
+        mIgnoreNearPC = atoi( i->c_str() ); break;
+      case 3 :
+        mNumNpc = atoi( i->c_str() ); break;
+      default :
+        if( (Idx >= 4) && (Idx <= (3 + 5*mNumNpc)) && (Idx <= (43)) )
+        {
+          switch ( ((Idx - 4) % 5) )
+          {
+            case 0:
+              mNpcType[int((Idx - 4)/5)] = atoi( i->c_str() ); break;
+            case 1:
+              mScript[int((Idx - 4)/5)] = *i; break;
+            case 2:
+              mScriptParameter[int((Idx - 4)/5)] = *i ; break;
+            case 3:
+              mFunctionValue[int((Idx - 4)/5)] = atoi( i->c_str() ); break;
+            case 4:
+              mSpawnChance[int((Idx - 4)/5)] = atoi( i->c_str() ); break;
+          }
+        }
+        break;
+    }
+
+    if ( Idx >= 43 )
+      break;
+  }
+
+  return ((Idx >= (3 + 5*mNumNpc)));
+}
 
 /*
 class PDefNpcGroupSpawn : public PDef

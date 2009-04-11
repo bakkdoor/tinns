@@ -222,7 +222,7 @@ bool PUdpVentureWarpConfirm::DoAction()
 	u32 newLocation;
 	do
 	{
-	  newLocation = 2000 + 20 * GameServer->GetRandom(10, 0) + GameServer->GetRandom(16, 1);
+	  newLocation = 2000 + 20 * GetRandom(10, 0) + GetRandom(16, 1);
 	} while (! Worlds->IsValidWorld(newLocation));
 	
 	u16 nEntity = 10;

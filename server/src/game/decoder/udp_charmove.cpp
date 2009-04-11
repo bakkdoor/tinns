@@ -277,7 +277,7 @@ bool PUdpCharExitChair::DoAction()
     {
       if(Subway->IsDoorOpen(cSeatObjectId, tNowTime))
       {
-        Subway->GetStationExitPosition(&(tChar->Coords), Subway->GetStation(cSeatObjectId, tNowTime), GameServer->GetRandomFloat());
+        Subway->GetStationExitPosition(&(tChar->Coords), Subway->GetStation(cSeatObjectId, tNowTime), GetRandomFloat());
         Subway->UnsetSeatUser(cSeatObjectId, cSeatId, tChar->GetID());
         tChar->SetSeatInUse(seat_none);
         ReadyToExit = true;

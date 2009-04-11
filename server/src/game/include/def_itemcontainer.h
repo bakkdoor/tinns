@@ -41,6 +41,10 @@ class PDefItemContainer : public PDef
     float mQuality[6]; // usually <1, <=> % ?
 	int mChance[6]; // a weight, not a %
 
+    int mCumulatedChance[6]; // Computed data in order to select random item entry
+
+    void BuildCumulatedChance();
+
   public :
     PDefItemContainer();
     //~PDefItemContainer();
@@ -53,6 +57,7 @@ class PDefItemContainer : public PDef
     inline int GetItemId(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumItems)) ? mItemId[nIdx] : 0) ; }
 	inline float GetQuality(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumItems)) ? mQuality[nIdx] : 0) ; }
 	inline int GetChance(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumItems)) ? mChance[nIdx] : 0) ; }
+    int GetRandomItemIdx() const; // Return Idx based on Entry chance
 };
 
 #endif

@@ -98,10 +98,10 @@ void PItem::MakeItemStandard(u8 GlobalQualityMin, u8 GlobalQualityMax)
   }
   else
   {
-	mDamages = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
-	mFrequency = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
-	mHandling = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
-	mRange = (u8) GameServer->GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mDamages = (u8) GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mFrequency = (u8) GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mHandling = (u8) GetRandom(GlobalQualityMax, GlobalQualityMin);
+	mRange = (u8) GetRandom(GlobalQualityMax, GlobalQualityMin);
   }
   
 }
