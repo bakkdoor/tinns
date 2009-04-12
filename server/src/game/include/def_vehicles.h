@@ -67,6 +67,9 @@ class PDefVhc : public PDef
     int mArmor;
     //int mSoundStartindex; // field 36
 
+    // Additionnal info
+    int mNumSeats;
+    
   public :
     PDefVhc();
     //~PDefVhc();
@@ -75,9 +78,10 @@ class PDefVhc : public PDef
 
     inline int GetModel() const { return mModel; }
     inline const std::string &GetName() const { return mName; }
-    inline int GetSeatId( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < 8 ) ) ? mSeatId[nIdx] : 0) ; }
+    inline int GetSeatId( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < 8 ) ) ? mSeatId[nIdx] : -1) ; }
     inline int GetHealth() const { return mHealth; }
     inline int GetArmor() const { return mArmor; }
+    inline int GetNumSeats() const { return mNumSeats; }
 };
 
 #endif

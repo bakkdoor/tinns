@@ -148,33 +148,71 @@ bool PUdpUseObject::DoAction()
       if ( PSpawnedVehicles::IsPotentialSpawnedVehicle( mRawItemID ) )
       {
         bool vhcFound = false;
-        PSeatType cSeatType = tChar->GetSeatInUse();
-        if ( cSeatType == seat_none )
+
+        if ( tChar->GetSeatInUse() == seat_none ) // Refuse if Char is already sitting somewhere
         {
-          PWorld* CurrentWorld = Worlds->GetWorld( nClient->GetChar()->GetLocation() );
+          PWorld* CurrentWorld = Worlds->GetWorld( tChar->GetLocation() );
           if ( CurrentWorld )
           {
             PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle( mRawItemID );
             if ( tVhc )
             {
+              Console->Print( "Using vhc %d (%x)", mRawItemID, mRawItemID );
               vhcFound = true;
-              u8 nSeatId = 0;
-              if (( nSeatId == 0 ) && ( tVhc->GetInformation().GetOwnerCharId() !=  tChar->GetID() ) ) //pilot
+
+              if(tVhc->GetNumSeats() == 1) // single seat vhc
               {
-                tmpMsg = MsgBuilder->BuildText100Msg( nClient, 17, mRawItemID ); // "Not owner" msg
-                nClient->SendUDPMessage( tmpMsg );
+                if( tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID() ) // Requester is the owner
+                {
+                  u8 nSeatId = 0;
+                  if( tVhc->SetSeatUser( nSeatId, tChar->GetID() ) ) // Char was able to sit
+                  {
+                    tChar->SetSeatInUse( seat_vhc, mRawItemID, nSeatId );
+                    tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, mRawItemID, nSeatId );
+                    ClientManager->UDPBroadcast( tmpMsg, nClient );
+                  }
+                  else
+                  {
+                    tmpMsg = MsgBuilder->BuildText100Msg( nClient, 0, mRawItemID ); // Undefined failure
+                    nClient->SendUDPMessage( tmpMsg );
+                  }
+                }
+                else // Requester is not the owner
+                {
+                  tmpMsg = MsgBuilder->BuildText100Msg( nClient, 17, mRawItemID ); // "Not your vhc" msg
+                  nClient->SendUDPMessage( tmpMsg );
+                  // Testing
+                  tmpMsg = MsgBuilder->BuildVhcAccessRequestMsg (nClient, 1, mRawItemID, 2);
+                  nClient->SendUDPMessage( tmpMsg );
+                }
               }
-              else if ( !tVhc->GetSeatUser( nSeatId ) && tVhc->SetSeatUser( nSeatId, tChar->GetID() ) ) //char could sit
+              else // multi seats vhc
               {
-                tChar->SetSeatInUse( seat_vhc, mRawItemID, nSeatId );
-                tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, mRawItemID, nSeatId );
-                ClientManager->UDPBroadcast( tmpMsg, nClient );
+                if( (tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID()) || tVhc->IsCharInside(tChar->GetID()) )
+                { // Char is the owner or Owner is inside vhc
+                  u8 freeSeats = tVhc->GetFreeSeats();
+                  if(freeSeats)
+                  {
+                    tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, mRawItemID, tVhc->GetInformation().GetVehicleType(), freeSeats );
+                    nClient->SendUDPMessage( tmpMsg ); // Open seat selection window
+                  }
+                  else
+                  {
+                    tmpMsg = MsgBuilder->BuildText100Msg( nClient, 5, mRawItemID ); // "No free seat" msg
+                    nClient->SendUDPMessage( tmpMsg );
+                  }
+                }
+                else
+                {
+                  tmpMsg = MsgBuilder->BuildText100Msg( nClient, 18, mRawItemID ); // "Owner not on board" msg
+                  nClient->SendUDPMessage( tmpMsg );
+                }
               }
-              else
-              {
-                tmpMsg = MsgBuilder->BuildText100Msg( nClient, 1, mRawItemID ); // "Already in use" msg
-                nClient->SendUDPMessage( tmpMsg );
-              }
+              //////// Msg100 id
+              // 1 already in use
+              //19 req transmitted
+              //20 req refused
+              //22 can't use that seat
             }
             else if (( tChar->GetLocation() == PWorlds::mNcSubwayWorldId ) && Subway->IsValidSubwayCab( mRawItemID ) && ( tChar->GetSeatInUse() == seat_none ) ) // Entering subway
             {
@@ -665,11 +703,11 @@ bool PUdpUseObject::DoAction()
           }
           case 1: //Itemcontainer
           {
-            // TODO: Add check if container is already open
+            // TODO: Add check if container is already open / Make containers persistent
             // PContainer* tContainer = World->GetContainer(mRawItemID);
             PContainer* tContainer = new PContainerAutoCompactOnClose( INV_CABINET_MAXSLOTS );
             int functionVal = tFurnitureModel->GetFunctionValue();
-            if(functionVal <= 5) // force full random for cabinets for item testing
+            if ( functionVal <= 5 ) // force full random for cabinets for item testing
               functionVal = -1;
             tContainer->RandomFill( INV_CABINET_MAXSLOTS, functionVal );
 

@@ -1154,29 +1154,6 @@ PMessage* PMsgBuilder::BuildGenrepAddToListMsg (PClient* nClient, u32 nLocation,
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildGenrepDenyBrokenMsg (PClient* nClient)
-{
-    PMessage* tmpMsg = new PMessage(18);
-
-    nClient->IncreaseUDP_ID();
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x0c; // Message length
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x1f;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x31; // ??
-    *tmpMsg << (u8)0x3c; // ??
-    *tmpMsg << (u8)0x00; // ??
-    *tmpMsg << (u8)0x00; // ??
-    *tmpMsg << (u8)0x00; // ??
-    *tmpMsg << (u8)0x00; // ??
-
-    return tmpMsg;
-}
-
 PMessage* PMsgBuilder::BuildAptLiftUseMsg (PClient* nClient, u32 nLocation, u16 nEntity, u8 nEntityType)
 {
     PMessage* tmpMsg = new PMessage(43);
@@ -1580,7 +1557,7 @@ PMessage* PMsgBuilder::BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObj
     *tmpMsg << (u16)nClient->GetLocalID();
     *tmpMsg << (u8)0x3d;
 	*tmpMsg << (u32)0x00000008; // cmd
-    *tmpMsg << (u32)0x00000007; // ?
+    *tmpMsg << (u32)0x00000007; // cmd ?
 	*tmpMsg << (u32)0x00000002; // ?
 	*tmpMsg << (u16)0x0004; // ?
 	*tmpMsg << nRawObjectID; 
@@ -1590,6 +1567,73 @@ PMessage* PMsgBuilder::BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObj
 
     return tmpMsg;
 }
+
+PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nVhcRawObjectID, u32 nSeatId)
+{
+    PMessage* tmpMsg = new PMessage(40);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+	
+    *tmpMsg << (u8)0x22; // Message length;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x1f;
+    *tmpMsg << (u16)nClient->GetLocalID();
+    *tmpMsg << (u8)0x3d;
+	*tmpMsg << (u32)0x00000008; // cmd
+    *tmpMsg << (u32)0x00000005; // cmd ?
+	*tmpMsg << (u32)0x00000001; // ?
+	*tmpMsg << (u16)0x000c; // ?
+    *tmpMsg << nCharId; //u32
+    *tmpMsg << nSeatId; // ? u32
+	*tmpMsg << nVhcRawObjectID;
+    *tmpMsg << (u8)0x08; // ?
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg; // NOT WORKING YET
+}
+/* S->C
+13:ff:00:72:d6:22:
+03:ff:00:1f:03:00:
+3d:
+08:00:00:00:
+05:00:00:00:
+01:00:00:00:
+0c:00:
+2f:d8:01:00:
+02:00:00:00:
+5d:03:00:00:
+08:
+*/
+
+/* C->S RESP: OK
+13:79:00:ec:d5:17:
+03:79:00:1f:03:00:
+3d:
+09:00:00:00:
+06:00:00:00:
+02:00:00:00:
+01:00:
+01:00
+*/
+/* C->S RESP: NOK
+13:74:00:e7:d5:17:
+03:74:00:1f:03:00:
+3d:
+09:00:00:00:
+06:00:00:00:
+01:00:00:00:
+01:00:
+00:00
+
+S->C:
+Msg + arg=3 (Owner localId ?)
+*/
 
 PMessage* PMsgBuilder::BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity)
 {
@@ -2396,7 +2440,7 @@ PMessage* PMsgBuilder::BuildDBAnswerMsg(PClient* nClient, std::string* nCommandN
   return tmpMsg; 
 }
 
-PMessage* PMsgBuilder::BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType)
+PMessage* PMsgBuilder::BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u16 nVhcType, u16 nAvailableSeats)
 {
     PMessage* tmpMsg = new PMessage(24);
 
@@ -2415,7 +2459,7 @@ PMessage* PMsgBuilder::BuildCharUseVhcMsg (PClient* nClient, u32 nRawObjectID, u
     *tmpMsg << (u32)0x0000000e; // cmd
     *tmpMsg << nRawObjectID;
     *tmpMsg << nVhcType;
-    *tmpMsg << (u16)0x0003; // Vhc Owner Id ???
+    *tmpMsg << nAvailableSeats; // Bit flags
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 

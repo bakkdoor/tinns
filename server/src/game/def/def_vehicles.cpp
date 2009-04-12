@@ -30,7 +30,7 @@
 
 PDefVhc::PDefVhc()
 {
-    mArmor = mHealth = mModel = 0;
+    mNumSeats = mArmor = mHealth = mModel = 0;
     mName = "undefined";
     for(int i=0; i<8; ++i)
       mSeatId[i] = -1;
@@ -59,6 +59,8 @@ bool PDefVhc::LoadFromDef( PTokenList *Tokens )
         if( (Idx >= 16) && (Idx <= 23) )
         {
           mSeatId[Idx - 16] = atoi( i->c_str() );
+          if(mSeatId[Idx - 16] >= 0) // In theroy, we should check that it is a valid VhcSeat Index
+            ++mNumSeats;
         }
         break;
     }

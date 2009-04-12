@@ -1,32 +1,32 @@
 /*
-	TinNS (TinNS is not a Neocron Server)
-	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
+ TinNS (TinNS is not a Neocron Server)
+ Copyright (C) 2005 Linux Addicted Community
+ maintainer Akiko <akiko@gmx.org>
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-	02110-1301, USA.
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301, USA.
 */
 
 /*
 
-	udp_vhc.h - decoder classes for UDP vehicle related messages
-  
-	CREATION: 5 Sep 2006 Hammag
+ udp_vhc.h - decoder classes for UDP vehicle related messages
 
-	MODIFIED:
-	REASON: - 
+ CREATION: 5 Sep 2006 Hammag
+
+ MODIFIED:
+ REASON: -
 
 */
 
@@ -34,7 +34,7 @@
 #define UDPVHC_H
 
 class PUdpVhcMove : public PUdpMsgAnalyser
-{ 
+{
   private:
     u16 mVhcLocalId;
     u16 mNewY;
@@ -46,9 +46,9 @@ class PUdpVhcMove : public PUdpMsgAnalyser
     u8 mMoveType;
     u8 mNewUD;
     u8 mFF; // always 0xff ?
-    u8 mAction; // &1 = Left, &2 = Right, &4 = Forward, &8 = Backward	
+    u8 mAction; // &1 = Left, &2 = Right, &4 = Forward, &8 = Backward
   public:
-    PUdpVhcMove(PMsgDecodeData* nDecodeData);
+    PUdpVhcMove( PMsgDecodeData* nDecodeData );
     //~PUdpVhcMove();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
@@ -59,9 +59,9 @@ class PUdpVhcUse : public PUdpMsgAnalyser
   private:
     u32 mVehicleID;
     u8 mVehicleSeat;
-    
+
   public:
-    PUdpVhcUse(PMsgDecodeData* nDecodeData);
+    PUdpVhcUse( PMsgDecodeData* nDecodeData );
     //~PUdpVhcUse();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
@@ -73,22 +73,22 @@ class PUdpSubwayUpdate : public PUdpMsgAnalyser
     u32 mVehicleID;
     u16 mPosition;
     u8 mDoorOpened;
-    
+
   public:
-    PUdpSubwayUpdate(PMsgDecodeData* nDecodeData);
+    PUdpSubwayUpdate( PMsgDecodeData* nDecodeData );
     //~PUdpSubwayUpdate();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };
 
-class PUdpRequestSeatInfo : public PUdpMsgAnalyser
+class PUdpRequestVhcInfo : public PUdpMsgAnalyser
 {
   private:
     u32 mVehicleID;
-    
+
   public:
-    PUdpRequestSeatInfo(PMsgDecodeData* nDecodeData);
-    //~PUdpRequestSeatInfo();
+    PUdpRequestVhcInfo( PMsgDecodeData* nDecodeData );
+    //~PUdpRequestVhcInfo();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };
