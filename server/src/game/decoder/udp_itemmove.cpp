@@ -337,7 +337,7 @@ bool PUdpManualReloadItem::DoAction()
   *tmpMsg << (u8)0x25;
   *tmpMsg << (u8)0x13;
   *tmpMsg << (u16)nClient->GetTransactionID();
-  *tmpMsg << (u8)0x0a; // cmd=Ammo count update
+  *tmpMsg << (u8)0x0a; // cmd=Ammo type update (?)
   *tmpMsg << (u8)0x03;
   *tmpMsg << (u8)0x02;
   *tmpMsg << (u8)0x00;

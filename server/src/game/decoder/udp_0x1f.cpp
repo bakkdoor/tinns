@@ -45,6 +45,7 @@
 #include "udp_hack.h"
 #include "udp_outfitter.h"
 #include "udp_helditemaction.h"
+#include "udp_killself.h"
 
 /**** PUdp0x1f ****/
 
@@ -216,6 +217,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         case 0x0f:
         {
           nextAnalyser = new PUdpVhcUse(mDecodeData);
+          break;
+        }
+        case 0x10:
+        {
+          nextAnalyser = new PUdpKillSelf(mDecodeData);
           break;
         }
         default:

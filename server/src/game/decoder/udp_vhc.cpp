@@ -162,7 +162,8 @@ PUdpMsgAnalyser* PUdpVhcUse::Analyse()
   *nMsg >> mVehicleID; // u32
   *nMsg >> mVehicleSeat;
 
-  Console->Print( YELLOW, BLACK, "[DEBUG] Localid %d trying to enter vhc %d on seat %d", mDecodeData->mClient->GetLocalID(), mVehicleID, mVehicleSeat );
+  if(gDevDebug)
+    Console->Print( YELLOW, BLACK, "[DEBUG] Localid %d trying to enter vhc %d on seat %d", mDecodeData->mClient->GetLocalID(), mVehicleID, mVehicleSeat );
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
@@ -256,8 +257,8 @@ PUdpMsgAnalyser* PUdpRequestVhcInfo::Analyse()
 
   *nMsg >> mVehicleID;
 
-  //if(gDevDebug)
-  Console->Print( YELLOW, BLACK, "[DEBUG] Request Seat Info for 0x%04x :", mVehicleID );
+  if(gDevDebug)
+    Console->Print( YELLOW, BLACK, "[DEBUG] Request Seat Info for 0x%04x :", mVehicleID );
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -274,7 +275,8 @@ bool PUdpRequestVhcInfo::DoAction()
     PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle( mVehicleID );
     if ( tVhc )
     {
-      Console->Print( YELLOW, BLACK, "[DEBUG] Sending Info for vhcId 0x%04x : type %d", mVehicleID, tVhc->GetInformation().GetVehicleType() );
+      if(gDevDebug)
+        Console->Print( YELLOW, BLACK, "[DEBUG] Sending Info for vhcId 0x%04x : type %d", mVehicleID, tVhc->GetInformation().GetVehicleType() );
       PMessage* tmpMsg = MsgBuilder->BuildVhcInfoMsg( nClient, tVhc );
       nClient->SendUDPMessage( tmpMsg );
     }

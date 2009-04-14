@@ -107,6 +107,8 @@ bool PVehicleInformation::SetStatus( const u8 nStatus )
 }
 
 // PSpawnedVehicule
+const u8 PSpawnedVehicle::mSeatsFlags[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
+
 PSpawnedVehicle::PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation* const nVhcInfo, const u32 nLocation, const PVhcCoordinates* const nVhcPos )
 {
   mLocalId = nLocalId;
@@ -115,6 +117,7 @@ PSpawnedVehicle::PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation*
   mCoords = *nVhcPos;
   for(int i = 0; i < 8; ++i)
     mSeatUserId[i] = 0;
+
   mVhcDef = GameDefs->Vhcs()->GetDef(mInfo.mVehicleType);
   if( ! mVhcDef)
   {
@@ -122,6 +125,16 @@ PSpawnedVehicle::PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation*
     Console->Print("%s Aborting.", Console->ColorText(RED, BLACK, "[FATAL]"));
     Shutdown();
   }
+  
+  mNbFreeSeats = GetNumSeats();
+  if(mNbFreeSeats>8)
+  {
+    Console->Print( RED, BLACK, "[ERROR] Vhc type %d has more than 8 seats (%d)", mInfo.mVehicleType, mNbFreeSeats);
+    mNbFreeSeats = 8;
+  }
+  for(int i = 0; i < mNbFreeSeats; ++i)
+    mFreeSeatsFlags |= mSeatsFlags[i];
+
 }
 
 void PSpawnedVehicle::SetLocation( const u32 nLocation )
@@ -146,6 +159,8 @@ bool PSpawnedVehicle::SetSeatUser( const u8 nSeatId, u32 nCharId )
     if ( ! mSeatUserId[nSeatId] )
     {
       mSeatUserId[nSeatId] = nCharId;
+      mFreeSeatsFlags &= ~mSeatsFlags[nSeatId];
+      --mNbFreeSeats;
       return true;
     }
   }
@@ -159,6 +174,8 @@ bool PSpawnedVehicle::UnsetSeatUser( const u8 nSeatId, const u32 nCharId )
     if ( mSeatUserId[nSeatId] == nCharId )
     {
       mSeatUserId[nSeatId] = 0;
+      mFreeSeatsFlags |= mSeatsFlags[nSeatId];
+      ++mNbFreeSeats;
       return true;
     }
   }
@@ -175,7 +192,7 @@ bool PSpawnedVehicle::IsCharInside(const u32 nCharId) const
   return false;
 }
 
-u8 PSpawnedVehicle::GetFreeSeats() const
+/*u8 PSpawnedVehicle::GetFreeSeats() const
 {
   u8 bitField = 0;
 
@@ -187,7 +204,7 @@ u8 PSpawnedVehicle::GetFreeSeats() const
   }
   
   return bitField;
-}
+}*/
 
 // PVehicles
 PVehicles::PVehicles()

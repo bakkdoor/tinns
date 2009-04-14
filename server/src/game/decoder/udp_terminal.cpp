@@ -138,7 +138,7 @@ bool PUdpReceiveDB::ActionVehicleListing()
 			std::string* Answer = new std::string[4 * NumEntries];
 			u16 Index = 0;
 			PVehicleInformation* EntryInfo;
-Console->Print("VHc entries : %d", NumEntries);
+//Console->Print("VHc entries : %d", NumEntries);
 		
 			while(! VhcList->empty())
 			{
@@ -148,7 +148,7 @@ Console->Print("VHc entries : %d", NumEntries);
 				Answer[Index++] = Ssprintf("%u", EntryInfo->GetVehicleType()); //vhcType
 				Answer[Index++] = Ssprintf("%u", EntryInfo->GetStatus()); //vhcStatus 0:parking, 1:in_service, 2:destroyed
 				Answer[Index++] = Ssprintf("%u", EntryInfo->GetHealth()); //vhcHealth%
-Console->Print("Entry: %s/%s/%s/%s", Answer[Index-4].c_str(), Answer[Index-3].c_str(), Answer[Index-2].c_str(), Answer[Index-1].c_str());
+//Console->Print("Entry: %s/%s/%s/%s", Answer[Index-4].c_str(), Answer[Index-3].c_str(), Answer[Index-2].c_str(), Answer[Index-1].c_str());
 				delete EntryInfo;
 			}
 			

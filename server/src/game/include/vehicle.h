@@ -107,6 +107,9 @@ class PVehicleInformation
 class PSpawnedVehicle
 {
   private:
+    static const u8 mSeatsFlags[];
+
+  private:
     u32 mLocalId;
     PVehicleInformation mInfo;
     u32 mLocation;
@@ -114,6 +117,8 @@ class PSpawnedVehicle
     const PDefVhc* mVhcDef;
 
     u32 mSeatUserId[8];
+    u8 mFreeSeatsFlags;
+    u8 mNbFreeSeats;
 
   public:
     PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation* const nVhcInfo, const u32 nLocation, const PVhcCoordinates* const nVhcPos );
@@ -135,7 +140,9 @@ class PSpawnedVehicle
     bool SetSeatUser( const u8 nSeatId, const u32 nCharId );
     bool UnsetSeatUser( const u8 nSeatId, const u32 nCharId );
     bool IsCharInside(const u32 nCharId) const;
-    u8 GetFreeSeats() const;
+    inline u8 GetFreeSeatsFlags() const { return mFreeSeatsFlags; }
+    inline u8 GetNbFreeSeats() const { return mNbFreeSeats; }
+
     //SetHealth(const u32 nHealth);
     //u32 DoDamage(const u32 nHealthDec);
     //u32 DoRepair(const u32 nHealthInc);

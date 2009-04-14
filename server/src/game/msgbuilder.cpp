@@ -165,8 +165,7 @@ PMessage* PMsgBuilder::BuildReqInfoAnswerMsg (PClient* nClient, u16 nReqType, u3
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x23;
-    *tmpMsg << (u8)0x06;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u16)0x0006; // cmd
     *tmpMsg << (u16)nReqType; // wrong size here (u32) for buffer size u16 in NeoX
     *tmpMsg << (u32)nInfoId;
     tmpMsg->Write(nResponse, nResponseLength);
@@ -1023,10 +1022,9 @@ PMessage* PMsgBuilder::BuildZoning1Msg (PClient* nClient, u16 nEntity, u8 nUnkno
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x23;
-    *tmpMsg << (u8)0x04; // from NeoX
+    *tmpMsg << (u16)0x0004; // cmd
     *tmpMsg << (u32)0x00000000; // from NeoX
     *tmpMsg << (u32)0x00000000; // from NeoX
-    *tmpMsg << (u8)0x00;
     *tmpMsg << (u8)nUnknown;
     *tmpMsg << (u16)nEntity;
     *tmpMsg << (u16)0x0000; // from NeoX
@@ -1118,7 +1116,7 @@ PMessage* PMsgBuilder::BuildGenrepZoningMsg (PClient* nClient, u32 nLocation, u1
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x23;
-    *tmpMsg << (u8)0x0c;
+    *tmpMsg << (u16)0x000c; // cmd
     tmpMsg->SetNextByteOffset(38);
     *tmpMsg << (u32)0xffffffff;
     *tmpMsg << (u32)nLocation;
@@ -1235,10 +1233,6 @@ PMessage* PMsgBuilder::BuildChangeLocationMsg (PClient* nClient, u32 nLocation, 
     return tmpMsg;
 }
 
-/* RESP:
-0c Entity Position answer ???
-03 0e 00 23 0a 00 a4 72 d3 80 f1 74
-*/
 PMessage* PMsgBuilder::BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY, u16 pZ)
 {
     PMessage* tmpMsg = new PMessage(18);
@@ -1251,8 +1245,7 @@ PMessage* PMsgBuilder::BuildEntityPositionMsg (PClient* nClient, u16 pX, u16 pY,
     *tmpMsg << (u8)0x03;
     *tmpMsg << (u16)nClient->GetUDP_ID();
     *tmpMsg << (u8)0x23;
-    *tmpMsg << (u8)0x0a;
-    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u16)0x000a;
     *tmpMsg << (u16)(pY + 768);
     *tmpMsg << (u16)(pZ + 768);
     *tmpMsg << (u16)(pX + 768);
@@ -1568,7 +1561,7 @@ PMessage* PMsgBuilder::BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObj
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nVhcRawObjectID, u32 nSeatId)
+PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nRequesterLocalId, u32 nVhcRawObjectID )
 {
     PMessage* tmpMsg = new PMessage(40);
 
@@ -1586,16 +1579,17 @@ PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, 
     *tmpMsg << (u8)0x3d;
 	*tmpMsg << (u32)0x00000008; // cmd
     *tmpMsg << (u32)0x00000005; // cmd ?
-	*tmpMsg << (u32)0x00000001; // ?
+    nClient->IncreaseTransactionID();
+	*tmpMsg << (u32)nClient->GetTransactionID(); // or specific vhcTransactionId ?
 	*tmpMsg << (u16)0x000c; // ?
     *tmpMsg << nCharId; //u32
-    *tmpMsg << nSeatId; // ? u32
+    *tmpMsg << nRequesterLocalId; // ? u32
 	*tmpMsg << nVhcRawObjectID;
     *tmpMsg << (u8)0x08; // ?
 
     (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
-    return tmpMsg; // NOT WORKING YET
+    return tmpMsg;
 }
 /* S->C
 13:ff:00:72:d6:22:
@@ -1631,8 +1625,6 @@ PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, 
 01:00:
 00:00
 
-S->C:
-Msg + arg=3 (Owner localId ?)
 */
 
 PMessage* PMsgBuilder::BuildCharUseGenrepMsg (PClient* nClient, u32 nRawObjectID, u32 nLocation, u16 nEntity)
@@ -2706,4 +2698,16 @@ void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 
 	Network_SendUDP (SendBuffer, 32, ClientNum);
 }
+*/
+
+/* Unkown use packets (from nc2.2)
+13:81:00:81:e2: 0c: 03:81:00:23: 12:00: 07:00:00:00:00:00  // Weather realted ? / thunderstorm trigger ? 
+
+13:56:00:56:e2: 40: 03:56:00:1f:01:00:25:13: f1:18:13:01:77:05:48:c7: f2:18:13:02:16:74:61:c7: f3:18:13:03:17:74:61:c7: f4:18:13:04:18:74:61:c7: f5:18:13:05:1f:2a:60:c7: f6:18:13:06:1f:2a:60:c7: f7:18:13:0b:3e:8f:6d:c7
+
+13:5b:00:5b:e2: 07: 03:5b:00:2e: 01:06:00 // Weather related ?
+
+13:5c:00:5c:e2: 0c: 03:5c:00:1f:01:00:25:13: f8:18:0e:02
+
+
 */

@@ -209,7 +209,7 @@ PUdpMsgAnalyser* PUdpVentureWarpConfirm::Analyse()
   (*cMsg) >> mUnknown3;
   (*cMsg) >> mRawItemId;
   (*cMsg) >> mStatus;
-
+cMsg->Dump();
   return this;
 }
 

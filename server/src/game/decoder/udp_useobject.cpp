@@ -182,7 +182,8 @@ bool PUdpUseObject::DoAction()
                   tmpMsg = MsgBuilder->BuildText100Msg( nClient, 17, mRawItemID ); // "Not your vhc" msg
                   nClient->SendUDPMessage( tmpMsg );
                   // Testing
-                  tmpMsg = MsgBuilder->BuildVhcAccessRequestMsg (nClient, 1, mRawItemID, 2);
+                  tmpMsg = MsgBuilder->BuildVhcAccessRequestMsg (nClient, 3, 3, mRawItemID);
+                  //BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nRequesterLocalId, u32 nVhcRawObjectID )
                   nClient->SendUDPMessage( tmpMsg );
                 }
               }
@@ -190,7 +191,7 @@ bool PUdpUseObject::DoAction()
               {
                 if( (tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID()) || tVhc->IsCharInside(tChar->GetID()) )
                 { // Char is the owner or Owner is inside vhc
-                  u8 freeSeats = tVhc->GetFreeSeats();
+                  u8 freeSeats = tVhc->GetFreeSeatsFlags();
                   if(freeSeats)
                   {
                     tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, mRawItemID, tVhc->GetInformation().GetVehicleType(), freeSeats );
