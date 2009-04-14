@@ -190,54 +190,6 @@ if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (loca
   return true;
 }
 
-/**** PUdpVentureWarpConfirm ****/
-
-PUdpVentureWarpConfirm::PUdpVentureWarpConfirm(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
-{
-  nDecodeData->mName << "/0x09";
-}
-
-PUdpMsgAnalyser* PUdpVentureWarpConfirm::Analyse()
-{
-  mDecodeData->mName << "=Venture Warp confirmation";
-  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-
-  PMessage* cMsg = mDecodeData->mMessage;
-  cMsg->SetNextByteOffset(mDecodeData->Sub0x13Start+12);
-  (*cMsg) >> mUnknown1;
-  (*cMsg) >> mUnknown2;
-  (*cMsg) >> mUnknown3;
-  (*cMsg) >> mRawItemId;
-  (*cMsg) >> mStatus;
-cMsg->Dump();
-  return this;
-}
-
-bool PUdpVentureWarpConfirm::DoAction()
-{
-  PClient* nClient = mDecodeData->mClient;
-
-  if(mStatus == 1)
-  {
-	u32 newLocation;
-	do
-	{
-	  newLocation = 2000 + 20 * GetRandom(10, 0) + GetRandom(16, 1);
-	} while (! Worlds->IsValidWorld(newLocation));
-	
-	u16 nEntity = 10;
-	u16 nEntityType = 1;
-	
-	PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (nClient, newLocation, nEntity, nEntityType);
-	nClient->getUDPConn()->SendMessage(tmpMsg);
-	
-	if (gDevDebug) Console->Print("Client[%d]: Venture Warping to zone %d (entity %d/%d)", nClient->GetID(), newLocation, nEntity, nEntityType);
-  }
-
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true;
-}
-
 /**** PUdpAddGenrepToList ****/
 
 PUdpAddGenrepToList::PUdpAddGenrepToList(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)

@@ -46,6 +46,7 @@
 #include "udp_outfitter.h"
 #include "udp_helditemaction.h"
 #include "udp_killself.h"
+#include "udp_popupresponse.h"
 
 /**** PUdp0x1f ****/
 
@@ -206,7 +207,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         }
         case 0x09:
         {
-          nextAnalyser = new PUdpVentureWarpConfirm(mDecodeData);
+          nextAnalyser = new PUdpPopupResponse(mDecodeData);
           break;
         }
         case 0x0a:
