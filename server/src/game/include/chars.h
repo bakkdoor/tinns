@@ -59,6 +59,7 @@
 #include "buddylist.h"
 #include "genreplist.h"
 #include "regex++.h"
+class PVhcAccessRequestList;
 
 enum PSeatType
 {
@@ -136,6 +137,7 @@ class PChar
     PSeatType mSeatInUseType;
     u32 mSeatInUseObjectId;
     u8 mSeatInUseSeatId;
+    PVhcAccessRequestList* mVhcAccessRequestList;
 
     PContainer* mContainerInExclusiveUse;
 
@@ -296,6 +298,9 @@ class PChar
 
     PSeatType GetSeatInUse( u32* nObjectId = NULL, u8* nSeatId = NULL );
     void SetSeatInUse( PSeatType nSeatType, u32 nObjectId = 0, u8 nSeatId = 0 );
+
+    PVhcAccessRequestList* GetVhcAccessRequestList();
+
     inline PContainer* GetContainerInExclusiveUse() { return mContainerInExclusiveUse; }
     inline void SetContainerInExclusiveUse( PContainer* nContainer ) { mContainerInExclusiveUse = nContainer; }
 };

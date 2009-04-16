@@ -192,6 +192,16 @@ bool PSpawnedVehicle::IsCharInside(const u32 nCharId) const
   return false;
 }
 
+u8 PSpawnedVehicle::GetFirstFreeSeat() const
+{
+  for(int i = 0; i < mVhcDef->GetNumSeats(); ++i )
+  {
+    if ( ! mSeatUserId[i] )
+      return i;
+  }
+  
+  return 255;
+}
 /*u8 PSpawnedVehicle::GetFreeSeats() const
 {
   u8 bitField = 0;

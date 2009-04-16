@@ -65,6 +65,7 @@ class PUdpVhcUse : public PUdpMsgAnalyser
     //~PUdpVhcUse();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
+    static void DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId = 254);
 };
 
 class PUdpSubwayUpdate : public PUdpMsgAnalyser

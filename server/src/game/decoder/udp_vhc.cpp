@@ -201,6 +201,53 @@ bool PUdpVhcUse::DoAction()
   return true;
 }
 
+static void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId)
+{
+  PMessage* tmpMsg;
+
+  if( (nVhc->GetNbFreeSeats() > 1) &&  ( nSeatId > nVhc->GetNumSeats() ) )
+  {
+    u8 freeSeats = nVhc->GetFreeSeatsFlags();
+    tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, nRawVhcLocalId, nVhc->GetInformation().GetVehicleType(), freeSeats );
+    nClient->SendUDPMessage( tmpMsg ); // Open seat selection window
+  }
+  else
+  {
+    if( nSeatId <= nVhc->GetNumSeats() )
+    {
+      if( nVhc->GetSeatUser(nSeatId) )
+      {
+        tmpMsg = MsgBuilder->BuildText100Msg( nClient, 1, nRawVhcLocalId ); // Already in use
+        nClient->SendUDPMessage( tmpMsg );
+      }
+    }
+    else
+    {
+      nSeatId = nVhc->GetFirstFreeSeat();
+
+      if( nSeatId != 255 )
+      {
+        if ( nVhc->SetSeatUser( nSeatId, nClient->GetChar()->GetID() ) ) // Char was able to sit
+        {
+          nClient->GetChar()->SetSeatInUse( seat_vhc, nRawVhcLocalId, nSeatId );
+          tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, nRawVhcLocalId, nSeatId );
+          ClientManager->UDPBroadcast( tmpMsg, nClient );
+        }
+        else
+        {
+          tmpMsg = MsgBuilder->BuildText100Msg( nClient, 0, nRawVhcLocalId ); // Undefined failure
+          nClient->SendUDPMessage( tmpMsg );
+        }
+      }
+      else
+      {
+        tmpMsg = MsgBuilder->BuildText100Msg( nClient, 5, nRawVhcLocalId ); // "No free seat" msg
+        nClient->SendUDPMessage( tmpMsg );
+      }
+    }
+  }
+}
+
 /**** PUdpSubwayUpdate ****/
 
 PUdpSubwayUpdate::PUdpSubwayUpdate( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )

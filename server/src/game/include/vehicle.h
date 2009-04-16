@@ -142,6 +142,7 @@ class PSpawnedVehicle
     bool IsCharInside(const u32 nCharId) const;
     inline u8 GetFreeSeatsFlags() const { return mFreeSeatsFlags; }
     inline u8 GetNbFreeSeats() const { return mNbFreeSeats; }
+	u8 GetFirstFreeSeat() const;
 
     //SetHealth(const u32 nHealth);
     //u32 DoDamage(const u32 nHealthDec);

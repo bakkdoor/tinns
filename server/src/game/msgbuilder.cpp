@@ -1561,7 +1561,7 @@ PMessage* PMsgBuilder::BuildCharUseVentureWarpMsg (PClient* nClient, u32 nRawObj
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nRequesterLocalId, u32 nVhcRawObjectID )
+PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nRequestId, u32 nRequesterCharId, u32 nRequesterLocalId, u32 nVhcRawObjectID )
 {
     PMessage* tmpMsg = new PMessage(40);
 
@@ -1579,10 +1579,9 @@ PMessage* PMsgBuilder::BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, 
     *tmpMsg << (u8)0x3d;
 	*tmpMsg << (u32)0x00000008; // cmd
     *tmpMsg << (u32)0x00000005; // cmd ?
-    nClient->IncreaseTransactionID();
-	*tmpMsg << (u32)nClient->GetTransactionID(); // or specific vhcTransactionId ?
-	*tmpMsg << (u16)0x000c; // ?
-    *tmpMsg << nCharId; //u32
+	*tmpMsg << (u32)nRequestId;
+	*tmpMsg << (u16)0x000c; // ? length ?
+    *tmpMsg << nRequesterCharId; //u32
     *tmpMsg << nRequesterLocalId; // ? u32
 	*tmpMsg << nVhcRawObjectID;
     *tmpMsg << (u8)0x08; // ?

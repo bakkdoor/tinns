@@ -53,68 +53,68 @@
 
 PClientManager::PClientManager()
 {
-    //mLastID = 0;
+  //mLastID = 0;
 }
 
 
 PClientManager::~PClientManager()
 {
-    /*
-      for(PClientMap::iterator it=mClientList.begin(); it!=mClientList.end(); it++)
-      {
-          delete it->second;
-      }
-    */
-}
-
-bool PClientManager::addClientToList(PClient* newClient)
-{
-    if (!newClient)
-        return false;
-
-    PClientMap::const_iterator it = mClientList.find(newClient->GetLocalID());
-    if(it == mClientList.end()) // only if client not found in list
-    {
-        /*     mClientList.insert(std::make_pair(m_LastID, newClient));
-                ++m_LastID; */
-
-        mClientList.insert(std::make_pair(newClient->GetLocalID(), newClient));
-        //Console->Print(GREEN, BLACK, "Client %d added to clientmanager", newClient->GetIndex());
-        /*        if(newClient)
-                {
-                    return true;
-                } */
-        return true;
-    }
-    else
-        return false;
-}
-
-bool PClientManager::IsWorldInUse(u16 nWorldID)
-{
-    // Check if a zone is in use
+  /*
     for(PClientMap::iterator it=mClientList.begin(); it!=mClientList.end(); it++)
     {
-        if(it->second)
-        {
-            if(it->second->GetChar() != NULL)
-            {
-                if(it->second->GetChar()->GetLocation() == nWorldID)
-                    return true;
-            }
-        }
+        delete it->second;
     }
+  */
+}
+
+bool PClientManager::addClientToList( PClient* newClient )
+{
+  if ( !newClient )
+    return false;
+
+  PClientMap::const_iterator it = mClientList.find( newClient->GetLocalID() );
+  if ( it == mClientList.end() ) // only if client not found in list
+  {
+    /*     mClientList.insert(std::make_pair(m_LastID, newClient));
+            ++m_LastID; */
+
+    mClientList.insert( std::make_pair( newClient->GetLocalID(), newClient ) );
+    //Console->Print(GREEN, BLACK, "Client %d added to clientmanager", newClient->GetIndex());
+    /*        if(newClient)
+            {
+                return true;
+            } */
+    return true;
+  }
+  else
     return false;
 }
 
-void PClientManager::deleteClientFromList(int id)
+bool PClientManager::IsWorldInUse( u16 nWorldID ) const
 {
-    PClientMap::iterator it = mClientList.find(id);
-    if (it != mClientList.end())
+  // Check if a zone is in use
+  for ( PClientMap::const_iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    if ( it->second )
     {
-        mClientList.erase(it);
-        //Console->Print(YELLOW, BLACK, "Client %d removed from clientmanager", ((PClient*)(it->second))->GetIndex());
+      if ( it->second->GetChar() != NULL )
+      {
+        if ( it->second->GetChar()->GetLocation() == nWorldID )
+          return true;
+      }
     }
+  }
+  return false;
+}
+
+void PClientManager::deleteClientFromList( int id )
+{
+  PClientMap::iterator it = mClientList.find( id );
+  if ( it != mClientList.end() )
+  {
+    mClientList.erase( it );
+    //Console->Print(YELLOW, BLACK, "Client %d removed from clientmanager", ((PClient*)(it->second))->GetIndex());
+  }
 }
 
 /* bool PClientManager::deleteClientFromList(PClient* delClient)
@@ -134,10 +134,36 @@ void PClientManager::deleteClientFromList(int id)
     return false;
 } */
 
-PClient* PClientManager::getClientByID(int id)
+PClient* PClientManager::getClientByID( int id ) const
 {
-    PClientMap::const_iterator it = mClientList.find(id);
-    return ( (it != mClientList.end()) ? (PClient*)(it->second) : NULL );
+  PClientMap::const_iterator it = mClientList.find( id );
+  return (( it != mClientList.end() ) ? ( PClient* )( it->second ) : NULL );
+}
+
+PClient* PClientManager::getClientByChar( u32 CharID ) const
+{
+  for ( PClientMap::const_iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    if ( it->second )
+    {
+      if ( it->second->GetCharID() == CharID )
+        return it->second;
+    }
+  }
+  return NULL;
+}
+
+PClient* PClientManager::getClientByChar( const std::string &Name ) const
+{
+  for ( PClientMap::const_iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    if ( it->second )
+    {
+      if( it->second->GetChar()->GetName() == Name )
+        return it->second;
+    }
+  }
+  return NULL;
 }
 
 /* int PClientManager::getClientID(PClient* _client)
@@ -154,123 +180,123 @@ PClient* PClientManager::getClientByID(int id)
 } */
 
 // Distance checking doesn't care for Z axis ATM
-int PClientManager::UDPBroadcast(PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipSource)
+int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipSource )
 {
-    int msgCount = 0;
-    PChar* nChar;
-    PMessage* tmpMsg;
-    PClient* itClient;
-    u16 Dapprox;
+  int msgCount = 0;
+  PChar* nChar;
+  PMessage* tmpMsg;
+  PClient* itClient;
+  u16 Dapprox;
 
-    for(PClientMap::iterator it=mClientList.begin(); it != mClientList.end(); it++)
+  for ( PClientMap::iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    itClient = ( PClient* )( it->second );
+    if ( itClient->getUDPConn() )
     {
-        itClient = (PClient*)(it->second);
-        if (itClient->getUDPConn())
-        {
-            nChar = itClient->GetChar();
-            if (nChar->GetLocation() != nZoneID) // if limited to zone, do check
-                continue;
+      nChar = itClient->GetChar();
+      if ( nChar->GetLocation() != nZoneID ) // if limited to zone, do check
+        continue;
 
-            if ((int)itClient->GetCharID() == nSkipSource) // if source of broadcast should be skipped
-                continue;
+      if (( int )itClient->GetCharID() == nSkipSource ) // if source of broadcast should be skipped
+        continue;
 
-            if (nMaxDist) // if limited to distance, do check
-            {
-                Dapprox = DistanceApprox((nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nX, nY, nZ);
-                if (Dapprox >  nMaxDist)
-                    continue;
-            }
+      if ( nMaxDist ) // if limited to distance, do check
+      {
+        Dapprox = DistanceApprox(( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nX, nY, nZ );
+        if ( Dapprox >  nMaxDist )
+          continue;
+      }
 
-            /*tmpMsg = new PMessage(nMessage->GetMaxSize());
-            (*tmpMsg) = (*nMessage);*/
-            tmpMsg = new PMessage(*nMessage);
-            
-            itClient->FillInUDP_ID(tmpMsg);
-            itClient->SendUDPMessage(tmpMsg);
-            ++msgCount;
-        }
+      /*tmpMsg = new PMessage(nMessage->GetMaxSize());
+      (*tmpMsg) = (*nMessage);*/
+      tmpMsg = new PMessage( *nMessage );
+
+      itClient->FillInUDP_ID( tmpMsg );
+      itClient->SendUDPMessage( tmpMsg );
+      ++msgCount;
     }
+  }
 
-    //Console->Print("Broadcast in zone %d to %d chars", nZoneID, msgCount);
+  //Console->Print("Broadcast in zone %d to %d chars", nZoneID, msgCount);
+  delete nMessage;
+  return msgCount;
+}
+
+int PClientManager::UDPBroadcast( PMessage* nMessage, PClient* nClient, u16 nMaxDist, bool nSkipSource, bool nNPCPing )
+{
+  PChar* nChar;
+  int skipVal = -1;
+
+  // Dont send NPC alive messages when client is not ready for them
+  if ( !nClient->IsAcceptingNPCUpdates() && nNPCPing )
+    return 0;
+  // !!! This test is wrong as only 1 client is tested !!!
+
+  if ( nSkipSource )
+  {
+    skipVal = nClient->GetCharID();
+  }
+
+  if ( nClient && ( nChar = nClient->GetChar() ) )
+  {
+    return UDPBroadcast( nMessage, nChar->GetLocation(), ( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nMaxDist, skipVal );
+  }
+  else
+  {
     delete nMessage;
-    return msgCount;
+    return 0;
+  }
 }
 
-int PClientManager::UDPBroadcast(PMessage* nMessage, PClient* nClient, u16 nMaxDist, bool nSkipSource, bool nNPCPing)
+int PClientManager::SendUDPZoneWelcomeToClient( PClient* nClient )
 {
-    PChar* nChar;
-    int skipVal = -1;
+  int msgCount = 0;
+  PChar* nChar;
+  PChar* itChar;
+  PMessage* tmpMsg;
+  u32 nZoneID;
+  PClient* itClient;
 
-    // Dont send NPC alive messages when client is not ready for them
-    if(!nClient->IsAcceptingNPCUpdates() && nNPCPing)
-        return 0;
-    // !!! This test is wrong as only 1 client is tested !!!
+  if ( nClient && ( nChar = nClient->GetChar() ) ) // if nClient is set, always use its zone
+  {
+    nZoneID = nChar->GetLocation();
+  }
+  else
+    return 0;
 
-    if(nSkipSource)
+  for ( PClientMap::iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    if ( nClient->GetLocalID() == it->first )
+      continue;
+
+    itClient = ( PClient* )( it->second );
+    if ( itClient->getUDPConn() )
     {
-        skipVal = nClient->GetCharID();
+      itChar = itClient->GetChar();
+      if ( itChar->GetLocation() != nZoneID ) // limit to zone
+        continue;
+
+      tmpMsg = MsgBuilder->BuildCharHelloMsg( itClient );
+
+      nClient->FillInUDP_ID( tmpMsg );
+      nClient->SendUDPMessage( tmpMsg );
+      //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
+      //tmpMsg->Dump();
+
+      if ( itChar->GetSeatInUse() != seat_none )
+      {
+        tmpMsg = MsgBuilder->BuildCharPosUpdateMsg( itClient );
+        nClient->FillInUDP_ID( tmpMsg );
+        nClient->SendUDPMessage( tmpMsg );
+
+        //Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
+        /*tmpMsg = MsgBuilder->BuildCharUseSeatMsg(itClient, (itChar->GetChairInUse()+1)*1024);
+        nClient->FillInUDP_ID(tmpMsg);
+        nClient->SendUDPMessage(tmpMsg);*/
+      }
+      ++msgCount;
     }
-    
-    if (nClient && (nChar = nClient->GetChar()))
-    {
-        return UDPBroadcast(nMessage, nChar->GetLocation(), (nChar->Coords).mX, (nChar->Coords).mY, (nChar->Coords).mZ, nMaxDist, skipVal);
-    }
-    else
-    {
-      delete nMessage;
-      return 0;
-    }
-}
+  }
 
-int PClientManager::SendUDPZoneWelcomeToClient(PClient* nClient)
-{
-    int msgCount = 0;
-    PChar* nChar;
-    PChar* itChar;
-    PMessage* tmpMsg;
-    u32 nZoneID;
-    PClient* itClient;
-      
-    if (nClient && (nChar = nClient->GetChar())) // if nClient is set, always use its zone
-    {
-        nZoneID = nChar->GetLocation();
-    }
-    else
-        return 0;
-
-    for(PClientMap::iterator it=mClientList.begin(); it!=mClientList.end(); it++)
-    {
-        if (nClient->GetLocalID() == it->first)
-            continue;
-
-        itClient = (PClient*)(it->second);
-        if (itClient->getUDPConn())
-        {
-            itChar = itClient->GetChar();
-            if (itChar->GetLocation() != nZoneID) // limit to zone
-                continue;
-
-            tmpMsg = MsgBuilder->BuildCharHelloMsg(itClient);
-
-            nClient->FillInUDP_ID(tmpMsg);
-            nClient->SendUDPMessage(tmpMsg);
-            //Console->Print("Welcome data sent from client %d to client %d", itClient->GetIndex(), nClient->GetIndex());
-            //tmpMsg->Dump();
-
-            if (itChar->GetSeatInUse() != seat_none)
-            {
-                tmpMsg = MsgBuilder->BuildCharPosUpdateMsg (itClient);
-                nClient->FillInUDP_ID(tmpMsg);
-                nClient->SendUDPMessage(tmpMsg);
-
-                //Console->Print("Sit on chair %d sent from client %d to client %d", (itChar->GetChairInUse()+1)*1024, itClient->GetIndex(), nClient->GetIndex());
-                /*tmpMsg = MsgBuilder->BuildCharUseSeatMsg(itClient, (itChar->GetChairInUse()+1)*1024);
-                nClient->FillInUDP_ID(tmpMsg);
-                nClient->SendUDPMessage(tmpMsg);*/
-            }
-            ++msgCount;
-        }
-    }
-
-    return msgCount;
+  return msgCount;
 }

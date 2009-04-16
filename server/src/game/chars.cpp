@@ -51,6 +51,7 @@
 #include "appartements.h"
 #include "container.h"
 #include "inventory.h"
+#include "vhcaccessrequest.h"
 
 // PCharCoordinates
 void PCharCoordinates::SetInterpolate( PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef )
@@ -212,7 +213,8 @@ PChar::PChar()
   mSeatInUseType = seat_none;
   mSeatInUseObjectId = 0;
   mSeatInUseSeatId = 0;
-
+  mVhcAccessRequestList = NULL;
+  
   mContainerInExclusiveUse = NULL;
 
   mIsOnline = false;
@@ -233,10 +235,9 @@ PChar::PChar()
 PChar::~PChar()
 {
   delete Skill;
-  if ( mBuddyList )
-    delete mBuddyList;
-  if ( mGenrepList )
-    delete mGenrepList;
+  delete mBuddyList;
+  delete mGenrepList;
+  delete mVhcAccessRequestList;
 
   if ( mContainerInExclusiveUse )
   {
@@ -998,6 +999,14 @@ void PChar::SetSeatInUse( PSeatType nSeatType, u32 nObjectId, u8 nSeatId )
   mSeatInUseType = nSeatType;
   mSeatInUseObjectId = nObjectId;
   mSeatInUseSeatId = nSeatId;
+}
+
+PVhcAccessRequestList* PChar::GetVhcAccessRequestList()
+{
+  if( ! mVhcAccessRequestList )
+    mVhcAccessRequestList = new PVhcAccessRequestList();
+
+  return mVhcAccessRequestList;
 }
 
 void PChar::SetLookingAt( u16 nCharID )

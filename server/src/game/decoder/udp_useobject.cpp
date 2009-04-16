@@ -40,6 +40,8 @@
 #include "appartements.h"
 #include "container.h"
 #include "subway.h"
+#include "vhcaccessrequest.h"
+#include "udp_vhc.h"
 
 u32 gVhcId = 0x3ff;
 
@@ -160,59 +162,79 @@ bool PUdpUseObject::DoAction()
               Console->Print( "Using vhc %d (%x)", mRawItemID, mRawItemID );
               vhcFound = true;
 
-              if(tVhc->GetNumSeats() == 1) // single seat vhc
+              if ( tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID() ) // Requester is the owner
               {
-                if( tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID() ) // Requester is the owner
+                PUdpVhcUse::DoFreeSitting( nClient,  tVhc, mRawItemID );
+                /*if( tVhc->GetNbFreeSeats() > 1 )
                 {
-                  u8 nSeatId = 0;
-                  if( tVhc->SetSeatUser( nSeatId, tChar->GetID() ) ) // Char was able to sit
-                  {
-                    tChar->SetSeatInUse( seat_vhc, mRawItemID, nSeatId );
-                    tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, mRawItemID, nSeatId );
-                    ClientManager->UDPBroadcast( tmpMsg, nClient );
-                  }
-                  else
-                  {
-                    tmpMsg = MsgBuilder->BuildText100Msg( nClient, 0, mRawItemID ); // Undefined failure
-                    nClient->SendUDPMessage( tmpMsg );
-                  }
-                }
-                else // Requester is not the owner
-                {
-                  tmpMsg = MsgBuilder->BuildText100Msg( nClient, 17, mRawItemID ); // "Not your vhc" msg
-                  nClient->SendUDPMessage( tmpMsg );
-                  // Testing
-                  tmpMsg = MsgBuilder->BuildVhcAccessRequestMsg (nClient, 3, 3, mRawItemID);
-                  //BuildVhcAccessRequestMsg (PClient* nClient, u32 nCharId, u32 nRequesterLocalId, u32 nVhcRawObjectID )
-                  nClient->SendUDPMessage( tmpMsg );
-                }
-              }
-              else // multi seats vhc
-              {
-                if( (tVhc->GetInformation().GetOwnerCharId() ==  tChar->GetID()) || tVhc->IsCharInside(tChar->GetID()) )
-                { // Char is the owner or Owner is inside vhc
                   u8 freeSeats = tVhc->GetFreeSeatsFlags();
-                  if(freeSeats)
+                  tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, mRawItemID, tVhc->GetInformation().GetVehicleType(), freeSeats );
+                  nClient->SendUDPMessage( tmpMsg ); // Open seat selection window
+                }
+                else
+                {
+                  nSeatId = tVhc->GetFirstFreeSeat();
+                  if( nSeatId != 255 )
                   {
-                    tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, mRawItemID, tVhc->GetInformation().GetVehicleType(), freeSeats );
-                    nClient->SendUDPMessage( tmpMsg ); // Open seat selection window
+                    if ( tVhc->SetSeatUser( nSeatId, tChar->GetID() ) ) // Char was able to sit
+                    {
+                      tChar->SetSeatInUse( seat_vhc, mRawItemID, nSeatId );
+                      tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, mRawItemID, nSeatId );
+                      ClientManager->UDPBroadcast( tmpMsg, nClient );
+                    }
+                    else
+                    {
+                      tmpMsg = MsgBuilder->BuildText100Msg( nClient, 0, mRawItemID ); // Undefined failure
+                      nClient->SendUDPMessage( tmpMsg );
+                    }
                   }
                   else
                   {
                     tmpMsg = MsgBuilder->BuildText100Msg( nClient, 5, mRawItemID ); // "No free seat" msg
                     nClient->SendUDPMessage( tmpMsg );
                   }
-                }
-                else
+                }*/
+              }
+              else // Requester is not the owner
+              {
+                if( tVhc->GetNumSeats() == 1 ) // single seat vhc
+                {
+                  tmpMsg = MsgBuilder->BuildText100Msg( nClient, 17, mRawItemID ); // "Not your vhc" msg
+                  nClient->SendUDPMessage( tmpMsg );
+                } // multi seats vhc
+                else if( ! tVhc->IsCharInside( tVhc->GetInformation().GetOwnerCharId() ) )
                 {
                   tmpMsg = MsgBuilder->BuildText100Msg( nClient, 18, mRawItemID ); // "Owner not on board" msg
                   nClient->SendUDPMessage( tmpMsg );
                 }
+                else if( tVhc->GetNbFreeSeats() == 0 )
+                {
+                  tmpMsg = MsgBuilder->BuildText100Msg( nClient, 5, mRawItemID ); // "No free seat" msg
+                  nClient->SendUDPMessage( tmpMsg );
+                }
+                else
+                { // Send request to owner
+                  PClient* ownerClient = ClientManager->getClientByChar( tVhc->GetInformation().GetOwnerCharId() );
+                  if( ownerClient )
+                  {
+                    PChar* ownerChar = ownerClient->GetChar();
+                    u32 newReqId = ownerChar->GetVhcAccessRequestList()->Add( tChar->GetID(), tVhc->GetInformation().GetVehicleId() );
+                    if(newReqId)
+                    {
+                      tmpMsg = MsgBuilder->BuildVhcAccessRequestMsg(ownerClient, newReqId, tChar->GetID(), nClient->GetID(), tVhc->GetInformation().GetVehicleId() );
+                      ownerClient->SendUDPMessage( tmpMsg );
+                      tmpMsg = MsgBuilder->BuildText100Msg( nClient, 19, mRawItemID ); // "req transmitted" msg
+                      nClient->SendUDPMessage( tmpMsg );
+                    }
+                  }
+                  else
+                  {
+                      tmpMsg = MsgBuilder->BuildText100Msg( nClient, 0, mRawItemID ); // Undefined failure / Owner not available
+                      nClient->SendUDPMessage( tmpMsg );
+                  }
+                }
               }
               //////// Msg100 id
-              // 1 already in use
-              //19 req transmitted
-              //20 req refused
               //22 can't use that seat
             }
             else if (( tChar->GetLocation() == PWorlds::mNcSubwayWorldId ) && Subway->IsValidSubwayCab( mRawItemID ) && ( tChar->GetSeatInUse() == seat_none ) ) // Entering subway

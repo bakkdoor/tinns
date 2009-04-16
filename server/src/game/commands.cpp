@@ -402,6 +402,11 @@ bool PCommands::GetArgText(int ArgNum, char* output, int output_size)
 
 PClient* PCommands::GetClientByID(int charid)
 {
+  return ClientManager->getClientByChar( charid );
+}
+/*
+PClient* PCommands::GetClientByID(int charid)
+{
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
     {
         if(it->second)
@@ -413,7 +418,13 @@ PClient* PCommands::GetClientByID(int charid)
     }
     return NULL;
 }
+*/
 
+PClient* PCommands::GetClientByNick(const char *nick)
+{
+  return ClientManager->getClientByChar( (std::string) *nick );
+}
+/*
 PClient* PCommands::GetClientByNick(const char *nick)
 {
     for(PClientMap::iterator it=ClientManager->getClientListBegin(); it!=ClientManager->getClientListEnd(); it++)
@@ -427,7 +438,7 @@ PClient* PCommands::GetClientByNick(const char *nick)
     }
     return NULL;
 }
-
+*/
 
 bool PCommands::RequirePacketDumb()
 {
