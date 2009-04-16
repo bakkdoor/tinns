@@ -75,7 +75,7 @@ bool PUdpZoning1::DoAction()
 //Console->Print("Zoning Stage 1: New location: %d", mNewLocation);
 
   PMessage* tmpMsg = MsgBuilder->BuildZoning1Msg(mDecodeData->mClient, mNewEntity, mUnknown);
-  mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
+  mDecodeData->mClient->SendUDPMessage(tmpMsg);
 
 //Console->Print("Zoning Stage 1: packet sent");
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -134,13 +134,13 @@ bool PUdpGenrepZoning::DoAction()
   u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+16);
 
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  nClient->SendUDPMessage(tmpMsg);
 
 	//Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
   nClient->ChangeCharLocation(newLocation);
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  nClient->SendUDPMessage(tmpMsg);
 
 if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData);
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -173,7 +173,7 @@ bool PUdpAptGRZoning::DoAction()
   u16 nData = 0;
   
   PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg(nClient, newLocation, nData);
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  nClient->SendUDPMessage(tmpMsg);
 
   if (! nClient->ChangeCharLocation(newLocation))
     Console->Print("Client[%d]: Bad Apartment location %d", nClient->GetID(), newLocation);
@@ -183,7 +183,7 @@ bool PUdpAptGRZoning::DoAction()
     Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment(), newLocation);*/
 
 	tmpMsg = MsgBuilder->BuildZoning1Msg(nClient, nData);
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  nClient->SendUDPMessage(tmpMsg);
 
 if (gDevDebug) Console->Print("Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData);
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -221,13 +221,13 @@ bool PUdpAddGenrepToList::DoAction()
   if(mLocation == 1086 && mEntity == 1111)
   {
       PMessage* tmpMsg = MsgBuilder->BuildTextIniMsg (nClient, 6, 160);
-      nClient->getUDPConn()->SendMessage(tmpMsg);
+      nClient->SendUDPMessage(tmpMsg);
   }
   else
   {
       nClient->GetChar()->AddGenrep(mLocation, mEntity);
       PMessage* tmpMsg = MsgBuilder->BuildGenrepAddToListMsg(nClient, mLocation, mEntity);
-      nClient->getUDPConn()->SendMessage(tmpMsg);
+      nClient->SendUDPMessage(tmpMsg);
   }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -300,7 +300,7 @@ if (gDevDebug) Console->Print("Client[%d]: Apt Access I/F (place %d - password %
   }
 
   if (tmpMsg)
-    nClient->getUDPConn()->SendMessage(tmpMsg);
+    nClient->SendUDPMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

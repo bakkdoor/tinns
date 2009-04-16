@@ -435,6 +435,19 @@ PSpawnedVehicle* PSpawnedVehicles::GetVehicle( const u32 nLocalId )
   }
 }
 
+PSpawnedVehicle* PSpawnedVehicles::GetVehicleByGlobalId(const u32 nVehicleId )
+{
+  for ( PSpawnedVhcVector::iterator it = mSpawnedVehicles.begin(); it != mSpawnedVehicles.end(); it++ )
+  {
+    if( (*it)->GetVehicleId() == nVehicleId )
+    {
+      return (*it);
+    }
+  }
+
+  return NULL;
+}
+
 bool PSpawnedVehicles::UnspawnVehicle( const u32 nLocalId )
 {
   u16 Index;

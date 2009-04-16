@@ -55,7 +55,7 @@ bool PUdpPacket0::DoAction()
   if (mDecodeData->mState & DECODE_ACTION_READY)
   {
     PMessage* tmpMsg = MsgBuilder->BuildPacket0Msg(mDecodeData->mClient);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
+    mDecodeData->mClient->SendUDPMessage(tmpMsg);
 
     //mDecodeData->mMessage->SetNextByteOffset(mDecodeData->Sub0x13StartNext);    
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

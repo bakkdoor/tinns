@@ -63,8 +63,9 @@ class PVhcAccessRequestList
 		void SetParameters(std::time_t nResponseWaitTime, std::time_t nCheckWaitTime, std::time_t nReuseWaitTime);
 		
 		u32 Add(u32 nRequesterCharId, u32 nVhcGlobalId);
+        bool GetInfo(u32 nRequestId, u32* oRequesterCharId, u32* oVehicleId) const;
 		bool RegisterResponse(u32 nRequestId, bool nStatus);
-		bool Check(u32 nRequestId, u32 nRequesterCharId, u32 nVhcGlobalId);
+		bool Check(u32 nRequestId, u32 nRequesterCharId = 0, u32 nVhcGlobalId = 0);
 };
 
 #endif

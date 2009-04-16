@@ -181,7 +181,7 @@ void PWorldActors::InitWorld(PClient* nClient)
                 //if (gDevDebug) Console->Print("DEBUG: Message is full, sending part-msg");
                 tmpActorSpawn->U16Data(0x01) = nClient->GetUDP_ID();  // Set final UDP ID
                 tmpActorSpawn->U16Data(0x03) = nClient->GetSessionID();  // Set final SessionID
-                nClient->getUDPConn()->SendMessage(tmpActorSpawn);
+                nClient->SendUDPMessage(tmpActorSpawn);
                 tmpActorSpawn = NULL;
 
                 // ReInit message
@@ -201,7 +201,7 @@ void PWorldActors::InitWorld(PClient* nClient)
     tmpActorSpawn->U16Data(0x03) = nClient->GetSessionID();  // Set final SessionID
 
     if(tmpActorSpawn->GetSize() > 5)
-        nClient->getUDPConn()->SendMessage(tmpActorSpawn);
+        nClient->SendUDPMessage(tmpActorSpawn);
     else
     {
         delete tmpActorSpawn;

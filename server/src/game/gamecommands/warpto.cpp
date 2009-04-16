@@ -68,7 +68,7 @@ void PCommands::doCmdwarpto()
     {
       source->SetAwaitingWarpto(true, targetChar->Coords.mX, targetChar->Coords.mY, targetChar->Coords.mZ);
       PMessage* tmpMsg_zone = MsgBuilder->BuildChangeLocationMsg(source, destZone, 10, 1, 0);
-      source->getUDPConn()->SendMessage(tmpMsg_zone);
+      source->SendUDPMessage(tmpMsg_zone);
 
       char tmpMsg_success[81];
       snprintf(tmpMsg_success, 80, "Successfully warped you to %s", target->GetChar()->GetName().c_str());

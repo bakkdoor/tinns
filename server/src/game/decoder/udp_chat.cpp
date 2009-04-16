@@ -56,7 +56,7 @@ bool PUdpChatLocal::DoAction()
     u32 ClientTime = cMsg->U32Data(mDecodeData->Sub0x13Start+2);
     
     PMessage* tmpMsg = MsgBuilder->BuildPingMsg(mDecodeData->mClient, ClientTime);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);*/
+    mDecodeData->mClient->SendUDPMessage(tmpMsg);*/
     
     //cMsg->SetNextByteOffset(mDecodeData->Sub0x13StartNext);
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -161,7 +161,7 @@ bool PUdpChatListAdd::DoAction()
   if (AddResult)
   {
     PMessage* tmpMsg = MsgBuilder->BuildChatAddMsg (nClient, AddedCharID, mChatList);
-    nClient->getUDPConn()->SendMessage(tmpMsg);
+    nClient->SendUDPMessage(tmpMsg);
   }
   
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -223,7 +223,7 @@ bool PUdpChatListRemove::DoAction()
   /*if (AddResult)
   {
     PMessage* tmpMsg = MsgBuilder->BuildChatAddMsg (nClient, mRemovedCharID, mChatList);
-    nClient->getUDPConn()->SendMessage(tmpMsg);
+    nClient->SendUDPMessage(tmpMsg);
   }*/
   
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

@@ -52,7 +52,7 @@ void PTerminal::SendNewMailNotice(PClient* nClient, u8 nNewMails)
     *tmpMsg << (u8)0x00;
     *tmpMsg << nNewMails;
 
-    nClient->getUDPConn()->SendMessage(tmpMsg);
+    nClient->SendUDPMessage(tmpMsg);
 }
 
 u8 PTerminal::GetNewEmailCount(PClient* nClient)

@@ -218,6 +218,7 @@ bool PUdpUseObject::DoAction()
                   if( ownerClient )
                   {
                     PChar* ownerChar = ownerClient->GetChar();
+                    // We could check for valid allowed access before adding a new one
                     u32 newReqId = ownerChar->GetVhcAccessRequestList()->Add( tChar->GetID(), tVhc->GetInformation().GetVehicleId() );
                     if(newReqId)
                     {

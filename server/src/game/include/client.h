@@ -1,38 +1,38 @@
 /*
-	TinNS (TinNS is not a Neocron Server)
-	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
+ TinNS (TinNS is not a Neocron Server)
+ Copyright (C) 2005 Linux Addicted Community
+ maintainer Akiko <akiko@gmx.org>
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-	02110-1301, USA.
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301, USA.
 */
 
 
 
 /*
-	client.h
+ client.h
 
-	Authors:
-	- v00d00
-	- Akiko
-	- Namikon
-	- bakkdoor
+ Authors:
+ - v00d00
+ - Akiko
+ - Namikon
+ - bakkdoor
 
-	MODIFIED: 30 Nov 2005 Akiko
-	REASON: - added GPL
-		      - added stuff from Namikon
+ MODIFIED: 30 Nov 2005 Akiko
+ REASON: - added GPL
+        - added stuff from Namikon
   MODIFIED: 13 Dec 2005 bakkdoor
   REASON: - added multiuser chat
   MODIFIED: 27 Jul 2006 Hammag
@@ -56,20 +56,20 @@
 
 enum PClientConnection
 {
-	PCC_NONE = 0,
-	PCC_GAME = 1
+  PCC_NONE = 0,
+  PCC_GAME = 1
 };
 
 // AccountLevel handling is part of accounts.cpp
 /*
 enum PClientLevel
 {
-	PCL_BANNED = -1,
-	PCL_UNREGPLAYER = 0,
-	PCL_REGPLAYER = 1,
-	PCL_VOLUNTEER = 30,
-	PCL_GM = 50,
-	PCL_ADMIN = 100
+ PCL_BANNED = -1,
+ PCL_UNREGPLAYER = 0,
+ PCL_REGPLAYER = 1,
+ PCL_VOLUNTEER = 30,
+ PCL_GM = 50,
+ PCL_ADMIN = 100
 };
 */
 #define DEBUG_MODES 3
@@ -84,134 +84,134 @@ enum PDebugMode
 
 class PClient
 {
-	private :
-		ConnectionTCP* m_TCPConnection;
-		ConnectionUDP* m_UDPConnection;
+  private :
+    ConnectionTCP* m_TCPConnection;
+    ConnectionUDP* m_UDPConnection;
 
-		u32 mAccountID;
-		int mAccountLevel;
-		int mIndex;
-		u32 mCharID;
+    u32 mAccountID;
+    int mAccountLevel;
+    int mIndex;
+    u32 mCharID;
 
-//		u16 mUDP_ID;
-//		u16 mSessionID;
-//		u16 mTransactionID;
+//  u16 mUDP_ID;
+//  u16 mSessionID;
+//  u16 mTransactionID;
 
-		// AccountLevel handling is part of accounts.cpp
-		//PClientLevel mLevel;
-		int mConnection;
-		int mRemotePort;
+    // AccountLevel handling is part of accounts.cpp
+    //PClientLevel mLevel;
+    int mConnection;
+    int mRemotePort;
 
-		bool mDebugMode[DEBUG_MODES];
-		// new multiuser-chat implementation //
-		int m_ZoneID;
-		//int[4] m_IP;
+    bool mDebugMode[DEBUG_MODES];
+    // new multiuser-chat implementation //
+    int m_ZoneID;
+    //int[4] m_IP;
 
     //*******
-		bool mActorRemoveMode;
+    bool mActorRemoveMode;
     //*******
-		bool mAwaitingWarpto;
-		u16 mTargetX;
-		u16 mTargetY;
-		u16 mTargetZ;
+    bool mAwaitingWarpto;
+    u16 mTargetX;
+    u16 mTargetY;
+    u16 mTargetZ;
     //*******
-		bool mAcceptNPCUpdates;
+    bool mAcceptNPCUpdates;
 
-	protected :
-	public :
-		PClient(int Index);
-		~PClient();
+  protected :
+  public :
+    PClient( int Index );
+    ~PClient();
 
-		inline bool GetDebugMode(PDebugMode nDebugID) { return mDebugMode[nDebugID]; }
-		void SetDebugMode(PDebugMode nDebugID, bool nVal = true);
+    inline bool GetDebugMode( PDebugMode nDebugID ) { return mDebugMode[nDebugID]; }
+    void SetDebugMode( PDebugMode nDebugID, bool nVal = true );
 
-		inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
-		inline void SetAcceptNPCUpdates(bool nVal) { mAcceptNPCUpdates = nVal; }
+    inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
+    inline void SetAcceptNPCUpdates( bool nVal ) { mAcceptNPCUpdates = nVal; }
 
-		inline int GetIndex() const { return mIndex; } // better use GetID()
-		inline int GetID() const { return mIndex; } // for better coherency with other classes
-		inline int GetLocalID() const { return mIndex + 1; }
-		inline u32 GetCharID() const { return mCharID; }
-		PChar* GetChar() const;
-		bool ChangeCharLocation(u32 nLocation, bool DoForce = false);
+    inline int GetIndex() const { return mIndex; } // better use GetID()
+    inline int GetID() const { return mIndex; } // for better coherency with other classes
+    inline int GetLocalID() const { return mIndex + 1; }
+    inline u32 GetCharID() const { return mCharID; }
+    PChar* GetChar() const;
+    bool ChangeCharLocation( u32 nLocation, bool DoForce = false );
 
-		inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
+    inline int GetRemoteUDPPort() const { return mRemotePort; } // Temp solution
 
-		inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
-		inline void SetRemoveActorMode(bool nNewValue) { mActorRemoveMode = nNewValue; }
+    inline bool IsInRemoveActorMode() { return mActorRemoveMode; }
+    inline void SetRemoveActorMode( bool nNewValue ) { mActorRemoveMode = nNewValue; }
 
-		inline void SetRemoteUDPPort(int port) { mRemotePort = port; } // Temp solution
-		inline void SetCharID(int id) { mCharID=id; }//NEW added
+    inline void SetRemoteUDPPort( int port ) { mRemotePort = port; } // Temp solution
+    inline void SetCharID( int id ) { mCharID = id; }//NEW added
 
-/*
-    inline u16 GetUDP_ID() const { return mUDP_ID; }
-    inline u16 GetSessionID() const { return SESSION_UDP_OFFSET + mUDP_ID ; }
-    inline u16 GetTransactionID() {return mTransactionID; }
-    void SetUDP_ID(int id);
-    inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
-    inline void ResetTransactionID() { mTransactionID = 10170; }
+    /*
+        inline u16 GetUDP_ID() const { return mUDP_ID; }
+        inline u16 GetSessionID() const { return SESSION_UDP_OFFSET + mUDP_ID ; }
+        inline u16 GetTransactionID() {return mTransactionID; }
+        void SetUDP_ID(int id);
+        inline void IncreaseUDP_ID() { SetUDP_ID(mUDP_ID + 1); }
+        inline void ResetTransactionID() { mTransactionID = 10170; }
 
-    inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
-*/
+        inline void IncreaseTransactionID(u8 nInc = 1) { mTransactionID += nInc; }
+    */
 
     // All outgoing ID's and stuff is now part of the ConnectionUDP class itself!
     //    (which is not so good.... comment from Hammag)
     // However, we still have full access to it through these functions
-		u16 GetUDP_ID();
-		void SetUDP_ID(int id);
-		void IncreaseUDP_ID();
+    u16 GetUDP_ID();
+    void SetUDP_ID( int id );
+    void IncreaseUDP_ID();
 
-		u16 GetSessionID();
+    u16 GetSessionID();
 
-		u16 GetTransactionID();
-		void ResetTransactionID();
-		void IncreaseTransactionID(u8 nInc = 1);
+    u16 GetTransactionID();
+    void ResetTransactionID();
+    void IncreaseTransactionID( u8 nInc = 1 );
 
-		void FillInUDP_ID(PMessage* nMessage);
+    void FillInUDP_ID( PMessage* nMessage );
 
 // ************************************************************************ //
-        // AccountLevel handling is part of accounts.cpp
-		//inline PClientLevel GetLevel() const { return mLevel; }
+    // AccountLevel handling is part of accounts.cpp
+    //inline PClientLevel GetLevel() const { return mLevel; }
 
-		inline void setTCPConnection(ConnectionTCP* conn) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
-		inline void setUDPConnection(ConnectionUDP* conn) { m_UDPConnection = conn; }
+    inline void setTCPConnection( ConnectionTCP* conn ) { m_TCPConnection = conn; m_UDPConnection = 0; mConnection = PCC_GAME;  }
+    inline void setUDPConnection( ConnectionUDP* conn ) { m_UDPConnection = conn; }
 
-		inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
-		inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
+    inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
+    inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
 
-		inline void SendTCPMessage(PMessage* nMessage) { if(m_TCPConnection) { m_TCPConnection->SendMessage(nMessage); } }
-		void FragmentAndSendUDPMessage(PMessage* nMessage, u8 nType);
-		inline void SendUDPMessage(PMessage* nMessage, bool nVIP = false) { if(m_UDPConnection) { m_UDPConnection->SendMessage(nMessage, nVIP); } }
-      
-		inline int GetConnection() const { return mConnection; }
-		inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
-		inline u32 GetAccountID() const { return mAccountID; }
-		inline int GetAccountLevel() const { return mAccountLevel; }
+    inline void SendTCPMessage( PMessage* nMessage ) { if ( m_TCPConnection ) { m_TCPConnection->SendMessage( nMessage ); } }
+    void FragmentAndSendUDPMessage( PMessage* nMessage, u8 nType );
+    inline void SendUDPMessage( PMessage* nMessage, bool nVIP = false ) { if ( m_UDPConnection ) { m_UDPConnection->SendMessage( nMessage, nVIP ); } }
 
-		void GameDisconnect();
+    inline int GetConnection() const { return mConnection; }
+    inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
+    inline u32 GetAccountID() const { return mAccountID; }
+    inline int GetAccountLevel() const { return mAccountLevel; }
 
-		void RefreshAccountInfo(PAccount* Account);
-		inline void LoggedIn(PAccount* Account) { RefreshAccountInfo(Account); }
-		void Update();
+    void GameDisconnect();
 
-		// new multiuser-chat implementation //
-		inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
-		//inline int*	getIP() const { return (int*) m_IP; }
+    void RefreshAccountInfo( PAccount* Account );
+    inline void LoggedIn( PAccount* Account ) { RefreshAccountInfo( Account ); }
+    void Update();
 
-		inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
-		{
-			mAwaitingWarpto = yesno;
-			mTargetX = NewX;
-			mTargetY = NewY;
-			mTargetZ = NewZ;
-		}
-		bool GetCharAwaitingWarpto(u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL);
+    // new multiuser-chat implementation //
+    inline int getZoneID() const { return m_ZoneID; } // example: canyon 650 (for local-channel...every client with same AreaID get the chatmsg)
+    //inline int* getIP() const { return (int*) m_IP; }
+
+    inline void SetAwaitingWarpto( bool yesno, u16 NewX, u16 NewY, u16 NewZ )
+    {
+      mAwaitingWarpto = yesno;
+      mTargetX = NewX;
+      mTargetY = NewY;
+      mTargetZ = NewZ;
+    }
+    bool GetCharAwaitingWarpto( u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL );
 
 
-		// used for dynamic ingame testing
-		u8 testval8;
-		u16 testval16;
-		u32 testval32;
+    // used for dynamic ingame testing
+    u8 testval8;
+    u16 testval16;
+    u32 testval32;
 };
 
 #endif

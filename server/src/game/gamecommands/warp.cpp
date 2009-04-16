@@ -81,7 +81,7 @@ void PCommands::doCmdwarp()
         if (gDevDebug) Console->Print("IngameCommand: Warping player %d to zone %d (%s)", source->GetCharID(), zoneID, Worlds->GetWorld(zoneID)->GetName().c_str());
 
         PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg (source, zoneID, SpawnPointID, ZoningType);
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
     }
     else
     {

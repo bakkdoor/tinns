@@ -58,7 +58,7 @@ bool PUdpSubskillInc::DoAction()
   nChar->Skill->SetSubSkill(SubskillID, nChar->Skill->GetSubSkill(SubskillID) + 1); // SubskillID
 //Console->Print("Skill %d inc to %d", SubskillID, nChar->Skill->GetSubSkill(SubskillID)); 
   PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, 20); // last is remaining skillpoints
-  nClient->getUDPConn()->SendMessage(tmpMsg);
+  nClient->SendUDPMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

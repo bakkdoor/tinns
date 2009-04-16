@@ -30,6 +30,7 @@
 #include "udp_popupresponse.h"
 #include "vhcaccessrequest.h"
 #include "worlds.h"
+#include "udp_vhc.h"
 
 
 /**** PUdp0x1f ****/
@@ -47,14 +48,14 @@ PUdpMsgAnalyser* PUdpPopupResponse::Analyse()
 
   switch ( MsgType )
   {
-    case 0x05:
-    {
-      nextAnalyser = new PUdpVentureWarpConfirm( mDecodeData );
-      break;
-    }
     case 0x06:
     {
       nextAnalyser = new PUdpVhcAccessResponse( mDecodeData );
+      break;
+    }
+    case 0x07:
+    {
+      nextAnalyser = new PUdpVentureWarpConfirm( mDecodeData );
       break;
     }
     default:
@@ -112,7 +113,7 @@ bool PUdpVentureWarpConfirm::DoAction()
     u16 nEntityType = 1;
 
     PMessage* tmpMsg = MsgBuilder->BuildAptLiftUseMsg( nClient, newLocation, nEntity, nEntityType );
-    nClient->getUDPConn()->SendMessage( tmpMsg );
+    nClient->SendUDPMessage( tmpMsg );
 
     if ( gDevDebug )
       Console->Print( "Client[%d]: Venture Warping to zone %d (entity %d/%d)", nClient->GetID(), newLocation, nEntity, nEntityType );
@@ -148,34 +149,37 @@ bool PUdpVhcAccessResponse::DoAction()
 {
   PClient* nClient = mDecodeData->mClient;
   PChar* nChar = nClient->GetChar();
+  PVhcAccessRequestList* nAccessRequests = nChar->GetVhcAccessRequestList();
 
   //if (gDevDebug)
     Console->Print( "Access response for Req n°%d : %d (unknown %d)", mVhcAccessRequestId, mStatus, mUnknown );
 
-  if ( nChar->GetVhcAccessRequestList()->RegisterResponse( mVhcAccessRequestId, ( mStatus == 1 ) ) )
+  if ( nAccessRequests->RegisterResponse( mVhcAccessRequestId, ( mStatus == 1 ) ) )
   {
-    /*
-    PWorld* CurrentWorld = Worlds->GetWorld( nChar->GetLocation() );
-    if ( CurrentWorld )
+    u32 requesterCharId = 0;
+    u32 vehicleId = 0;
+    nAccessRequests->GetInfo(mVhcAccessRequestId, &requesterCharId, &vehicleId);
+    PClient* requesterClient = ClientManager->getClientByChar(requesterCharId);
+    PChar* requesterChar = ( requesterClient ? requesterClient->GetChar() : NULL );
+
+    if( requesterChar && nAccessRequests->Check( mVhcAccessRequestId ) )
     {
-      PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle( mVehicleID );
-      if ( tVhc )
+      PWorld* CurrentWorld = Worlds->GetWorld( requesterChar->GetLocation() );
+      if ( CurrentWorld )
       {
-    */
-    //PUdpVhcUse::DoFreeSitting( nClient,  tVhc, mRawItemID );
-    /*
-                  u8 freeSeats = tVhc->GetFreeSeatsFlags();
-                  if ( freeSeats )
-                  {
-                    tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, mRawItemID, tVhc->GetInformation().GetVehicleType(), freeSeats );
-                    nClient->SendUDPMessage( tmpMsg ); // Open seat selection window
-                  }
-    */
-  }
-  else
-  {
-////tmpMsg = MsgBuilder->BuildText100Msg( nClient, 19, mRawItemID ); // "req transmitted" msg
-                ////  nClient->SendUDPMessage( tmpMsg );
+        PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicleByGlobalId( vehicleId );
+
+        if ( tVhc )
+        {
+          PUdpVhcUse::DoFreeSitting( requesterClient,  tVhc, tVhc->GetLocalId() );
+        }
+      }
+    }
+    else
+    {
+      PMessage* tmpMsg = MsgBuilder->BuildText100Msg( requesterClient, 20, 0 ); // "req refused" msg
+      requesterClient->SendUDPMessage( tmpMsg );
+    }
   }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

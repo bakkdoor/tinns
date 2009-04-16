@@ -120,18 +120,18 @@ Console->Print("Want to use active slot");
         ClientManager->UDPBroadcast(tmpMsg, nClient);
       
         tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1(nClient, 59);
-        nClient->getUDPConn()->SendMessage(tmpMsg);
+        nClient->SendUDPMessage(tmpMsg);
 
         if(ItemVal1 > 0)
         {
           tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2(nClient);
-          nClient->getUDPConn()->SendMessage(tmpMsg);
+          nClient->SendUDPMessage(tmpMsg);
         }
         tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3(nClient, mTargetSlot);
-        nClient->getUDPConn()->SendMessage(tmpMsg);
+        nClient->SendUDPMessage(tmpMsg);
 
         tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4(nClient, ItemVal1);
-        nClient->getUDPConn()->SendMessage(tmpMsg);
+        nClient->SendUDPMessage(tmpMsg);
 
 Console->Print(YELLOW, BLACK, "Debug: activation of QB item slot %d", mTargetSlot);
       }

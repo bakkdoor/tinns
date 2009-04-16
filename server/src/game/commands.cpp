@@ -422,7 +422,7 @@ PClient* PCommands::GetClientByID(int charid)
 
 PClient* PCommands::GetClientByNick(const char *nick)
 {
-  return ClientManager->getClientByChar( (std::string) *nick );
+  return ClientManager->getClientByChar( (std::string) nick );
 }
 /*
 PClient* PCommands::GetClientByNick(const char *nick)

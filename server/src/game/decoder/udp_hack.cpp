@@ -117,7 +117,7 @@ bool PUdpHackSuccess::DoAction()
         else
         {
             PMessage* tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-            nClient->getUDPConn()->SendMessage(tmpMsg);
+            nClient->SendUDPMessage(tmpMsg);
         }
     }
     else
@@ -130,7 +130,7 @@ bool PUdpHackSuccess::DoAction()
         else
         {
             PMessage* tmpMsg = MsgBuilder->BuildCharUseFurnitureMsg(nClient, mRawItemID);
-            nClient->getUDPConn()->SendMessage(tmpMsg);
+            nClient->SendUDPMessage(tmpMsg);
         }
     }
 
@@ -216,7 +216,7 @@ bool PUdpHackStart::DoAction()
         if (gDevDebug) Console->Print("Client trying to hack itemID %d. Hack difficult: %d Hack penalty %d", mRawItemID, tHackDifficult, tHackPenalty);
 
         PMessage* tmpMsg = MsgBuilder->BuildStartHackGameMsg(nClient, mRawItemID, tHackDifficult);
-        nClient->getUDPConn()->SendMessage(tmpMsg);
+        nClient->SendUDPMessage(tmpMsg);
         tmpMsg = NULL;
     }
 

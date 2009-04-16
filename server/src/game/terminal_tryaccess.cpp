@@ -59,7 +59,7 @@ void PTerminal::SendTryAccessAnswer(PClient* nClient, char *nArea, bool nAllowed
     *tmpMsg << nArea;
 
     if(gDevDebug) tmpMsg->Dump();
-    nClient->getUDPConn()->SendMessage(tmpMsg);
+    nClient->SendUDPMessage(tmpMsg);
 }
 
 void PTerminal::CheckAccess(PClient* nClient, char *nArea, u16 nCmdNr, char *nOption1, char *nOption2, char *nOption3)

@@ -54,7 +54,7 @@ Console->Print("Got request for app data");
   PMessage* tmpMsg = MsgBuilder->BuildCharAptLocInfoMsg (mDecodeData->mClient);
 
   if (tmpMsg)
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
+    mDecodeData->mClient->SendUDPMessage(tmpMsg);
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

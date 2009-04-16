@@ -79,7 +79,7 @@ void PCommands::doCmdunjail()
         InitCharVanish(target);
 
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
-        target->getUDPConn()->SendMessage(tmpMsg_zone);
+        target->SendUDPMessage(tmpMsg_zone);
         tmpMsg_zone = NULL;
 
         char tmpMsg_success[81];

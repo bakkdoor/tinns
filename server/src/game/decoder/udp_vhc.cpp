@@ -201,7 +201,7 @@ bool PUdpVhcUse::DoAction()
   return true;
 }
 
-static void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId)
+void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId)
 {
   PMessage* tmpMsg;
 

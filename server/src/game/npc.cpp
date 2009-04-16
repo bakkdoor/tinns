@@ -219,7 +219,7 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
 
             // Send message to client
             if(npc_initmsg->GetSize() > 5)
-                nClient->getUDPConn()->SendMessage(npc_initmsg);
+                nClient->SendUDPMessage(npc_initmsg);
             else
                 delete npc_initmsg;
             //if (gDevDebug) Console->Print("Message sent. Trying to dump");
@@ -277,7 +277,7 @@ void PNPCWorld::MSG_SendNPCs(PClient* nClient)
 
         // Send message to client
         if(npc_initmsg->GetSize() > 5)
-            nClient->getUDPConn()->SendMessage(npc_initmsg);
+            nClient->SendUDPMessage(npc_initmsg);
         else
             delete npc_initmsg;
 
@@ -366,7 +366,7 @@ void PNPCWorld::MSG_SendAlive(PClient* nClient)
                     tmpNPCUpdate->U16Data(0x03) = nClient->GetSessionID();   // Set final SessionID
                     //(*tmpNPCUpdate).Dump();
                     if(tmpNPCUpdate->GetSize() > 5)
-                        nClient->getUDPConn()->SendMessage(tmpNPCUpdate);
+                        nClient->SendUDPMessage(tmpNPCUpdate);
                     else
                         delete tmpNPCUpdate;
                 }
@@ -400,7 +400,7 @@ void PNPCWorld::MSG_SendAlive(PClient* nClient)
             tmpNPCUpdate->U16Data(0x01) = nClient->GetUDP_ID();      // Set final UDP ID
             tmpNPCUpdate->U16Data(0x03) = nClient->GetSessionID();   // Set final SessionID
             //(*tmpNPCUpdate).Dump();
-            nClient->getUDPConn()->SendMessage(tmpNPCUpdate);
+            nClient->SendUDPMessage(tmpNPCUpdate);
         }
         else
         {

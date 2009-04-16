@@ -182,7 +182,7 @@ bool PUdpReqInfo::DoAction()
     }
 
     PMessage* tmpMsg = MsgBuilder->BuildReqInfoAnswerMsg(mDecodeData->mClient, mRequestType, mInfoId, Answer, len);
-    mDecodeData->mClient->getUDPConn()->SendMessage(tmpMsg);
+    mDecodeData->mClient->SendUDPMessage(tmpMsg);
 
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return (query[0]);

@@ -81,7 +81,7 @@ void PCommands::doCmdtest()
         *tmpMsg << (u8)0x00;
 
         (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
     }
     else if(GetArgInt(1) == 2)
     {
@@ -125,7 +125,7 @@ BM:
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x18;
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
     }
     else if(GetArgInt(1) == 3)
     {
@@ -143,7 +143,7 @@ BM:
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)GetArgInt(2);
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
 //09 03 5d 00 2d 24 01 00 00 06
     }
     else if(GetArgInt(1) == 4)
@@ -161,7 +161,7 @@ BM:
         *tmpMsg << (u8)0x01;
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x00;
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
 //08 03 17 00 27 24 01 00 00
     }
     else if(GetArgInt(1) == 5)
@@ -187,7 +187,7 @@ BM:
         *tmpMsg << (u8)GetArgInt(4);
         *tmpMsg << (u8)GetArgInt(5);
         *tmpMsg << (u8)GetArgInt(6);
-        source->getUDPConn()->SendMessage(tmpMsg);
+        source->SendUDPMessage(tmpMsg);
 //11 1b 24 01 00 00 1f 6c 74 00 7f cc 8a 40 ed 4b ff 11
     }
 
@@ -253,7 +253,7 @@ BM:
 //    val7 = (u16)GetArgInt(7);
 
     //tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1(source, 59);
-    //source->getUDPConn()->SendMessage(tmpMsg);
+    //source->SendUDPMessage(tmpMsg);
     //tmpMsg = NULL;
 
     PMessage* tmpMsg = new PMessage(29);
@@ -398,6 +398,6 @@ BM:
 	*tmpMsg << Stack;
 
 
-    source->getUDPConn()->SendMessage(tmpMsg);
+    source->SendUDPMessage(tmpMsg);
     */
 }

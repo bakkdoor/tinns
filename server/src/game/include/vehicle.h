@@ -205,7 +205,8 @@ class PSpawnedVehicles
     inline bool IsSpawned( const u32 nLocalId ) const { return (( nLocalId <= mVhcBaseLocalId ) && (( mVhcBaseLocalId - nLocalId ) < mSpawnedVehicles.size() ) && mSpawnedVehicles[mVhcBaseLocalId-nLocalId] ); }
     PSpawnedVehicle* SpawnVehicle( const PVehicleInformation* const nVhcInfo, const PVhcCoordinates* const nVhcPos );
     PSpawnedVehicle* GetVehicle( const u32 nLocalId );
-    bool UnspawnVehicle( const u32 nLocalId );
+    PSpawnedVehicle* GetVehicleByGlobalId(const u32 nVehicleId );
+    bool UnspawnVehicle( const u32 nVehicleId );
 
     PSpawnedVhcList* GetSpawnedVehicles() const;
 };

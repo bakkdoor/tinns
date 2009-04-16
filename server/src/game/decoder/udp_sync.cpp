@@ -96,7 +96,7 @@ void PUdpSync0::GetToSync1(PMsgDecodeData* nDecodeData)
 	//*tmpMsg << (u16) (curClient->getUDPConn()->getAddr()).sin_port; // Local or remote port here ???
 	*tmpMsg << (u16) (curClient->getUDPConn()->getPort());
 
-	curClient->getUDPConn()->SendMessage(tmpMsg);
+	curClient->SendUDPMessage(tmpMsg);
 
 	nDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
 	//State->UDP.mSynced=true;
@@ -214,7 +214,7 @@ bool PUdpSync2::DoAction()
 //Console->Print(GREEN, BLACK, "Baseline: ----------- chunk %d/%d", ChunkID+1, ChunksNum);
 //ChunkMsg->Dump();
       delete ChunkBuffer;
-      nClient->getUDPConn()->SendMessage(ChunkMsg);
+      nClient->SendUDPMessage(ChunkMsg);
     }
     delete BaselineMsg;
 */

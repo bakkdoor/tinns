@@ -77,7 +77,7 @@ void PCommands::doCmdgivemoney()
         u32 diffcash = newcashvalue - oldcashval;
 
         PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(target, newcashvalue);
-        target->getUDPConn()->SendMessage(tmpMsg_cash);
+        target->SendUDPMessage(tmpMsg_cash);
         tmpMsg_cash = NULL;
 
         char tmpMsg_success[200];
@@ -91,7 +91,7 @@ void PCommands::doCmdgivemoney()
         u32 newcashvalue = source->GetChar()->SetCash(oldcashval + cashtoadd);
 
         PMessage* tmpMsg_cash = MsgBuilder->BuildCharMoneyUpdateMsg(source, newcashvalue);
-        source->getUDPConn()->SendMessage(tmpMsg_cash);
+        source->SendUDPMessage(tmpMsg_cash);
         tmpMsg_cash = NULL;
         //Console->Print("oldcashval: %d  newcashvalue: %d", oldcashval, newcashvalue);
     }

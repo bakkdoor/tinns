@@ -114,6 +114,19 @@ u32 PVhcAccessRequestList::Add( u32 nRequesterCharId, u32 nVhcGlobalId )
   return ( newId );
 }
 
+bool PVhcAccessRequestList::GetInfo(u32 nRequestId, u32* oRequesterCharId, u32* oVehicleId) const
+{
+  PVhcAccessRequestMap::const_iterator it = mActiveRequests.find( nRequestId );
+  if ( it != mActiveRequests.end() )
+  {
+    *oRequesterCharId = it->second.mCharId;
+    *oVehicleId = it->second.mVhcGlobalId;
+    return true;
+  }
+  else
+    return false;
+}
+
 bool PVhcAccessRequestList::RegisterResponse( u32 nRequestId, bool nStatus )
 {
   DropTimedOut();
@@ -144,7 +157,7 @@ bool PVhcAccessRequestList::Check( u32 nRequestId, u32 nRequesterCharId, u32 nVh
   PVhcAccessRequestMap::iterator it = mActiveRequests.find( nRequestId );
   if ( it != mActiveRequests.end() )
   {
-    if (( it->second.mCharId == nRequesterCharId ) && ( it->second.mVhcGlobalId == nVhcGlobalId ) && ( it->second.mStatus > 0 ) )
+    if ( (!nRequesterCharId || (( it->second.mCharId == nRequesterCharId ) && ( it->second.mVhcGlobalId == nVhcGlobalId ))) && ( it->second.mStatus > 0 ) )
     {
       if ( mReuseWaitTime && ( it->second.mStatus == 1 ) )
       {
