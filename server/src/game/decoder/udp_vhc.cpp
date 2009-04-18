@@ -51,13 +51,13 @@ PUdpMsgAnalyser* PUdpVhcMove::Analyse()
   nMsg->SetNextByteOffset( mDecodeData->Sub0x13Start + 2 );
 
   *nMsg >> mVhcLocalId;
-  *nMsg >> mMoveType; // 0 for subway, 3 for vhc
+  *nMsg >> mMoveType; // 0 for subway/chair, 3 for vhc, 7 in nc2.2
   *nMsg >> mNewY;
   *nMsg >> mNewZ;
   *nMsg >> mNewX;
-  *nMsg >> mNewUD;
+  *nMsg >> mNewUD; // neutral :=0x7f, > := upward, < := downward
   *nMsg >> mNewLR;
-  *nMsg >> mNewRoll;
+  *nMsg >> mNewRoll; // neutral := 0x7fff > := bank left, < := bank right
   *nMsg >> mUnk1;
   *nMsg >> mFF;
   *nMsg >> mAction;
@@ -70,7 +70,6 @@ PUdpMsgAnalyser* PUdpVhcMove::Analyse()
 //&20 = Pushing down
 //&40 = Pulling up
 //
-
   /*
   --- rolling front+left
   13 b0 00 02 bf
@@ -109,11 +108,16 @@ PUdpMsgAnalyser* PUdpVhcMove::Analyse()
   00 = no move
 
   */
-
-  Console->Print( YELLOW, BLACK, "[DEBUG] VHC move type %d - objid %d", mMoveType, mVhcLocalId );
-  //nMsg->Dump();
-  Console->Print( "X=%d Y=%d Z=%d Act=%d", mNewX, mNewY, mNewZ, mAction );
-  Console->Print( "LR=%d UD=%d Ro=%d Unk=%d Act=%02x ff=%x", mNewLR, mNewUD, mNewRoll, mUnk1, mAction, mFF );
+  if(gDevDebug)
+  {
+    Console->Print( YELLOW, BLACK, "[DEBUG] VHC move type %d - objid %d", mMoveType, mVhcLocalId );
+    //nMsg->Dump();
+    //Console->Print( "X=%d Y=%d Z=%d Act=%d", mNewX, mNewY, mNewZ, mAction );
+    //Console->Print( "LR=%d UD=%d Ro=%d Unk=%d Act=%02x ff=%x", mNewLR, mNewUD, mNewRoll, mUnk1, mAction, mFF );
+    Console->Print( "Msg len: %d", nMsg->U8Data(mDecodeData->Sub0x13Start) );
+  }
+Console->Print( YELLOW, BLACK, "[DEBUG] VHC move IN" );
+nMsg->Dump();
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -132,9 +136,15 @@ bool PUdpVhcMove::DoAction()
     {
       //Todo: calc & mem Speed & Accel vectors
       PVhcCoordinates nPos;
-      nPos.SetPosition( mNewY - 768, mNewZ - 768, mNewX - 768, mNewLR, mNewUD, mNewRoll, mAction );
+      nPos.SetPosition( mNewY - 768, mNewZ - 768, mNewX - 768, mNewUD, mNewLR, mNewRoll, mAction, mUnk1, mFF );
       tVhc->SetPosition( &nPos );
-      PMessage* tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg( tVhc );
+      PMessage* tmpMsg = MsgBuilder->BuildVhcPosUpdate2Msg( tVhc );
+Console->Print( YELLOW, BLACK, "[DEBUG] VHC move OUT 1" );
+tmpMsg->Dump();
+      ClientManager->UDPBroadcast( tmpMsg, mDecodeData->mClient );
+      tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg( tVhc );
+Console->Print( YELLOW, BLACK, "[DEBUG] VHC move OUT 2" );
+tmpMsg->Dump();
       ClientManager->UDPBroadcast( tmpMsg, mDecodeData->mClient );
     }
     else

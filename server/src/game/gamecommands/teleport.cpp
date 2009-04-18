@@ -72,13 +72,13 @@ void PCommands::doCmdteleport()
         return;
     }
 // *************** Checks done, proceed with command
-    InitWarpCircle(source);
-    InitCharVanish(source);
+    source->InitWarpCircle();
+    source->InitCharVanish();
 
     if (target->ChangeCharLocation(destZone, true))
     {
-        InitWarpCircle(target);
-        InitCharVanish(target);
+        target->InitWarpCircle();
+        target->InitCharVanish();
 
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->SendUDPMessage(tmpMsg_zone);

@@ -69,14 +69,14 @@ void PCommands::doCmdjail()
     }
 
 // *************** Checks done, proceed with command
-    InitWarpCircle(source);
-    InitCharVanish(source);
+    source->InitWarpCircle();
+    source->InitCharVanish();
 
     int destZone = 550; // DarkMetal #1
     if (target->ChangeCharLocation(destZone, true))
     {
-        InitWarpCircle(target);
-        InitCharVanish(target);
+        target->InitWarpCircle();
+        target->InitCharVanish();
 
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->SendUDPMessage(tmpMsg_zone);

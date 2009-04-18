@@ -54,7 +54,7 @@ class PMsgBuilder
     PMessage* BuildCharHealthUpdateMsg( PClient* nClient );
     PMessage* BuildCharPosUpdateMsg( PClient* nClient );
     PMessage* BuildCharPosUpdate2Msg( PClient* nClient, u8 InfoBitfield = 0x7f );
-    PMessage* BuildCharSittingMsg( PClient* nClient );
+    //PMessage* BuildCharSittingMsg( PClient* nClient ); // Not used anymore, done by BuildCharPosUpdateMsg
     PMessage* BuildCharExitSeatMsg( PClient* nClient );
     PMessage* BuildCharJumpingMsg( PClient* nClient );
     PMessage* BuildDoorOpenMsg( u32 nRawItemID, bool nDoubleDoor = false );
@@ -67,6 +67,7 @@ class PMsgBuilder
     PMessage* BuildSubwaySingleUpdateMsg( u32 nVehicleID, u16 nPosition, u8 nDoorOpened );
     PMessage* BuildVhcHealthUpdateMsg( PSpawnedVehicle* nVehicle );
     PMessage* BuildVhcPosUpdateMsg( PSpawnedVehicle* nVehicle );
+    PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
 

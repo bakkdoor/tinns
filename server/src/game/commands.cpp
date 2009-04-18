@@ -467,17 +467,3 @@ bool PCommands::IsDevCommand()
 
     return tmpIsDev;
 }
-
-void PCommands::InitWarpCircle(PClient* nClient)
-{
-    PMessage* tmpMsg_circle = MsgBuilder->BuildCharShowGlowCircleMsg (nClient);
-    ClientManager->UDPBroadcast(tmpMsg_circle, nClient, 0, true);
-    tmpMsg_circle = NULL;
-}
-
-void PCommands::InitCharVanish(PClient* nClient)
-{
-    PMessage* tmpMsg_vanish = MsgBuilder->BuildRemoveWorldObjectMsg (nClient->GetLocalID());
-    ClientManager->UDPBroadcast(tmpMsg_vanish, nClient, 0, true);
-    tmpMsg_vanish = NULL;
-}

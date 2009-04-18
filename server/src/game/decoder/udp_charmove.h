@@ -33,6 +33,9 @@
 #ifndef UDPCHARMOVE_H
 #define UDPCHARMOVE_H
 
+#include "msgdecoder.h"
+#include "udpanalyser.h"
+
 class PUdpCharPosUpdate : public PUdpMsgAnalyser
 {
   private:
@@ -61,6 +64,9 @@ class PUdpCharExitChair : public PUdpMsgAnalyser
     //~PUdpCharExitChair();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
+
+    //nClient is optionnal, nVhc is to limit to that vhc, nForce to force exit event when cab door closed
+    static bool DoLeaveChair(PChar* nChar, PClient* nClient = NULL, PSpawnedVehicle* nVhc = NULL, bool nForce = false); 
 };
 
 class PUdpCharJump : public PUdpMsgAnalyser

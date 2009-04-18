@@ -68,7 +68,7 @@ class PClientManager
     bool IsWorldInUse( u16 nWorldID ) const;
 
     // each function return the number of messages sent.
-    int UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX = 0, u16 nY = 0, u16 nZ = 0, u16 nMaxDist = 0, int nSkipSource = -1 );
+    int UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX = 0, u16 nY = 0, u16 nZ = 0, u16 nMaxDist = 0, int nSkipCharId = -1, bool nNPCPing = false );
     int UDPBroadcast( PMessage* nMessage, PClient* nClient, u16 nMaxDist = 0, bool nSkipSource = false, bool nNPCPing = false );
     int SendUDPZoneWelcomeToClient( PClient* nClient );
 

@@ -91,7 +91,9 @@ class PCharCoordinates
     // 0xA0 backward              10100000
     // bits:                      BFWRL.K.
 
-    inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = 0;}
+    u8 mJumpingState;
+
+    inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = mJumpingState = 0;}
     void SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD = 0x80, u8 nLR = 0 );
     void SetInterpolate( PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef );
 };

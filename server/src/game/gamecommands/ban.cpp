@@ -101,7 +101,7 @@ void PCommands::doCmdban()
     Acc.SetBannedUntilTime(final_bantime);
     Acc.Save();
 
-    InitCharVanish(target);
+    target->InitCharVanish();
 
     GameServer->ClientDisconnected(target);  // Now kick the player (Hes banned :) )
 

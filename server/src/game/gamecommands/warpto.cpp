@@ -62,8 +62,8 @@ void PCommands::doCmdwarpto()
         return;
     }
 // *************** Checks done, proceed with command
-    InitWarpCircle(source);
-    InitCharVanish(source);
+    source->InitWarpCircle();
+    source->InitCharVanish();
     if (source->ChangeCharLocation(destZone), true)
     {
       source->SetAwaitingWarpto(true, targetChar->Coords.mX, targetChar->Coords.mY, targetChar->Coords.mZ);

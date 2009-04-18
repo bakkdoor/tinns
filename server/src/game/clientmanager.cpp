@@ -159,7 +159,7 @@ PClient* PClientManager::getClientByChar( const std::string &Name ) const
   {
     if ( it->second )
     {
-      if( it->second->GetChar()->GetName() == Name )
+      if ( it->second->GetChar()->GetName() == Name )
         return it->second;
     }
   }
@@ -180,7 +180,7 @@ PClient* PClientManager::getClientByChar( const std::string &Name ) const
 } */
 
 // Distance checking doesn't care for Z axis ATM
-int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipSource )
+int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipCharId, bool nNPCPing )
 {
   int msgCount = 0;
   PChar* nChar;
@@ -191,13 +191,18 @@ int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 n
   for ( PClientMap::iterator it = mClientList.begin(); it != mClientList.end(); it++ )
   {
     itClient = ( PClient* )( it->second );
+
+    // Dont send NPC alive messages when client is not ready for them
+    if ( !itClient->IsAcceptingNPCUpdates() && nNPCPing )
+      continue;
+
     if ( itClient->getUDPConn() )
     {
       nChar = itClient->GetChar();
       if ( nChar->GetLocation() != nZoneID ) // if limited to zone, do check
         continue;
 
-      if (( int )itClient->GetCharID() == nSkipSource ) // if source of broadcast should be skipped
+      if (( int )itClient->GetCharID() == nSkipCharId ) // if source of broadcast should be skipped
         continue;
 
       if ( nMaxDist ) // if limited to distance, do check
@@ -225,21 +230,11 @@ int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 n
 int PClientManager::UDPBroadcast( PMessage* nMessage, PClient* nClient, u16 nMaxDist, bool nSkipSource, bool nNPCPing )
 {
   PChar* nChar;
-  int skipVal = -1;
-
-  // Dont send NPC alive messages when client is not ready for them
-  if ( !nClient->IsAcceptingNPCUpdates() && nNPCPing )
-    return 0;
-  // !!! This test is wrong as only 1 client is tested !!!
-
-  if ( nSkipSource )
-  {
-    skipVal = nClient->GetCharID();
-  }
+  int skipVal = nSkipSource ? nClient->GetCharID() : -1 ;
 
   if ( nClient && ( nChar = nClient->GetChar() ) )
   {
-    return UDPBroadcast( nMessage, nChar->GetLocation(), ( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nMaxDist, skipVal );
+    return UDPBroadcast( nMessage, nChar->GetLocation(), ( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nMaxDist, skipVal, nNPCPing );
   }
   else
   {

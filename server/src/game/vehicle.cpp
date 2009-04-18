@@ -53,7 +53,7 @@ void PVhcCoordinates::SetInterpolate( const PVhcCoordinates& Pos1, const PVhcCoo
   mRoll = ( u16 )( rCoef * Pos1.mRoll + nCoef * Pos2.mRoll );
 }
 
-void PVhcCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 nRoll, u8 nAct )
+void PVhcCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 nRoll, u8 nAct, u16 nUnknown, u8 nFF )
 {
   mY = nY;
   mZ = nZ;
@@ -62,6 +62,8 @@ void PVhcCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 
   mLR = nLR;
   mRoll = nRoll;
   mAct = nAct;
+  mUnknown = nUnknown;
+  mFF = nFF;
 }
 
 // PVehicleInformation
@@ -92,7 +94,20 @@ bool PVehicleInformation::Load( u32 nVehicleId )
 
 bool PVehicleInformation::Save()
 {
+  // Shall we Destroy() when mStatus == 2, or keep destroyed vhc in DB ?
   return true;
+}
+
+bool PVehicleInformation::Destroy()
+{
+  if ( mStatus == 2 )
+  {
+    // Delete from DB
+    mVehicleId = 0;
+    return true;
+  }
+  else
+    return false;
 }
 
 bool PVehicleInformation::SetStatus( const u8 nStatus )
@@ -135,6 +150,12 @@ PSpawnedVehicle::PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation*
   for(int i = 0; i < mNbFreeSeats; ++i)
     mFreeSeatsFlags |= mSeatsFlags[i];
 
+  //Temp
+  for(int i = 0; i<4; ++i)
+  {
+    minmax[i][0] = 0xffff;
+    minmax[i][1] = 0;
+  }
 }
 
 void PSpawnedVehicle::SetLocation( const u32 nLocation )
@@ -145,6 +166,17 @@ void PSpawnedVehicle::SetLocation( const u32 nLocation )
 void PSpawnedVehicle::SetPosition( const PVhcCoordinates* const nVhcPos )
 {
   mCoords = *nVhcPos;
+  // Temp
+  //if(gDevDebug)
+  {
+    if(mCoords.mUD<minmax[0][0]) minmax[0][0] = mCoords.mUD;
+    if(mCoords.mUD>minmax[0][1]) minmax[0][1] = mCoords.mUD;
+    if(mCoords.mLR<minmax[1][0]) minmax[1][0] = mCoords.mLR;
+    if(mCoords.mLR>minmax[1][1]) minmax[1][1] = mCoords.mLR;
+    if(mCoords.mRoll<minmax[2][0]) minmax[2][0] = mCoords.mRoll;
+    if(mCoords.mRoll>minmax[2][1]) minmax[2][1] = mCoords.mRoll;
+    Console->Print( "Min/Max: UD:%d/%d(%d) LR:%d/%d(%d) Roll:%d/%d(%d)", minmax[0][0], minmax[0][1], mCoords.mUD, minmax[1][0], minmax[1][1], mCoords.mLR, minmax[2][0], minmax[2][1], mCoords.mRoll);
+  }
 }
 
 int PSpawnedVehicle::GetNumSeats() const

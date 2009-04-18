@@ -56,6 +56,46 @@ void PCommands::doCmd_dev_t()
         snprintf(tmpStr, 127, "Sending Death update to object id 0x%08x with values 0x%02x 0x%02x", targetObjectId, val1, val2);
         textMsg = tmpStr;
       }
+      else if(Arg1[0] == 'm')
+      {
+        u8 nTxtGroupID = targetObjectId & 0xff;
+        u16 nTxtID = 10;
+        //u32 nVal = 0;
+        if(ArgC >= 3)
+          nTxtID = GetArgInt(3) & 0xffff;
+        //if(ArgC >= 4)
+        //  val2 = GetArgInt(4) & 0xff;
+
+        tmpMsg = new PMessage(20);
+
+        source->IncreaseUDP_ID();
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x0e; // Message length
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u8)0x1f;
+        *tmpMsg << (u16)source->GetLocalID();
+        *tmpMsg << (u8)0x25; // ??
+        *tmpMsg << (u8)0x15; // ??
+        *tmpMsg << nTxtGroupID;
+        *tmpMsg << nTxtID;
+        *tmpMsg << (u16)0x00; // ??
+        *tmpMsg << (u8)0x01;
+        *tmpMsg << (u8)0x04;
+        *tmpMsg << (u32)0x00;
+        //*tmpMsg << (u8)0x00; // ??
+        //*tmpMsg << (u8)0x00; // ??
+        //*tmpMsg << (u32)nVal;
+
+        (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+        snprintf(tmpStr, 127, "Using msg n %d from group %d", nTxtID, nTxtGroupID);
+        textMsg = tmpStr;
+
+        source->SendUDPMessage(tmpMsg);
+        tmpMsg = NULL;
+      }
   }
 
   tmpStr[127] = '\0';

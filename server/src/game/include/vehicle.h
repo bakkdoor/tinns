@@ -47,6 +47,8 @@ class PVhcCoordinates
     u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
     u16 mLR;     //
     u16 mRoll;
+    u16 mUnknown; // Usually 0x0001
+    u8 mFF; // Usually 0xff ...
     u8 mAct;    // Last user action state
     // mAct: bit field
     //0x00 = not moving
@@ -60,7 +62,7 @@ class PVhcCoordinates
   public:
     inline PVhcCoordinates() { mX = mY = mZ = mAct = 0; mUD = 128; mLR = 34683; mRoll = 32403;}
 
-    void SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 nRoll, u8 nAct = 0 );
+    void SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 nRoll, u8 nAct = 0, u16 nUnknown = 1, u8 nFF = 0xff );
     void SetInterpolate( const PVhcCoordinates& Pos1, const PVhcCoordinates& Pos2, f32 nCoef );
     inline u16 GetX() const { return mX; }
     inline u16 GetY() const { return mY; }
@@ -69,6 +71,8 @@ class PVhcCoordinates
     inline u16 GetLR() const { return mLR; }
     inline u16 GetRoll() const { return mRoll; }
     inline u8 GetAct() const { return mAct; }
+    inline u8 GetUnknown() const { return mUnknown; }
+    inline u8 GetFF() const { return mFF; }
 };
 
 class PVehicleInformation
@@ -102,6 +106,7 @@ class PVehicleInformation
 
     bool Load( u32 nVehicleId );
     bool Save();
+    bool Destroy();
 };
 
 class PSpawnedVehicle
@@ -120,6 +125,8 @@ class PSpawnedVehicle
     u8 mFreeSeatsFlags;
     u8 mNbFreeSeats;
 
+    u16 minmax[4][2]; //Temp
+    
   public:
     PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation* const nVhcInfo, const u32 nLocation, const PVhcCoordinates* const nVhcPos );
 

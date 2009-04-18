@@ -179,9 +179,9 @@ class PClient
     inline ConnectionTCP* getTCPConn() { return m_TCPConnection; }
     inline ConnectionUDP* getUDPConn() { return m_UDPConnection; }
 
-    inline void SendTCPMessage( PMessage* nMessage ) { if ( m_TCPConnection ) { m_TCPConnection->SendMessage( nMessage ); } }
+    inline void SendTCPMessage( PMessage* nMessage ) { if ( m_TCPConnection ) { m_TCPConnection->SendMessage( nMessage ); } else { delete nMessage; } }
     void FragmentAndSendUDPMessage( PMessage* nMessage, u8 nType );
-    inline void SendUDPMessage( PMessage* nMessage, bool nVIP = false ) { if ( m_UDPConnection ) { m_UDPConnection->SendMessage( nMessage, nVIP ); } }
+    inline void SendUDPMessage( PMessage* nMessage, bool nVIP = false ) { if ( m_UDPConnection ) { m_UDPConnection->SendMessage( nMessage, nVIP ); }  else { delete nMessage; } }
 
     inline int GetConnection() const { return mConnection; }
     inline const char *GetAddress() const { return m_TCPConnection->getRemoteAddress(); }
@@ -207,6 +207,9 @@ class PClient
     }
     bool GetCharAwaitingWarpto( u16* PosX = NULL, u16* PosY = NULL, u16* PosZ = NULL );
 
+    // Char broadcasted effects
+    void InitWarpCircle();
+    void InitCharVanish();
 
     // used for dynamic ingame testing
     u8 testval8;

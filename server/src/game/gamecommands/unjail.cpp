@@ -69,14 +69,14 @@ void PCommands::doCmdunjail()
     }
 
 // *************** Checks done, proceed with command
-    InitWarpCircle(source);
-    InitCharVanish(source);
+    source->InitWarpCircle();
+    source->InitCharVanish();
 
     int destZone = 503; // TH Sec2. Maybe set to appartment later ?
     if (target->ChangeCharLocation(destZone, true))
     {
-        InitWarpCircle(target);
-        InitCharVanish(target);
+        target->InitWarpCircle();
+        target->InitCharVanish();
 
         PMessage* tmpMsg_zone = MsgBuilder->BuildAptLiftUseMsg (target, destZone, 0);
         target->SendUDPMessage(tmpMsg_zone);

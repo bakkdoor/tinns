@@ -67,7 +67,7 @@ void PCommands::doCmdkick()
     Acc.SetBannedUntilTime(final_bantime);
     Acc.Save();
 
-    InitCharVanish(target);
+    target->InitCharVanish();
     GameServer->ClientDisconnected(target);                 // Kick
 
     Console->Print("%s %s (Lv %d) kicked %s (Lv %d)", Console->ColorText(YELLOW, BLACK, "[GameCommand]"), Chars->GetChar(source->GetCharID())->GetName().c_str(), source->GetAccountLevel(), Chars->GetChar(target->GetCharID())->GetName().c_str(), target->GetAccountLevel());
