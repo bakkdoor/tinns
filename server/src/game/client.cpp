@@ -366,8 +366,8 @@ void PClient::GameDisconnect()
       if ( tChar->GetSeatInUse() )
       {
         //if(gDevDebug)
-          Console->Print(RED, YELLOW, "[Notice] Trying to get leaving char out of her seat" );
-        PUdpCharExitChair::DoLeaveChair( tChar, NULL, NULL, true );
+          Console->Print(YELLOW, BLACK, "[DEBUG] Trying to get leaving char out of her seat" );
+        PUdpCharExitChair::DoLeaveChair( tChar, this, NULL, true );
       }
       /* // replaced by the lines above
       PSeatType cSeatType;
@@ -402,7 +402,7 @@ void PClient::GameDisconnect()
       */
 
       //if(gDevDebug)
-          Console->Print(RED, YELLOW, "[Notice] Sending char leaving effect" );
+          Console->Print(YELLOW, BLACK, "[DEBUG] Sending char leaving effect" );
       InitWarpCircle();
       InitCharVanish();
 

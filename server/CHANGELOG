@@ -1729,4 +1729,10 @@ Hammag; 18.04.2009 19:10 GMT+1
   As these various things require at least 2 simultaneous connexions, and as I can't easily do that atm, it has not been fully tested.
   
   Warning: my server crashed while I was away with 2 chars connected. I didn't search for the reason, so don't let your server running on an Internet accessible host when you're away.
-  
+
+Hammag; 18.04.2009 20:00 GMT+1
+----------
+[rev. 120]
+
+<Gameserver>
+  Fixed and added bug in handling deconnection of seating char that was causing the crash mentinned in the previous rev.

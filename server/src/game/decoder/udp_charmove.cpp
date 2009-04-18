@@ -270,6 +270,11 @@ bool PUdpCharExitChair::DoLeaveChair( PChar* nChar, PClient* nClient, PSpawnedVe
 {
   if ( ! nClient )
     nClient = ClientManager->getClientByChar( nChar->GetID() );
+  if ( ! nClient )
+  {
+    Console->Print(RED, BLACK, "[Error] PUdpCharExitChair::DoLeaveChair called without PClient* and client not available when searching by char." );
+    return false;
+  }
 
   PMessage* tmpMsg;
   u32 cSeatObjectId;
