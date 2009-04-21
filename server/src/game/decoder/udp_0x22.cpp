@@ -49,7 +49,7 @@ PUdpMsgAnalyser* PUdp0x22::Analyse()
   PUdpMsgAnalyser* nextAnalyser = NULL;
   mDecodeData->mState = DECODE_MORE;    
   u8 MsgType = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 5); 
-  switch(MsgType)
+  switch(MsgType) // MsgType is probably u16 rather than u8
   {
     case 0x03: // Zoning phase 2
     {       

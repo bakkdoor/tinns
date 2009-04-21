@@ -79,11 +79,12 @@ class PMsgBuilder
     PMessage* BuildPacket0Msg( PClient* nClient );
     PMessage* BuildPingMsg( PClient* nClient, u32 nClientTime );
     PMessage* BuildBaselineMsg( PClient* nClient );
+    PMessage* BuildAliveRepMsg( PClient* nClient );
 
     PMessage* BuildZoning1Msg( PClient* nClient, u16 nEntity, u8 nUnknown = 0 );
     PMessage* BuildZoningTCPReadyMsg();
     PMessage* BuildSendZoneTCPMsg( u32 nLocation, std::string* nWorldName );
-    PMessage* BuildZoning2Msg( PClient* nClient );
+    PMessage* BuildZoning2Msg( PClient* nClient, u32 nClientTime );
     PMessage* BuildGenrepZoningMsg( PClient* nClient, u32 nLocation, u16 nEntity );
 
     PMessage* BuildGenrepAddToListMsg( PClient* nClient, u32 nLocation, u16 nEntity );

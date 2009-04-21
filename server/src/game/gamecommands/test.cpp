@@ -36,12 +36,8 @@ void PCommands::doCmdtest()
         *tmpMsg << (u8)0x03;
         *tmpMsg << (u16)source->GetUDP_ID();
         *tmpMsg << (u8)0x28;
-        *tmpMsg << (u8)0x00;
-        *tmpMsg << (u8)0x01;
-        *tmpMsg << (u8)0x2D;
-        *tmpMsg << (u8)0x01;
-        *tmpMsg << (u8)0x00;
-        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u16)0x0100;
+        *tmpMsg << (u32)0x12d; // NpcId
         *tmpMsg << (u8)0x36;
         *tmpMsg << (u8)0x3F;
         *tmpMsg << (u8)0x14;

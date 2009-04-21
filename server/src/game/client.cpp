@@ -202,7 +202,7 @@ void PClient::FragmentAndSendUDPMessage( PMessage* nMessage, u8 nType )
       MultiTriggeringSize = 230;
       break;
     }
-    default: //BaselineMsg (with no header)
+    default:
     {
       Console->Print( RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Message type 0x%02x not managed", nType );
       break;
@@ -300,6 +300,7 @@ bool PClient::ChangeCharLocation( u32 nLocation, bool DoForce )
 
     if ( Worlds->LeaseWorld( nLocation ) )
     {
+      Console->Print( RED, BLACK, "[TODO] Update client.cpp:303+" );
       if ( tChar->GetLocationLeased() )
       {
         u32 ChairObjectId;

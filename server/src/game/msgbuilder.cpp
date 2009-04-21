@@ -297,7 +297,7 @@ PMessage* PMsgBuilder::BuildCharPosUpdate2Msg( PClient* nClient, u8 InfoBitfield
   {
     *tmpMsg << (u8)((nChar->Coords).mUnknown);
   }*/
-  
+
   ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
   return tmpMsg;
@@ -997,6 +997,20 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
   return BaselineMsg;
 }
 
+PMessage* PMsgBuilder::BuildAliveRepMsg( PClient* nClient )
+{
+  PMessage* tmpMsg = new PMessage( 7 );
+
+  // u8 up[] = {0x04, 0x01, 0x00, 0xe3, 0x6b, 0xe6, 0xee};
+  *tmpMsg << ( u8 )0x04;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0xe3; // ? not always...
+  *tmpMsg << ( u8 )0x6b; // ? not always...
+  *tmpMsg << ( u16 )( nClient->getUDPConn()->getPort() ); // really ?
+
+  return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildZoning1Msg( PClient* nClient, u16 nEntity, u8 nUnknown )
 {
   PMessage* tmpMsg = new PMessage( 42 );
@@ -1055,9 +1069,9 @@ PMessage* PMsgBuilder::BuildZoningTCPReadyMsg()
 
   //static const u8 READY[7] = {0xfe, 0x04, 0x00, 0x83, 0x0d, 0x00, 0x00};
   *tmpMsg << ( u8 )0xfe;
-  *tmpMsg << ( u16 )0x0004;
-  *tmpMsg << ( u8 )0x83;
-  *tmpMsg << ( u8 )0x0d;
+  *tmpMsg << ( u16 )0x0004; //length
+  *tmpMsg << ( u8 )0x83; //cmd
+  *tmpMsg << ( u8 )0x0d; // sub-cmd
   *tmpMsg << ( u16 )0x0000;
 
   return tmpMsg;
@@ -1080,7 +1094,7 @@ PMessage* PMsgBuilder::BuildSendZoneTCPMsg( u32 nLocation, std::string* nWorldNa
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildZoning2Msg( PClient* nClient )
+PMessage* PMsgBuilder::BuildZoning2Msg( PClient* nClient, u32 nClientTime )
 {
   PMessage* tmpMsg = new PMessage( 22 );
 
@@ -1093,17 +1107,14 @@ PMessage* PMsgBuilder::BuildZoning2Msg( PClient* nClient )
   *tmpMsg << ( u8 )0x03;
   *tmpMsg << ( u16 )nClient->GetUDP_ID();
   *tmpMsg << ( u8 )0x0d;
-  *tmpMsg << ( u32 )GameServer->GetGameTime(); // offset 10 (NeoX) or 11 ????
+  *tmpMsg << ( u32 )GameServer->GetGameTime();
 
-  *tmpMsg << ( u8 )0x47; // ???
-  *tmpMsg << ( u8 )0xc0;
-  *tmpMsg << ( u8 )0x22;
-  *tmpMsg << ( u8 )0x00;
+  *tmpMsg << ( u32 )nClientTime;
 
-  *tmpMsg << ( u8 )0xe5; // ???
-  *tmpMsg << ( u8 )0x0a;
-  *tmpMsg << ( u8 )0xbb;
-  *tmpMsg << ( u8 )0x00;
+  *tmpMsg << ( u8 )0xe5; // ??? varies
+  *tmpMsg << ( u8 )0x0a; // ??? varies
+  *tmpMsg << ( u8 )0xbb; // ??? varies
+  *tmpMsg << ( u8 )0x00; // ??? usually 0
 
   ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
@@ -2288,7 +2299,7 @@ PMessage* PMsgBuilder::BuildSubwaySpawnMsg( PClient* nClient, bool IsSecondMessa
     *tmpMsg << ( u8 )0x00;
     *tmpMsg << ( u8 )Subway->mSubways[i].mDoorOpened;;
 
-    nClient->IncreaseUDP_ID();
+    nClient->IncreaseUDP_ID(); // vhc health update
     *tmpMsg << ( u8 )0x0d; //msg size
     *tmpMsg << ( u8 )0x03;
     *tmpMsg << ( u16 )nClient->GetUDP_ID();
@@ -2794,5 +2805,5 @@ void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 
 13:5c:00:5c:e2: 0c: 03:5c:00:1f:01:00:25:13: f8:18:0e:02
 
-13:xx:xx:xx:xx: 09: 03:68:00:2d: 6d:03:00:00: 06 // Action update ? other NPC update ?
+13:xx:xx:xx:xx: 09: 03:68:00:2d: 6d:03:00:00: 06 // Action update ? other NPC update ? some vanish ?
 */
