@@ -1736,3 +1736,14 @@ Hammag; 18.04.2009 20:00 GMT+1
 
 <Gameserver>
   Fixed and added bug in handling deconnection of seating char that was causing the crash mentinned in the previous rev.
+
+Hammag; 28.04.2009 13:30 GMT+1
+----------
+[rev. 121-122]
+
+<Gameserver>
+  Fixed many little accessory things, potential bugs and discrepencies
+  Cleaned up source code format in some files
+  Deactivated as most debug output when dev_debug is not set in conf file (but setting it will generate lots of output !)
+  Continued work on vhc. Some small fixes and multichar tests still need to be performed
+

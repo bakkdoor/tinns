@@ -72,9 +72,9 @@ enum PSeatType
 class PCharCoordinates
 {
   public:
-    u16 mY;     // Y-Position in world
-    u16 mZ;     // Z-Position in world
-    u16 mX;     // X-Position in world
+    u16 mY;     // Y-Position in world // Y increases when going East
+    u16 mZ;     // Z-Position in world // Z increases when going up
+    u16 mX;     // X-Position in world // X increases when going South
     u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
     u8 mLR;     // Compass direction (S..E..N..W..S [0-45-90-135-179])
     u8 mAct;    // Last user action state
@@ -93,9 +93,14 @@ class PCharCoordinates
 
     u8 mJumpingState;
 
-    inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = mJumpingState = 0;}
+    //inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = mJumpingState = 0;}
     void SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD = 0x80, u8 nLR = 0 );
     void SetInterpolate( PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef );
+    
+    //Temp
+    u16 minPos[3];
+    u16 maxPos[3];
+    inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = mJumpingState = 0; for(int i=0; i<3; ++i) { minPos[i] = 0xffff; maxPos[i] = 0; } }
 };
 
 class PChar
@@ -168,7 +173,8 @@ class PChar
 
     u16 mLookingAt;  // Zone charID of currently targeted player
     std::time_t mLookAtTimestamp; // Lifetimer of lookat var
-
+    u32 mLastUsedWorldObjectId; // Last world object clicked on
+    
     bool mIsOnline;
     bool mDirtyFlag;
 
@@ -214,8 +220,10 @@ class PChar
     inline void SetBodyEffect( u8 nEffect, u8 nDensity = 0 ) { mBodyEffect = nEffect; mBodyEffectDensity = nDensity; }
     inline void SetSpeedOverride( u8 nSpeed = 255 ) { mSpeedOverride = nSpeed; }
 
-    void SetLookingAt( u16 nCharID );
+    void SetLookingAt( u16 nLocalCharID );
     u16 GetLookingAt( u16 nMaxDelaySec = 1 );
+    inline void SetLastUsedObject ( u32 nRawItemId ) { mLastUsedWorldObjectId = nRawItemId; }
+    inline u32 GetLastUsedObject () const { return mLastUsedWorldObjectId; }
 
     inline PInventory* GetInventory() { return &mInventory; }
     inline u32 GetID() const { return mID; }

@@ -276,6 +276,8 @@ void PClient::SetDebugMode( PDebugMode nDebugID, bool nVal )
 
 bool PClient::ChangeCharLocation( u32 nLocation, bool DoForce )
 {
+  if ( gDevDebug )
+    Console->Print( "%s PClient::ChangeCharLocation", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
   if ( Worlds->IsValidWorld( nLocation ) )
   {
     mAcceptNPCUpdates = false; // Zone changed, reject NPC updates till initial NPC spawn
@@ -298,18 +300,40 @@ bool PClient::ChangeCharLocation( u32 nLocation, bool DoForce )
       //return true;
     }
 
-    if ( Worlds->LeaseWorld( nLocation ) )
+    PWorld* nWorld;
+    if (( nWorld = Worlds->LeaseWorld( nLocation ) ) )
     {
-      Console->Print( RED, BLACK, "[TODO] Update client.cpp:303+" );
       if ( tChar->GetLocationLeased() )
       {
         u32 ChairObjectId;
-
-        if ( tChar->GetSeatInUse( &ChairObjectId ) == seat_chair )
+        u8 tSeatId;
+        PSeatType tSeatType;
+        if (( tSeatType = tChar->GetSeatInUse( &ChairObjectId, &tSeatId ) ) )
         {
-          Worlds->GetWorld( CurrentLocation )->CharLeaveChair( GetLocalID(), ChairObjectId );
-          tChar->SetSeatInUse( seat_none );
+          bool vhcZoning = false;
+          PSpawnedVehicle* tVhc = 0;
+          if ( tSeatType == seat_vhc ) // If seat is vhc, check if it has been preset for vhc zoning
+          {
+            if (( tVhc = nWorld->GetSpawnedVehicules()->GetVehicle( ChairObjectId ) ) )
+            {
+              if ( tVhc->GetSeatUser( tSeatId ) == tChar->GetID() )
+              {
+                vhcZoning = true;
+              }
+            }
+          }
+
+          if ( ! vhcZoning )
+          {
+            PUdpCharExitChair::DoLeaveChair( tChar, this, tVhc, true );
+          }
+          /*{
+            Worlds->GetWorld( CurrentLocation )->CharLeaveChair( GetLocalID(), ChairObjectId );
+            tChar->SetSeatInUse( seat_none );
+          }*/
         }
+        this->InitWarpCircle();
+        this->InitCharVanish();
         Worlds->ReleaseWorld( CurrentLocation );
       }
       tChar->SetLocation( nLocation );
@@ -347,27 +371,13 @@ void PClient::GameDisconnect()
   PChar *tChar = GetChar();
   if ( tChar )
   {
-    if ( tChar->IsDirty() )
-    {
-      bool res = tChar->SQLSave();
-      if ( res )
-        Console->Print( GREEN, BLACK, "GameDisconnect: Char %i (Client %i) saved before disconnect.", tChar->GetID(), mIndex );
-      else
-        Console->Print( RED, BLACK, "GameDisconnect: Char %i (Client %i) saving before disconnect and FAILED.", tChar->GetID(), mIndex );
-    }
-    else
-    {
-      Console->Print( GREEN, BLACK, "GameDisconnect: Char %i (Client %i) no save needed.", tChar->GetID(), mIndex );
-      if ( !tChar->IsOnline() )
-        Console->Print( GREEN, BLACK, "GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", tChar->GetID(), mIndex );
-    }
-
+    SetZoning();
     if ( tChar->GetLocationLeased() )
     {
       if ( tChar->GetSeatInUse() )
       {
         //if(gDevDebug)
-          Console->Print(YELLOW, BLACK, "[DEBUG] Trying to get leaving char out of her seat" );
+          Console->Print( "%s Trying to get leaving char out of her seat", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
         PUdpCharExitChair::DoLeaveChair( tChar, this, NULL, true );
       }
       /* // replaced by the lines above
@@ -401,9 +411,27 @@ void PClient::GameDisconnect()
         }
       }
       */
+    }
 
-      //if(gDevDebug)
-          Console->Print(YELLOW, BLACK, "[DEBUG] Sending char leaving effect" );
+    if ( tChar->IsDirty() )
+    {
+      bool res = tChar->SQLSave();
+      if ( res )
+        Console->Print( "%s GameDisconnect: Char %i (Client %i) saved before disconnect.", Console->ColorText( GREEN, BLACK, "[DEBUG]" ),  tChar->GetID(), mIndex );
+      else
+        Console->Print( RED, BLACK, "[DEBUG] GameDisconnect: Char %i (Client %i) saving before disconnect and FAILED.", tChar->GetID(), mIndex );
+    }
+    else
+    {
+      Console->Print( "%s GameDisconnect: Char %i (Client %i) no save needed.", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tChar->GetID(), mIndex );
+      if ( !tChar->IsOnline() )
+        Console->Print( "%s GameDisconnect: Char %i (Client %i) wasn't marked as ingame anyway...", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tChar->GetID(), mIndex );
+    }
+
+    if ( tChar->GetLocationLeased() )
+    {
+      if ( gDevDebug )
+        Console->Print( "%s Sending char leaving effect", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       InitWarpCircle();
       InitCharVanish();
 
@@ -437,7 +465,7 @@ void PClient::Update()
   {
     if ( m_TCPConnection->timeOut() )
     {
-      Console->Print( "GameSocket: Client %i: timeout", mIndex );
+      Console->Print( "%s GameSocket: Client %i: timeout", Console->ColorText( YELLOW, BLACK, "[NOTICE]" ), mIndex );
       GameServer->ClientDisconnected( this );
     }
     else
@@ -453,7 +481,7 @@ void PClient::Update()
   {
     if ( m_UDPConnection->timeOut() )
     {
-      Console->Print( "Game UDP: Client %i: timeout", mIndex );
+      Console->Print( "%s Game UDP: Client %i: timeout", Console->ColorText( YELLOW, BLACK, "[NOTICE]" ), mIndex );
       GameServer->UDPStreamClosed( this );
     }
     else
@@ -511,7 +539,7 @@ bool PClient::GetCharAwaitingWarpto( u16* PosX, u16* PosY, u16* PosZ )
 void PClient::InitWarpCircle()
 {
   PMessage* tmpMsg_circle = MsgBuilder->BuildCharShowGlowCircleMsg( this );
-  ClientManager->UDPBroadcast( tmpMsg_circle, this, 0, true );
+  ClientManager->UDPBroadcast( tmpMsg_circle, this, 1000, true ); // send only in a 1000 radius
 }
 
 void PClient::InitCharVanish()

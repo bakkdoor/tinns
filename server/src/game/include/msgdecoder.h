@@ -45,6 +45,8 @@ class PUdpMsgAnalyser;
 #define DECODE_FINISHED 8 // decoding if finished for the whole message
 #define DECODE_ACTION_READY 16 // an action is ready to be done
 #define DECODE_ACTION_DONE 32 // the action triggered hasn't to be triggered again
+#define DECODE_ACTION_IGNORED 64 // the action wasn't performed for some (good) reason (to combine or not with DONE)
+#define DECODE_ACTION_FAILED 128 // the action failed totally or partially (to combine or not with DONE)
 
 
 struct PMsgDecodeData

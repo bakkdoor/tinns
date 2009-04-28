@@ -50,7 +50,7 @@ void PMessage::CheckMsgCount()
 
   if (smMsgCount > MaxMsgCount)
   {
-    Console->Print("%s Max In-use messages number increasing : %d (+%d)", Console->ColorText(YELLOW, BLACK, "[Notice]"), smMsgCount, smMsgCount-MaxMsgCount);
+    Console->Print("%s Max In-use messages number increasing : %d (+%d)", Console->ColorText(GREEN, BLACK, "[Info]"), smMsgCount, smMsgCount-MaxMsgCount);
     MaxMsgCount = smMsgCount;
   }
 }

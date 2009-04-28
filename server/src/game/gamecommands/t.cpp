@@ -127,6 +127,18 @@ void PCommands::doCmd_dev_t()
       source->SendUDPMessage( tmpMsg );
       tmpMsg = NULL;
     }
+    else if ( Arg1[0] == 's' )
+    {
+      u32 nSeatableObjectId;
+      u8 nSeatId;
+      if( source->GetChar()->GetSeatInUse(&nSeatableObjectId, &nSeatId) )
+      {
+        Console->Print( YELLOW, BLACK, "[DEBUG] Char %d sitting on vhc id %d, seat %d", source->GetLocalID(), nSeatableObjectId, nSeatId  );
+        PMessage* SittingMsg = MsgBuilder->BuildCharUseSeatMsg( source, nSeatableObjectId, nSeatId );
+        source->FillInUDP_ID(SittingMsg);
+        source->SendUDPMessage( SittingMsg );
+      }
+    }
   }
 
   tmpStr[127] = '\0';

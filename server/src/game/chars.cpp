@@ -201,6 +201,7 @@ PChar::PChar()
 
   mLookingAt = 0;
   mLookAtTimestamp = 0;
+  mLastUsedWorldObjectId = 0;
 
   mSpeedOverride = 255; // means no override. Value 0 can be used to forbid any move.
 
@@ -1009,9 +1010,9 @@ PVhcAccessRequestList* PChar::GetVhcAccessRequestList()
   return mVhcAccessRequestList;
 }
 
-void PChar::SetLookingAt( u16 nCharID )
+void PChar::SetLookingAt( u16 nLocalCharID )
 {
-  mLookingAt = nCharID;
+  mLookingAt = nLocalCharID;
   mLookAtTimestamp = std::time( NULL );
 }
 
@@ -1069,7 +1070,7 @@ bool PChars::LoadChar( u32 CharID )
   }
   else
   {
-    Console->Print( RED, BLACK, "Could not load char id %d from database", CharID );
+    Console->Print( RED, BLACK, "[ERROR] Could not load char id %d from database", CharID );
     return false;
   }
 }
@@ -1083,12 +1084,12 @@ bool PChars::AddChar( PChar* nChar )
   if ( mChars.insert( std::make_pair( nChar->GetID(), nChar ) ).second )
   {
     if ( gDevDebug )
-      Console->Print( "%s Char: %s (id %d) added", Console->ColorText( GREEN, BLACK, "[Debug]" ), nChar->GetName().c_str() , nChar->GetID() );
+      Console->Print( "%s Char: %s (id %d) added", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), nChar->GetName().c_str() , nChar->GetID() );
     return true;
   }
   else
   {
-    Console->Print( RED, BLACK, "[Bug] Trying to load char twice : %s (id %d)", nChar->GetName().c_str(), nChar->GetID() );
+    Console->Print( RED, BLACK, "[ERROR] Trying to load char twice : %s (id %d)", nChar->GetName().c_str(), nChar->GetID() );
     return false;
   }
 }
@@ -1103,7 +1104,7 @@ PChar* PChars::RemoveChar( u32 CharID )
     Result = i->second;
     mChars.erase( i );
     if ( gDevDebug )
-      Console->Print( "%s Char: %s (id %d) removed", Console->ColorText( GREEN, BLACK, "[Debug]" ), Result->GetName().c_str() , Result->GetID() );
+      Console->Print( "%s Char: %s (id %d) removed", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), Result->GetName().c_str() , Result->GetID() );
   }
 
   return Result;
@@ -1131,7 +1132,7 @@ void PChars::SQLSave()
         ++nSavedInv;
     }
   }
-  Console->Print( "%i chars saved on %i dirty, %i inventories saved on %i dirty", nSavedChars, nDirtyChars, nSavedInv, nDirtyInv );
+  Console->Print( "%s %i chars saved on %i dirty, %i inventories saved on %i dirty", Console->ColorText( GREEN, BLACK, "[DEBUG]" ), nSavedChars, nDirtyChars, nSavedInv, nDirtyInv );
   return;
 }
 
@@ -1172,7 +1173,7 @@ bool PChars::CharExist( const std::string &Name ) const
   result = MySQL->GameResQuery( query );
   if ( result == NULL )
   {
-    Console->Print( RED, BLACK, "Failed to get CharacterData from SQL" );
+    Console->Print( RED, BLACK, "[ERROR] Failed to get CharacterData from SQL" );
     MySQL->ShowGameSQLError();
     return true;
   }
@@ -1200,9 +1201,9 @@ void PChars::Update()
 
     if ( NeedSave )
     {
-      if ( gDevDebug ) Console->Print( "Some characters need autosaving..." );
+      if ( gDevDebug ) Console->Print( "%s Some characters need autosaving...", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       SQLSave();
-      if ( gDevDebug ) Console->Print( "Autosave done." );
+      if ( gDevDebug ) Console->Print( "%s Autosave done.", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     }
     mLastSave = t;
   }
@@ -1222,7 +1223,7 @@ int PChars::GetCharProfiles( const u32 AccountID, PCharProfile* CharSlotsArray, 
   result = MySQL->GameResQuery( query );
   if ( result == NULL )
   {
-    Console->Print( RED, BLACK, "Failed to load CharacterData from SQL" );
+    Console->Print( RED, BLACK, "[ERROR] Failed to load CharacterData from SQL" );
     MySQL->ShowGameSQLError();
     return 0;
   }

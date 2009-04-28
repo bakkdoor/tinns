@@ -37,7 +37,7 @@
 
 /**** PUdpItemSlotUse ****/
 
-PUdpItemSlotUse::PUdpItemSlotUse(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+PUdpItemSlotUse::PUdpItemSlotUse( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
 {
   nDecodeData->mName << "/0x1f";
 }
@@ -46,13 +46,13 @@ PUdpMsgAnalyser* PUdpItemSlotUse::Analyse()
 {
   mDecodeData->mName << "=Active QuickBelt Slot";
 
-  mTargetSlot = mDecodeData->mMessage->U8Data(mDecodeData->Sub0x13Start + 8);
+  mTargetSlot = mDecodeData->mMessage->U8Data( mDecodeData->Sub0x13Start + 8 );
   // TODO : Check on mTargetSlot value + put set to INV_WORN_QB_HAND for hand
-  if(mTargetSlot == 255) // H "slot 0" Hand
+  if ( mTargetSlot == 255 ) // H "slot 0" Hand
     mTargetSlot = INV_WORN_QB_HAND;
 
   //if(mTargetSlot == 11) //  ALT-H ?
-    
+
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
@@ -66,21 +66,25 @@ bool PUdpItemSlotUse::DoAction()
   bool tUsableInHand = false;
   u16 ItemVal1 = 0;
 
-Console->Print("Client trying to activate item in slot %d.", mTargetSlot);
+  if( gDevDebug )
+    Console->Print( "%s Client trying to activate item in slot %d.", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetSlot );
 
   u8 currentActiveSlot = tChar->GetQuickBeltActiveSlot();
-  if(mTargetSlot == INV_WORN_QB_HAND)
+  if ( mTargetSlot == INV_WORN_QB_HAND )
   {
-Console->Print("Want to use Hand");
+    if( gDevDebug )
+      Console->Print( "%s Want to use Hand", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     tUsable = true;
     tUsableInHand = true;
   }
   else
   {
-    targetItem = tChar->GetInventory()->GetContainer(INV_LOC_WORN)->GetItem(INV_WORN_QB_START + mTargetSlot);
-    if(targetItem)
-    { // TODO : do the real check;
-Console->Print("Want to use existing item");
+    targetItem = tChar->GetInventory()->GetContainer( INV_LOC_WORN )->GetItem( INV_WORN_QB_START + mTargetSlot );
+    if ( targetItem )
+    {
+      // TODO : do the real check;
+      if( gDevDebug )
+        Console->Print( "%s Want to use existing item", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       tUsable = true;
       tUsableInHand = true;
       ItemVal1 = targetItem->GetValue1();
@@ -92,55 +96,59 @@ Console->Print("Want to use existing item");
 //  must check if weapon and allowed in zone
 //  and change tUsableInHand to false if needed
 
-  if(tUsable && !tUsableInHand)
+  if ( tUsable && !tUsableInHand )
   {
     // active item in belt, but don't take in hand
-Console->Print(YELLOW, BLACK, "Debug: activation of QB item slot %d (%s)", mTargetSlot, targetItem->GetName().c_str());    
+    if ( gDevDebug )
+      Console->Print( "%s activation of QB item slot %d (%s)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetSlot, targetItem->GetName().c_str() );
   }
   else
   {
-    if(!tUsable)
+    if ( !tUsable )
     {
-Console->Print("Want to use non-usable item");  
+      if ( gDevDebug )
+        Console->Print( "%s Want to use non-usable item", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       mTargetSlot = INV_WORN_QB_NONE; // if not usable, unequip active one
     }
-      
-    if(mTargetSlot == currentActiveSlot) // if same as active, unequip active one 
+
+    if ( mTargetSlot == currentActiveSlot ) // if same as active, unequip active one
     {
-Console->Print("Want to use active slot");
+      if ( gDevDebug )
+        Console->Print( "%s Want to use active slot", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       mTargetSlot = INV_WORN_QB_NONE;
     }
-    
-    if(mTargetSlot != currentActiveSlot) // now do somthing only if not same as active
+
+    if ( mTargetSlot != currentActiveSlot ) // now do somthing only if not same as active
     {
-      if(tChar->SetQuickBeltActiveSlot(mTargetSlot))
+      if ( tChar->SetQuickBeltActiveSlot( mTargetSlot ) )
       {
         PMessage* tmpMsg;
-        tmpMsg = MsgBuilder->BuildCharHelloMsg(nClient);
-        ClientManager->UDPBroadcast(tmpMsg, nClient);
-      
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1(nClient, 59);
-        nClient->SendUDPMessage(tmpMsg);
+        tmpMsg = MsgBuilder->BuildCharHelloMsg( nClient );
+        ClientManager->UDPBroadcast( tmpMsg, nClient );
 
-        if(ItemVal1 > 0)
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1( nClient, 59 );
+        nClient->SendUDPMessage( tmpMsg );
+
+        if ( ItemVal1 > 0 )
         {
-          tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2(nClient);
-          nClient->SendUDPMessage(tmpMsg);
+          tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2( nClient );
+          nClient->SendUDPMessage( tmpMsg );
         }
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3(nClient, mTargetSlot);
-        nClient->SendUDPMessage(tmpMsg);
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3( nClient, mTargetSlot );
+        nClient->SendUDPMessage( tmpMsg );
 
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4(nClient, ItemVal1);
-        nClient->SendUDPMessage(tmpMsg);
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4( nClient, ItemVal1 );
+        nClient->SendUDPMessage( tmpMsg );
 
-Console->Print(YELLOW, BLACK, "Debug: activation of QB item slot %d", mTargetSlot);
+        if ( gDevDebug )
+          Console->Print("%s activation of QB item slot %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetSlot );
       }
-else Console->Print(RED, BLACK, "Error: activation of QB slot %d refused by PChar", mTargetSlot);
+      else Console->Print( "%s activation of QB slot %d refused by PChar", Console->ColorText( YELLOW, BLACK, "[WARNING]" ), mTargetSlot );
     }
-else
-{
-Console->Print("Same slot %d as active - do nothing", mTargetSlot);
-}
+    else
+    {
+      Console->Print( "%s Same slot %d as active - should not happen", Console->ColorText( YELLOW, BLACK, "[WARNING]" ), mTargetSlot );
+    }
   }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

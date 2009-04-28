@@ -56,7 +56,6 @@ class PMsgBuilder
     PMessage* BuildCharPosUpdate2Msg( PClient* nClient, u8 InfoBitfield = 0x7f );
     //PMessage* BuildCharSittingMsg( PClient* nClient ); // Not used anymore, done by BuildCharPosUpdateMsg
     PMessage* BuildCharExitSeatMsg( PClient* nClient );
-    PMessage* BuildCharJumpingMsg( PClient* nClient );
     PMessage* BuildDoorOpenMsg( u32 nRawItemID, bool nDoubleDoor = false );
     PMessage* BuildCharUseSeatMsg( PClient* nClient, u32 nRawObjectId, u8 nSeatId = 0 );
     PMessage* BuildCharShowGlowCircleMsg( PClient* nClient );

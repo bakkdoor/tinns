@@ -108,16 +108,14 @@ PUdpMsgAnalyser* PUdpVhcMove::Analyse()
   00 = no move
 
   */
-  if(gDevDebug)
+  if ( gDevDebug )
   {
     Console->Print( YELLOW, BLACK, "[DEBUG] VHC move type %d - objid %d", mMoveType, mVhcLocalId );
     //nMsg->Dump();
-    //Console->Print( "X=%d Y=%d Z=%d Act=%d", mNewX, mNewY, mNewZ, mAction );
-    //Console->Print( "LR=%d UD=%d Ro=%d Unk=%d Act=%02x ff=%x", mNewLR, mNewUD, mNewRoll, mUnk1, mAction, mFF );
-    Console->Print( "Msg len: %d", nMsg->U8Data(mDecodeData->Sub0x13Start) );
+    Console->Print( "X=%d Y=%d Z=%d Act=%d", mNewX - 768, mNewY - 768, mNewZ - 768, mAction );
+    Console->Print( "LR=%d UD=%d Ro=%d Unk=%d Act=%02x ff=%x", mNewLR, mNewUD, mNewRoll, mUnk1, mAction, mFF );
+    Console->Print( "Msg len: %d", nMsg->U8Data( mDecodeData->Sub0x13Start ) );
   }
-Console->Print( YELLOW, BLACK, "[DEBUG] VHC move IN" );
-nMsg->Dump();
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -135,17 +133,30 @@ bool PUdpVhcMove::DoAction()
     if ( tVhc )
     {
       //Todo: calc & mem Speed & Accel vectors
-      PVhcCoordinates nPos;
+      PVhcCoordinates nPos, destPos;
       nPos.SetPosition( mNewY - 768, mNewZ - 768, mNewX - 768, mNewUD, mNewLR, mNewRoll, mAction, mUnk1, mFF );
       tVhc->SetPosition( &nPos );
       PMessage* tmpMsg = MsgBuilder->BuildVhcPosUpdate2Msg( tVhc );
-Console->Print( YELLOW, BLACK, "[DEBUG] VHC move OUT 1" );
-tmpMsg->Dump();
       ClientManager->UDPBroadcast( tmpMsg, mDecodeData->mClient );
+
       tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg( tVhc );
-Console->Print( YELLOW, BLACK, "[DEBUG] VHC move OUT 2" );
-tmpMsg->Dump();
       ClientManager->UDPBroadcast( tmpMsg, mDecodeData->mClient );
+
+      u32 destWorldId;
+      if (( destWorldId = CurrentWorld->GetVhcZoningDestination( tVhc, &destPos ) ) )
+      {
+        if ( nClient->GetDebugMode( DBG_LOCATION ) )
+        {
+          u8 pH = 0;
+          u8 pV = 0;
+          Worlds->GetWorldmapFromWorldId( destWorldId, pH, pV );
+          char DbgMessage[128];
+          snprintf( DbgMessage, 128, "Vhc zoning to zone %c%02d (id %d)", ( 'a' + pV ), pH, destWorldId );
+          Chat->send( nClient, CHAT_GM, "Debug", DbgMessage );
+        }
+
+        DoVhcZoning( tVhc, nClient->GetChar()->GetLocation(), destWorldId, &destPos );
+      }
     }
     else
       Console->Print( RED, BLACK, "[Error] PUdpVhcMove: Inexistant vhc Id %d", mVhcLocalId );
@@ -155,6 +166,86 @@ tmpMsg->Dump();
   return true;
 }
 
+// Failures are not managed yet
+bool PUdpVhcMove::DoVhcZoning( PSpawnedVehicle* currVhc, u32 currWorldId, u32 destWorldId, PVhcCoordinates* destPos )
+{
+  u32 seatedCharsId[8];
+  u32 vhcGlobalId = currVhc->GetVehicleId();
+  u32 vhcLocalId = currVhc->GetLocalId();
+  PVhcCoordinates currCoords = currVhc->GetPosition();
+  u8 numSeats = currVhc->GetNumSeats();
+  u32 sittingCharId;
+  PClient* sittingClient;
+  PClient* sittingClients[8];
+  PMessage* tmpMsg;
+
+  for ( u8 i = 0; i < numSeats; ++i )
+  {
+    // Save seated chars list
+    seatedCharsId[i] = sittingCharId = currVhc->GetSeatUser( i );
+
+    if ( sittingCharId )
+    {
+      sittingClients[i] = sittingClient = ClientManager->getClientByChar( sittingCharId );
+      // Tag each client as zoning to avoid transient side effects
+      sittingClient->SetZoning();
+      // Trigger zoning
+      //tmpMsg = MsgBuilder->BuildGenrepZoningMsg( sittingClient, destWorldId, 0 ); // unknown value // 0x62bc or 0x2d4e
+      //sittingClient->SendUDPMessage( tmpMsg );
+      // We send the unseat msg to the corresponding client only.
+      sittingClient->GetChar()->Coords.SetPosition( currCoords.GetY(), currCoords.GetZ(), currCoords.GetX() );
+      tmpMsg = MsgBuilder->BuildCharExitSeatMsg( sittingClient );
+      sittingClient->FillInUDP_ID( tmpMsg );
+      sittingClient->SendUDPMessage( tmpMsg );
+    }
+    else
+      sittingClients[i] = 0;
+  }
+
+  // Unspawn vhc instance from local world
+  Vehicles->UnspawnVehicle( vhcGlobalId );
+  tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg( vhcLocalId );
+  ClientManager->UDPBroadcast( tmpMsg, currWorldId );
+
+  // Spawn vhc instance in destWorld
+  PSpawnedVehicle* destVhc = Vehicles->SpawnVehicle( vhcGlobalId, destWorldId, destPos );
+  if ( destVhc )
+  {
+    tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg( destVhc );
+    ClientManager->UDPBroadcast( tmpMsg, destWorldId );
+
+    vhcLocalId = destVhc->GetLocalId();
+
+    // Update chars seat in use and restore vhc used seats
+    PChar* sittingChar;
+    for ( u8 i = 0; i < numSeats; ++i )
+    {
+      if (( sittingClient = sittingClients[i] ) )
+      {
+        Console->Print( "%s PUdpVhcMove::DoVhcZoning : Char %d sitting on vhc %d, seat %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), seatedCharsId[i], vhcLocalId, i );
+        sittingChar = sittingClient->GetChar();
+        sittingChar->SetSeatInUse( seat_vhc, vhcLocalId, i );
+        sittingChar->Coords.SetPosition( destPos->GetY(), destPos->GetZ(), destPos->GetX() );
+        destVhc->SetSeatUser( i, seatedCharsId[i] );
+      }
+    }
+  }
+  else
+  {
+    for ( u8 i = 0; i < numSeats; ++i )
+    {
+      if ( sittingClients[i] )
+      {
+        sittingClients[i]->GetChar()->SetSeatInUse( seat_none );
+      }
+    }
+
+    return false;
+  }
+
+  return true;
+
+}
 
 /**** PUdpVhcUse ****/
 
@@ -172,8 +263,8 @@ PUdpMsgAnalyser* PUdpVhcUse::Analyse()
   *nMsg >> mVehicleID; // u32
   *nMsg >> mVehicleSeat;
 
-  if(gDevDebug)
-    Console->Print( YELLOW, BLACK, "[DEBUG] Localid %d trying to enter vhc %d on seat %d", mDecodeData->mClient->GetLocalID(), mVehicleID, mVehicleSeat );
+  if ( gDevDebug )
+    Console->Print( "%s Localid %d trying to enter vhc %d on seat %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDecodeData->mClient->GetLocalID(), mVehicleID, mVehicleSeat );
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
@@ -192,7 +283,7 @@ bool PUdpVhcUse::DoAction()
       PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle( mVehicleID );
       if ( tVhc )
       {
-        if( tVhc->SetSeatUser( mVehicleSeat, nChar->GetID() ) ) // Char was able to sit
+        if ( tVhc->SetSeatUser( mVehicleSeat, nChar->GetID() ) ) // Char was able to sit
         {
           nChar->SetSeatInUse( seat_vhc, mVehicleID, mVehicleSeat );
           tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, mVehicleID, mVehicleSeat );
@@ -211,11 +302,11 @@ bool PUdpVhcUse::DoAction()
   return true;
 }
 
-void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId)
+void PUdpVhcUse::DoFreeSitting( PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRawVhcLocalId, u8 nSeatId )
 {
   PMessage* tmpMsg;
 
-  if( (nVhc->GetNbFreeSeats() > 1) &&  ( nSeatId > nVhc->GetNumSeats() ) )
+  if (( nVhc->GetNbFreeSeats() > 1 ) && ( nSeatId > nVhc->GetNumSeats() ) )
   {
     u8 freeSeats = nVhc->GetFreeSeatsFlags();
     tmpMsg = MsgBuilder->BuildCharUseVhcMsg( nClient, nRawVhcLocalId, nVhc->GetInformation().GetVehicleType(), freeSeats );
@@ -223,9 +314,9 @@ void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRa
   }
   else
   {
-    if( nSeatId <= nVhc->GetNumSeats() )
+    if ( nSeatId <= nVhc->GetNumSeats() )
     {
-      if( nVhc->GetSeatUser(nSeatId) )
+      if ( nVhc->GetSeatUser( nSeatId ) )
       {
         tmpMsg = MsgBuilder->BuildText100Msg( nClient, 1, nRawVhcLocalId ); // Already in use
         nClient->SendUDPMessage( tmpMsg );
@@ -235,7 +326,7 @@ void PUdpVhcUse::DoFreeSitting(PClient* nClient,  PSpawnedVehicle* nVhc, u32 nRa
     {
       nSeatId = nVhc->GetFirstFreeSeat();
 
-      if( nSeatId != 255 )
+      if ( nSeatId != 255 )
       {
         if ( nVhc->SetSeatUser( nSeatId, nClient->GetChar()->GetID() ) ) // Char was able to sit
         {
@@ -280,7 +371,7 @@ PUdpMsgAnalyser* PUdpSubwayUpdate::Analyse()
   *nMsg >> mDoorOpened;
 
   if ( gDevDebug )
-    Console->Print( YELLOW, BLACK, "[DEBUG] Subway update 0x%4x : pos 0x%4x, status 0x%2x", mVehicleID, mPosition, mDoorOpened );
+    Console->Print( "%s Subway update 0x%4x : pos 0x%4x, status 0x%2x", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mVehicleID, mPosition, mDoorOpened );
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -307,15 +398,15 @@ PUdpRequestVhcInfo::PUdpRequestVhcInfo( PMsgDecodeData* nDecodeData ) : PUdpMsgA
 
 PUdpMsgAnalyser* PUdpRequestVhcInfo::Analyse()
 {
-  mDecodeData->mName << "=Request seat object info";
+  mDecodeData->mName << "=Request seatable object info";
 
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset( mDecodeData->Sub0x13Start + 2 );
 
   *nMsg >> mVehicleID;
 
-  if(gDevDebug)
-    Console->Print( YELLOW, BLACK, "[DEBUG] Request Seat Info for 0x%04x :", mVehicleID );
+  if ( gDevDebug )
+    Console->Print( "%s Request Seatable Info for 0x%04x :", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mVehicleID );
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -332,8 +423,8 @@ bool PUdpRequestVhcInfo::DoAction()
     PSpawnedVehicle* tVhc = CurrentWorld->GetSpawnedVehicules()->GetVehicle( mVehicleID );
     if ( tVhc )
     {
-      if(gDevDebug)
-        Console->Print( YELLOW, BLACK, "[DEBUG] Sending Info for vhcId 0x%04x : type %d", mVehicleID, tVhc->GetInformation().GetVehicleType() );
+      if ( gDevDebug )
+        Console->Print("%s Sending Info for vhcId 0x%04x : type %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mVehicleID, tVhc->GetInformation().GetVehicleType() );
       PMessage* tmpMsg = MsgBuilder->BuildVhcInfoMsg( nClient, tVhc );
       nClient->SendUDPMessage( tmpMsg );
     }

@@ -91,7 +91,7 @@ PUdpMsgAnalyser* PUdpVentureWarpConfirm::Analyse()
   ( *cMsg ) >> mUnknown2;
   ( *cMsg ) >> mRawItemId;
   ( *cMsg ) >> mStatus;
-  cMsg->Dump();
+  //cMsg->Dump();
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
@@ -105,9 +105,9 @@ bool PUdpVentureWarpConfirm::DoAction()
     u32 newLocation;
     do
     {
-      newLocation = 2000 + 20 * GetRandom( 10, 0 ) + GetRandom( 16, 1 );
+      newLocation = Worlds->GetWorldIdFromWorldmap( GetRandom( PWorlds::mOutdoorWorldmapHSize, 0 ), GetRandom( PWorlds::mOutdoorWorldmapVSize, 0 ) );
     }
-    while ( ! Worlds->IsValidWorld( newLocation ) );
+    while ( ! newLocation );
 
     u16 nEntity = 10;
     u16 nEntityType = 1;
@@ -151,18 +151,18 @@ bool PUdpVhcAccessResponse::DoAction()
   PChar* nChar = nClient->GetChar();
   PVhcAccessRequestList* nAccessRequests = nChar->GetVhcAccessRequestList();
 
-  //if (gDevDebug)
+  if ( gDevDebug )
     Console->Print( "Access response for Req n°%d : %d (unknown %d)", mVhcAccessRequestId, mStatus, mUnknown );
 
   if ( nAccessRequests->RegisterResponse( mVhcAccessRequestId, ( mStatus == 1 ) ) )
   {
     u32 requesterCharId = 0;
     u32 vehicleId = 0;
-    nAccessRequests->GetInfo(mVhcAccessRequestId, &requesterCharId, &vehicleId);
-    PClient* requesterClient = ClientManager->getClientByChar(requesterCharId);
+    nAccessRequests->GetInfo( mVhcAccessRequestId, &requesterCharId, &vehicleId );
+    PClient* requesterClient = ClientManager->getClientByChar( requesterCharId );
     PChar* requesterChar = ( requesterClient ? requesterClient->GetChar() : NULL );
 
-    if( requesterChar && nAccessRequests->Check( mVhcAccessRequestId ) )
+    if ( requesterChar && nAccessRequests->Check( mVhcAccessRequestId ) )
     {
       PWorld* CurrentWorld = Worlds->GetWorld( requesterChar->GetLocation() );
       if ( CurrentWorld )

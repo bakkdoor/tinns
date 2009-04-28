@@ -69,10 +69,9 @@ void PVhcCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 
 // PVehicleInformation
 //Tmp
 const u8 VhcTypes[] = {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-                         11, 12, 13, 50, 60, 61, 62, 63, 64, 65,
-                         70
-                      };
-const u8 VhcTypesNum = 21;
+                         11, 12, 13, 50, 60, 62, 64, 65, 70
+                      }; // (adv.) assault gliders discarded because not ok
+const u8 VhcTypesNum = 19;
 
 bool PVehicleInformation::Load( u32 nVehicleId )
 {
@@ -110,7 +109,7 @@ bool PVehicleInformation::Destroy()
     return false;
 }
 
-bool PVehicleInformation::SetStatus( const u8 nStatus )
+bool PVehicleInformation::SetStatus( u8 nStatus )
 {
   if (( mStatus != 2 ) && ( nStatus <= 2 ) )
   {
@@ -124,58 +123,59 @@ bool PVehicleInformation::SetStatus( const u8 nStatus )
 // PSpawnedVehicule
 const u8 PSpawnedVehicle::mSeatsFlags[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
-PSpawnedVehicle::PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation* const nVhcInfo, const u32 nLocation, const PVhcCoordinates* const nVhcPos )
+PSpawnedVehicle::PSpawnedVehicle( u32 nLocalId, PVehicleInformation const* nVhcInfo, u32 nLocation, PVhcCoordinates const* nVhcPos )
 {
   mLocalId = nLocalId;
   mInfo = *nVhcInfo;
   mLocation = nLocation;
   mCoords = *nVhcPos;
-  for(int i = 0; i < 8; ++i)
+  for ( int i = 0; i < 8; ++i )
     mSeatUserId[i] = 0;
 
-  mVhcDef = GameDefs->Vhcs()->GetDef(mInfo.mVehicleType);
-  if( ! mVhcDef)
+  mVhcDef = GameDefs->Vhcs()->GetDef( mInfo.mVehicleType );
+  if ( ! mVhcDef )
   {
-    Console->Print( RED, BLACK, "[FATAL] Invalid vhc type %d for vhc id %d (local %d) owner char id %d", mInfo.mVehicleType, mInfo.mVehicleId, mLocalId, mInfo.mOwnerCharId);
-    Console->Print("%s Aborting.", Console->ColorText(RED, BLACK, "[FATAL]"));
-    Shutdown();
+    Console->Print( RED, BLACK, "[ERROR] Invalid vhc type %d for vhc id %d (local %d) owner char id %d", mInfo.mVehicleType, mInfo.mVehicleId, mLocalId, mInfo.mOwnerCharId );
+    Console->Print( RED, BLACK, "[NOTICE] Setting vhc type to %d for vhc id %d (local %d) owner char id %d", VhcTypes[0], mInfo.mVehicleId, mLocalId, mInfo.mOwnerCharId );
+    mInfo.mVehicleType = VhcTypes[0];
+    mVhcDef = GameDefs->Vhcs()->GetDef( mInfo.mVehicleType );
   }
-  
+
   mNbFreeSeats = GetNumSeats();
-  if(mNbFreeSeats>8)
+  if ( mNbFreeSeats > 8 )
   {
-    Console->Print( RED, BLACK, "[ERROR] Vhc type %d has more than 8 seats (%d)", mInfo.mVehicleType, mNbFreeSeats);
+    Console->Print( RED, BLACK, "[ERROR] Vhc type %d has more than 8 seats (%d)", mInfo.mVehicleType, mNbFreeSeats );
     mNbFreeSeats = 8;
   }
-  for(int i = 0; i < mNbFreeSeats; ++i)
+  for ( int i = 0; i < mNbFreeSeats; ++i )
     mFreeSeatsFlags |= mSeatsFlags[i];
 
   //Temp
-  for(int i = 0; i<4; ++i)
+  for ( int i = 0; i < 4; ++i )
   {
     minmax[i][0] = 0xffff;
     minmax[i][1] = 0;
   }
 }
 
-void PSpawnedVehicle::SetLocation( const u32 nLocation )
+void PSpawnedVehicle::SetLocation( u32 nLocation )
 {
   mLocation = nLocation;
 }
 
-void PSpawnedVehicle::SetPosition( const PVhcCoordinates* const nVhcPos )
+void PSpawnedVehicle::SetPosition( PVhcCoordinates const* nVhcPos )
 {
   mCoords = *nVhcPos;
   // Temp
-  //if(gDevDebug)
+  if(gDevDebug)
   {
-    if(mCoords.mUD<minmax[0][0]) minmax[0][0] = mCoords.mUD;
-    if(mCoords.mUD>minmax[0][1]) minmax[0][1] = mCoords.mUD;
-    if(mCoords.mLR<minmax[1][0]) minmax[1][0] = mCoords.mLR;
-    if(mCoords.mLR>minmax[1][1]) minmax[1][1] = mCoords.mLR;
-    if(mCoords.mRoll<minmax[2][0]) minmax[2][0] = mCoords.mRoll;
-    if(mCoords.mRoll>minmax[2][1]) minmax[2][1] = mCoords.mRoll;
-    Console->Print( "Min/Max: UD:%d/%d(%d) LR:%d/%d(%d) Roll:%d/%d(%d)", minmax[0][0], minmax[0][1], mCoords.mUD, minmax[1][0], minmax[1][1], mCoords.mLR, minmax[2][0], minmax[2][1], mCoords.mRoll);
+    if ( mCoords.mUD < minmax[0][0] ) minmax[0][0] = mCoords.mUD;
+    if ( mCoords.mUD > minmax[0][1] ) minmax[0][1] = mCoords.mUD;
+    if ( mCoords.mLR < minmax[1][0] ) minmax[1][0] = mCoords.mLR;
+    if ( mCoords.mLR > minmax[1][1] ) minmax[1][1] = mCoords.mLR;
+    if ( mCoords.mRoll < minmax[2][0] ) minmax[2][0] = mCoords.mRoll;
+    if ( mCoords.mRoll > minmax[2][1] ) minmax[2][1] = mCoords.mRoll;
+    Console->Print( "%s Min/Max: UD:%d/%d(%d) LR:%d/%d(%d) Roll:%d/%d(%d)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), minmax[0][0], minmax[0][1], mCoords.mUD, minmax[1][0], minmax[1][1], mCoords.mLR, minmax[2][0], minmax[2][1], mCoords.mRoll );
   }
 }
 
@@ -184,9 +184,9 @@ int PSpawnedVehicle::GetNumSeats() const
   return mVhcDef->GetNumSeats();
 }
 
-bool PSpawnedVehicle::SetSeatUser( const u8 nSeatId, u32 nCharId )
+bool PSpawnedVehicle::SetSeatUser( u8 nSeatId, u32 nCharId )
 {
-  if(nSeatId < mVhcDef->GetNumSeats())
+  if ( nSeatId < mVhcDef->GetNumSeats() )
   {
     if ( ! mSeatUserId[nSeatId] )
     {
@@ -199,9 +199,9 @@ bool PSpawnedVehicle::SetSeatUser( const u8 nSeatId, u32 nCharId )
   return false;
 }
 
-bool PSpawnedVehicle::UnsetSeatUser( const u8 nSeatId, const u32 nCharId )
+bool PSpawnedVehicle::UnsetSeatUser( u8 nSeatId, u32 nCharId )
 {
-  if(nSeatId < mVhcDef->GetNumSeats())
+  if ( nSeatId < mVhcDef->GetNumSeats() )
   {
     if ( mSeatUserId[nSeatId] == nCharId )
     {
@@ -214,9 +214,9 @@ bool PSpawnedVehicle::UnsetSeatUser( const u8 nSeatId, const u32 nCharId )
   return false;
 }
 
-bool PSpawnedVehicle::IsCharInside(const u32 nCharId) const
+bool PSpawnedVehicle::IsCharInside( u32 nCharId ) const
 {
-  for(int i = 0; i < mVhcDef->GetNumSeats(); ++i)
+  for ( int i = 0; i < mVhcDef->GetNumSeats(); ++i )
   {
     if ( mSeatUserId[i] == nCharId )
       return true;
@@ -226,12 +226,12 @@ bool PSpawnedVehicle::IsCharInside(const u32 nCharId) const
 
 u8 PSpawnedVehicle::GetFirstFreeSeat() const
 {
-  for(int i = 0; i < mVhcDef->GetNumSeats(); ++i )
+  for ( int i = 0; i < mVhcDef->GetNumSeats(); ++i )
   {
     if ( ! mSeatUserId[i] )
       return i;
   }
-  
+
   return 255;
 }
 /*u8 PSpawnedVehicle::GetFreeSeats() const
@@ -244,7 +244,7 @@ u8 PSpawnedVehicle::GetFirstFreeSeat() const
     if ( ! mSeatUserId[i] )
       bitField |= 1;
   }
-  
+
   return bitField;
 }*/
 
@@ -265,7 +265,7 @@ bool PVehicles::RegisterSpawnedVehicle( PSpawnedVehicle* nSpawnedVehicle )
   return Result.second;
 }
 
-bool PVehicles::UnregisterSpawnedVehicle( const u32 nVehicleId )
+bool PVehicles::UnregisterSpawnedVehicle( u32 nVehicleId )
 {
   PSpawnedVhcMap::iterator it = mSpawnedVehicles.find( nVehicleId );
   if ( it != mSpawnedVehicles.end() )
@@ -279,11 +279,11 @@ bool PVehicles::UnregisterSpawnedVehicle( const u32 nVehicleId )
   }
 }
 
-//u32 PVehicles::CreateVehicle(const u32 nOwnerChar, const u8 mVehicleType) {}
-//bool PVehicles::RegisterVehicleOwner(const u32 nVehicleId, const u32 nOwnerChar) {}
-//bool PVehicles::DestroyVehicle(const u32 nVehicleId) {}
+//u32 PVehicles::CreateVehicle(u32 nOwnerChar, u8 mVehicleType) {}
+//bool PVehicles::RegisterVehicleOwner(u32 nVehicleId, u32 nOwnerChar) {}
+//bool PVehicles::DestroyVehicle(u32 nVehicleId) {}
 
-bool PVehicles::IsValidVehicle( const u32 nVehicleId, const bool nCheckOwner, const u32 nOwnerId ) const
+bool PVehicles::IsValidVehicle( u32 nVehicleId, bool nCheckOwner, u32 nOwnerId ) const
 {
   // Look in DB
   // tmp
@@ -293,7 +293,7 @@ bool PVehicles::IsValidVehicle( const u32 nVehicleId, const bool nCheckOwner, co
   return true; // tmp
 }
 
-PSpawnedVehicle* PVehicles::GetSpawnedVehicle( const u32 nVehicleId ) const
+PSpawnedVehicle* PVehicles::GetSpawnedVehicle( u32 nVehicleId ) const
 {
   PSpawnedVhcMap::const_iterator it = mSpawnedVehicles.find( nVehicleId );
   if ( it != mSpawnedVehicles.end() )
@@ -306,7 +306,7 @@ PSpawnedVehicle* PVehicles::GetSpawnedVehicle( const u32 nVehicleId ) const
   }
 }
 
-bool PVehicles::GetVehicleInfo( const u32 nVehicleId, PVehicleInformation* nInfo ) const
+bool PVehicles::GetVehicleInfo( u32 nVehicleId, PVehicleInformation* nInfo ) const
 {
   PSpawnedVehicle* tVhc = GetSpawnedVehicle( nVehicleId );
   if ( tVhc )
@@ -320,7 +320,7 @@ bool PVehicles::GetVehicleInfo( const u32 nVehicleId, PVehicleInformation* nInfo
   }
 }
 
-PVhcInfoList* PVehicles::GetCharVehicles( const u32 nCharId, const u16 nMaxCount, const u16 nStartIndex )
+PVhcInfoList* PVehicles::GetCharVehicles( u32 nCharId, u16 nMaxCount, u16 nStartIndex )
 {
   PVhcInfoList* Entries = new PVhcInfoList();
   PVehicleInformation* InfoEntry;
@@ -347,7 +347,7 @@ PVhcInfoList* PVehicles::GetCharVehicles( const u32 nCharId, const u16 nMaxCount
   return Entries;
 }
 
-PSpawnedVehicle* PVehicles::SpawnVehicle( const u32 nVehicleId, const u32 nLocation, const PVhcCoordinates* const nVhcPos )
+PSpawnedVehicle* PVehicles::SpawnVehicle( u32 nVehicleId, u32 nLocation, PVhcCoordinates const* nVhcPos )
 {
   PSpawnedVehicle* newVhc = NULL;
   PWorld* cWorld;
@@ -366,7 +366,8 @@ PSpawnedVehicle* PVehicles::SpawnVehicle( const u32 nVehicleId, const u32 nLocat
         {
           Console->Print( RED, BLACK, "[Error] PVehicles::SpawnVehicle : Could not register spawned vhc" );
         }
-        Console->Print( "Spawned vhc %d (local 0x%04x) type %d (requested: %d)", newVhc->GetVehicleId(), newVhc->GetLocalId(), newVhc->GetInformation().GetVehicleType(), nVhcInfo.GetVehicleType() );
+        if( gDevDebug )
+          Console->Print( "%d Spawned vhc %d (local 0x%04x) type %d (requested: %d)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), newVhc->GetVehicleId(), newVhc->GetLocalId(), newVhc->GetInformation().GetVehicleType(), nVhcInfo.GetVehicleType() );
       }
       else
         Console->Print( RED, BLACK, "[Error] PVehicles::SpawnVehicle : Could not create vhc" );
@@ -378,7 +379,7 @@ PSpawnedVehicle* PVehicles::SpawnVehicle( const u32 nVehicleId, const u32 nLocat
   return newVhc;
 }
 
-bool PVehicles::UnspawnVehicle( const u32 nVehicleId )
+bool PVehicles::UnspawnVehicle( u32 nVehicleId )
 {
   PWorld* cWorld;
   bool Result = false;
@@ -423,7 +424,7 @@ PSpawnedVehicles::~PSpawnedVehicles()
 
 }
 
-PSpawnedVehicle* PSpawnedVehicles::SpawnVehicle( const PVehicleInformation* const nVhcInfo, const PVhcCoordinates* const nVhcPos )
+PSpawnedVehicle* PSpawnedVehicles::SpawnVehicle( PVehicleInformation const* nVhcInfo, PVhcCoordinates const* nVhcPos )
 {
   PSpawnedVehicle* newVhc = NULL;
   u32 nSize;
@@ -455,7 +456,7 @@ PSpawnedVehicle* PSpawnedVehicles::SpawnVehicle( const PVehicleInformation* cons
   return newVhc;
 }
 
-PSpawnedVehicle* PSpawnedVehicles::GetVehicle( const u32 nLocalId )
+PSpawnedVehicle* PSpawnedVehicles::GetVehicle( u32 nLocalId )
 {
   if (( nLocalId <= mVhcBaseLocalId ) && ( nLocalId > ( mVhcBaseLocalId - mSpawnedVehicles.size() ) ) )
   {
@@ -467,20 +468,20 @@ PSpawnedVehicle* PSpawnedVehicles::GetVehicle( const u32 nLocalId )
   }
 }
 
-PSpawnedVehicle* PSpawnedVehicles::GetVehicleByGlobalId(const u32 nVehicleId )
+PSpawnedVehicle* PSpawnedVehicles::GetVehicleByGlobalId( u32 nVehicleId ) const
 {
-  for ( PSpawnedVhcVector::iterator it = mSpawnedVehicles.begin(); it != mSpawnedVehicles.end(); it++ )
+  for ( PSpawnedVhcVector::const_iterator it = mSpawnedVehicles.begin(); it != mSpawnedVehicles.end(); it++ )
   {
-    if( (*it)->GetVehicleId() == nVehicleId )
+    if (( *it )->GetVehicleId() == nVehicleId )
     {
-      return (*it);
+      return ( *it );
     }
   }
 
   return NULL;
 }
 
-bool PSpawnedVehicles::UnspawnVehicle( const u32 nLocalId )
+bool PSpawnedVehicles::UnspawnVehicle( u32 nLocalId )
 {
   u16 Index;
   PSpawnedVehicle* tVhc;

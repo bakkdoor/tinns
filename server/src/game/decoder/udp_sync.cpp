@@ -80,20 +80,22 @@ bool PUdpSync0::DoAction()
 
 void PUdpSync0::GetToSync1( PMsgDecodeData* nDecodeData )
 {
-  PClient* curClient = nDecodeData->mClient;
-  u32 loc = curClient->GetChar()->GetLocation();
+  PClient* nClient = nDecodeData->mClient;
+  nClient->SetZoning();
+
+  u32 loc = nClient->GetChar()->GetLocation();
 //Console->Print("inside HandleGame : Location: %d", loc);
-  SendZone( curClient, loc );
+  SendZone( nClient, loc );
 
   // "aliverep" ?
-  PMessage* tmpMsg = MsgBuilder->BuildAliveRepMsg( curClient );
-  curClient->SendUDPMessage( tmpMsg );
+  PMessage* tmpMsg = MsgBuilder->BuildAliveRepMsg( nClient );
+  nClient->SendUDPMessage( tmpMsg );
 
   nDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   //State->UDP.mSynced=true;
   nDecodeData->mClientState->UDP.mState = PGameState::UDP::GUS_SYNC1;// To change later
 //Console->Print("Initialize: UDP_ID");
-  curClient->SetUDP_ID( 0 );
+  nClient->SetUDP_ID( 0 );
 }
 
 
@@ -157,9 +159,9 @@ PUdpSync2::PUdpSync2( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeDa
 PUdpMsgAnalyser* PUdpSync2::Analyse()
 {
   mDecodeData->mName << "=Sync2";
-  
+
   mClientTime = mDecodeData->mMessage->U32Data( mDecodeData->Sub0x13Start + 2 );
-  
+
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
@@ -173,44 +175,6 @@ bool PUdpSync2::DoAction()
     // Baseline message chunking & sending
     PMessage* BaselineMsg = MsgBuilder->BuildBaselineMsg( nClient );
     nClient->FragmentAndSendUDPMessage( BaselineMsg, 0x19 );
-// Old version removed
-    /*    PMessage* ChunkBuffer;
-        PMessage* ChunkMsg;
-        const u16 ChunkSize = 220;
-        u16 ChunksNum = (BaselineMsg->GetSize() + ChunkSize - 1)/ChunkSize;
-
-        for (u16 ChunkID = 0; ChunkID < ChunksNum; ChunkID++)
-        {
-          ChunkBuffer = BaselineMsg->GetChunk(0, ChunkSize, ChunkID);
-          if (ChunkBuffer == NULL)
-          {
-            Console->Print(RED, BLACK, "Baseline: Bad chunk number calculation: %d for size %d", ChunksNum, BaselineMsg->GetSize());
-            break;
-          }
-
-          ChunkMsg = new PMessage(ChunkSize + 15);
-          //Client->IncreaseUDP_ID();  // lol? Below is exact the same .... But ok, should not matter now
-          nClient->SetUDP_ID(nClient->GetUDP_ID()+1);
-
-          *ChunkMsg << (u8)0x13;
-          *ChunkMsg << (u16)nClient->GetUDP_ID();
-          *ChunkMsg << (u16)nClient->GetSessionID();
-          *ChunkMsg << (u8) (9 + ChunkBuffer->GetSize());
-          *ChunkMsg << (u8)0x03;
-          *ChunkMsg << (u16)nClient->GetUDP_ID();
-          *ChunkMsg << (u8)0x07; // ???
-          *ChunkMsg << (u16)ChunkID;
-          *ChunkMsg << (u16)ChunksNum;
-          *ChunkMsg << (u8)0x19; // ? Type ?
-          *ChunkMsg << *ChunkBuffer;
-
-    //Console->Print(GREEN, BLACK, "Baseline: ----------- chunk %d/%d", ChunkID+1, ChunksNum);
-    //ChunkMsg->Dump();
-          delete ChunkBuffer;
-          nClient->SendUDPMessage(ChunkMsg);
-        }
-        delete BaselineMsg;
-    */
 
     // Sending "CharInfo3/Zoning2Msg" message
     // Removed because same as Zoning2Msg
@@ -218,6 +182,19 @@ bool PUdpSync2::DoAction()
     nClient->SendUDPMessage( Zoning2Msg );
 
     mDecodeData->mClientState->UDP.mState = PGameState::UDP::GUS_SYNC3;
+    nClient->SetZoning( false );
+
+    // If char is sitting (vhz zoning), send it now to client
+    u32 nSeatableObjectId;
+    u8 nSeatId;
+    if( nClient->GetChar()->GetSeatInUse(&nSeatableObjectId, &nSeatId) )
+    {
+      if( gDevDebug )
+        Console->Print( YELLOW, BLACK, "[DEBUG] PUdpSync2::DoAction : Char %d sitting on vhc id %d, seat %d", nClient->GetLocalID(), nSeatableObjectId, nSeatId  );
+      PMessage* SittingMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, nSeatableObjectId, nSeatId );
+      nClient->FillInUDP_ID(SittingMsg);
+      nClient->SendUDPMessage( SittingMsg );
+    }
 
     //Temp: send Subway to client if in subway
     if ( nClient->GetChar()->GetLocation() == PWorlds::mNcSubwayWorldId )
@@ -229,7 +206,6 @@ bool PUdpSync2::DoAction()
     }
 
     // Send spawned vehicles
-
     PWorld* CurrentWorld = Worlds->GetWorld( nClient->GetChar()->GetLocation() );
     if ( CurrentWorld )
     {
@@ -241,7 +217,8 @@ bool PUdpSync2::DoAction()
       {
         VhcEntry = VhcList->front();
         VhcList->pop();
-        Console->Print( YELLOW, BLACK, "[DEBUG] Send info for vhc id %d", VhcEntry->GetLocalId() );
+        if( gDevDebug )
+          Console->Print( YELLOW, BLACK, "[DEBUG] PUdpSync2::DoAction : Send info for vhc id %d", VhcEntry->GetLocalId() );
         VhcMsg = MsgBuilder->BuildVhcPosUpdateMsg( VhcEntry );
         nClient->FillInUDP_ID( VhcMsg );
         nClient->SendUDPMessage( VhcMsg );
@@ -249,7 +226,6 @@ bool PUdpSync2::DoAction()
         nClient->SendUDPMessage( VhcMsg );
       }
     }
-
 
     // Dispatching info to & from other chars in zone
     int nbSent;

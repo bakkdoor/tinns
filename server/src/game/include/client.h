@@ -90,7 +90,7 @@ class PClient
 
     u32 mAccountID;
     int mAccountLevel;
-    int mIndex;
+    u32 mIndex;
     u32 mCharID;
 
 //  u16 mUDP_ID;
@@ -116,6 +116,7 @@ class PClient
     u16 mTargetZ;
     //*******
     bool mAcceptNPCUpdates;
+    bool mZoning;
 
   protected :
   public :
@@ -127,10 +128,12 @@ class PClient
 
     inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
     inline void SetAcceptNPCUpdates( bool nVal ) { mAcceptNPCUpdates = nVal; }
+    inline bool IsZoning() { return mZoning; }
+    inline void SetZoning( bool nVal = true ) { mZoning = nVal; }
 
-    inline int GetIndex() const { return mIndex; } // better use GetID()
-    inline int GetID() const { return mIndex; } // for better coherency with other classes
-    inline int GetLocalID() const { return mIndex + 1; }
+    inline u32 GetIndex() const { return mIndex; } // better use GetID()
+    inline u32 GetID() const { return mIndex; } // for better coherency with other classes
+    inline u32 GetLocalID() const { return mIndex + 1; }
     inline u32 GetCharID() const { return mCharID; }
     PChar* GetChar() const;
     bool ChangeCharLocation( u32 nLocation, bool DoForce = false );

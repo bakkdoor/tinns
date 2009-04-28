@@ -87,11 +87,11 @@ bool PUdpReceiveDB::DoAction()
 
   if(gDevDebug)
   {
-    Console->Print( "ReceiveDB request from client" );
-    Console->Print( "Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", mTerminalSessionId, mUnknown1, mUnknown2 );
-    Console->Print( "Command: '%s'", mCommandName.c_str() );
+    Console->Print( "%s ReceiveDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
+    Console->Print( "%s Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId, mUnknown1, mUnknown2 );
+    Console->Print( "%s Command: '%s'", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mCommandName.c_str() );
     for ( u8 i = 0; i < mOptionsCount; ++i )
-      Console->Print( "Option %d: '%s'", i, mOptions[i].c_str() );
+      Console->Print( "%s Option %d: '%s'", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), i, mOptions[i].c_str() );
   }
 
   if ( mCommandName == "VehicleListing" )
@@ -105,9 +105,9 @@ bool PUdpReceiveDB::DoAction()
 
   if ( !Result )
   {
-    Console->Print( RED, BLACK, "Error: PUdpReceiveDB - Error or unknown command %s", mCommandName.c_str() );
+    Console->Print( "%s PUdpReceiveDB - Error or unknown command %s", Console->ColorText( RED, BLACK, "[WARNING]" ), mCommandName.c_str() );
     for ( u8 i = 0; i < mOptionsCount; ++i )
-      Console->Print( "Option %d: '%s'", i, mOptions[i].c_str() );
+      Console->Print( "%s Option %d: '%s'", Console->ColorText( RED, BLACK, "[NOTICE]" ), i, mOptions[i].c_str() );
   }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -212,7 +212,7 @@ bool PUdpReceiveDB::ActionVehicleControl()
       Answer[2] = Ssprintf( "%u", EntryInfo.GetHealth() ); //vhcHealth%
       Answer[3] = Ssprintf( "%u", ( 255 - EntryInfo.GetHealth() ) * 1000 * EntryInfo.GetVehicleType() / 255 ); //Repair cost
       if(gDevDebug)
-        Console->Print( "Entry: %s/%s/%s/%s", Answer[0].c_str(), Answer[1].c_str(), Answer[2].c_str(), Answer[3].c_str() );
+        Console->Print( "%s Entry: %s/%s/%s/%s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), Answer[0].c_str(), Answer[1].c_str(), Answer[2].c_str(), Answer[3].c_str() );
       tmpMsg = MsgBuilder->BuildDBAnswerMsg( tClient, &mCommandName, Answer, 1, 4 );
       tClient->SendUDPMessage( tmpMsg );
       delete [] Answer;
@@ -253,7 +253,8 @@ PUdpMsgAnalyser* PUdpUpdateDB::Analyse()
 
 bool PUdpUpdateDB::DoAction()
 {
-  Console->Print( "UpdateDB request from client" );
+  if( gDevDebug )
+    Console->Print( "%s UpdateDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }
@@ -315,11 +316,15 @@ bool PUdpTryAccessDB::DoAction()
   // Better way to get the lenght
   tCmdLen = strlen( tArea ) + 1; // Dont forget the '\0' char at string-end
 
-  tMessage->Dump();
-  Console->Print( "tMsglen %d tCmdLen %d tCmdNr %d area %s", tMsgLen, tCmdLen, tCmdNr, tArea );
+  if( gDevDebug )
+  {
+    tMessage->Dump();
+    Console->Print( "%s tMsglen %d tCmdLen %d tCmdNr %d area %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tMsgLen, tCmdLen, tCmdNr, tArea );
+  }
   if ( tMsgLen > ( tCmdLen + 23 ) ) // Packetlenght is greater than the message with packetdata, get option1
   {
-    Console->Print( "Got First option!" );
+    if( gDevDebug )
+      Console->Print( "%s Got First option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     // This line assembles like this:
     // - tSubMsgStart points to the lenght byte of the packet (u8)
     // - 23 is the offset to add to reach the first string start
@@ -331,11 +336,14 @@ bool PUdpTryAccessDB::DoAction()
     tOption1[99] = '\0';
     tOpt1Len = strlen( tOption1 ) + 1; // Dont forget the '\0' char at string-end
 
-    Console->Print( "tOpt1Len %d tOption1 %s", tOpt1Len, tOption1 );
+    
+    if( gDevDebug )
+      Console->Print( "%s tOpt1Len %d tOption1 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt1Len, tOption1 );
 
     if ( tMsgLen > ( tCmdLen + 23 + + 2 + tOpt1Len ) ) // Check if the packet is still longer than the data we grabbed yet
     {
-      Console->Print( "Got second option!" );
+      if( gDevDebug )
+        Console->Print( "%s Got second option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       // This line assembles like this:
       // - tSubMsgStart points to the lenght byte of the packet (u8)
       // - 24 is the offset to add to reach the first string start
@@ -348,11 +356,13 @@ bool PUdpTryAccessDB::DoAction()
       tOption2[99] = '\0';
       tOpt2Len = strlen( tOption2 ) + 1; // Dont forget the '\0' char at string-end
 
-      Console->Print( "tOpt2Len %d tOption2 %s", tOpt2Len, tOption2 );
+      if( gDevDebug )
+        Console->Print( "%s tOpt2Len %d tOption2 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt2Len, tOption2 );
 
       if ( tMsgLen > ( tCmdLen + 23 + 2 + tOpt1Len + 2 + tOpt2Len ) ) // Check if the packet is still longer than the data we grabbed yet
       {
-        Console->Print( "Got third option!" );
+        if( gDevDebug )
+          Console->Print( "%s Got third option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
         // This line assembles like this:
         // - tSubMsgStart points to the lenght byte of the packet (u8)
         // - 24 is the offset to add to reach the first string start
@@ -365,17 +375,19 @@ bool PUdpTryAccessDB::DoAction()
         tOption3[99] = '\0';
         tOpt3Len = strlen( tOption3 ) + 1; // Dont forget the '\0' char at string-end
 
-        Console->Print( "tOpt3Len %d tOption3 %s", tOpt3Len, tOption3 );
+        if( gDevDebug )
+          Console->Print( "%s tOpt3Len %d tOption3 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt3Len, tOption3 );
 
         if ( tMsgLen > ( tCmdLen + 23 + 2 + tOpt1Len + 2 + tOpt2Len + 2 + tOpt3Len ) ) // Check if the packet is STILL longer than the data we grabbed yet
         {
-          Console->Print( "%s TryAccess command with more than 3 options received", Console->ColorText( RED, BLACK, "[Warning]" ) );
+          Console->Print( "%s TryAccess command with more than 3 options received", Console->ColorText( RED, BLACK, "[WARNING]" ) );
         }
       }
     }
   }
 
-  if ( gDevDebug ) Console->Print( "TryAccess request to area %s. Options: 1[%s] 2[%s] 3[%s]", tArea, tOption1, tOption2, tOption3 );
+  if ( gDevDebug )
+    Console->Print( "%s TryAccess request to area %s. Options: 1[%s] 2[%s] 3[%s]", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tArea, tOption1, tOption2, tOption3 );
 
   // Let the terminal class handle the request
   Terminal->CheckAccess( tClient, tArea, tCmdNr, tOption1, tOption2, tOption3 );
@@ -439,12 +451,12 @@ bool PUdpQueryDB::DoAction()
 
   if(gDevDebug)
   {
-    Console->Print( "QueryDB request from client" );
-    Console->Print( "Open Terminal - Terminal session %04x (?)", mTerminalSessionId );
-    Console->Print( "DBCommand: '%s'", mDBCommandName.c_str() );
-    Console->Print( "Command: '%s'", mCommandName.c_str() );
+    Console->Print( "%s QueryDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
+    Console->Print( "%s Open Terminal - Terminal session %04x (?)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId );
+    Console->Print( "%s DBCommand: '%s'", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDBCommandName.c_str() );
+    Console->Print( "%s Command: '%s'", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mCommandName.c_str() );
     for ( u8 i = 0; i < mOptionsCount; ++i )
-      Console->Print( "Option %d: '%s'", i, mOptions[i].c_str() );
+      Console->Print( "%s Option %d: '%s'", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), i, mOptions[i].c_str() );
   }
 
   if ( mDBCommandName == "SPAWNVEHICLE" )
@@ -462,9 +474,9 @@ bool PUdpQueryDB::DoAction()
 
   if ( !Result )
   {
-    Console->Print( RED, BLACK, "Error: PUdpQueryDB - Error or unknown command %s", mDBCommandName.c_str() );
+    Console->Print( "%s PUdpQueryDB - Error or unknown command %s", Console->ColorText( RED, BLACK, "[WARNING]" ), mDBCommandName.c_str() );
     for ( u8 i = 0; i < mOptionsCount; ++i )
-      Console->Print( "Option %d: '%s'", i, mOptions[i].c_str() );
+      Console->Print( "%s Option %d: '%s'", Console->ColorText( RED, BLACK, "[NOTICE]" ), i, mOptions[i].c_str() );
   }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
@@ -607,7 +619,8 @@ PUdpMsgAnalyser* PUdpTeminal0x1f::Analyse()
 
 bool PUdpTeminal0x1f::DoAction()
 {
-  Console->Print( "Open Terminal - Terminal session %04x (?)", mTerminalSessionId );
+  if( gDevDebug )
+    Console->Print( "%s Open Terminal - Terminal session %04x (?)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId );
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

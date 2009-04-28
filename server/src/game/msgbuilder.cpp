@@ -380,34 +380,6 @@ PMessage* PMsgBuilder::BuildCharExitSeatMsg( PClient* nClient )
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharJumpingMsg( PClient* nClient )
-{
-  /*PMessage* tmpMsg = new PMessage(22);
-  PChar* nChar = nClient->GetChar();
-
-  *tmpMsg << (u8)0x13;
-  *tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
-  *tmpMsg << (u16)0x0000; // nClient->GetSessionID()placeholder
-  *tmpMsg << (u8)0x00; // Message length placeholder;
-  *tmpMsg << (u8)0x03;
-  *tmpMsg << (u16)0x0000; // nClient->GetUDP_ID() placeholder
-  *tmpMsg << (u8)0x1f;
-  *tmpMsg << (u16)nClient->GetLocalID();
-  *tmpMsg << (u8)0x22;
-  *tmpMsg << (u16)(nChar->Coords).mY; // TODO: set the wakeup position in front of
-  *tmpMsg << (u16)(nChar->Coords).mZ; // the chair instead of last char pos.
-  *tmpMsg << (u16)(nChar->Coords).mX;
-  *tmpMsg << (u8)(nChar->Coords).mUD;
-  *tmpMsg << (u8)(nChar->Coords).mLR;
-  *tmpMsg << (u8)(nChar->Coords).mAct;
-
-  (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
-
-  return tmpMsg;*/
-  nClient = NULL;
-  return NULL;
-}
-
 PMessage* PMsgBuilder::BuildPacket0Msg( PClient* nClient )
 {
   PMessage* tmpMsg = new PMessage( 70 );
@@ -839,31 +811,9 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
   ContentList = BuildContainerContentList( nChar->GetInventory()->GetContainer( INV_LOC_GOGO ), INV_LOC_GOGO );
   SectionMsg << *ContentList;
-//ContentList->Dump();
+
   delete ContentList;
 
-  /*
-      //SectionMsg << (u8)0x00;
-
-      SectionMsg << (u8)0x02; // Gogo items nb  // section content at offset 3
-
-      SectionMsg << (u16)0x0b; // data size of item
-      SectionMsg << (u8)0x00; // pos (X) in gogo
-      SectionMsg << (u16)0x0188; // item id (Beggar Electroshocker)
-      SectionMsg << (u8)0x02;  // Flags
-      SectionMsg << (u8)0x06;
-      SectionMsg << (u8)0x9f;
-      SectionMsg << (u8)0xff;
-      SectionMsg << (u8)0xf0;
-      SectionMsg << (u8)0xff;
-      SectionMsg << (u8)0x8f;
-      SectionMsg << (u8)0xff;
-
-      SectionMsg << (u16)0x04; // data size of item
-      SectionMsg << (u8)0x00; // pos (X) in gogo
-      SectionMsg << (u16)0x0c6d; // item id (bullets 8mm explosive)
-      SectionMsg << (u8)0x00;  // Flags
-  */
   *BaselineMsg << ( u16 )SectionMsg.GetSize();
   *BaselineMsg << SectionMsg;
   SectionMsg.Clear();
@@ -2522,6 +2472,56 @@ PMessage* PMsgBuilder::BuildVhcInfoMsg( PClient* nClient, PSpawnedVehicle* nVehi
 
   return tmpMsg;
 }
+
+/*PMessage* PMsgBuilder::BuildVhcInfoMsg( PClient* nClient, PSpawnedVehicle* nVehicle )
+{
+  PMessage* tmpMsg = new PMessage( 32 );
+  PVhcCoordinates VhcPos = nVehicle->GetPosition();
+  PVehicleInformation VhcInfo = nVehicle->GetInformation();
+
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+
+  *tmpMsg << ( u8 )0x00; // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x28;
+  *tmpMsg << ( u16 )0x0031;
+  *tmpMsg << ( u32 )nVehicle->GetLocalId();
+  *tmpMsg << ( u8 )0x02;
+  *tmpMsg << ( u16 )( VhcPos.GetY() + 768 );
+  *tmpMsg << ( u16 )( VhcPos.GetZ() + 768 );
+  *tmpMsg << ( u16 )( VhcPos.GetX() + 768 );
+  *tmpMsg << ( u8 )VhcPos.GetUD();
+  *tmpMsg << ( u16 )VhcPos.GetLR();
+  *tmpMsg << ( u16 )VhcPos.GetRoll();
+  *tmpMsg << ( u8 )VhcInfo.GetVehicleType();
+  *tmpMsg << ( u32 )0x00000000;
+  *tmpMsg << ( u32 )0x00000000;
+  *tmpMsg << ( u32 )0x00000000;
+  *tmpMsg << ( u16 )0x0000;
+  u32 tCharId;
+  for(u8 i = 0; i < 8; ++i)
+  {
+    if( (tCharId = nVehicle->GetSeatUser(i)) )
+    {
+      *tmpMsg << tCharId;
+    }
+    else
+    {
+      *tmpMsg << ( u32 )0xffffffff;
+    }
+    *tmpMsg << i;
+    *tmpMsg << ( u16 )0x0000;
+  }
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}*/
 /* ????
 13 f7 00 49 bf
 5d
@@ -2532,9 +2532,9 @@ c9 03 00 00 = Object ID
 47 ff
 00 cd
 c3 c3
-d7 d7
-ec 00
-00
+d7 
+d7 ec
+00 00
 29
 2b 65 35 8b 8c 6c 7f 80 96
 5f 26 00 80 00

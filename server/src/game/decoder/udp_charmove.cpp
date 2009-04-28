@@ -37,7 +37,7 @@
 #include "vehicle.h"
 #include "subway.h"
 
-#define JUMPHEIGHT 80
+#define JUMPHEIGHT 160
 
 /**** PUdpCharPosUpdate ****/
 
@@ -77,7 +77,7 @@ PUdpMsgAnalyser* PUdpCharPosUpdate::Analyse()
       mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 //mDecodeData->mTraceKnownMsg = true;
 //mDecodeData->mTraceDump = true;
-      if ( gDevDebug ) Console->Print( YELLOW, BLACK, "[DEBUG] Localid %d sitting on object %d (0x%08x) seat %d", mDecodeData->mClient->GetLocalID(), mChairItemID, mChairItemID, mChairItemSeat );
+      if ( gDevDebug ) Console->Print( "%s Localid %d sitting on object %d (0x%08x) seat %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDecodeData->mClient->GetLocalID(), mChairItemID, mChairItemID, mChairItemSeat );
     }
   }
   else
@@ -127,6 +127,21 @@ bool PUdpCharPosUpdate::DoAction()
   PChar* nChar = nClient->GetChar();
   PMessage* tmpMsg;
 
+  if ( ! (mInfoBitfield & 0x80) )
+  {
+    u32 nSeatableObjectId;
+    u8 nSeatId;
+    if( nChar->GetSeatInUse(&nSeatableObjectId, &nSeatId) == seat_vhc )
+    {
+      tmpMsg = MsgBuilder->BuildCharUseSeatMsg( nClient, nSeatableObjectId, nSeatId );
+      nClient->FillInUDP_ID(tmpMsg);
+      nClient->SendUDPMessage( tmpMsg );
+      mChairItemID = nSeatableObjectId;
+      mChairItemSeat = nSeatId;
+      mInfoBitfield = 0x80;
+    }
+  }
+  
   if ( mInfoBitfield & 0x80 ) // Sitting on chair
   {
     //tmpMsg = MsgBuilder->BuildCharSittingMsg(nClient, mChairItemID);
@@ -200,7 +215,7 @@ bool PUdpCharPosUpdate::DoAction()
       mInfoBitfield |= 0x02; // Update Z and Act only
       if(nChar->Coords.mJumpingState == 1)
       {
-        if ( gDevDebug ) Console->Print( YELLOW, BLACK, "[DEBUG] Send moving jump");
+        if ( gDevDebug ) Console->Print( "%s Send moving jump", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
         (nChar->Coords.mZ) += JUMPHEIGHT;
         nChar->Coords.mJumpingState = 2; // Jump done
       }
@@ -223,15 +238,26 @@ bool PUdpCharPosUpdate::DoAction()
       f[0] = nChar->Coords.mY - 32000;
       f[1] = nChar->Coords.mZ - 32000;
       f[2] = nChar->Coords.mX - 32000;
-//      memcpy(h, f, 3 * sizeof(u32));
-//      snprintf(DbgMessage, 128, "position y:%0.1f (0x%08x) z:%0.1f (0x%08x) x:%0.1f (0x%08x)", f[0], h[0], f[1], h[1], f[2], h[2]);
       snprintf( DbgMessage, 128, "position y:%0.1f z:%0.1f x:%0.1f lr:%d (Act=%x BF=%x)", f[0], f[1], f[2], nChar->Coords.mLR, nChar->Coords.mAct , mInfoBitfield );
       Chat->send( nClient, CHAT_GM, "Debug", DbgMessage );
     }
-  }
-//if(IsRealMove)
-//Console->Print("Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
+    /*{
+      u16 p[3];
+      p[0] = nChar->Coords.mY;
+      p[1] = nChar->Coords.mZ;
+      p[2] = nChar->Coords.mX;
+      for(int i = 0; i<3; i++)
+      {
+        if(p[i]< nChar->Coords.minPos[i])
+          nChar->Coords.minPos[i] = p[i];
+        if(p[i]> nChar->Coords.maxPos[i])
+          nChar->Coords.maxPos[i] = p[i];
+      }
+    }*/
 
+  if(gDevDebug && IsRealMove)
+    Console->Print("%s Char %d position : X(%d) Y(%d) Z(%d) U/D(%d) L/R(%d) Action(%02x)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDecodeData->mClient->GetID(), nChar->Coords.mX, nChar->Coords.mY, nChar->Coords.mZ, nChar->Coords.mUD, nChar->Coords.mLR, nChar->Coords.mAct);
+  }
   if ( mInfoBitfield >= 0x7f )
   {
     tmpMsg = MsgBuilder->BuildCharHealthUpdateMsg( nClient );
@@ -272,7 +298,7 @@ bool PUdpCharExitChair::DoLeaveChair( PChar* nChar, PClient* nClient, PSpawnedVe
     nClient = ClientManager->getClientByChar( nChar->GetID() );
   if ( ! nClient )
   {
-    Console->Print(RED, BLACK, "[Error] PUdpCharExitChair::DoLeaveChair called without PClient* and client not available when searching by char." );
+    Console->Print("%s PUdpCharExitChair::DoLeaveChair called without PClient* and client not available when searching by char.", Console->ColorText( RED, BLACK, "[ERROR]" ) );
     return false;
   }
 
@@ -328,7 +354,7 @@ bool PUdpCharExitChair::DoLeaveChair( PChar* nChar, PClient* nClient, PSpawnedVe
     else if ( cSeatType == seat_vhc )
     {
       PSpawnedVehicle* tVhc = tWorld->GetSpawnedVehicules()->GetVehicle( cSeatObjectId );
-      if ( tVhc && (!nVhc || (tVhc == nVhc)) )
+      if ( tVhc && (!nVhc || (tVhc == nVhc) || nForce) )
       {
         PVhcCoordinates tCoords = tVhc->GetPosition();
         tVhc->UnsetSeatUser( cSeatId, nChar->GetID() );
@@ -339,7 +365,7 @@ bool PUdpCharExitChair::DoLeaveChair( PChar* nChar, PClient* nClient, PSpawnedVe
     }
     else
     {
-      Console->Print( RED, BLACK, "Error: PUdpCharExitChair::DoLeaveChair : Invalid seat type %d", cSeatType );
+      Console->Print( "%s PUdpCharExitChair::DoLeaveChair : Invalid seat type %d", Console->ColorText( RED, BLACK, "[ERROR]" ), cSeatType );
     }
 
     if ( ReadyToExit )
@@ -349,7 +375,7 @@ bool PUdpCharExitChair::DoLeaveChair( PChar* nChar, PClient* nClient, PSpawnedVe
       tmpMsg = MsgBuilder->BuildCharExitSeatMsg( nClient );
       ClientManager->UDPBroadcast( tmpMsg, nClient );
 
-      if ( gDevDebug ) Console->Print( "Localchar %d get up from chair %d.", nClient->GetLocalID(), cSeatObjectId );
+      if ( gDevDebug ) Console->Print( "%s Localchar %d get up from chair %d.", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), nClient->GetLocalID(), cSeatObjectId );
       return true;
     }
   }
@@ -380,11 +406,11 @@ bool PUdpCharJump::DoAction()
   if( nChar->Coords.mAct & 0xd8 ) // if moving, don't jump now and wait next update
   {
     nChar->Coords.mJumpingState = 1; // Jump pending. Do at next pos update
-    if ( gDevDebug ) Console->Print( YELLOW, BLACK, "[DEBUG] Prepare moving jump");
+    if ( gDevDebug ) Console->Print( "%s Prepare moving jump", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
   }
   else // If not moving, jump now
   {
-    if ( gDevDebug ) Console->Print( YELLOW, BLACK, "[DEBUG] Send static jump");
+    if ( gDevDebug ) Console->Print( "%s Send static jump", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     u8 mInfoBitfield = 0x22; // Update Z and Act only
     u16 nSaveZ = nChar->Coords.mZ;
     (nChar->Coords.mZ) += JUMPHEIGHT;
@@ -426,7 +452,8 @@ bool PUdpCharTargeting::DoAction()
 
   tChar->SetLookingAt( CharID );
 
-  if ( gDevDebug ) Console->Print( "Char %d targeting char %d. // %d %d %d", mDecodeData->mClient->GetID(), CharID, strangeval1, strangeval2, strangeval3 );
+  if ( gDevDebug )
+    Console->Print( "%s Char %d targeting char %d. // %d %d %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDecodeData->mClient->GetID(), CharID, strangeval1, strangeval2, strangeval3 );
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
 }

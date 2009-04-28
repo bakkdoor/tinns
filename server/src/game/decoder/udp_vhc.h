@@ -33,6 +33,9 @@
 #ifndef UDPVHC_H
 #define UDPVHC_H
 
+class PSpawnedVehicle;
+class PVhcCoordinates;
+
 class PUdpVhcMove : public PUdpMsgAnalyser
 {
   private:
@@ -52,6 +55,7 @@ class PUdpVhcMove : public PUdpMsgAnalyser
     //~PUdpVhcMove();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
+    bool DoVhcZoning( PSpawnedVehicle* currVhc, u32 currWorldId, u32 destWorldId, PVhcCoordinates* destPos );
 };
 
 class PUdpVhcUse : public PUdpMsgAnalyser

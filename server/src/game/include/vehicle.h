@@ -44,8 +44,8 @@ class PVhcCoordinates
     u16 mY;     // Y-Position in world
     u16 mZ;     // Z-Position in world
     u16 mX;     // X-Position in world
-    u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a)
-    u16 mLR;     //
+    u8 mUD;     // Up - Mid - Down (d6 - 80 - 2a) // Pitch
+    u16 mLR;     // Yaw
     u16 mRoll;
     u16 mUnknown; // Usually 0x0001
     u8 mFF; // Usually 0xff ...
@@ -88,21 +88,20 @@ class PVehicleInformation
     u8 mStatus; //vhcStatus 0:parking, 1:in_service, 2:destroyed
 
   public:
-    inline PVehicleInformation( u32 nVehicleId = 0, u32 nOwnerCharId = 0, u32 nHealth = 0, u8 nVehicleType = 0, u8 nStatus = 0 )
-    {
-      mVehicleId = nVehicleId;
-      mOwnerCharId = nOwnerCharId;
-      mHealth = nHealth;
-      mVehicleType = nVehicleType;
-      mStatus = nStatus;
-    }
+    inline PVehicleInformation( u32 nVehicleId = 0, u32 nOwnerCharId = 0, u32 nHealth = 0, u8 nVehicleType = 0, u8 nStatus = 0 ) :
+        mVehicleId( nVehicleId ),
+        mOwnerCharId( nOwnerCharId ),
+        mHealth( nHealth ),
+        mVehicleType( nVehicleType ),
+        mStatus( nStatus )
+    { }
 
     inline u32 GetVehicleId() const { return mVehicleId; }
     inline u32 GetOwnerCharId() const { return mOwnerCharId; }
     inline u32 GetHealth() const { return mHealth; } // or f32 ???
     inline u8 GetVehicleType() const { return mVehicleType; }
     inline u8 GetStatus() const { return mStatus; }
-    bool SetStatus( const u8 nStatus );
+    bool SetStatus( u8 nStatus );
 
     bool Load( u32 nVehicleId );
     bool Save();
@@ -126,30 +125,30 @@ class PSpawnedVehicle
     u8 mNbFreeSeats;
 
     u16 minmax[4][2]; //Temp
-    
+
   public:
-    PSpawnedVehicle( const u32 nLocalId, const PVehicleInformation* const nVhcInfo, const u32 nLocation, const PVhcCoordinates* const nVhcPos );
+    PSpawnedVehicle( u32 nLocalId, PVehicleInformation const* nVhcInfo, u32 nLocation, PVhcCoordinates const* nVhcPos );
 
     inline u32 GetVehicleId() const { return mInfo.mVehicleId; }
     inline u32 GetLocalId() const { return mLocalId; }
     inline const PVhcCoordinates& GetPosition() const { return mCoords; }
     inline const PVehicleInformation& GetInformation() const { return mInfo; }
-    inline bool SetStatus( const u8 nStatus ) { return mInfo.SetStatus( nStatus ); }
+    inline bool SetStatus( u8 nStatus ) { return mInfo.SetStatus( nStatus ); }
 
-    void SetLocation( const u32 nLocation );
+    void SetLocation( u32 nLocation );
     inline u32 GetLocation() const { return mLocation; }
-    void SetPosition( const PVhcCoordinates* const nVhcPos );
+    void SetPosition( PVhcCoordinates const* nVhcPos );
 
     inline bool Save() { return mInfo.Save(); }
 
     int GetNumSeats() const;
-    inline u32 GetSeatUser( const u8 nSeatId ) const { return ( (nSeatId < 8) ? mSeatUserId[nSeatId] : 0); } 
-    bool SetSeatUser( const u8 nSeatId, const u32 nCharId );
-    bool UnsetSeatUser( const u8 nSeatId, const u32 nCharId );
-    bool IsCharInside(const u32 nCharId) const;
+    inline u32 GetSeatUser( u8 nSeatId ) const { return (( nSeatId < 8 ) ? mSeatUserId[nSeatId] : 0 ); }
+    bool SetSeatUser( u8 nSeatId, u32 nCharId );
+    bool UnsetSeatUser( u8 nSeatId, u32 nCharId );
+    bool IsCharInside( u32 nCharId ) const;
     inline u8 GetFreeSeatsFlags() const { return mFreeSeatsFlags; }
     inline u8 GetNbFreeSeats() const { return mNbFreeSeats; }
-	u8 GetFirstFreeSeat() const;
+    u8 GetFirstFreeSeat() const;
 
     //SetHealth(const u32 nHealth);
     //u32 DoDamage(const u32 nHealthDec);
@@ -164,23 +163,23 @@ class PVehicles
     PSpawnedVhcMap mSpawnedVehicles;
 
     bool RegisterSpawnedVehicle( PSpawnedVehicle*  nSpawnedVehicle );
-    bool UnregisterSpawnedVehicle( const u32 nVehicleId );
+    bool UnregisterSpawnedVehicle( u32 nVehicleId );
 
   public:
     PVehicles();
     ~PVehicles();
 
-    //u32 CreateVehicle(const u32 nOwnerChar, const u8 mVehicleType);
-    //bool RegisterVehicleOwner(const u32 nVehiculeId, const u32 nOwnerChar);
-    //bool DestroyVehicle(const u32 nVehiculeId);
-    bool IsValidVehicle( const u32 nVehicleId, const bool nCheckOwner = false, const u32 nOwnerId = 0 ) const;
-    inline bool IsSpawned( const u32 nVehicleId ) const { return ( mSpawnedVehicles.find( nVehicleId ) != mSpawnedVehicles.end() ); }
-    PSpawnedVehicle* GetSpawnedVehicle( const u32 nVehicleId ) const;
-    bool GetVehicleInfo( const u32 nVehicleId, PVehicleInformation* nInfo ) const;
-    PSpawnedVehicle* SpawnVehicle( const u32 nVehicleId, const u32 nLocation, const PVhcCoordinates* const nVhcPos ); // Refuses for subway zone atm
-    bool UnspawnVehicle( const u32 nVehicleId );
+    //u32 CreateVehicle(u32 nOwnerChar, u8 mVehicleType);
+    //bool RegisterVehicleOwner(u32 nVehiculeId, u32 nOwnerChar);
+    //bool DestroyVehicle(u32 nVehiculeId);
+    bool IsValidVehicle( u32 nVehicleId, bool nCheckOwner = false, u32 nOwnerId = 0 ) const;
+    inline bool IsSpawned( u32 nVehicleId ) const { return ( mSpawnedVehicles.find( nVehicleId ) != mSpawnedVehicles.end() ); }
+    PSpawnedVehicle* GetSpawnedVehicle( u32 nVehicleId ) const;
+    bool GetVehicleInfo( u32 nVehicleId, PVehicleInformation* nInfo ) const;
+    PSpawnedVehicle* SpawnVehicle( u32 nVehicleId, u32 nLocation, PVhcCoordinates const* nVhcPos ); // Refuses for subway zone atm
+    bool UnspawnVehicle( u32 nVehicleId );
 
-    PVhcInfoList* GetCharVehicles( const u32 nCharId, const u16 nMaxCount = 0, const u16 nStartIndex = 0 );
+    PVhcInfoList* GetCharVehicles( u32 nCharId, u16 nMaxCount = 0, u16 nStartIndex = 0 );
 
 };
 
@@ -195,7 +194,7 @@ class PSpawnedVehicles
     static const u32 mVhcBaseLocalId = 0x03ff;
     static const u16 mMaxLocalVhc = 127;
 
-    inline static bool IsPotentialSpawnedVehicle( const u32 nLocalId )
+    inline static bool IsPotentialSpawnedVehicle( u32 nLocalId )
     { return (( nLocalId <= mVhcBaseLocalId ) && (( mVhcBaseLocalId - nLocalId ) < mMaxLocalVhc ) ); }
 
   private:
@@ -203,17 +202,17 @@ class PSpawnedVehicles
     u16 mNextFreeHint;
     u32 mLocation;
 
-    inline void SetLocation( const u32 nLocation ) { mLocation = nLocation; }
+    inline void SetLocation( u32 nLocation ) { mLocation = nLocation; }
 
   public:
     PSpawnedVehicles();
     ~PSpawnedVehicles();
 
-    inline bool IsSpawned( const u32 nLocalId ) const { return (( nLocalId <= mVhcBaseLocalId ) && (( mVhcBaseLocalId - nLocalId ) < mSpawnedVehicles.size() ) && mSpawnedVehicles[mVhcBaseLocalId-nLocalId] ); }
-    PSpawnedVehicle* SpawnVehicle( const PVehicleInformation* const nVhcInfo, const PVhcCoordinates* const nVhcPos );
-    PSpawnedVehicle* GetVehicle( const u32 nLocalId );
-    PSpawnedVehicle* GetVehicleByGlobalId(const u32 nVehicleId );
-    bool UnspawnVehicle( const u32 nVehicleId );
+    inline bool IsSpawned( u32 nLocalId ) const { return (( nLocalId <= mVhcBaseLocalId ) && (( mVhcBaseLocalId - nLocalId ) < mSpawnedVehicles.size() ) && mSpawnedVehicles[mVhcBaseLocalId-nLocalId] ); }
+    PSpawnedVehicle* SpawnVehicle( PVehicleInformation const* nVhcInfo, PVhcCoordinates const* nVhcPos );
+    PSpawnedVehicle* GetVehicle( u32 nLocalId );
+    PSpawnedVehicle* GetVehicleByGlobalId( u32 nVehicleId ) const;
+    bool UnspawnVehicle( u32 nVehicleId );
 
     PSpawnedVhcList* GetSpawnedVehicles() const;
 };

@@ -42,7 +42,7 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
-typedef std::map<int, PClient*> PClientMap;
+typedef std::map<u32, PClient*> PClientMap;
 
 class PClientManager
 {
@@ -59,16 +59,17 @@ class PClientManager
 
     bool addClientToList( PClient* newClient );
     //void deleteClientFromListByID(int id);
-    void deleteClientFromList( int id );
+    void deleteClientFromList( u32 id );
     //bool deleteClientFromList(PClient* delClient); // maybe no use for this...
-    PClient* getClientByID( int id ) const; // returns pointer to a client for further use
+    PClient* getClientByID( u32 u32 ) const; // returns pointer to a client for further use
     PClient* getClientByChar( u32 CharID ) const;
     PClient* getClientByChar( const std::string &Name ) const;
     // int getClientID(PClient* _client); do _client->GetLocalID()
-    bool IsWorldInUse( u16 nWorldID ) const;
+    bool IsWorldInUse( u32 nWorldID ) const; // Temp until world content fully managed by world
+    PClient* GetClientByCharLocalId( u32 rawObjectId, u32 nWorldID  ) const; // Temp (called by world) until world content fuly managed by world
 
     // each function return the number of messages sent.
-    int UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX = 0, u16 nY = 0, u16 nZ = 0, u16 nMaxDist = 0, int nSkipCharId = -1, bool nNPCPing = false );
+    int UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX = 0, u16 nY = 0, u16 nZ = 0, u16 nMaxDist = 0, u32 nSkipCharId = 0, bool nNPCPing = false );
     int UDPBroadcast( PMessage* nMessage, PClient* nClient, u16 nMaxDist = 0, bool nSkipSource = false, bool nNPCPing = false );
     int SendUDPZoneWelcomeToClient( PClient* nClient );
 

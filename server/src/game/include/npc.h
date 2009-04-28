@@ -25,8 +25,8 @@
 
  CREATION: 04 Jan 2007 Namikon
 
- MODIFIED:
- REASON: -
+ MODIFIED: 28 Apr 2009 Hammag
+ REASON: changed worlds Id from u16 (wrong !!!) to u32
 
 */
 
@@ -48,137 +48,137 @@ class PNPC;
 class PNPCWorld;
 
 typedef std::map<u32, PNPC*> PNPCMap;
-typedef std::map<u16, PNPCWorld*> PNPCWorldMap;
+typedef std::map<u32, PNPCWorld*> PNPCWorldMap;
 
 
 class PNPC
 {
-    private:
-        // SQL layout
-        enum
-        {
-            npc_id,
-            npc_worldid,
-            npc_nameid,
-            npc_typeid,
-            npc_name,
-            npc_location,
-            npc_x,
-            npc_y,
-            npc_z,
-            npc_angle,
-            npc_clothing,
-            npc_loot,
-            npc_unknown,
-            npc_trader,  // trader.def entry, or clan/faction data!
-            npc_customname,
-            npc_customscript
-        };
+  private:
+    // SQL layout
+    enum
+    {
+      npc_id,
+      npc_worldid,
+      npc_nameid,
+      npc_typeid,
+      npc_name,
+      npc_location,
+      npc_x,
+      npc_y,
+      npc_z,
+      npc_angle,
+      npc_clothing,
+      npc_loot,
+      npc_unknown,
+      npc_trader,  // trader.def entry, or clan/faction data!
+      npc_customname,
+      npc_customscript
+    };
 
-        // SQL values
-        u32 mID;
-        u32 mWorldID;
-        u16 mNameID;
-        u16 mTypeID;
-        u16 mClothing;
-        u16 mPosX;
-        u16 mPosY;
-        u16 mPosZ;
-        s8 mAngle;
-        u16 mLoot;
-        u16 mUnknown;
-        u16 mTrader;
-        std::string mName;
-        std::string mCustomName;
-        std::string mCustomLua;
+    // SQL values
+    u32 mID;
+    u32 mWorldID;
+    u16 mNameID;
+    u16 mTypeID;
+    u16 mClothing;
+    u16 mPosX;
+    u16 mPosY;
+    u16 mPosZ;
+    s8 mAngle;
+    u16 mLoot;
+    u16 mUnknown;
+    u16 mTrader;
+    std::string mName;
+    std::string mCustomName;
+    std::string mCustomLua;
 
-        std::time_t mRespawn;    // Respawn timer
+    std::time_t mRespawn;    // Respawn timer
 
-        // Runtime values
-        u8 mAction;         // Current action
-        bool mDeath;        // Death...
-        u8 mHealth;         // NPC Health
-        u16 mTarget;        // Current focused player
-        bool mDirty;        // Needs update to clients
+    // Runtime values
+    u8 mAction;         // Current action
+    bool mDeath;        // Death...
+    u8 mHealth;         // NPC Health
+    u16 mTarget;        // Current focused player
+    bool mDirty;        // Needs update to clients
 
-        u8 GetActionStatus();
-        // Looks like we have a bitmask. However, only 2 are 100% identified yet
-        // 00000001 (  1): Stand normal (?)
-        // 00000010 (  2): Stand normal (?)
-        // 00000100 (  4): Stand normal (?)
-        // 00001000 (  8): Stand normal (?)
-        // 00010000 ( 16): Ducked
-        // 00100000 ( 32): Stand normal (?)
-        // 01000000 ( 64): Stand normal (?)
-        // 10000000 (128): Death
+    u8 GetActionStatus();
+    // Looks like we have a bitmask. However, only 2 are 100% identified yet
+    // 00000001 (  1): Stand normal (?)
+    // 00000010 (  2): Stand normal (?)
+    // 00000100 (  4): Stand normal (?)
+    // 00001000 (  8): Stand normal (?)
+    // 00010000 ( 16): Ducked
+    // 00100000 ( 32): Stand normal (?)
+    // 01000000 ( 64): Stand normal (?)
+    // 10000000 (128): Death
 
-        bool SQL_Load();
-        bool mSuccess;
+    bool SQL_Load();
+    bool mSuccess;
 
-        PNPC(int nSQLID);
-        ~PNPC();
+    PNPC( int nSQLID );
+    ~PNPC();
 
-    public:
-        friend class PNPCWorld;
-        inline void Attack(PClient* nClient) { mTarget = nClient->GetChar()->GetID(); mDirty = true; }
-        inline void Attack(u16 nLocalCharID) { mTarget = nLocalCharID; mDirty = true; }
-        inline void Move(u16 nNewX, u16 nNewY, u16 nNewZ) { mPosX = nNewX; mPosY = nNewY; mPosZ = nNewZ; mDirty = true; }
+  public:
+    friend class PNPCWorld;
+    inline void Attack( PClient* nClient ) { mTarget = nClient->GetChar()->GetID(); mDirty = true; }
+    inline void Attack( u16 nLocalCharID ) { mTarget = nLocalCharID; mDirty = true; }
+    inline void Move( u16 nNewX, u16 nNewY, u16 nNewZ ) { mPosX = nNewX; mPosY = nNewY; mPosZ = nNewZ; mDirty = true; }
 
-        void Die(); // ... die?
-        void Update(); // Check respawn timer
+    void Die(); // ... die?
+    void Update(); // Check respawn timer
 };
 
 // *****************************************
 
 class PNPCWorld
 {
-    private:
-        std::time_t mCreation;  // Creation time. (Required to check zone-reset timer
-        std::time_t mLastAliveMsg;  // Time of last "ping" message to keep NPCs in world
+  private:
+    std::time_t mCreation;  // Creation time. (Required to check zone-reset timer
+    std::time_t mLastAliveMsg;  // Time of last "ping" message to keep NPCs in world
 
-        PNPCMap mNPCs;
-        PNPCMap::iterator GetNPCListBegin() { return mNPCs.begin(); }
-        PNPCMap::iterator GetNPCListEnd() { return mNPCs.end(); }
+    PNPCMap mNPCs;
+    PNPCMap::iterator GetNPCListBegin() { return mNPCs.begin(); }
+    PNPCMap::iterator GetNPCListEnd() { return mNPCs.end(); }
 
-        bool mSuccessfullInit;
+    bool mSuccessfullInit;
 
-        u16 mWorldID;
+    u32 mWorldID;
 
-        PNPCWorld(u16 nWorldID);
-        ~PNPCWorld();
+    PNPCWorld( u32 nWorldID );
+    ~PNPCWorld();
 
-        void Update();
+    void Update();
 
-        // Send all NPCs to one player (Initial zone setup)
-        void MSG_SendNPCs(PClient* nClient);
+    // Send all NPCs to one player (Initial zone setup)
+    void MSG_SendNPCs( PClient* nClient );
 
-        // Send "alive" message for all NPCs as zone broadcast to everyone or as unicast if nClient is given
-        void MSG_SendAlive(PClient* nClient = NULL);
+    // Send "alive" message for all NPCs as zone broadcast to everyone or as unicast if nClient is given
+    void MSG_SendAlive( PClient* nClient = NULL );
 
 
-    public:
-        friend class PNPCManager;
-        PNPC* GetNPC(u32 nNPCID);
+  public:
+    friend class PNPCManager;
+    PNPC* GetNPC( u32 nNPCID );
 };
 
 // *****************************************
 
 class PNPCManager
 {
-private:
+  private:
     PNPCWorldMap mWorlds;
     PNPCWorldMap::iterator GetWorldListBegin() { return mWorlds.begin(); }
     PNPCWorldMap::iterator GetWorldListEnd() { return mWorlds.end(); }
 
-public:
+  public:
     PNPCManager();
     ~PNPCManager();
 
     void Update();
-    PNPCWorld* InitWorld(u16 nWorldID);
+    PNPCWorld* InitWorld( u32 nWorldID );
 
-    PNPCWorld* GetWorld(u16 nWorldID);
-    void InitPlayer(PClient* nClient); // Player is entering zone
+    PNPCWorld* GetWorld( u32 nWorldID );
+    void InitPlayer( PClient* nClient ); // Player is entering zone
 };
 
 #endif

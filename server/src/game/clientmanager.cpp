@@ -90,24 +90,37 @@ bool PClientManager::addClientToList( PClient* newClient )
     return false;
 }
 
-bool PClientManager::IsWorldInUse( u16 nWorldID ) const
+// Check if a zone is in use
+bool PClientManager::IsWorldInUse( u32 nWorldID ) const
 {
-  // Check if a zone is in use
   for ( PClientMap::const_iterator it = mClientList.begin(); it != mClientList.end(); it++ )
   {
-    if ( it->second )
+    if ( it->second &&  it->second->GetChar() )
     {
-      if ( it->second->GetChar() != NULL )
-      {
-        if ( it->second->GetChar()->GetLocation() == nWorldID )
-          return true;
-      }
+      if ( it->second->GetChar()->GetLocation() == nWorldID )
+        return true;
     }
   }
   return false;
 }
 
-void PClientManager::deleteClientFromList( int id )
+// Check if a rawObjectId belongs to a char is in use
+PClient* PClientManager::GetClientByCharLocalId( u32 rawObjectId, u32 nWorldID ) const
+{
+  PClient* nClient;
+  for ( PClientMap::const_iterator it = mClientList.begin(); it != mClientList.end(); it++ )
+  {
+    // note: atm, charid = clientid+1 in any zone (client.h)
+    if ( (nClient = it->second) && ( nClient->GetLocalID() == rawObjectId ) )
+    {
+      if ( nClient->GetChar() && ( nClient->GetChar()->GetLocation() == nWorldID ) )
+        return nClient;
+    }
+  }
+  return 0;
+}
+
+void PClientManager::deleteClientFromList( u32 id )
 {
   PClientMap::iterator it = mClientList.find( id );
   if ( it != mClientList.end() )
@@ -134,7 +147,7 @@ void PClientManager::deleteClientFromList( int id )
     return false;
 } */
 
-PClient* PClientManager::getClientByID( int id ) const
+PClient* PClientManager::getClientByID( u32 id ) const
 {
   PClientMap::const_iterator it = mClientList.find( id );
   return (( it != mClientList.end() ) ? ( PClient* )( it->second ) : NULL );
@@ -166,7 +179,7 @@ PClient* PClientManager::getClientByChar( const std::string &Name ) const
   return NULL;
 }
 
-/* int PClientManager::getClientID(PClient* _client)
+/* u32 PClientManager::getClientID(PClient* _client)
 {
     for(PClientMap::iterator it=mClientList.begin(); it!=mClientList<p align="center"></p>.end(); it++)
     {
@@ -180,7 +193,7 @@ PClient* PClientManager::getClientByChar( const std::string &Name ) const
 } */
 
 // Distance checking doesn't care for Z axis ATM
-int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, int nSkipCharId, bool nNPCPing )
+int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 nY, u16 nZ, u16 nMaxDist, u32 nSkipCharId, bool nNPCPing )
 {
   int msgCount = 0;
   PChar* nChar;
@@ -199,10 +212,10 @@ int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 n
     if ( itClient->getUDPConn() )
     {
       nChar = itClient->GetChar();
-      if ( nChar->GetLocation() != nZoneID ) // if limited to zone, do check
+      if ( nChar && ( nChar->GetLocation() != nZoneID ) )// if limited to zone, do check
         continue;
 
-      if (( int )itClient->GetCharID() == nSkipCharId ) // if source of broadcast should be skipped
+      if (itClient->GetCharID() == nSkipCharId ) // if source of broadcast should be skipped
         continue;
 
       if ( nMaxDist ) // if limited to distance, do check
@@ -230,11 +243,11 @@ int PClientManager::UDPBroadcast( PMessage* nMessage, u32 nZoneID, u16 nX, u16 n
 int PClientManager::UDPBroadcast( PMessage* nMessage, PClient* nClient, u16 nMaxDist, bool nSkipSource, bool nNPCPing )
 {
   PChar* nChar;
-  int skipVal = nSkipSource ? nClient->GetCharID() : -1 ;
+  u32 skipCharId = nSkipSource ? nClient->GetCharID() : 0 ;
 
   if ( nClient && ( nChar = nClient->GetChar() ) )
   {
-    return UDPBroadcast( nMessage, nChar->GetLocation(), ( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nMaxDist, skipVal, nNPCPing );
+    return UDPBroadcast( nMessage, nChar->GetLocation(), ( nChar->Coords ).mX, ( nChar->Coords ).mY, ( nChar->Coords ).mZ, nMaxDist, skipCharId, nNPCPing );
   }
   else
   {
