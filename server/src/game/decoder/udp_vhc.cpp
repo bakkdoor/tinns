@@ -133,7 +133,7 @@ bool PUdpVhcMove::DoAction()
     if ( tVhc )
     {
       //Todo: calc & mem Speed & Accel vectors
-      PVhcCoordinates nPos, destPos;
+      PVhcCoordinates nPos;
       nPos.SetPosition( mNewY - 768, mNewZ - 768, mNewX - 768, mNewUD, mNewLR, mNewRoll, mAction, mUnk1, mFF );
       tVhc->SetPosition( &nPos );
       PMessage* tmpMsg = MsgBuilder->BuildVhcPosUpdate2Msg( tVhc );
@@ -142,20 +142,25 @@ bool PUdpVhcMove::DoAction()
       tmpMsg = MsgBuilder->BuildVhcPosUpdateMsg( tVhc );
       ClientManager->UDPBroadcast( tmpMsg, mDecodeData->mClient );
 
-      u32 destWorldId;
-      if (( destWorldId = CurrentWorld->GetVhcZoningDestination( tVhc, &destPos ) ) )
+      if( CurrentWorld->CheckVhcNeedZoning( &nPos ) )
       {
-        if ( nClient->GetDebugMode( DBG_LOCATION ) )
-        {
-          u8 pH = 0;
-          u8 pV = 0;
-          Worlds->GetWorldmapFromWorldId( destWorldId, pH, pV );
-          char DbgMessage[128];
-          snprintf( DbgMessage, 128, "Vhc zoning to zone %c%02d (id %d)", ( 'a' + pV ), pH, destWorldId );
-          Chat->send( nClient, CHAT_GM, "Debug", DbgMessage );
-        }
+        u32 destWorldId;
+        PVhcCoordinates destPos;
 
-        DoVhcZoning( tVhc, nClient->GetChar()->GetLocation(), destWorldId, &destPos );
+        if (( destWorldId = CurrentWorld->GetVhcZoningDestination( tVhc, &destPos ) ) )
+        {
+          if ( nClient->GetDebugMode( DBG_LOCATION ) )
+          {
+            u8 pH = 0;
+            u8 pV = 0;
+            Worlds->GetWorldmapFromWorldId( destWorldId, pH, pV );
+            char DbgMessage[128];
+            snprintf( DbgMessage, 128, "Vhc zoning to zone %c%02d (id %d)", ( 'a' + pV ), pH, destWorldId );
+            Chat->send( nClient, CHAT_GM, "Debug", DbgMessage );
+          }
+  
+          DoVhcZoning( tVhc, nClient->GetChar()->GetLocation(), destWorldId, &destPos );
+        }
       }
     }
     else
@@ -189,6 +194,7 @@ bool PUdpVhcMove::DoVhcZoning( PSpawnedVehicle* currVhc, u32 currWorldId, u32 de
       sittingClients[i] = sittingClient = ClientManager->getClientByChar( sittingCharId );
       // Tag each client as zoning to avoid transient side effects
       sittingClient->SetZoning();
+      sittingClient->SetVhcZoning();
       // Trigger zoning
       //tmpMsg = MsgBuilder->BuildGenrepZoningMsg( sittingClient, destWorldId, 0 ); // unknown value // 0x62bc or 0x2d4e
       //sittingClient->SendUDPMessage( tmpMsg );
@@ -222,7 +228,8 @@ bool PUdpVhcMove::DoVhcZoning( PSpawnedVehicle* currVhc, u32 currWorldId, u32 de
     {
       if (( sittingClient = sittingClients[i] ) )
       {
-        Console->Print( "%s PUdpVhcMove::DoVhcZoning : Char %d sitting on vhc %d, seat %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), seatedCharsId[i], vhcLocalId, i );
+        //if ( gDevDebug )
+          Console->Print( "%s PUdpVhcMove::DoVhcZoning : Char %d sitting on vhc %d, seat %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), seatedCharsId[i], vhcLocalId, i );
         sittingChar = sittingClient->GetChar();
         sittingChar->SetSeatInUse( seat_vhc, vhcLocalId, i );
         sittingChar->Coords.SetPosition( destPos->GetY(), destPos->GetZ(), destPos->GetX() );

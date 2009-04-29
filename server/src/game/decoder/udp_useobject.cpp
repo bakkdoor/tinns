@@ -811,7 +811,7 @@ bool PUdpUseObject::DoAction()
             }
             case 0: //May be roadsign if touchable
             {
-              if (( tFurnitureModel->GetUseFlags() & 0x01 ) ) // Touchable ?
+              if ( ( tFurnitureModel->GetUseFlags() & ufTouchable ) ) // Touchable ?
               {
                 snprintf( DbgMessage, 128, "You're at %s", tFurnitureModel->GetName().c_str() );
                 Chat->send( nClient, CHAT_GM, "Information", DbgMessage );

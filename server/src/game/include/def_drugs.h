@@ -32,7 +32,7 @@
 
 class PDefDrug : public PDef
 {
-  private :
+  protected :
     //int mIndex;
 	int mType;
 	//int mUseSound;

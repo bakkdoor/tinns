@@ -41,6 +41,7 @@ class PWorld
     friend class PWorlds;
 
   public:
+    static u16 const mZoneOutLimitOffset;
     static u16 const mBottomZoneOutLimit;
     static u16 const mBottomZoneInLimit;
     static u16 const mTopZoneOutLimit;
@@ -77,6 +78,7 @@ class PWorld
     PClient* GetClientByCharLocalId( u32 rawObjectId ) const; // returns Client if object is a PC char, and 0 if not.
 
     inline PSpawnedVehicles* GetSpawnedVehicules() { return &mSpawnedVehicles; }
+    bool CheckVhcNeedZoning( PVhcCoordinates const* nPos ) const;
     u32 GetVhcZoningDestination( PSpawnedVehicle const* nVhc, PVhcCoordinates* nPos = 0 ) const;
 };
 

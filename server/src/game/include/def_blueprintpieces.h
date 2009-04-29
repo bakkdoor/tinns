@@ -36,7 +36,7 @@ class PDefBlueprintPieces : public PDef
 {
   private :
     //int mIndex; // related Item Type
-    //int mMaxPieceNum; // no use
+    int mMaxPieceNum;
     int mPieceNum;
     int mPieceId[20];
 
@@ -46,6 +46,7 @@ class PDefBlueprintPieces : public PDef
 
     bool LoadFromDef( PTokenList *Tokens );
 
+    inline int GetMaxPieceNum() const { return mMaxPieceNum; }
     inline int GetPieceNum() const { return mPieceNum; }
     inline int GetPieceId(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mPieceNum)) ? mPieceId[nIdx] : 0) ; }
 };

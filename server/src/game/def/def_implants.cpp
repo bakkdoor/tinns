@@ -19,25 +19,19 @@
  02110-1301, USA.
 */
 
-
-
 /*
- def_charaction.cpp
+ def_implants.cpp
 
-    CREATED: 04 Apr 2009 Hammag
+    CREATED: 29 Apr 2009 Hammag
 */
 
 #include "main.h"
-#include "def_charaction.h"
+#include "def_implants.h"
 
-PDefCharAction::PDefCharAction()
-{
-}
-
-bool PDefCharAction::LoadFromDef( PTokenList *Tokens )
+bool PDefImplant::LoadFromDef( PTokenList *Tokens )
 {
   int Idx = 0;
-  int maxFields = 2;
+  int maxFields = 5;
   for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
   {
     switch ( Idx )
@@ -47,23 +41,28 @@ bool PDefCharAction::LoadFromDef( PTokenList *Tokens )
       case 1 :
         mIndex = atoi( i->c_str() ); break;
       case 2 :
+        mType = atoi( i->c_str() ); break;
+      case 3:
+        mDuration = atoi( i->c_str() ); break;
+      case 4 :
       {
-        mNumOfSsq = atoi( i->c_str() );
-        if ( mNumOfSsq > 8 )
-          mNumOfSsq = 8;
-        maxFields = 2 + 2 * mNumOfSsq;
+        mChangeNum = atoi( i->c_str() );
+        if ( mChangeNum > 8 )
+          mChangeNum = 8;
+        maxFields = 4 + 3 * mChangeNum;
         break;
       }
       default :
-        if (( Idx >= 3 ) && ( Idx <= maxFields ) )
+        if (( Idx >= 5 ) && ( Idx <= maxFields ) )
         {
-          if ( Idx & 1 )
+          switch (( Idx - 5 ) % 3 )
           {
-            mSsqId[( Idx - 3 ) / 2] = atoi( i->c_str() );
-          }
-          else
-          {
-            mModFactor[( Idx - 3 ) / 2] = atof( i->c_str() );
+            case 0:
+              mChangeType[( Idx - 5 ) / 3] = atoi( i->c_str() ); break;
+            case 1:
+              mChangeScale[( Idx - 5 ) / 3] = atof( i->c_str() ); break;
+            case 2:
+              mChangeTarget[( Idx - 5 ) / 3] = atoi( i->c_str() ); break;
           }
         }
         break;

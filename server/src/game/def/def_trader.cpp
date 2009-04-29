@@ -39,7 +39,6 @@ PDefTrader::PDefTrader()
   }
 }
 
-// Not implemented yet
 bool PDefTrader::LoadFromDef( PTokenList *Tokens )
 {
   int Idx = 0;

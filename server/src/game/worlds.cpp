@@ -43,9 +43,10 @@
 #include <set>
 
 /**** PWorld ****/
-u16 const PWorld::mBottomZoneOutLimit = 0x4800 - 0x0100;
+u16 const PWorld::mZoneOutLimitOffset = 0x100;
+u16 const PWorld::mBottomZoneOutLimit = 0x4800 - PWorld::mZoneOutLimitOffset;
 u16 const PWorld::mBottomZoneInLimit = 0x4a00;
-u16 const PWorld::mTopZoneOutLimit = 0xb200 + 0x100;
+u16 const PWorld::mTopZoneOutLimit = 0xb200 + PWorld::mZoneOutLimitOffset;
 u16 const PWorld::mTopZoneInLimit = 0xb000;
 
 PWorld::PWorld()
@@ -207,6 +208,14 @@ PClient* PWorld::GetClientByCharLocalId( u32 rawObjectId ) const
 {
   // Temp implementation
   return ClientManager->GetClientByCharLocalId( rawObjectId, mID );
+}
+
+bool PWorld::CheckVhcNeedZoning( PVhcCoordinates const* nPos ) const
+{
+  if ( ( nPos->GetX() <= mBottomZoneOutLimit ) || ( nPos->GetX() >= mTopZoneOutLimit ) || ( nPos->GetY() <= mBottomZoneOutLimit )   || ( nPos->GetY() >= mTopZoneOutLimit ) )
+    return true;
+  else
+    return false;
 }
 
 u32 PWorld::GetVhcZoningDestination( PSpawnedVehicle const* nVhc, PVhcCoordinates* nPos ) const

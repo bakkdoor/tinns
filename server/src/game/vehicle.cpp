@@ -71,7 +71,12 @@ void PVhcCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u16 nLR, u16 
 const u8 VhcTypes[] = {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
                          11, 12, 13, 50, 60, 62, 64, 65, 70
                       }; // (adv.) assault gliders discarded because not ok
+#define VHC_DISABLE_NOVULARI
+#ifndef VHC_DISABLE_NOVULARI
 const u8 VhcTypesNum = 19;
+#else
+const u8 VhcTypesNum = 18;
+#endif
 
 bool PVehicleInformation::Load( u32 nVehicleId )
 {

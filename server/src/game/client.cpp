@@ -305,6 +305,7 @@ bool PClient::ChangeCharLocation( u32 nLocation, bool DoForce )
     {
       if ( tChar->GetLocationLeased() )
       {
+        // TAke care of sitting chars
         u32 ChairObjectId;
         u8 tSeatId;
         PSeatType tSeatType;
@@ -312,8 +313,8 @@ bool PClient::ChangeCharLocation( u32 nLocation, bool DoForce )
         {
           bool vhcZoning = false;
           PSpawnedVehicle* tVhc = 0;
-          if ( tSeatType == seat_vhc ) // If seat is vhc, check if it has been preset for vhc zoning
-          {
+          if ( (tSeatType == seat_vhc) && IsVhcZoning() ) // If seat is vhc,
+          { // Do  additionnal check
             if (( tVhc = nWorld->GetSpawnedVehicules()->GetVehicle( ChairObjectId ) ) )
             {
               if ( tVhc->GetSeatUser( tSeatId ) == tChar->GetID() )

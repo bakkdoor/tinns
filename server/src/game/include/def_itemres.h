@@ -35,7 +35,7 @@ class PDefItemRestriction : public PDef
   private :
     //int mIndex;
 	int mNumRestrictions;
-    int mSsq[6]; // Skill/Subs
+    int mSsqId[6]; // Skill/Subs
 	int mMinValue[6];
 
   public :
@@ -45,7 +45,7 @@ class PDefItemRestriction : public PDef
     bool LoadFromDef( PTokenList *Tokens );
 
 	inline int GetNumRestrictions() const { return mNumRestrictions; }
-    inline int GetSsq(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumRestrictions)) ? mSsq[nIdx] : 0) ; }
+    inline int GetSsqId(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumRestrictions)) ? mSsqId[nIdx] : 0) ; }
 	inline float GetMinValue(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mNumRestrictions)) ? mMinValue[nIdx] : 0) ; }
 };
 

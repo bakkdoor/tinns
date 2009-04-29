@@ -117,6 +117,8 @@ class PClient
     //*******
     bool mAcceptNPCUpdates;
     bool mZoning;
+    bool mVhcZoning;
+    
 
   protected :
   public :
@@ -129,7 +131,9 @@ class PClient
     inline bool IsAcceptingNPCUpdates() { return mAcceptNPCUpdates; }
     inline void SetAcceptNPCUpdates( bool nVal ) { mAcceptNPCUpdates = nVal; }
     inline bool IsZoning() { return mZoning; }
-    inline void SetZoning( bool nVal = true ) { mZoning = nVal; }
+    inline void SetZoning( bool nVal = true ) { mZoning = nVal; if ( !nVal ) mVhcZoning = false; }
+    inline bool IsVhcZoning() { return mVhcZoning; }
+    inline void SetVhcZoning( bool nVal = true ) { mVhcZoning = nVal; }
 
     inline u32 GetIndex() const { return mIndex; } // better use GetID()
     inline u32 GetID() const { return mIndex; } // for better coherency with other classes

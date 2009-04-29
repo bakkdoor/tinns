@@ -35,6 +35,9 @@
 #include "terminal.h"
 #include "vehicle.h"
 #include "udp_charmove.h"
+#include "worlds.h"
+#include "furnituretemplate.h"
+#include <math.h>
 
 /*******************************************************************************************/
 /**** PUdpReceiveDB ****/
@@ -85,7 +88,7 @@ bool PUdpReceiveDB::DoAction()
   //PChar* tChar = tClient->GetChar();
   bool Result = false;
 
-  if(gDevDebug)
+  if ( gDevDebug )
   {
     Console->Print( "%s ReceiveDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     Console->Print( "%s Open Terminal - Terminal session %04x (?) - Unknown1 %04x - Unknown2 %04x", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId, mUnknown1, mUnknown2 );
@@ -211,7 +214,7 @@ bool PUdpReceiveDB::ActionVehicleControl()
       Answer[1] = Ssprintf( "%u", EntryInfo.GetStatus() ); //vhcStatus
       Answer[2] = Ssprintf( "%u", EntryInfo.GetHealth() ); //vhcHealth%
       Answer[3] = Ssprintf( "%u", ( 255 - EntryInfo.GetHealth() ) * 1000 * EntryInfo.GetVehicleType() / 255 ); //Repair cost
-      if(gDevDebug)
+      if ( gDevDebug )
         Console->Print( "%s Entry: %s/%s/%s/%s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), Answer[0].c_str(), Answer[1].c_str(), Answer[2].c_str(), Answer[3].c_str() );
       tmpMsg = MsgBuilder->BuildDBAnswerMsg( tClient, &mCommandName, Answer, 1, 4 );
       tClient->SendUDPMessage( tmpMsg );
@@ -253,7 +256,7 @@ PUdpMsgAnalyser* PUdpUpdateDB::Analyse()
 
 bool PUdpUpdateDB::DoAction()
 {
-  if( gDevDebug )
+  if ( gDevDebug )
     Console->Print( "%s UpdateDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
@@ -316,14 +319,14 @@ bool PUdpTryAccessDB::DoAction()
   // Better way to get the lenght
   tCmdLen = strlen( tArea ) + 1; // Dont forget the '\0' char at string-end
 
-  if( gDevDebug )
+  if ( gDevDebug )
   {
     tMessage->Dump();
     Console->Print( "%s tMsglen %d tCmdLen %d tCmdNr %d area %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tMsgLen, tCmdLen, tCmdNr, tArea );
   }
   if ( tMsgLen > ( tCmdLen + 23 ) ) // Packetlenght is greater than the message with packetdata, get option1
   {
-    if( gDevDebug )
+    if ( gDevDebug )
       Console->Print( "%s Got First option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     // This line assembles like this:
     // - tSubMsgStart points to the lenght byte of the packet (u8)
@@ -336,13 +339,13 @@ bool PUdpTryAccessDB::DoAction()
     tOption1[99] = '\0';
     tOpt1Len = strlen( tOption1 ) + 1; // Dont forget the '\0' char at string-end
 
-    
-    if( gDevDebug )
+
+    if ( gDevDebug )
       Console->Print( "%s tOpt1Len %d tOption1 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt1Len, tOption1 );
 
     if ( tMsgLen > ( tCmdLen + 23 + + 2 + tOpt1Len ) ) // Check if the packet is still longer than the data we grabbed yet
     {
-      if( gDevDebug )
+      if ( gDevDebug )
         Console->Print( "%s Got second option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       // This line assembles like this:
       // - tSubMsgStart points to the lenght byte of the packet (u8)
@@ -356,12 +359,12 @@ bool PUdpTryAccessDB::DoAction()
       tOption2[99] = '\0';
       tOpt2Len = strlen( tOption2 ) + 1; // Dont forget the '\0' char at string-end
 
-      if( gDevDebug )
+      if ( gDevDebug )
         Console->Print( "%s tOpt2Len %d tOption2 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt2Len, tOption2 );
 
       if ( tMsgLen > ( tCmdLen + 23 + 2 + tOpt1Len + 2 + tOpt2Len ) ) // Check if the packet is still longer than the data we grabbed yet
       {
-        if( gDevDebug )
+        if ( gDevDebug )
           Console->Print( "%s Got third option!", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
         // This line assembles like this:
         // - tSubMsgStart points to the lenght byte of the packet (u8)
@@ -375,7 +378,7 @@ bool PUdpTryAccessDB::DoAction()
         tOption3[99] = '\0';
         tOpt3Len = strlen( tOption3 ) + 1; // Dont forget the '\0' char at string-end
 
-        if( gDevDebug )
+        if ( gDevDebug )
           Console->Print( "%s tOpt3Len %d tOption3 %s", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), tOpt3Len, tOption3 );
 
         if ( tMsgLen > ( tCmdLen + 23 + 2 + tOpt1Len + 2 + tOpt2Len + 2 + tOpt3Len ) ) // Check if the packet is STILL longer than the data we grabbed yet
@@ -449,7 +452,7 @@ bool PUdpQueryDB::DoAction()
   //PClient* tClient = mDecodeData->mClient;
   bool Result = false;
 
-  if(gDevDebug)
+  if ( gDevDebug )
   {
     Console->Print( "%s QueryDB request from client", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
     Console->Print( "%s Open Terminal - Terminal session %04x (?)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId );
@@ -502,7 +505,29 @@ bool PUdpQueryDB::ActionSpawnVehicle()
     tClient->SendUDPMessage( tmpMsg );
 
     PVhcCoordinates NewPosition;
-    NewPosition.SetPosition(( tChar->Coords ).mY, ( tChar->Coords ).mZ + 100, ( tChar->Coords ).mX, ( tChar->Coords ).mUD, 34683, 32403 );
+    PWorld* CurrentWorld = Worlds->GetWorld( tChar->GetLocation() );
+    bool relativePos = false;
+    if ( tChar->GetLastUsedObject() && !WorldActors->IsDynamicActor( tChar->GetLastUsedObject() ) && CurrentWorld )
+    {
+      const PFurnitureItemTemplate* tFurnitureTemplate = CurrentWorld->GetFurnitureItemTemplate( tChar->GetLastUsedObject() / 1024 - 1 );
+      if ( tFurnitureTemplate && ( tFurnitureTemplate->GetFunctionType() == 28 ) ) // vhc term
+      {
+        f32 decal = 1000; // distance at which to spawn the vhc
+        f32 nPosX, nPosY, nPosZ;
+        tFurnitureTemplate->GetPos( &nPosX, &nPosY, &nPosZ );
+        nPosX += 32000;
+        nPosY += 32000;
+        f32 dX = ( tChar->Coords.mX - nPosX );
+        f32 dY = ( tChar->Coords.mY - nPosY );
+        f32 d = decal / sqrt( dX * dX + dY * dY );
+        NewPosition.SetPosition( static_cast<u16>( nPosY + d * dY ), ( tChar->Coords ).mZ + 100, static_cast<u16>( nPosX + d * dX ), ( tChar->Coords ).mUD, 34683, 32403 );
+        relativePos = true;
+      }
+    }
+
+    if( ! relativePos )
+      NewPosition.SetPosition(( tChar->Coords ).mY, ( tChar->Coords ).mZ + 150, ( tChar->Coords ).mX, ( tChar->Coords ).mUD, 34683, 32403 );
+
     PSpawnedVehicle* NewVhc = Vehicles->SpawnVehicle( VhcId, tChar->GetLocation(), &NewPosition );
     if ( NewVhc )
     {
@@ -572,7 +597,7 @@ bool PUdpQueryDB::ActionDismissVehicle()
       {
         if (( tCharId = tVhc->GetSeatUser( i ) ) )
         {
-          if( (tChar = Chars->GetChar(tCharId)) )
+          if (( tChar = Chars->GetChar( tCharId ) ) )
           {
             PUdpCharExitChair::DoLeaveChair( tChar, NULL, tVhc );
           }
@@ -619,7 +644,7 @@ PUdpMsgAnalyser* PUdpTeminal0x1f::Analyse()
 
 bool PUdpTeminal0x1f::DoAction()
 {
-  if( gDevDebug )
+  if ( gDevDebug )
     Console->Print( "%s Open Terminal - Terminal session %04x (?)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTerminalSessionId );
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

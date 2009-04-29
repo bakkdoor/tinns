@@ -37,7 +37,7 @@ class PDefShot : public PDef
     int mDamageId;
     int mMass;
     int mRadius;
-    int mSpeed;
+    float mSpeed;
     //int mHitSound;
     //int mCustomType;
     //std::string mCustomFrameFx;

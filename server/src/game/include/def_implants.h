@@ -34,6 +34,8 @@
 
 class PDefImplant : public PDefDrug
 {
+  public:
+    bool LoadFromDef( PTokenList *Tokens );
 };
 
 #endif
