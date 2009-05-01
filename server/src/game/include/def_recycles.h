@@ -34,7 +34,7 @@ class PDefRecycle : public PDef
 {
   private :
     //int mIndex;
-    int mResultItemId;
+    int mResultItemId; // We use resultitem as mIndex
     int mBuildTime;
     int mNumParts;
     int mPartId[8];

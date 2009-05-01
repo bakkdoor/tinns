@@ -1747,3 +1747,10 @@ Hammag; 28.04.2009 13:30 GMT+1
   Deactivated as most debug output when dev_debug is not set in conf file (but setting it will generate lots of output !)
   Continued work on vhc. Some small fixes and multichar tests still need to be performed
 
+Hammag; 28.04.2009 13:30 GMT+1
+----------
+[rev. 123-124]
+
+<Gameserver>
+  Small fixes on vhc zoning
+  Support for all remaining .def added. Good loading of expected data has not been validated yet.

@@ -38,8 +38,8 @@ class PDefItemMod : public PDef
 	//int mDuration; // "implant base build time" = ???? always 0 anyway...
 	int mChangeNum;
     int mChangeTarget[4]; // qualifier id	0 - 7	item qualifier id	4=range	
-    float mChangeValue[4]; // float ??? always int in .def
-	int mChangeScale[4];
+    float mChangeValue[4];
+	float mChangeScale[4];
 	std::string mName;
 	//int mIconId;
 
@@ -55,7 +55,7 @@ class PDefItemMod : public PDef
     inline int GetChangeNum() const { return mChangeNum; }
     inline int GetChangeTarget(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeTarget[nIdx] : 0) ; }
 	inline float GetChangeValue(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeValue[nIdx] : 0) ; }
-	inline int GetChangeScale(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeScale[nIdx] : 0) ; }
+	inline float GetChangeScale(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeScale[nIdx] : 0) ; }
 };
 
 #endif

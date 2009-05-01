@@ -30,26 +30,44 @@
 
 PDefOutpost::PDefOutpost()
 {
+  for ( int i = 0;  i < 8; ++i )
+    mInfluenceZone[i] = 0;
 }
 
-// Not implemented yet
-bool PDefOutpost::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefOutpost : public PDef
+bool PDefOutpost::LoadFromDef ( PTokenList *Tokens )
 {
-  private :
-    //int mIndex;
-    std::string mName;
-    int mType;
-    int mStandardFaction;
-    float mRevenue;
-    float mConquestReward;
-    int mMaxSecurity;
-    int mInfluenceZone[8]; // ex: 12 for zone A12, 112 for B12
+  int Idx=0;
+  for ( PTokenList::iterator i=Tokens->begin(); i!=Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0: // setentry
+        break;
+      case 1: // index
+        mIndex = atoi ( i->c_str() ); break;
+      case 2:
+        mName = *i; break;
+      case 3:
+        mType = atoi ( i->c_str() ); break;
+      case 4:
+        mStandardFaction = atoi ( i->c_str() ); break;
+      case 5:
+        mRevenue = atof ( i->c_str() ); break;
+      case 6:
+        mConquestReward = atof ( i->c_str() ); break;
+      case 7:
+        mMaxSecurity = atoi ( i->c_str() ); break;
+      default :
+        if ( ( Idx - 8 ) < 8 )
+        {
+          mInfluenceZone[Idx - 8] = atoi ( i->c_str() );
+        }
+        break;
+    }
 
-  public :
-    PDefOutpost();
-    //~PDefOutpost();
+    if ( Idx == 15 )
+      break;
+  }
 
-*/
+  return ( Idx >= 7 );
+}

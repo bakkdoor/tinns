@@ -32,31 +32,69 @@ PDefMission::PDefMission()
 {
 }
 
-// Not implemented yet
-bool PDefMission::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefMission : public PDef
+bool PDefMission::LoadFromDef ( PTokenList *Tokens )
 {
-  private :
-    //int mIndex;
-	int mSourceId;
-    std::string mStartDialog;
-	int mDescTextId;
-	int mNpcType[4];
-    std::string mNpcDialog[4];
-	int mNpcDialogStartState[4];
-    int mTargetType[4];
-    int mTargetValue[4][3];
-    int mEndMoney;
-    int mEndXp;
-    int mMaxTime;
-    int mDifficulty;
-    int mMinFactionValue;
-    int mPoints;
-    int mFlags;
+  int Idx = 0;
+  int arrayIdx, arraySubIdx;
+  for ( PTokenList::iterator i = Tokens->begin(); i != Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;
+      case 1 :
+        mIndex = atoi ( i->c_str() ); break;
+      case 2 :
+        mSourceId = atoi ( i->c_str() ); break;
+      case 3:
+        mStartDialog = *i; break;
+      case 4 :
+        mDescTextId = atoi ( i->c_str() ); break;
+      case 33 :
+        mEndMoney = atoi ( i->c_str() ); break;
+      case 34 :
+        mEndXp = atoi ( i->c_str() ); break;
+      case 35 :
+        mMaxTime = atoi ( i->c_str() ); break;
+      case 36 :
+        mDifficulty = atoi ( i->c_str() ); break;
+      case 37 :
+        mMinFactionValue = atoi ( i->c_str() ); break;
+      case 38 :
+        mPoints = atoi ( i->c_str() ); break;
+      case 39 :
+        mFlags = atoi ( i->c_str() ); break;
+      default :
+        if ( ( Idx >= 5 ) && ( Idx <= 16 ) )
+        {
+          arrayIdx = ( Idx - 5 ) / 3;
+          switch ( ( Idx - 5 ) % 3 )
+          {
+            case 0:
+              mNpcType[arrayIdx] = atoi ( i->c_str() ); break;
+            case 1:
+              mNpcDialog[arrayIdx] = *i; break;
+            case 2:
+              mNpcDialogStartState[arrayIdx] = atoi ( i->c_str() ); break;
+          }
+        }
+        else if ( ( Idx >= 17 ) && ( Idx <= 32 ) )
+        {
+          arrayIdx = ( Idx - 17 ) / 4;
+          arraySubIdx = ( Idx - 17 ) % 4;
+          if ( arraySubIdx == 0 )
+            mTargetType[arrayIdx] = atoi ( i->c_str() );
+          else
+            mTargetValue[arrayIdx][ arraySubIdx - 1 ] = atoi ( i->c_str() );
 
-  public :
-    PDefMission();
-    //~PDefMission();
-*/
+          break;
+        }
+        break;
+    }
+
+    if ( Idx >= 39 )
+      break;
+  }
+
+  return ( ( Idx >= 38 ) );
+}

@@ -32,17 +32,25 @@ PDefNpcArmor::PDefNpcArmor()
 {
 }
 
-// Not implemented yet
-bool PDefNpcArmor::LoadFromDef( PTokenList *Tokens ) { Tokens = Tokens; return false; }
-
-/*
-class PDefNpcArmor : public PDef
+bool PDefNpcArmor::LoadFromDef ( PTokenList *Tokens )
 {
-  private :
-    //int mIndex;
-    int mValue[6]; // force piercing fire energy xray psi poison
+  int Idx=0;
+  for ( PTokenList::iterator i=Tokens->begin(); i!=Tokens->end(); i++, Idx++ )
+  {
+    switch ( Idx )
+    {
+      case 0 : // setentry
+        break;;
+      case 1 :
+        mIndex = atoi ( i->c_str() ); break;
+      default :
+        if ( ( Idx - 2 ) < 7 )
+        {
+          mValue[Idx - 2] = atoi ( i->c_str() );
+        }
+        break;
+    }
+  }
 
-  public :
-    PDefNpcArmor();
-    //~PDefNpcArmor();
-*/
+  return ( Idx >= 8 );
+}

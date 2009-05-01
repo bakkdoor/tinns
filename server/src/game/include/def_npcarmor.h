@@ -34,15 +34,15 @@ class PDefNpcArmor : public PDef
 {
   private :
     //int mIndex;
-    int mValue[6]; // force piercing fire energy xray psi poison
+    int mValue[7]; // force piercing fire energy xray psi poison
 
   public :
     PDefNpcArmor();
     //~PDefNpcArmor();
 
-    bool LoadFromDef( PTokenList *Tokens );
+    bool LoadFromDef ( PTokenList *Tokens );
 
-    inline int GetValue( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < 6 ) ) ? mValue[nIdx] : 0 ) ; }
+    inline int GetValue ( int nIdx ) const { return ( ( ( nIdx >= 0 ) && ( nIdx < 7 ) ) ? mValue[nIdx] : 0 ) ; }
 };
 
 #endif

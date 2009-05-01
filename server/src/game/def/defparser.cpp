@@ -150,7 +150,7 @@ bool PDefParser::Parse(const char *File)
 		}
 	} else
 	{
-		Console->Print(RED, BLACK, "PDefParser::Parse: could not open file %s", File);
+		Console->Print("%s PDefParser::Parse: could not open file %s", Console->ColorText( RED, BLACK, "[ERROR]" ), File);
 		return false;
 	}
 

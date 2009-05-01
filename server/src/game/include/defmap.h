@@ -91,9 +91,9 @@ template <class T> bool PDefMap<T>::Load(const char* nName, const char* nFilenam
       if ( loadfail || insertfail )
       {
         if ( insertfail )
-          Console->Print( RED, BLACK, "%s def error (duplicate id %i): %s",  mName.c_str(), entry->GetIndex(), entry->GetName().c_str() );
+          Console->Print( "%s %s def error (duplicate id %i): %s", Console->ColorText( YELLOW, BLACK, "[NOTICE]" ),  mName.c_str(), entry->GetIndex(), entry->GetName().c_str() );
         else
-          Console->Print( RED, BLACK, "%s def load error @ %i",  mName.c_str(), nDefs + nErrors );
+          Console->Print( "%s def load error @ %i", Console->ColorText( YELLOW, BLACK, "[NOTICE]" ), mName.c_str(), nDefs + nErrors );
         ++nErrors;
         delete entry;
       }
@@ -103,12 +103,12 @@ template <class T> bool PDefMap<T>::Load(const char* nName, const char* nFilenam
   }
   else
   {
-    Console->Print( "%s Error loading %s defs", Console->ColorText( RED, BLACK, "[ERROR]" ),  mName.c_str() );
+    Console->Print( "%s Error loading %s defs", Console->ColorText( YELLOW, BLACK, "[WARNING]" ),  mName.c_str() );
     return (false);
   }
 
   if ( nErrors > 0 )
-    Console->Print( "%s Loaded %i %s defs, %i error(s).", Console->ColorText( RED, BLACK, "[ERROR]" ), nDefs,  mName.c_str(), nErrors );
+    Console->Print( "%s Loaded %i %s defs, %i error(s).", Console->ColorText( RED, BLACK, "[WARNING]" ), nDefs,  mName.c_str(), nErrors );
   else
     Console->Print( "%s Loaded %i %s defs, %i error(s).", Console->ColorText( GREEN, BLACK, "[Success]" ), nDefs,  mName.c_str(), nErrors );
 
