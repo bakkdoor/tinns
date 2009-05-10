@@ -2726,6 +2726,52 @@ PMessage* PMsgBuilder::BuildTraderItemListMsg( PClient* nClient, u32 nTraderNpcI
   return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildStartWeaponReloadMsg( u16 nCharLocalId )
+{
+  PMessage* tmpMsg = new PMessage( 16 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nCharLocalId;
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x16; // cmd
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nUnknown2, u8 nTargetedHeight, u8 nScore )
+{
+  PMessage* tmpMsg = new PMessage( 22 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nUserCharLocalId;
+  *tmpMsg << ( u8 )0x01; // cmd
+  *tmpMsg << ( u16 )nWeaponId;
+  *tmpMsg << ( u32 )nTargetRawItemID;
+  *tmpMsg << ( u8 )nUnknown2; // ?
+  *tmpMsg << ( u8 )nTargetedHeight;
+  *tmpMsg << ( u8 )nScore; // ?
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
 // For testing - packet to be broadcasted to zone
 PMessage* PMsgBuilder::BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1, u8 unknown2 )
 {

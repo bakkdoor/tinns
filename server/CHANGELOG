@@ -1747,10 +1747,19 @@ Hammag; 28.04.2009 13:30 GMT+1
   Deactivated as most debug output when dev_debug is not set in conf file (but setting it will generate lots of output !)
   Continued work on vhc. Some small fixes and multichar tests still need to be performed
 
-Hammag; 28.04.2009 13:30 GMT+1
+Hammag; 01.05.2009 13:10 GMT+1
 ----------
 [rev. 123-124]
 
 <Gameserver>
   Small fixes on vhc zoning
   Support for all remaining .def added. Good loading of expected data has not been validated yet.
+
+Hammag; 10.05.2009 02:15 GMT+1
+----------
+[rev. 125]
+
+<Gameserver>
+  Fixed loading of weapons.def
+  Started implementation of multiuser viewing of weapon use and basic manual weapon reload
+

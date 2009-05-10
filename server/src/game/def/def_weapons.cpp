@@ -35,8 +35,8 @@ PDefWeapon::PDefWeapon()
   mName = "unknown";
   mItemIndex = mAmmoUse = mPSIuse = mWeaponType = mDiscardable = mMaxRange = 0;
   mAggressiveWeapon = mAmmoStartFlags = mShotCnt = mBaseWeaponId = 0;
-  mAmmoTypes[0] = mAmmoTypes[1] =mAmmoTypes[2] =mAmmoTypes[3] = 0;
-  mAmmoTypes[4] = mAmmoTypes[5] =mAmmoTypes[6] =mAmmoTypes[7] = 0;
+  mAmmoTypes[0] = mAmmoTypes[1] = mAmmoTypes[2] = mAmmoTypes[3] = 0;
+  mAmmoTypes[4] = mAmmoTypes[5] = mAmmoTypes[6] = mAmmoTypes[7] = 0;
   mItemModGroup = mItemModGroupFlags = mRareWeaponFx = 0;
   mStaminaUse = mSkillFactor = mDamageMultiplicator = 0;
 }
@@ -65,91 +65,93 @@ bool PDefWeapon::LoadFromDef( PTokenList *Tokens )
       case 7 :
         mItemIndex = atoi( i->c_str() ); break;
       case 8 :
-        continue; //int effectcolor[3]; // R,G,B
       case 9 :
-        continue; //int dynamiclight;
       case 10 :
-        continue; //float lighttime;
+        continue; //int effectcolor[3]; // R,G,B
       case 11 :
-        continue; //int soundindex;
+        continue; //int dynamiclight;
       case 12 :
-        continue; //float mShotTime; // useful ?
+        continue; //float lighttime;
       case 13 :
-        mAmmoUse = atoi( i->c_str() ); break;
+        continue; //int soundindex;
       case 14 :
-        mPSIuse = atoi( i->c_str() ); break;
+        continue; //float mShotTime; // useful ?
       case 15 :
-        mStaminaUse = atof( i->c_str() ); break;
+        mAmmoUse = atoi( i->c_str() ); break;
       case 16 :
-        continue; //float upthrow;
+        mPSIuse = atoi( i->c_str() ); break;
       case 17 :
-        continue; //int weaponHold; // ???
+        mStaminaUse = atof( i->c_str() ); break;
       case 18 :
-        mWeaponType = atoi( i->c_str() ); break;
+        continue; //float upthrow;
       case 19 :
-        mDiscardable = atoi( i->c_str() ); break;
+        continue; //int weaponHold; // ???
       case 20 :
-        mSkillFactor = atof( i->c_str() ); break;
+        mWeaponType = atoi( i->c_str() ); break;
       case 21 :
-        continue; //int mintgtRad;
+        mDiscardable = atoi( i->c_str() ); break;
       case 22 :
-        continue; //int maxtgtRad;
+        mSkillFactor = atof( i->c_str() ); break;
       case 23 :
-        mMaxRange = atoi( i->c_str() ); break;
+        continue; //int mintgtRad;
       case 24 :
-        mAggressiveWeapon = atoi( i->c_str() ); break;
+        continue; //int maxtgtRad;
       case 25 :
-        mDamageMultiplicator = atof( i->c_str() ); break;
+        mMaxRange = atoi( i->c_str() ); break;
       case 26 :
+        mAggressiveWeapon = atoi( i->c_str() ); break;
       case 27 :
+        mDamageMultiplicator = atof( i->c_str() ); break;
       case 28 :
       case 29 :
       case 30 :
       case 31 :
       case 32 :
       case 33 :
-        mAmmoTypes[Idx - 26] = atoi( i->c_str() ); break;
       case 34 :
-        mAmmoStartFlags = atoi( i->c_str() ); break; // ???
       case 35 :
-        continue; //int customclasstype; // ?
+        mAmmoTypes[Idx - 28] = atoi( i->c_str() ); break; // If mAmmoTypes[0] < 0 => =-damageId, no ammo
       case 36 :
-        continue; //int unknown // ?
+        mAmmoStartFlags = atoi( i->c_str() ); break; // ???
       case 37 :
-        mShotCnt = atoi( i->c_str() ); break;
+        continue; //int customclasstype; // ?
       case 38 :
-        continue; //float shotduration; // maybe useful later
+        continue; //int unknown // ?
       case 39 :
-        continue; //std::string shotfx;
+        mShotCnt = atoi( i->c_str() ); break;
       case 40 :
-        continue; //float attachposx;
+        continue; //float shotduration; // maybe useful later
       case 41 :
-        continue; //float attachposy;
+        continue; //std::string shotfx;
       case 42 :
-        continue; //float attachposz;
+        continue; //float attachposx;
       case 43 :
-        continue; //float fpposx;
+        continue; //float attachposy;
       case 44 :
-        continue; //float fpposy;
+        continue; //float attachposz;
       case 45 :
-        continue; //float fpposz;
+        continue; //float fpposx;
       case 46 :
-        mBaseWeaponId = atoi( i->c_str() ); break;
+        continue; //float fpposy;
       case 47 :
-        continue; //int weaponcolor;
+        continue; //float fpposz;
       case 48 :
-        continue; //int reloadsound;
+        mBaseWeaponId = atoi( i->c_str() ); break;
       case 49 :
-        mItemModGroup = atoi( i->c_str() ); break;
+        continue; //int weaponcolor;
       case 50 :
-        mItemModGroupFlags = atoi( i->c_str() ); break;
+        continue; //int reloadsound;
       case 51 :
+        mItemModGroup = atoi( i->c_str() ); break;
+      case 52 :
+        mItemModGroupFlags = atoi( i->c_str() ); break;
+      case 53 :
         mRareWeaponFx = atoi( i->c_str() ); break;
     }
 
-    if ( Idx >= 51 )
+    if ( Idx >= 53 )
       break;
   }
 
-  return ((Idx == 50) || (Idx == 51));
+  return (( Idx == 52 ) || ( Idx == 53 ) );
 }

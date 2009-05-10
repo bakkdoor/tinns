@@ -191,7 +191,7 @@ class PSpawnedVehicles
     friend class PWorld;
 
   public:
-    static const u32 mVhcBaseLocalId = 0x03ff;
+    static const u32 mVhcBaseLocalId = 0x03fd; //Vhc local Id are allocated downward from this value. Could br 0x3ff, but 0x3fe is used as "target" when shooting nowhere
     static const u16 mMaxLocalVhc = 127;
 
     inline static bool IsPotentialSpawnedVehicle( u32 nLocalId )

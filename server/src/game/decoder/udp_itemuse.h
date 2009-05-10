@@ -21,30 +21,30 @@
 
 /*
 
- udp_outfitter.h - decoder classes for UDP outfitter related messages
+ udp_itemuse.h - decoder classes for UDP inventory item use messages
 
- CREATION: 20 Mar 2009 Hammag
+ CREATION: 9 May 2009 Hammag
 
  MODIFIED:
  REASON: -
 
 */
 
-#ifndef HELDITEMACTION_H
-#define HELDITEMACTION_H
+#ifndef ITEMUSE_H
+#define ITEMUSE_H
 
-class PUdpHeldItemAction : public PUdpMsgAnalyser
+class PUdpItemUse : public PUdpMsgAnalyser
 {
-  private:
+/*  private:
     u16 mWeaponId;
     u32 mTargetRawItemID;
     u8 mUnknown2;
     u8 mTargetedHeight;
     u8 mScore; // ??? looks quite random...
-
+*/
   public:
-    PUdpHeldItemAction( PMsgDecodeData* nDecodeData );
-    //~PUdpHeldItemAction();
+    PUdpItemUse( PMsgDecodeData* nDecodeData );
+    //~PUdpItemUse();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

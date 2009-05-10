@@ -85,16 +85,4 @@ class PUdpItemDropOnItem : public PUdpMsgAnalyser
 	bool DoAction();
 };
 
-
-class PUdpManualReloadItem : public PUdpMsgAnalyser
-{
-  private:
-    u8 mUnknown;
-
-  public:
-      PUdpManualReloadItem(PMsgDecodeData* nDecodeData);
-      //~PUdpManualReloadItem();
-      PUdpMsgAnalyser* Analyse();
-      bool DoAction();
-};
 #endif

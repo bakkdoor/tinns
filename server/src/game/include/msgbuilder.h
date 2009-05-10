@@ -67,6 +67,10 @@ class PMsgBuilder
     PMessage* BuildVhcHealthUpdateMsg( PSpawnedVehicle* nVehicle );
     PMessage* BuildVhcPosUpdateMsg( PSpawnedVehicle* nVehicle );
     PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
+
+    PMessage* BuildStartWeaponReloadMsg( u16 nCharLocalId );
+    PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nUnknown2, u8 nTargetedHeight, u8 nScore );
+
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
 

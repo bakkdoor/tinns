@@ -21,9 +21,9 @@
 
 /*
 
- udp_outfitter.cpp - decoder classes for UDP outfitter related messages
+ udp_itemuse.cpp - decoder classes for UDP inventory item use messages
 
- CREATION: 20 Mar 2009 Hammag
+ CREATION: 9 May 2009 Hammag
 
  MODIFIED:
  REASON: -
@@ -31,20 +31,20 @@
 */
 
 #include "main.h"
-#include "udp_helditemaction.h"
+#include "udp_itemuse.h"
 
 
-/**** PUdpHeldItemAction ****/
+/**** PUdpItemUse ****/
 
-PUdpHeldItemAction::PUdpHeldItemAction( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
+PUdpItemUse::PUdpItemUse( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
 {
   nDecodeData->mName << "/0x01";
 }
 
-PUdpMsgAnalyser* PUdpHeldItemAction::Analyse()
+PUdpMsgAnalyser* PUdpItemUse::Analyse()
 {
-  mDecodeData->mName << "=Held item Action";
-
+  mDecodeData->mName << "=Inventory item use";
+/*
   PMessage* nMsg = mDecodeData->mMessage;
   nMsg->SetNextByteOffset( mDecodeData->Sub0x13Start + 8 );
 
@@ -53,22 +53,25 @@ PUdpMsgAnalyser* PUdpHeldItemAction::Analyse()
   ( *nMsg ) >> mUnknown2; // aiming ??? 0 to 52 +?
   ( *nMsg ) >> mTargetedHeight; // range 0 (bottom) to 26 (?) (top)
   ( *nMsg ) >> mScore; // range 0x00 to 0xff  Score ???
+*/
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
 
-bool PUdpHeldItemAction::DoAction()
+bool PUdpItemUse::DoAction()
 {
-  PClient* nClient = mDecodeData->mClient;
+  //PClient* nClient = mDecodeData->mClient;
   //PChar* tChar = nClient->GetChar();
 
-  PMessage* tmpMsg = MsgBuilder->BuildHeldItemUsedMsg( nClient->GetLocalID(), mWeaponId, mTargetRawItemID, mUnknown2, mTargetedHeight, 0 ); // 'score' is not broadcasted, but set to 0
-  ClientManager->UDPBroadcast( tmpMsg, nClient, 0, true );
+  //PMessage* tmpMsg = MsgBuilder->BuildHeldItemUsedMsg( nClient->GetLocalID(), mWeaponId, mTargetRawItemID, mUnknown2, mTargetedHeight, 0 ); // 'score' is not broadcasted, but set to 0
+  //ClientManager->UDPBroadcast( tmpMsg, nClient );
 
   //if ( gDevDebug )
-  Console->Print( "%s Handled item action toward target %d (0x%08x) weaponId=%d unk2=%d 'height'=%d 'score'=%d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetRawItemID, mTargetRawItemID, mWeaponId, mUnknown2, mTargetedHeight, mScore );
-  //mDecodeData->mMessage->Dump();
+  {
+    Console->Print( "%s Using inventory item", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
+    mDecodeData->mMessage->Dump();
+  }
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

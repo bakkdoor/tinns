@@ -37,11 +37,55 @@ void PCommands::doCmd_dev_t()
   {
     GetArgText( 1, Arg1, 30 );
     u32 targetObjectId = GetArgInt( 2 ) & 0xffffffff;
-    if ( Arg1[0] == 'r' )
+    if ( Arg1[0] == 't' )
     {
-      tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg( targetObjectId );
-      snprintf( tmpStr, 127, "Removing world object id 0x%08x", targetObjectId );
-      textMsg = tmpStr;
+      u8 val1;
+      if ( ArgC >= 3 )
+      {
+        val1 = GetArgInt( 3 ) & 0xff;
+        tmpMsg = new PMessage( 15 );
+        source->IncreaseUDP_ID();
+        *tmpMsg << ( u8 )0x13;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u16 )source->GetSessionID();
+        *tmpMsg << ( u8 )0x00; // Message length
+        *tmpMsg << ( u8 )0x03;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u8 )0x2d;
+        *tmpMsg << ( u32 )targetObjectId;
+        *tmpMsg << ( u8 )val1; 
+  
+        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+        source->SendUDPMessage( tmpMsg );
+        snprintf( tmpStr, 127, "Sent 13/03/2d msg to object id 0x%08x with value %d", targetObjectId, val1 );
+        textMsg = tmpStr;
+      }
+      else for(val1 = 2; val1 < 255; ++val1)
+      {
+        if(val1 == 6) continue;
+        tmpMsg = new PMessage( 15 );
+        source->IncreaseUDP_ID();
+        *tmpMsg << ( u8 )0x13;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u16 )source->GetSessionID();
+        *tmpMsg << ( u8 )0x00; // Message length
+        *tmpMsg << ( u8 )0x03;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u8 )0x2d;
+        *tmpMsg << ( u32 )targetObjectId;
+        *tmpMsg << ( u8 )val1; 
+  
+        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+        source->SendUDPMessage( tmpMsg );
+        snprintf( tmpStr, 127, "Sent 13/03/2d msg to object id 0x%08x with value %d", targetObjectId, val1 );
+        textMsg = tmpStr;
+        tmpStr[127] = '\0';
+        Chat->send( source, CHAT_DIRECT, "System", textMsg );
+        source->getUDPConn()->update();
+        source->getTCPConn()->update();
+        sleep(1);
+      }
+      tmpMsg = NULL;
     }
     else if ( Arg1[0] == 'd' )
     {
@@ -127,17 +171,31 @@ void PCommands::doCmd_dev_t()
       source->SendUDPMessage( tmpMsg );
       tmpMsg = NULL;
     }
-    else if ( Arg1[0] == 's' )
+    else if ( Arg1[0] == 'k' )
     {
-      u32 nSeatableObjectId;
-      u8 nSeatId;
-      if( source->GetChar()->GetSeatInUse(&nSeatableObjectId, &nSeatId) )
-      {
-        Console->Print( YELLOW, BLACK, "[DEBUG] Char %d sitting on vhc id %d, seat %d", source->GetLocalID(), nSeatableObjectId, nSeatId  );
-        PMessage* SittingMsg = MsgBuilder->BuildCharUseSeatMsg( source, nSeatableObjectId, nSeatId );
-        source->FillInUDP_ID(SittingMsg);
-        source->SendUDPMessage( SittingMsg );
-      }
+      tmpMsg = new PMessage( 15 );
+
+      source->IncreaseUDP_ID();
+
+      *tmpMsg << ( u8 )0x13;
+      *tmpMsg << ( u16 )source->GetUDP_ID();
+      *tmpMsg << ( u16 )source->GetSessionID();
+      *tmpMsg << ( u8 )0x00; // Message length place;
+      *tmpMsg << ( u8 )0x03;
+      *tmpMsg << ( u16 )source->GetUDP_ID();
+      *tmpMsg << ( u8 )0x1f;
+      *tmpMsg << ( u16 )source->GetLocalID();
+      *tmpMsg << ( u8 )0x16;
+      *tmpMsg << ( u32 )0x00000000;
+
+      ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+      snprintf( tmpStr, 127, "Sending kill(?) msg" );
+      textMsg = tmpStr;
+
+      source->SendUDPMessage( tmpMsg );
+
+      tmpMsg = NULL;
     }
   }
 
