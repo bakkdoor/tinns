@@ -64,7 +64,7 @@ bool PUdpItemSlotUse::DoAction()
   PItem* targetItem = NULL;
   bool tUsable = false;
   bool tUsableInHand = false;
-  u16 ItemVal1 = 0;
+  u16 nWeaponId = 0;
 
   if( gDevDebug )
     Console->Print( "%s Client trying to activate item in slot %d.", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetSlot );
@@ -87,7 +87,7 @@ bool PUdpItemSlotUse::DoAction()
         Console->Print( "%s Want to use existing item", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
       tUsable = true;
       tUsableInHand = true;
-      ItemVal1 = targetItem->GetValue1();
+      nWeaponId = targetItem->GetValue1();
     }
   }
 
@@ -126,10 +126,10 @@ bool PUdpItemSlotUse::DoAction()
         tmpMsg = MsgBuilder->BuildCharHelloMsg( nClient );
         ClientManager->UDPBroadcast( tmpMsg, nClient );
 
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg1( nClient, 59 );
+        tmpMsg = MsgBuilder->BuildUndefineduseMsg( nClient, 59 );
         nClient->SendUDPMessage( tmpMsg );
 
-        if ( ItemVal1 > 0 )
+        if ( nWeaponId > 0 )
         {
           tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg2( nClient );
           nClient->SendUDPMessage( tmpMsg );
@@ -137,7 +137,7 @@ bool PUdpItemSlotUse::DoAction()
         tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg3( nClient, mTargetSlot );
         nClient->SendUDPMessage( tmpMsg );
 
-        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4( nClient, ItemVal1 );
+        tmpMsg = MsgBuilder->BuildCharUseQBSlotMsg4( nClient, nWeaponId );
         nClient->SendUDPMessage( tmpMsg );
 
         if ( gDevDebug )

@@ -38,8 +38,8 @@ class PUdpHeldItemAction : public PUdpMsgAnalyser
   private:
     u16 mWeaponId;
     u32 mTargetRawItemID;
-    u8 mUnknown2;
-    u8 mTargetedHeight;
+    u8 mAiming; // 0: minimal
+    u8 mTargetedHeight; // 0: bottom to 26: top
     u8 mScore; // ??? looks quite random...
 
   public:

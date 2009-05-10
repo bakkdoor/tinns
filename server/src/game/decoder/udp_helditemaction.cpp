@@ -50,9 +50,9 @@ PUdpMsgAnalyser* PUdpHeldItemAction::Analyse()
 
   ( *nMsg ) >> mWeaponId;
   ( *nMsg ) >> mTargetRawItemID; // !!! 0x000003fe when shooting with no target
-  ( *nMsg ) >> mUnknown2; // aiming ??? 0 to 52 +?
+  ( *nMsg ) >> mAiming; // aiming ??? 0 to 52 +?
   ( *nMsg ) >> mTargetedHeight; // range 0 (bottom) to 26 (?) (top)
-  ( *nMsg ) >> mScore; // range 0x00 to 0xff  Score ???
+  ( *nMsg ) >> mScore; // range 0 to 255(?)  Score ???
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
@@ -63,11 +63,11 @@ bool PUdpHeldItemAction::DoAction()
   PClient* nClient = mDecodeData->mClient;
   //PChar* tChar = nClient->GetChar();
 
-  PMessage* tmpMsg = MsgBuilder->BuildHeldItemUsedMsg( nClient->GetLocalID(), mWeaponId, mTargetRawItemID, mUnknown2, mTargetedHeight, 0 ); // 'score' is not broadcasted, but set to 0
+  PMessage* tmpMsg = MsgBuilder->BuildHeldItemUsedMsg( nClient->GetLocalID(), mWeaponId, mTargetRawItemID, mAiming, mTargetedHeight, 0 ); // 'score' is not broadcasted, but set to 0
   ClientManager->UDPBroadcast( tmpMsg, nClient, 0, true );
 
-  //if ( gDevDebug )
-  Console->Print( "%s Handled item action toward target %d (0x%08x) weaponId=%d unk2=%d 'height'=%d 'score'=%d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetRawItemID, mTargetRawItemID, mWeaponId, mUnknown2, mTargetedHeight, mScore );
+  if ( gDevDebug )
+    Console->Print( "%s Handled item action toward target %d (0x%08x) weaponId=%d unk2=%d 'height'=%d 'score'=%d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetRawItemID, mTargetRawItemID, mWeaponId, mAiming, mTargetedHeight, mScore );
   //mDecodeData->mMessage->Dump();
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

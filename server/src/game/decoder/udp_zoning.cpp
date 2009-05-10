@@ -136,28 +136,33 @@ PUdpMsgAnalyser* PUdpGenrepZoning::Analyse()
   mDecodeData->mName << "=Genrep Zoning";
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
 
+  PMessage* cMsg = mDecodeData->mMessage;
+  cMsg->SetNextByteOffset( mDecodeData->Sub0x13Start + 12 );
+  *cMsg >> mNewLocation; // u32
+  *cMsg >> mNewEntity; //u16
+
   return this;
 }
 
 bool PUdpGenrepZoning::DoAction()
 {
-  PMessage* cMsg = mDecodeData->mMessage;
-  PClient* nClient = mDecodeData->mClient;
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return PUdpGenrepZoning::DoEffectiveZoning( mDecodeData->mClient, mNewLocation, mNewEntity );
+}
 
-  u32 newLocation = cMsg->U16Data( mDecodeData->Sub0x13Start + 12 );
-  u16 nData = cMsg->U16Data( mDecodeData->Sub0x13Start + 16 );
-
-  PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg( nClient, newLocation, nData );
+bool PUdpGenrepZoning::DoEffectiveZoning( PClient* nClient, u32  nNewLocation, u16 nNewEntity )
+{
+  PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg( nClient, nNewLocation, nNewEntity );
   nClient->SendUDPMessage( tmpMsg );
 
   //Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  nClient->ChangeCharLocation( newLocation );
+  nClient->ChangeCharLocation( nNewEntity );
 
-  tmpMsg = MsgBuilder->BuildZoning1Msg( nClient, nData );
+  tmpMsg = MsgBuilder->BuildZoning1Msg( nClient, nNewEntity );
   nClient->SendUDPMessage( tmpMsg );
 
-  if ( gDevDebug ) Console->Print( "Client[%d]: Genrep Zoning to zone %d (data %d)", nClient->GetID(), newLocation, nData );
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  if ( gDevDebug ) Console->Print( "Client[%d]: Genrep Zoning to zone %d entity %d", nClient->GetID(), nNewLocation, nNewEntity );
+
   return true;
 }
 
@@ -178,29 +183,36 @@ PUdpMsgAnalyser* PUdpAptGRZoning::Analyse()
 
 bool PUdpAptGRZoning::DoAction()
 {
-  //PMessage* cMsg = mDecodeData->mMessage;
-  PClient* nClient = mDecodeData->mClient;
+  /*
+    //u16 newEntity = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // always 0x0047 ? Not a location/entity anyway...
 
-  //u16 nData = cMsg->U16Data(mDecodeData->Sub0x13Start+12); // always 0x0047 ? Not a location/entity anyway...
+    u32 newLocation = PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment();
+    u16 newEntity = 0;
+  */
 
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return PUdpAptGRZoning::DoEffectiveZoning( mDecodeData->mClient );
+}
+
+bool PUdpAptGRZoning::DoEffectiveZoning( PClient* nClient )
+{
   u32 newLocation = PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment();
-  u16 nData = 0;
+  u16 newEntity = 0;
 
-  PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg( nClient, newLocation, nData );
+  PMessage* tmpMsg = MsgBuilder->BuildGenrepZoningMsg( nClient, newLocation, newEntity );
   nClient->SendUDPMessage( tmpMsg );
 
   if ( ! nClient->ChangeCharLocation( newLocation ) )
     Console->Print( "Client[%d]: Bad Apartment location %d", nClient->GetID(), newLocation );
 
   //Client_Sockets[ClientNum].CharInfo.Flags = PFLAG_ZONING; //Player started zoning
-  /*if (! nClient->ChangeCharLocation(newLocation))
-    Console->Print("Client[%d]: Bad Apartment location %d (client value %d)", nClient->GetID(), PWorlds::mAptBaseWorldId + nClient->GetChar()->GetBaseApartment(), newLocation);*/
 
-  tmpMsg = MsgBuilder->BuildZoning1Msg( nClient, nData );
+  tmpMsg = MsgBuilder->BuildZoning1Msg( nClient, newEntity );
   nClient->SendUDPMessage( tmpMsg );
 
-  if ( gDevDebug ) Console->Print( "Client[%d]: Genrep Zoning to Base Apartment (location %d - data %d)", nClient->GetID(), newLocation, nData );
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  if ( gDevDebug )
+    Console->Print( "Client[%d]: Genrep Zoning to Base Apartment (zone %d - entity %d)", nClient->GetID(), newLocation, newEntity );
+
   return true;
 }
 

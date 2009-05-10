@@ -52,6 +52,7 @@ class PMsgBuilder
 // as these must be set on a destination client basis
     PMessage* BuildCharHelloMsg( PClient* nClient );
     PMessage* BuildCharHealthUpdateMsg( PClient* nClient );
+    PMessage* BuildCharDeathMsg( PClient* nClient, u32 nKillerCharId = 0 );
     PMessage* BuildCharPosUpdateMsg( PClient* nClient );
     PMessage* BuildCharPosUpdate2Msg( PClient* nClient, u8 InfoBitfield = 0x7f );
     //PMessage* BuildCharSittingMsg( PClient* nClient ); // Not used anymore, done by BuildCharPosUpdateMsg
@@ -68,7 +69,7 @@ class PMsgBuilder
     PMessage* BuildVhcPosUpdateMsg( PSpawnedVehicle* nVehicle );
     PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
 
-    PMessage* BuildStartWeaponReloadMsg( u16 nCharLocalId );
+    PMessage* BuildStartWeaponReloadAnimMsg( PClient* nClient );
     PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nUnknown2, u8 nTargetedHeight, u8 nScore );
 
     // Temp. NPC update message for testing
@@ -119,16 +120,16 @@ class PMsgBuilder
 
     PMessage* BuildCharMoneyUpdateMsg( PClient* nClient, u32 nCredits );
     PMessage* BuildUndefineduseMsg( PClient* nClient, u8 nValue );
-    inline PMessage* BuildCharUseQBSlotMsg1( PClient* nClient, u8 nValue ) {return BuildUndefineduseMsg( nClient, nValue );}
     PMessage* BuildCharUseQBSlotMsg2( PClient* nClient, u16 nV1 = 100, u16 nV2 = 100, u16 nV3 = 100, u16 nV4 = 100, u16 nV5 = 100, u16 nV6 = 100, u16 nV7 = 0 );
     PMessage* BuildCharUseQBSlotMsg3( PClient* nClient, u8 nSlot );
-    PMessage* BuildCharUseQBSlotMsg4( PClient* nClient, u16 nValue1 );
+    PMessage* BuildCharUseQBSlotMsg4( PClient* nClient, u16 nWeaponId );
     PMessage* BuildContainerContentList( PContainer* nContainer, u8 nLocType );
     PMessage* BuildContainerContentEntry( PContainerEntry* nEntry, u8 nLocType );
 
     PMessage* BuildCharOpenContainerMsg( PClient* nClient, u32 nContainerID, PContainer* nContainer );
     PMessage* BuildItemMoveMsg( PClient* nClient, u8 nSource, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt );
     PMessage* BuildBoxItemMoveMsg( PClient* nClient, PContainerEntry* nEntry, u8 nSrcX, u8 nSrcY, u8 nDestination, u8 nDestX, u8 nDestY, u8 nItemCnt );
+    PMessage* BuildStartWeaponReloadMsg( PClient* nClient );
 
     PMessage* BuildStartHackGameMsg( PClient* nClient, u32 nWorldObjID, u8 nHackDifficult );
 
@@ -140,6 +141,8 @@ class PMsgBuilder
     PMessage* BuildDBAnswerMsg( PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols );
 
     PMessage* BuildTraderItemListMsg( PClient* nClient, u32 nTraderNpcID );
+
+    PMessage* BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
 };
 
 #endif

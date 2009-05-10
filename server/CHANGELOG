@@ -1763,3 +1763,10 @@ Hammag; 10.05.2009 02:15 GMT+1
   Fixed loading of weapons.def
   Started implementation of multiuser viewing of weapon use and basic manual weapon reload
 
+Hammag; 10.05.2009 23:55 GMT+1
+----------
+[rev. 126]
+
+<Gameserver>
+  Improved working and multiuser viewing of weapon reload
+  Started implementation of char death and respawn

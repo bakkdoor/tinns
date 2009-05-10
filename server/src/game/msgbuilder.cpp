@@ -53,21 +53,21 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
   PMessage* tmpMsg = new PMessage( 80 );
 
   u8 currentActiveSlot = nChar->GetQuickBeltActiveSlot();
-  u16 ItemVal1 = 0;
+  u16 weaponId = 0;
   switch ( currentActiveSlot )
   {
     case INV_WORN_QB_NONE:
-      //ItemInHandID = 0;
+      //weaponId = 0;
       break;
     case INV_WORN_QB_HAND:
-      //ItemInHandID = 0; // <= TODO
+      weaponId = 5; // <= TODO: set it somewhere
       break;
     default:
       PItem* currentItem = nChar->GetInventory()->GetContainer( INV_LOC_WORN )->GetItem( INV_WORN_QB_START + currentActiveSlot );
       //Todo : item addons & effects
       //ItemInHandID = currentItem->GetItemID():
       if ( currentItem )
-        ItemVal1 = currentItem->GetValue1();
+        weaponId = currentItem->GetValue1();
       //else
       //ItemInHandID = 0;
       break;
@@ -88,7 +88,7 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
   *tmpMsg << ( u8 )0x60; // 0x40 if current faction epic done (master), | 0x80 to display [afk] | 0x20 if LE in
   *tmpMsg << ( u8 )(( nChar->GetSpeedOverride() == 255 ) ? 10 : nChar->GetSpeedOverride() ); // move speed, reset by client (and for him only) when getting fall damage
   *tmpMsg << ( u8 )0x08; // ??? something to do with speed ?
-  *tmpMsg << ( u16 )ItemVal1; // WeaponID of the weapon in hand
+  *tmpMsg << ( u16 )weaponId; // WeaponID of the weapon in hand
   *tmpMsg << ( u8 )0x01; // ???
   *tmpMsg << ( u8 )0x01; // ???
   *tmpMsg << ( u8 )( 128 + nChar->GetSoullight() );
@@ -190,6 +190,26 @@ PMessage* PMsgBuilder::BuildCharHealthUpdateMsg( PClient* nClient )
   *tmpMsg << ( u8 )0x64; //Body Heath =Body HP/(3 *0.35)(for max 35% of total)
   *tmpMsg << ( u8 )0x64; //Feet Heath =Feet HP/(3 *0.20)(for max 20% of total)
   *tmpMsg << ( u8 )0x01; // Sta/Mana ?
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharDeathMsg( PClient* nClient, u32 nKillerCharId )
+{
+  PMessage* tmpMsg = new PMessage( 17 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; //Client->GetUDP_ID(); // just placeholder, must be set outside
+  *tmpMsg << ( u16 )0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
+  *tmpMsg << ( u8 )0x00; // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // Client->GetUDP_ID(); // just placeholder, must be set outside
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x16;
+  *tmpMsg << ( u32 )nKillerCharId;
 
   ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
@@ -1262,7 +1282,7 @@ PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 
   *tmpMsg << ( u16 )nClient->GetLocalID();
   *tmpMsg << ( u8 )0x25;
   *tmpMsg << ( u8 )0x23;
-  *tmpMsg << ( u8 )0x41; // 0x28 ??
+  *tmpMsg << ( u8 )0x41; // 0x28 ?? // 0x 18 // 0x2c
 
   nClient->IncreaseUDP_ID();
   nClient->IncreaseTransactionID(); // testing ...
@@ -1790,7 +1810,7 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg3( PClient* nClient, u8 nSlot )
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4( PClient* nClient, u16 nValue1 )
+PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4( PClient* nClient, u16 nWeaponId )
 {
   PMessage* tmpMsg = new PMessage( 16 );
   nClient->IncreaseUDP_ID();
@@ -1805,7 +1825,7 @@ PMessage* PMsgBuilder::BuildCharUseQBSlotMsg4( PClient* nClient, u16 nValue1 )
   *tmpMsg << ( u16 )nClient->GetLocalID();
   *tmpMsg << ( u8 )0x02; // ??
   *tmpMsg << ( u8 )0x02; // ??
-  *tmpMsg << nValue1;
+  *tmpMsg << nWeaponId;
 
   return tmpMsg;
 }
@@ -2532,7 +2552,7 @@ c9 03 00 00 = Object ID
 47 ff
 00 cd
 c3 c3
-d7 
+d7
 d7 ec
 00 00
 29
@@ -2726,9 +2746,30 @@ PMessage* PMsgBuilder::BuildTraderItemListMsg( PClient* nClient, u32 nTraderNpcI
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildStartWeaponReloadMsg( u16 nCharLocalId )
+PMessage* PMsgBuilder::BuildStartWeaponReloadMsg( PClient* nClient )
 {
   PMessage* tmpMsg = new PMessage( 16 );
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x16; // cmd
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildStartWeaponReloadAnimMsg( PClient* nClient )
+{
+  PMessage* tmpMsg = new PMessage( 13 );
 
   *tmpMsg << ( u8 )0x13;
   *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
@@ -2738,9 +2779,8 @@ PMessage* PMsgBuilder::BuildStartWeaponReloadMsg( u16 nCharLocalId )
   *tmpMsg << ( u8 )0x03;
   *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
   *tmpMsg << ( u8 )0x1f;
-  *tmpMsg << ( u16 )nCharLocalId;
-  *tmpMsg << ( u8 )0x25; // cmd
-  *tmpMsg << ( u8 )0x16; // cmd
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x15; // cmd
 
   ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
@@ -2804,6 +2844,26 @@ PMessage* PMsgBuilder::BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknow
   return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd )
+{
+  PMessage* tmpMsg = new PMessage( 19 );
+
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x2d;
+  *tmpMsg << ( u32 )nNpcId;
+  *tmpMsg << ( u8 )nCmd; // 6: npc/vhc "cleanup", 1: kill npc + msg "no reward, too small"
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
 /*
 void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 {

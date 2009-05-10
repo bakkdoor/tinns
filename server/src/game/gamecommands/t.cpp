@@ -42,8 +42,8 @@ void PCommands::doCmd_dev_t()
       u8 val1;
       if ( ArgC >= 3 )
       {
-        val1 = GetArgInt( 3 ) & 0xff;
-        tmpMsg = new PMessage( 15 );
+        int val2 = GetArgInt( 3 );
+        tmpMsg = new PMessage( 32 );
         source->IncreaseUDP_ID();
         *tmpMsg << ( u8 )0x13;
         *tmpMsg << ( u16 )source->GetUDP_ID();
@@ -53,11 +53,12 @@ void PCommands::doCmd_dev_t()
         *tmpMsg << ( u16 )source->GetUDP_ID();
         *tmpMsg << ( u8 )0x2d;
         *tmpMsg << ( u32 )targetObjectId;
-        *tmpMsg << ( u8 )val1; 
+        *tmpMsg << ( u8 )0x01;
+        *tmpMsg << ( u32 )val2;
   
         ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
         source->SendUDPMessage( tmpMsg );
-        snprintf( tmpStr, 127, "Sent 13/03/2d msg to object id 0x%08x with value %d", targetObjectId, val1 );
+        snprintf( tmpStr, 127, "Sent 13/03/2d msg to object id 0x%08x with values 6/%d", targetObjectId, val2 );
         textMsg = tmpStr;
       }
       else for(val1 = 2; val1 < 255; ++val1)
@@ -158,10 +159,9 @@ void PCommands::doCmd_dev_t()
       *tmpMsg << ( u8 )0x03;
       *tmpMsg << ( u16 )source->GetUDP_ID();
       *tmpMsg << ( u8 )0x23;
-      *tmpMsg << ( u8 )0x000f; // cmd = ?
+      *tmpMsg << ( u16 )0x000f; // cmd = ?
       *tmpMsg << ( u16 )targetObjectId; //0x0003
       *tmpMsg << ( u16 )val1; //0x0001
-
 
       ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
@@ -171,30 +171,29 @@ void PCommands::doCmd_dev_t()
       source->SendUDPMessage( tmpMsg );
       tmpMsg = NULL;
     }
-    else if ( Arg1[0] == 'k' )
+    else if ( Arg1[0] == 's' )
     {
       tmpMsg = new PMessage( 15 );
 
       source->IncreaseUDP_ID();
-
+//0c: 03:81:00:23: 12:00: 07:00:00:00:00:00 // thunderstorm ?
       *tmpMsg << ( u8 )0x13;
       *tmpMsg << ( u16 )source->GetUDP_ID();
       *tmpMsg << ( u16 )source->GetSessionID();
-      *tmpMsg << ( u8 )0x00; // Message length place;
+      *tmpMsg << ( u8 )0x0c; // Message length place;
       *tmpMsg << ( u8 )0x03;
       *tmpMsg << ( u16 )source->GetUDP_ID();
-      *tmpMsg << ( u8 )0x1f;
-      *tmpMsg << ( u16 )source->GetLocalID();
-      *tmpMsg << ( u8 )0x16;
+      *tmpMsg << ( u8 )0x23;
+      *tmpMsg << ( u8 )0x0012; // cmd = ?
+      *tmpMsg << ( u16 )(targetObjectId & 0xffff);
       *tmpMsg << ( u32 )0x00000000;
 
       ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
-      snprintf( tmpStr, 127, "Sending kill(?) msg" );
+      snprintf( tmpStr, 127, "Sending S msg" );
       textMsg = tmpStr;
 
       source->SendUDPMessage( tmpMsg );
-
       tmpMsg = NULL;
     }
   }

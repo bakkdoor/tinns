@@ -46,18 +46,11 @@ class PUdpItemManualReload : public PUdpMsgAnalyser
       bool DoAction();
 };
 
-class PUdpReloadAnimDone : public PUdpMsgAnalyser
+class PUdpReloadAnimStart : public PUdpMsgAnalyser
 {
-/*  private:
-    u16 mWeaponId;
-    u32 mTargetRawItemID;
-    u8 mUnknown2;
-    u8 mTargetedHeight;
-    u8 mScore; // ??? looks quite random...
-*/
   public:
-    PUdpReloadAnimDone( PMsgDecodeData* nDecodeData );
-    //~PUdpReloadAnimDone();
+    PUdpReloadAnimStart( PMsgDecodeData* nDecodeData );
+    //~PUdpReloadAnimStart();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

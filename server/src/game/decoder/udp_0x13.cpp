@@ -41,6 +41,7 @@
 #include "udp_packet0.h"
 #include "udp_vhc.h"
 #include "udp_0x2b.h"
+#include "udp_itemmanualreload.h"
 
 /**** PUdp0x13 ****/
 
@@ -162,6 +163,22 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
         break;
       }
 
+      case 0x1f:
+      {
+        mDecodeData->mName << "/0x1f";
+        u8 MsgSubType = TmpMsg->U8Data( TmpMsg->GetNextByteOffset() + 4 );
+        if( MsgSubType == 0x15 ) // Weapon reload animation start
+        {
+          nextAnalyser = new PUdpReloadAnimStart( mDecodeData );
+        }
+        else
+        {
+          mDecodeData->mUnknownType = MsgType;
+          mDecodeData->mTraceUnknownMsg = true;
+        }
+        break;
+      }
+ 
       case 0x20: // Char move
       {
         nextAnalyser = new PUdpCharPosUpdate( mDecodeData );

@@ -62,15 +62,15 @@ bool PUdpItemManualReload::DoAction()
   
   if ( gDevDebug )
     Console->Print( "%s Manual reload start", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
-    
+
   u8 activeSlot = tChar->GetQuickBeltActiveSlot();
   if (( activeSlot != INV_WORN_QB_NONE ) && ( activeSlot != INV_WORN_QB_HAND ) )
   {
     u8 newAmmoCount = GetMaxLoadableAmmos( activeSlot );
     if ( newAmmoCount )
     {
-      PMessage* tmpMsg = MsgBuilder->BuildStartWeaponReloadMsg( nClient->GetLocalID() );
-      ClientManager->UDPBroadcast( tmpMsg, nClient );
+      PMessage* tmpMsg = MsgBuilder->BuildStartWeaponReloadMsg( nClient );
+      nClient->SendUDPMessage( tmpMsg );
 
       tmpMsg = new PMessage( 32 );
       nClient->IncreaseUDP_ID();
@@ -200,42 +200,30 @@ u8 PUdpItemManualReload::GetMaxLoadableAmmos( u8 nBeltSlotId )
   return 0;
 }
 
-/**** PUdpReloadAnimDone ****/
+/**** PUdpReloadAnimStart ****/
 
-PUdpReloadAnimDone::PUdpReloadAnimDone( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
+PUdpReloadAnimStart::PUdpReloadAnimStart( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
 {
-  nDecodeData->mName << "/0x25";
+  nDecodeData->mName << "/0x15";
 }
 
-PUdpMsgAnalyser* PUdpReloadAnimDone::Analyse()
+PUdpMsgAnalyser* PUdpReloadAnimStart::Analyse()
 {
-  mDecodeData->mName << "=Reload animation done";
-  /*
-    PMessage* nMsg = mDecodeData->mMessage;
-    nMsg->SetNextByteOffset( mDecodeData->Sub0x13Start + 8 );
-
-    ( *nMsg ) >> mWeaponId;
-    ( *nMsg ) >> mTargetRawItemID; // !!! 0x000003fe when shooting with no target
-    ( *nMsg ) >> mUnknown2; // aiming ??? 0 to 52 +?
-    ( *nMsg ) >> mTargetedHeight; // range 0 (bottom) to 26 (?) (top)
-    ( *nMsg ) >> mScore; // range 0x00 to 0xff  Score ???
-  */
+  mDecodeData->mName << "=Reload animation starting";
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
 }
 
-bool PUdpReloadAnimDone::DoAction()
+bool PUdpReloadAnimStart::DoAction()
 {
-  //PClient* nClient = mDecodeData->mClient;
+  PClient* nClient = mDecodeData->mClient;
   //PChar* tChar = nClient->GetChar();
 
-  //PMessage* tmpMsg = MsgBuilder->BuildHeldItemUsedMsg( nClient->GetLocalID(), mWeaponId, mTargetRawItemID, mUnknown2, mTargetedHeight, 0 ); // 'score' is not broadcasted, but set to 0
-  //ClientManager->UDPBroadcast( tmpMsg, nClient );
-
-  //if ( gDevDebug )
-  Console->Print( "%s Reload animation done", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
-  //mDecodeData->mMessage->Dump();
+  PMessage* tmpMsg = MsgBuilder->BuildStartWeaponReloadAnimMsg( nClient );
+      ClientManager->UDPBroadcast( tmpMsg, nClient, 5000, true );
+  if ( gDevDebug )
+    Console->Print( "%s Reload animation starting", Console->ColorText( CYAN, BLACK, "[DEBUG]" ) );
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;
