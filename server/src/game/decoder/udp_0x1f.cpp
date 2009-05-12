@@ -124,7 +124,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         }
         case 0x0c: // addons activation
         {
-          Console->Print( "%s 13/03/1f/25/0c: Addon activation value %d (0x%01x)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mDecodeData->mMessage->U8Data( mDecodeData->Sub0x13Start + 9 ) );
+          nextAnalyser = new PUdpItemAddonActivation( mDecodeData );
           break;
         }
         case 0x14: // Hack announcement?

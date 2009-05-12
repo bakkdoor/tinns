@@ -85,7 +85,6 @@ class PCommands
             void doCmdcolor();
             void doCmdbrightness();
             void doCmdremove();
-            // void doCmdrehash(); Removed
             void doCmduptime();
             void doCmdversion();
             void doCmdkick();
@@ -109,6 +108,7 @@ class PCommands
             void doCmdtakemoney();
             void doCmdspawnactor();
             void doCmdeditactor();
+            void doCmdweather();
 
             void doCmdtest();
         /// ------- End commandset -------

@@ -2787,7 +2787,7 @@ PMessage* PMsgBuilder::BuildStartWeaponReloadAnimMsg( PClient* nClient )
   return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nUnknown2, u8 nTargetedHeight, u8 nScore )
+PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore )
 {
   PMessage* tmpMsg = new PMessage( 22 );
 
@@ -2803,9 +2803,50 @@ PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId
   *tmpMsg << ( u8 )0x01; // cmd
   *tmpMsg << ( u16 )nWeaponId;
   *tmpMsg << ( u32 )nTargetRawItemID;
-  *tmpMsg << ( u8 )nUnknown2; // ?
+  *tmpMsg << ( u8 )nAiming;
   *tmpMsg << ( u8 )nTargetedHeight;
-  *tmpMsg << ( u8 )nScore; // ?
+  *tmpMsg << ( u8 )nScore;
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildHeldItemAddonActivationMsg( PClient* nClient, u8 nState )
+{
+  PMessage* tmpMsg = new PMessage( 15 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x2f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u16 )0x0001; // cmd ?
+  *tmpMsg << ( u8 )( 0x60 | nState );
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildWeatherControlMsg( u16 nWeatherId )
+{
+  PMessage* tmpMsg = new PMessage( 13 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x2e;
+  *tmpMsg << ( u8 )0x01; // cmd
+  *tmpMsg << ( u16 )nWeatherId; //see at bottom of weather.def
 
   ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
@@ -2903,11 +2944,9 @@ void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 */
 
 /* Unkown use packets (from nc2.2)
-13:81:00:81:e2: 0c: 03:81:00:23: 12:00: 07:00:00:00:00:00  // Weather realted ? / thunderstorm trigger ?
+13:81:00:81:e2: 0c: 03:81:00:23: 12:00: 07:00:00:00:00:00 // weather related ?
 
 13:56:00:56:e2: 40: 03:56:00:1f:01:00:25:13: f1:18:13:01:77:05:48:c7: f2:18:13:02:16:74:61:c7: f3:18:13:03:17:74:61:c7: f4:18:13:04:18:74:61:c7: f5:18:13:05:1f:2a:60:c7: f6:18:13:06:1f:2a:60:c7: f7:18:13:0b:3e:8f:6d:c7
-
-13:5b:00:5b:e2: 07: 03:5b:00:2e: 01:06:00 // Weather related ?
 
 13:5c:00:5c:e2: 0c: 03:5c:00:1f:01:00:25:13: f8:18:0e:02
 

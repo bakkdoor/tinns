@@ -171,7 +171,7 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
         doCmdadddor();
     }
 */
-    else if(strcmp(Command, "online") == 0) // Was: connectedList
+    else if( (strcmp(Command, "online") == 0) || (strcmp(Command, "who") == 0) ) // Was: connectedList
     {
         doCmdconlist();
     }
@@ -215,7 +215,7 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdkick();
     }
-    else if(strcmp(Command, "info") == 0)
+    else if( (strcmp(Command, "info") == 0) || (strcmp(Command, "whois") == 0) )
     {
         doCmdinfo();
     }
@@ -295,7 +295,10 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdspawnactor(); // Spawns actor next to player
     }
-
+    else if(strcmp(Command, "weather") == 0)
+    {
+        doCmdweather(); // Control weather in player zone
+    }
     // Else: unknown command. Ignore
 }
 

@@ -21,7 +21,7 @@
 
 /*
 
- udp_outfitter.h - decoder classes for UDP outfitter related messages
+ udp_helditemaction.h - decoder classes for held item related messages
 
  CREATION: 20 Mar 2009 Hammag
 
@@ -49,4 +49,15 @@ class PUdpHeldItemAction : public PUdpMsgAnalyser
     bool DoAction();
 };
 
+class PUdpItemAddonActivation : public PUdpMsgAnalyser
+{
+  private:
+    u8 mAddonIdx;
+
+  public:
+    PUdpItemAddonActivation( PMsgDecodeData* nDecodeData );
+    //~PUdpItemAddonActivation();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
 #endif

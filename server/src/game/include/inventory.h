@@ -46,8 +46,8 @@
 //Inventory containers info
 #define INV_WORN_QB_START 0
 #define INV_WORN_QB_END 9
-#define INV_WORN_QB_HAND 255
 #define INV_WORN_QB_NONE 99
+#define INV_WORN_QB_HAND 11
 
 #define INV_WORN_PROC_START 12
 #define INV_WORN_PROC_END 24

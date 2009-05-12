@@ -64,7 +64,7 @@ PClient::PClient( int Index )
   mActorRemoveMode = false;
   mAcceptNPCUpdates = false;
 
-  testval8 = 1;
+  testval8 = 0;
 }
 
 PClient::~PClient()

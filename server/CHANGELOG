@@ -1770,3 +1770,15 @@ Hammag; 10.05.2009 23:55 GMT+1
 <Gameserver>
   Improved working and multiuser viewing of weapon reload
   Started implementation of char death and respawn
+
+Hammag; 12.05.2009 18:00 GMT+1
+----------
+[rev. 127]
+
+<Gameserver>
+  Added support for weapon addons effects activation (flashlight/zoom(not tested)/silencer/laser)
+  Added weather control packet
+  Added zone weather control command @weather ?|<weather id> [<target char id>]
+  Added command @who as alias of @online
+  Added command @whois as alias of @info
+  

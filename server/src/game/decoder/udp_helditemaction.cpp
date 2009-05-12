@@ -21,7 +21,7 @@
 
 /*
 
- udp_outfitter.cpp - decoder classes for UDP outfitter related messages
+ udp_helditemaction.cpp - decoder classes for held item related messages
 
  CREATION: 20 Mar 2009 Hammag
 
@@ -69,6 +69,39 @@ bool PUdpHeldItemAction::DoAction()
   if ( gDevDebug )
     Console->Print( "%s Handled item action toward target %d (0x%08x) weaponId=%d unk2=%d 'height'=%d 'score'=%d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mTargetRawItemID, mTargetRawItemID, mWeaponId, mAiming, mTargetedHeight, mScore );
   //mDecodeData->mMessage->Dump();
+
+  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+  return true;
+}
+
+/**** PUdpItemAddonActivation ****/
+
+PUdpItemAddonActivation::PUdpItemAddonActivation( PMsgDecodeData* nDecodeData ) : PUdpMsgAnalyser( nDecodeData )
+{
+  nDecodeData->mName << "/0x0c";
+}
+
+PUdpMsgAnalyser* PUdpItemAddonActivation::Analyse()
+{
+  mDecodeData->mName << "=Held item addon activation/deactivation";
+
+  mAddonIdx = mDecodeData->mMessage->U8Data( mDecodeData->Sub0x13Start + 9 );
+
+  mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
+  return this;
+}
+
+bool PUdpItemAddonActivation::DoAction()
+{
+  PClient* nClient = mDecodeData->mClient;
+  //PChar* tChar = nClient->GetChar();
+  nClient->testval8 ^= (1 << mAddonIdx); // Toggle state // Using testval8 for testing only!!!
+
+  PMessage* tmpMsg =  MsgBuilder->BuildHeldItemAddonActivationMsg( nClient, nClient->testval8); // For testing only!!!
+  ClientManager->UDPBroadcast( tmpMsg, nClient );
+
+  if ( gDevDebug )
+    Console->Print( "%s Handled item (de)activation of addon %d (0x%02x)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mAddonIdx, nClient->testval8 );
 
   mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
   return true;

@@ -171,31 +171,6 @@ void PCommands::doCmd_dev_t()
       source->SendUDPMessage( tmpMsg );
       tmpMsg = NULL;
     }
-    else if ( Arg1[0] == 's' )
-    {
-      tmpMsg = new PMessage( 15 );
-
-      source->IncreaseUDP_ID();
-//0c: 03:81:00:23: 12:00: 07:00:00:00:00:00 // thunderstorm ?
-      *tmpMsg << ( u8 )0x13;
-      *tmpMsg << ( u16 )source->GetUDP_ID();
-      *tmpMsg << ( u16 )source->GetSessionID();
-      *tmpMsg << ( u8 )0x0c; // Message length place;
-      *tmpMsg << ( u8 )0x03;
-      *tmpMsg << ( u16 )source->GetUDP_ID();
-      *tmpMsg << ( u8 )0x23;
-      *tmpMsg << ( u8 )0x0012; // cmd = ?
-      *tmpMsg << ( u16 )(targetObjectId & 0xffff);
-      *tmpMsg << ( u32 )0x00000000;
-
-      ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
-
-      snprintf( tmpStr, 127, "Sending S msg" );
-      textMsg = tmpStr;
-
-      source->SendUDPMessage( tmpMsg );
-      tmpMsg = NULL;
-    }
   }
 
   tmpStr[127] = '\0';

@@ -63,6 +63,7 @@ class PMsgBuilder
 
     PMessage* BuildSpawnWorldObjectMsg( u16 nModelID, u16 nFunctionID, u32 nWOID, u16 nPosX, u16 nPosY, u16 nPosZ, u8 nRotX, u8 nRotY, u8 nRotZ );
     PMessage* BuildRemoveWorldObjectMsg( u32 nWOID );
+    PMessage* BuildWeatherControlMsg( u16 nWeatherId );
 
     PMessage* BuildSubwaySingleUpdateMsg( u32 nVehicleID, u16 nPosition, u8 nDoorOpened );
     PMessage* BuildVhcHealthUpdateMsg( PSpawnedVehicle* nVehicle );
@@ -70,7 +71,8 @@ class PMsgBuilder
     PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
 
     PMessage* BuildStartWeaponReloadAnimMsg( PClient* nClient );
-    PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nUnknown2, u8 nTargetedHeight, u8 nScore );
+    PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore = 0 );
+    PMessage* BuildHeldItemAddonActivationMsg( PClient* nClient, u8 nState );
 
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
