@@ -1,0 +1,81 @@
+Definition file for ISCP (Inter Server Communication Protocoll)
+by Namikon
+=========================
+
+This file defines the InterServerCommunication Protocoll (ISCP).
+It is used to exchange Data between Gameservers and the (Main/Master)Infoserver over
+an TCP connection.
+
+=======================================================================================================================
+ISCP Type   : TCP
+ISCP Version: 2
+Last Update : 13.12.2006 21:48 GMT+1
+=======================================================================================================================
+0xF0		ISC Protocoll
+<u16>		SizeOf entire packet
+<u8>		PacketType (Byte - Direction:Description - Data [Data format])
+                - "Handshake 01 - Initial connection and version check"
+									0x01 - GS->IS: Hello, i'm using protocoll version xxx - ISC Version (*Note1) [u16]
+        					0x02 - GS<-IS: Hi. Your version is not compatible, reject. Need version xxx - ISC Version NEEDED (*Note1) [u16]
+        					0x03 - GS<-IS: Hi. Your version is compatible. Need PW to connect - No data [-]
+
+                - "Handshake 02 - Connection password"
+               		0x10 - GS->IS: Here comes the password... - Passwort as MD5 hash (or plain?) [char/u8]
+               		0x11 - GS<-IS: Password wrong, denied. - No data [-]
+               		0x12 - GS<-IS: Password OK. You can now identify yourself - No data [-]
+
+                - "GS Serverdata Part 1: Name"
+                	0x20 - GS->IS: Hi, my name is XXXX - Name of Gameserver - [char/u8]
+                	0x21 - GS<-IS: Name invalid, cant add you. - Name of Gameserver as return - [char/u8]
+                	0x22 - GS<-IS: Name valid - Name of Gameserver as return - [char/u8]
+
+                - "GS Serverdata Part 2: IP, Port and version"
+                	0x30 - GS->IS: My IP is XXX, waiting on Port YYY for incomming connections, running at Patchlevel ZZZ (u16) - IP Port Patchlevel [X[DWORD] Y[u16] Z[u16]]
+                	0x31 - GS<-IS: Error; IP is already in use - IP [DWORD]
+                	0x32 - GS<-IS: Error; Incompatible Patchlevel - No Data [-]
+                	0x33 - GS<-IS: All right - No Data [-]
+
+                - "GS Serverdata Part 3: Players/Staff Online"
+                	0x40 - GS->IS: There are currently A Regular players, B Volunteers, C GMs and D Admins online [A[u16] B[u16] C[u16] D[u16]]
+                	0x41 - GS<-IS: -Reserved for further usage- (Dont think there will be any errors to report)
+                	0x42 - GS<-IS: All right - No Data [-]
+
+                - "GS Serverdata Part 4: Minlevel to connect to server; Minlevel to see Playercount; Minlevel to see server"
+                	0x50 - GS->IS: Players have to be at least Lv AA to Connect, Lv BB to see playercount and Lv CC to see me
+       		                       - Level to connect, Level to see PlayerCount, Level to see server [A[u16] B[u16] C[u16]]
+                	0x51 - GS<-IS: -Reserved for further usage- (Dont think there will be any errors to report)
+                	0x52 - GS<-IS: All right - No Data [-]
+
+								- "Common checks: Client identification"
+								  0x60 - GS->IS: Client ID AA is trying to login. Has he passed your Login screen? [AA[u16]]
+								  0x61 - GS<-IS: No, playerID AA is unknown. Could try to bypass loginserver [AA[u16]]
+								  0x62 - GS<-IS: Yes, playerID AA has passed my loginscreen, let him in. [AA[u16]]
+								  
+								- "Infoserver control - Login"
+								  0x90 - GS->IS: Someone is trying to login as admin in order to control infoserver over ISC - Password (md5) [u8]
+								  							 (This password is defined in infoserver.cfg)
+								  0x91 - GS<-IS: Login failed, wrong PW - no data required [-]
+								  0x92 - GS<-IS: Login success, admin commands are enabled - no data required [-]
+								  
+                - "Infoserver control"
+              		0xA0 - GS->IS: Toogle AutoAccount creation - On(1) Off(0) [u8]
+                	0xA1 - GS->IS: Change level required to login - Level required to login [u16]
+                	0xA2 - GS->IS: Reload Infoserver configfile - no data required [-]
+                	0xA3 - GS->IS: Shutdown Infoserver - no data required [-]
+                	0xA4 - GS->IS: Hide People in OnlineList (Bitmask: Regular(1) | Volunteer(2) | GM(4) | Admin(8) => 12: Hide GM and Admin)	
+
+                - "Infoserver control - Return packets"
+                	0xB0 - GS<-IS: Done - No Data [-]
+                	0xB1 - GS<-IS: Failed; Need level admin to do that - No Data [-]
+
+                - "General returns"
+                	0xF0 - GS<>IS: Packet received and understood - Either no data or Checksum  [- / checksum as u8 elements]
+                	0xF1 - GS<>IS: Packet received but not understood. Wrong protocoll? - No Data [-]
+                	0xFF - GS->IS: Gameserver is going down (Not crash, normal shutdown) - No Data [-]
+                	
+<u16>           Bytes to follow (If no data is send, 0x00)
+<u8[]>          Data
+
+
+
+(*Note1) This is <<NOT>> the patchlevel!!! Its the version of the ISC Protocoll. Can be found in isc.h

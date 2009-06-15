@@ -1,0 +1,360 @@
+#! /bin/bash
+	
+# TinNS (TinNS is not a Neocron Server)
+# Copyright (C) 2005 Linux Addicted Community
+# maintainer Akiko <akiko@gmx.org>
+# 
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+# =====================================================
+# 
+# TinNS control script
+# written by Namikon
+# 
+
+#
+# Settings (Change them if you want)
+
+# TINNS_DIR
+#  Main dir of the 3 executables "patchserver", "infoserver" and "gameserver"
+#  If this script is located in the server's directory, set this to '.'
+TINNS_DIR=.
+
+# IGNORE_ROOT
+# for security reasons, you should never run any deamon as root. Therefore, we stop the script from running.
+# If you still want to run TinNS as root, set this value to "true"
+IGNORE_ROOT=false
+
+# RUN_AS
+# If you want to start TinNS while server's boot time, uncomment RUN_AS and set the
+# accountname the server should run as.
+# Its a bad idea if you only want to use this script to start/stop the server by
+# normal users, since you'd have to enter the password for the target user everytime.
+#RUN_AS=tinns
+
+# EOS (EndOfSettings. Dont change anything below, unless you know what you're doing)
+
+
+
+cd $TINNS_DIR
+uid=`id -u $RUN_AS`
+if [ -z $uid ]; then
+	uid=$UID
+fi
+
+case "$1" in
+	start)
+# PATCHSERVER
+		if [ -e patchserver.pid ]; then
+			echo "patchserver.pid exists... Is server running?";
+			PID=`cat patchserver.pid`
+			if [ `ps -A|grep "$PID"|grep patchserver|wc -c` -gt 5 ]; then
+				echo "WARNING: patchserver process found! If you're sure the patchserver not running, remove patchserver.pid"
+				exit 1
+			else
+				echo "Either the patchserver died or you kill'ed it outside this script."
+				echo "Removing patchserver.pid..."
+				rm patchserver.pid
+				echo "done"
+			fi
+		fi
+
+# INFOSERVER
+		if [ -e infoserver.pid ]; then
+			echo "infoserver.pid exists... Is server running?";
+			PID=`cat infoserver.pid`
+			if [ `ps -A|grep "$PID"|grep infoserver|wc -c` -gt 5 ]; then
+				echo "WARNING: infoserver process found! If you're sure the infoserver not running, remove infoserver.pid"
+				exit 1
+			else
+				echo "Either the infoserver died or you kill'ed it outside this script."
+				echo "Removing infoserver.pid..."
+				rm infoserver.pid
+				echo "done"
+			fi
+		fi
+
+# GAMESERVER
+		if [ -e gameserver.pid ]; then
+			echo "gameserver.pid exists... Is server running?";
+			PID=`cat gameserver.pid`
+			if [ `ps -A|grep "$PID"|grep gameserver|wc -c` -gt 5 ]; then
+				echo "WARNING: gameserver process found! If you're sure the gameserver not running, remove gameserver.pid"
+				exit 1
+			else
+				echo "Either the gameserver died or you kill'ed it outside this script."
+				echo "Removing gameserver.pid..."
+				rm gameserver.pid
+				echo "done"
+			fi
+		fi
+####################
+		if (! $IGNORE_ROOT) && [ "$uid" = "0" ]; then
+			echo ">>WARNING>> DO NOT RUN THE SERVER AS ROOT <<WARNING<<"
+			for c in $(seq 1 10); do
+				echo -n "!"
+				sleep 1
+			done
+			echo !
+			exit 6
+		fi
+		echo "Starting TinNS..."
+
+# PATCHSERVER
+		if [ -e patchserver ]; then
+			if [ ! -x patchserver ]; then
+				echo "patchserver is not executable. Now trying to set it..."
+				chmod u+x patchserver
+			fi
+			if [ -x patchserver ]; then
+				SUCMD=''
+				if [ "$RUN_AS" ]; then
+					su $RUN_AS -c "./patchserver -PID=patchserver.pid"
+				else
+					./patchserver -PID=patchserver.pid
+				fi
+			else
+				echo "STOP: patchserver is not executable. Please fix this!"
+				exit 4
+			fi
+		else
+			echo "Unable to find patchserver"
+			exit 5
+		fi
+
+# INFOSERVER
+		if [ -e infoserver ]; then
+			if [ ! -x infoserver ]; then
+				echo "infoserver is not executable. Now trying to set it..."
+				chmod u+x infoserver
+			fi
+			if [ -x infoserver ]; then
+				SUCMD=''
+				if [ "$RUN_AS" ]; then
+					su $RUN_AS -c "./infoserver -PID=infoserver.pid"
+				else
+					./infoserver -PID=infoserver.pid
+				fi
+			else
+				echo "STOP: infoserver is not executable. Please fix this!"
+				exit 4
+			fi
+		else
+			echo "Unable to find infoserver"
+			exit 5
+		fi
+
+# GAMESERVER
+		if [ -e gameserver ]; then
+			if [ ! -x gameserver ]; then
+				echo "gameserver is not executable. Now trying to set it..."
+				chmod u+x gameserver
+			fi
+			if [ -x gameserver ]; then
+				SUCMD=''
+				if [ "$RUN_AS" ]; then
+					su $RUN_AS -c "./gameserver -PID=gameserver.pid"
+				else
+					./gameserver -PID=gameserver.pid
+				fi
+			else
+				echo "STOP: gameserver is not executable. Please fix this!"
+				exit 4
+			fi
+		else
+			echo "Unable to find gameserver"
+			exit 5
+		fi
+####################
+	;;
+
+    stop)
+
+# PATCHSERVER
+		if [ -e patchserver.pid ]; then
+			echo -n "Now stopping patchserver"
+			if ( kill -TERM `cat patchserver.pid` ); then
+				for c in $(seq 1 300); do
+					if [ -e patchserver.pid ]; then
+						echo -n "."
+						sleep 1
+					fi
+				done
+			fi
+			if [ -e patchserver.pid ]; then
+				echo "NOTICE: patchserver does not shutdown cleanly - killing now"
+				kill -KILL `cat patchserver.pid`
+				rm patchserver.pid
+				sleep 5
+			else
+				echo "done"
+			fi
+		else
+			echo "patchserver.pid is missing, no patchserver running?"
+			exit 7
+		fi
+
+# INFOSERVER
+		if [ -e infoserver.pid ]; then
+			echo -n "Now stopping infoserver"
+			if ( kill -TERM `cat infoserver.pid` ); then
+				for c in $(seq 1 300); do
+					if [ -e infoserver.pid ]; then
+						echo -n "."
+						sleep 1
+					fi
+				done
+			fi
+			if [ -e infoserver.pid ]; then
+				echo "NOTICE: infoserver does not shutdown cleanly - killing now"
+				kill -KILL `cat infoserver.pid`
+				rm infoserver.pid
+				sleep 5
+			else
+				echo "done"
+			fi
+		else
+			echo "infoserver.pid is missing, no infoserver running?"
+			exit 7
+		fi
+
+# GAMESERVER
+		if [ -e gameserver.pid ]; then
+			echo -n "Now stopping gameserver"
+			if ( kill -TERM `cat gameserver.pid` ); then
+				for c in $(seq 1 300); do
+					if [ -e gameserver.pid ]; then
+						echo -n "."
+						sleep 1
+					fi
+				done
+			fi
+			if [ -e gameserver.pid ]; then
+				echo "NOTICE: gameserver does not shutdown cleanly - killing now"
+				kill -KILL `cat gameserver.pid`
+				rm gameserver.pid
+				sleep 5
+			else
+				echo "done"
+			fi
+		else
+			echo "gameserver.pid is missing, no patchserver running?"
+			exit 7
+		fi
+
+####################
+
+	;;
+	restart)
+		$0 stop && $0 start || exit 1
+	;;
+	status)
+	# PATCHSERVER
+		PATCH_PID_ONLINE=false
+		PATCH_PROC_ONLINE=false
+
+		if [ -e patchserver.pid ]; then
+			PATCH_PID=`cat patchserver.pid`
+			if [ `ps -A|grep "$PATCH_PID"|wc -c` -gt 5 ]; then
+				PATCH_PID_ONLINE=true
+			fi
+		fi
+		
+		if [ `ps -A|grep patchserver|wc -c` -gt 5 ]; then		
+			PATCH_PROC_ONLINE=true
+		fi
+		
+	# INFOSERVER		
+		INFO_PID_ONLINE=false
+		INFO_PROC_ONLINE=false
+
+		if [ -e infoserver.pid ]; then
+			INFO_PID=`cat infoserver.pid`
+			if [ `ps -A|grep "$INFO_PID"|wc -c` -gt 5 ]; then
+				INFO_PID_ONLINE=true
+			fi
+		fi
+		
+		if [ `ps -A|grep infoserver|wc -c` -gt 5 ]; then		
+			INFO_PROC_ONLINE=true
+		fi
+		
+	# GAMESERVER		
+		GAME_PID_ONLINE=false
+		GAME_PROC_ONLINE=false
+
+		if [ -e gameserver.pid ]; then
+			GAME_PID=`cat gameserver.pid`
+			if [ `ps -A|grep "$GAME_PID"|wc -c` -gt 5 ]; then
+				GAME_PID_ONLINE=true
+			fi
+		fi
+		
+		if [ `ps -A|grep gameserver|wc -c` -gt 5 ]; then		
+			GAME_PROC_ONLINE=true
+		fi
+
+		PATCHSTATUS1="Patchserver is"
+		if (($PATCH_PID_ONLINE) && ($PATCH_PROC_ONLINE)); then
+			PATCHSTATUS2="\033[32mOnline\033[0m"
+			PATCHSTATUS3=" "
+		fi
+		if ((! $PATCH_PID_ONLINE) && ($PATCH_PROC_ONLINE)); then
+			PATCHSTATUS2="\033[32mOnline\033[0m"
+			PATCHSTATUS3="\033[33m[Warning]\033[0m PID file invalid or not found"
+		fi
+		if ((! $PATCH_PID_ONLINE) && (! $PATCH_PROC_ONLINE)); then
+			PATCHSTATUS2="\033[31mOffline\033[0m"
+			PATCHSTATUS3=" "
+		fi
+		
+		INFOSTATUS1="Infoserver  is"
+		if (($INFO_PID_ONLINE) && ($INFO_PROC_ONLINE)); then
+			INFOSTATUS2="\033[32mOnline\033[0m"
+			INFOSTATUS3=" "
+		fi
+		if ((! $INFO_PID_ONLINE) && ($INFO_PROC_ONLINE)); then
+			INFOSTATUS2="\033[32mOnline\033[0m"
+			INFOSTATUS3="\033[33m[Warning]\033[0m PID file invalid or not found"
+		fi
+		if ((! $INFO_PID_ONLINE) && (! $INFO_PROC_ONLINE)); then
+			INFOSTATUS2="\033[31mOffline\033[0m"
+			INFOSTATUS3=" "
+		fi
+		
+		GAMESTATUS1="Gameserver  is"
+		if (($GAME_PID_ONLINE)&& ($GAME_PROC_ONLINE)); then
+			GAMESTATUS2="\033[32mOnline\033[0m"
+			GAMESTATUS3=" "
+		fi
+		if ((! $GAME_PID_ONLINE) && ($GAME_PROC_ONLINE)); then
+			GAMESTATUS2="\033[32mOnline\033[0m"
+			GAMESTATUS3="\033[33m[Warning]\033[0m PID file invalid or not found"
+		fi
+		if ((! $GAME_PID_ONLINE) && (! $GAME_PROC_ONLINE)); then
+			GAMESTATUS2="\033[31mOffline\033[0m"
+			GAMESTATUS3=" "
+		fi
+		
+		echo -e "$PATCHSTATUS1 $PATCHSTATUS2 $PATCHSTATUS3"
+		echo -e "$INFOSTATUS1 $INFOSTATUS2 $INFOSTATUS3"
+		echo -e "$GAMESTATUS1 $GAMESTATUS2 $GAMESTATUS3"
+
+	;;
+	*)
+		echo "Usage: $0 {start|stop|restart|status}"
+		exit 2
+esac
+exit 0

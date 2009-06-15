@@ -1,0 +1,75 @@
+The purpose of this proposed file is to give a fairly up to date view
+on the work in progress, to avoid double work...
+
+Hammag; 08.07.2006 - updated 21.09.2006
+-----
+The aim of current modifications are to change a bit of the general architecture of TinNS
+[DONE] Source tree, Makefiles, and includes will first be reorganised to permit more modularity and code sharing amongst the 3 servers,
+ and easy exclusion of unfinished code.
+ Some Makefile targets to facilitate common code individual compilation remains to be done
+
+The aim of some modifications I'll restart later will be to to finish the full character login,
+that is a char that displays as expected ingame (for himself at first),
+and has his stats, equipment and changes well kept in DB.
+
+It involves modification of:
+ - [DONE] full char creation with use of profession templates (for money and inventory)
+    except for :
+      - remaining SP calculation
+      - starting XP calculation
+ - additions and modifications on some char data definitions
+ - char items and containers management
+ - [DONE] char data saving in DB including inventory
+     But belt, implants & armor, chat conf and other secondary info not implemented yet
+ - modifications to char loading from DB
+    [DONE] for inventory
+    [NOT DONE] for rest of char items and complementary infos (see above)
+ - minor modifications to autosave
+    [DONE] but more improvements will have to be done when more efficiency needed
+ - [DONE]full filling-in of the baseline for char visual aspects, stats and inventory
+ - [DONE] make use of worldinfo.def, appplaces.def, appartments.def, respawn.def to manage genreping and
+    appartment in/out rather than hardcoded info (e.g. zoning.cpp) and manually built database.
+ - [DONE] make use of world .dat files and worldmodels.def to manage item use rather than
+    a manually built database.
+ - [DONE] dynamic loading/unloading of chars, non mem-resident account info
+
+Notes
+----------------
+command @skin to play with skins
+    Usage:  @skin #<chardef idx>
+                    for use with the index id from characters.def
+        or  @skin <model>|-|# [<head>[ <torso>[ <legs>]]]
+                    <model> is the model id found after the model name in characters.def
+                    # resets to real char skin
+                    - means current skin
+                    incrementaly optional <head>, <torso> and <legs> are values 0-9
+        As a side effect, just doing @skin - will display you current skin infos (and change to the same ...)
+
+command @effect to play with skins effect
+    Usage:  @effect <effect> [<density>]
+                with <effect> = 0 to 17 and <density> = 0 (max density) to 255 (min density)
+                <density> is meaningfull for some of the effects only
+    Note: you won't see the effect on yourself. Only other chars will see it ...
+    Effects found:
+    0 = no effect
+    1 = poison smoke
+    2 = electricity
+    3 = deflector (instant white flash)
+    4 = heal bubbles
+    5 = be a light in the darkness !!!
+    6 = flames
+    7 = stun particles
+    8 = group heal
+    9 = group deflector (?)
+    10= damage boost
+    11= group damage boost
+    12= shelter (instant yellow flash)
+    13= group deflector (?)
+    14= stealth
+    15= anti poison aura
+    16= I don't remember this one: swarming yellow & blue bubbles
+    17= true sight
+
+command @speed to play with speed
+    Usage:  @speed <newspeed> | #
+                with <speed> = 0 (no move).. 254 , 255 or # meaning "no speed override"

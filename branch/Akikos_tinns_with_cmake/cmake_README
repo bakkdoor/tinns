@@ -1,0 +1,21 @@
+You need cmake to build tinns and its tools.
+
+cmake is part of nearly all linux distributions and you may need to install
+first.
+
+debian/ubuntu: "apt-get install cmake"
+suse (11.0+): "zypper in cmake"
+
+After installing cmake just use it with the CMakeLists.txt file in this
+directory.
+
+"cmake CMakeLists.txt"
+
+cmake will now create a full buildsystem which can be used with the plain
+GNU make and checks for all missing packages/libs. You will get notified if
+something is missing.
+
+"cmake_distclean.sh" removes all cache and temp files from the cmake
+buildsystem.
+
+- Akiko

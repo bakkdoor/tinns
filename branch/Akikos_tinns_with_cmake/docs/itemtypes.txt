@@ -1,0 +1,24 @@
+0 = Unknown/Generic 	O1: None 	O2: None
+1 = GenRep		O1: ?		O2: ?
+2 = Apt Station		O1: Station ID	O2: None
+3 = GoGo		O1: None	O2: None
+4 = Zoning Doors	O1: Map ID	O2: None
+5 = Chairs		O1: None	O2: None
+6 = Condition Locks	O1: Condition	O2: Option
+				0 = open 		O2 = None
+				1 = locked and hackable	O2 = difficulty
+				2 = locked and Apt	O2 = Owner
+				3 = locked and pay	O2 = Price
+7 = Venture Warps	O1: None	O2: None
+8 = Vehicle Depot	O1: None	O2: None
+9 = Holo Exit		O1: None	O2: None
+10 = Holo Weapon	O1: None	O2: None
+11 = Holo Heal		O1: None	O2: None
+12 = Holo Entrance	O1: None	O2: None
+13 = City Com		O1: None	O2: None
+14 = OutFitters		O1: None	O2: None
+15 = Cabs		O1: Owner	O2: None
+16 = Containers		O1: Loot Type	O2: Hackable difficulty if 0 not locked
+17 = Street Signs	O1: None	O2: None
+18 = Recreation Units	O1: None	O2: None
+19 = Outpost hack	O1: Owner	O2: None

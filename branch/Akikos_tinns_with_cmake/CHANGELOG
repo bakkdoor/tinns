@@ -1,0 +1,1790 @@
+<GPL>
+	TinNS (TinNS is not a Neocron Server)
+	Copyright (C) 2005 Linux Addicted Community
+	maintainer Akiko <akiko@gmx.org>
+
+	This program is free software; you can redistribute it and/or
+	modify it under the terms of the GNU General Public License
+	as published by the Free Software Foundation; either version 2
+	of the License, or (at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+	02110-1301, USA.
+</GPL>
+
+Developers:
+- Akiko
+- bakkdoor
+- Namikon
+- Hammag
+
+> Recent changes
+====================
+Namikon; 31.05.2006 22:12 GMT+1
+----------
+<General changes>
+- Introduced CHANGELOG file
+- Added version.h to enable a way to create release tarballs/binaries
+- Fixed a dozen of typos and bugs from the additions of the last 2 days
+- "Clean build"; Should compile without any error now. (Note: Not "work", "compile" :) )
+
+
+<Source changes>
+[GAME]
+globals.cpp :: ShutdownTinNS()
+  - Renamed to Shutdown()
+  - Added svn version output to startup procedure
+  - Fixed minor typos/console outputs
+config.cpp :: LoadOptions()
+  - Changed configfile, now loads data from /conf/gameserver.cfg
+  - Added full 2 DB support (was: "sql_*" now: "info_sql_*" and "game_sql_*")
+
+[INFO]
+
+[PATCH]
+globals.cpp :: ShutdownTinNS()
+  - Renamed to Shutdown()
+
+[ALL]
+misc.cpp :: GetSVNRev()
+  - Added handling for version.h defines
+====================
+Hammag; 06.07.2006 02:17 GMT+1
+----------
+<General changes>
+- Put UDP sockets in non-blocking mode.
+- Checked and modified all socket related stuff to work in non-blocking mode.
+- Lowered CPU use from 100% to ~0% by changing from sched_yield() to I/O wait sleep using Select.
+  This avoid runingthe main loop when there's nothing to do (some more improvements are to come
+  on this topic).
+- The socket Select now waits for any tcp OR UDP socket incoming data.
+- Fixed some pointer issues in netcode.
+
+
+<Source changes>
+[GAME]
+ 
+[INFO]
+misc.h
+ - added declaration of utility function IPlongToString()
+misc.cpp :: IPlongToString()
+ - implemented function to convert IP address in u32 format to string
+infoserver.cpp :: HandleServerList()
+ - now use IPlongToString() to display server IP on Console
+
+[PATCH]
+
+[ALL]
+patchserver.cpp, infoserver.cpp, gameserver.cpp :: Start()
+ - set 10 msec timeout for socket select, which sets the max wait time
+  for the main loop when no activity.
+
+main.cpp
+ - commented out sched_yield() in main loop, as it is not needed anymore.
+
+main.h
+ - moved-up tinns-specific types include to ready them for netcode compilation
+
+[NETCODE]
+connection-tcp.cpp :: ConnectionTCP()
+ - moved-in non-blocking setting from ServerSocket::getTCPConnection()
+    for better class coherency
+connection-tcp.cpp :: update()
+ - modified to deal correctly with would-block socket writes.
+ - fixed a pointer and size issue in socket recv
+
+connection-udp.h :: class
+ - added private member m_ServerSocket
+ - added ServerSocket parameter in constructor prototype
+ 
+connection-udp.cpp :: ConnectionUDP()
+ - modified to set m_ServerSocket from constructor parameters
+connection-udp.cpp :: ~ConnectionUDP()
+ - added socket removal from fd sets by calling m_ServerSocket->delSocketFromSet
+connection-udp.cpp :: update()
+ - modified to check m_ServerSocket->isDataAvailable() before trying to read from socket
+ - fixed a pointer and size issue in socket recv
+
+serversocket.h :: class
+ - added settimeout public method
+ - added fd_set m_MainSetUDP private member
+ - added fd_set m_MainSetGlobal private member (= m_MainSetTCP + m_MainSetUDP)
+ 
+serversocket.cpp :: ServerSocket()
+ - moved m_TimeOut initialization in constructor
+ - added m_MainSetUDP and m_MainSetGlobal init
+serversocket.cpp :: settimeout()
+ - implemented method to set m_TimeOut to permit tuning
+serversocket.cpp :: open()
+ - added m_MainSetUDP and m_MainSetGlobal init
+ - added m_ListenerTCP to m_MainSetGlobal too
+serversocket.cpp :: update()
+ - now m_MainSetGlobal is copied to m_ReadSetTCP set,
+ - added a local fdMax for select
+ - use a temp timeout structure in select as select doc says select implementation
+    for Linux could change this value
+serversocket.cpp :: getUDPConnection()
+ - now pass this pointer to new ConnectionUDP constructor
+ - new UDP sockets are added to m_MainSetUDP and m_MainSetGlobal,
+    and kept track of in m_FdMaxUDP
+serversocket.cpp :: getTCPConnection()
+ - fixed a struct length issue (?) in accept
+ - now new TCP sockets are added to m_MainSetGlobal too
+ - moved non-blocking setting to ConnectionTCP::ConnectionTCP() for better class coherency
+serversocket.cpp :: delSocketFromSet()
+ - added removal of sockfd from m_MainSetUDP and m_MainSetGlobal too
+ 
+====================
+Hammag; 30.07.2006 02:17 GMT+1
+----------
+<General changes>
+ - Baseline fixed, full zoning now really works with multiplayer
+ - Multiuser now works. Multiple login + mutual viewing.
+    Now a char displays as expected ingame for himself as for others.(some movement/positionning glitches remain)
+ - Warning: code for using items hasn't been fixed, so every thing 2nd+ user does will be
+     attriuted to 1st user and provoque OOO flood.
+     So don't try using items, except for the first user.
+ - added @skin command. Reminder use by @skin, little mode description in commands.cpp header
+
+<Source changes>
+[GAME]
+ - Many changes in many files
+ - amongst other, rewrited baseline.inc.cpp with new PMessage object as an exemple
+ - added PItem & PInventory classes
+
+[NETCODE]
+ - Added PMessage class for network message input/output
+ - UDP & TCP connection classes now has an interface for PMessages
+ 
+====================
+Hammag; 06.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - code for using items should now be fixed for most case (see above) so activating items in multiuser mode is no longer a limitation
+ - a similar issue in @warp command has been solved (and spawn location added as an optional command line parameter as in NeoX)
+ - further modifications to the netcode to cope with NAT. New options added to config file
+ - rework of the config.cpp implementation, to enable easy addition of new option and more explicit error checking. See comments at begining of config.cpp
+ - gametime flow fixed. Start time is set to 0 ATM
+ - other minor changes. See source files starts for info
+ - conf/gameserver.conf extended with NAT related options
+
+<Source changes>
+[GAME]
+ - Many changes in many files for modifications stated above
+ - Changes to ClientManager to make it work and add methods to dispatch messages to clients
+ - game/Makefile updated
+ 
+[NETCODE]
+ - Changes in most files for modifications stated above
+
+[INFO]
+client.cpp :: GetAdress()
+  - updated implementation to use ConnectionTCP::GetRemoteAddress()
+
+[PATCH]
+client.cpp :: GetAdress()
+  - updated implementation to use ConnectionTCP::GetRemoteAddress()
+  
+====================
+Hammag; 24.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - movement/positionning in multiuser is now fixed 
+ - implemented NC messages decoding new base classes. Not used yet
+
+<Source changes>
+[GAME]
+  - added PUdpMsgDecoder class, which objects manage UDP packets decoding
+  - added PUdpMsgAnalyser class, which is the base class that real packet analyser objects will be derived from
+      Analysis exemple is not yet implemented
+  - added PUdpMsgUnknown class, which is the most simple exemple of final packet analyser object (used for unkown packets)
+
+====================
+Hammag; 26.08.2006 02:17 GMT+1
+----------
+<General changes>
+ - A modified source tree is now used. The corresponding changes have been applied to the whole source code,
+    resulting in some move to some common components directories, common includes and corresponding changes
+    in servers source
+ - A new Makefile system is now used. All makefiles have been remade accordingly.
+
+<Source changes>
+[ALL]
+Put version.h in include dir
+Created include/external.h
+Removed corresponding includes from all main.h, and replaced by external.h
+
+[CONSOLE]
+Moved console *.cpp files in common/console
+Moved console's *.h in include dir
+Added a main.h in common/console for specific private includes
+Made Console class generic, added output file as constructor parameter,
+  changed servers code accordingly
+Removed Console-> in Console->ColorText(...) in PConsole::~PConsole()
+
+[NETCODE]
+Moved netcode .cpp files in common/netcode
+Moved netcode's *.h in include dir, changed netcode's main.h to netcode.h
+Added a main.h in common/netcode for specific private includes
+
+====================
+Hammag; 27.08.2006 18:30 GMT+1
+----------
+<General changes>
+ - Changed config class as a common component
+ - Changed "misc" functions as a common components
+ - Removed some old code, some old defines, and changed some defines to config entry
+
+[CONFIG] 
+Moved config .cpp file in common/config
+Moved config *.h in include dir
+Added a main.h in common/config for specific private includes
+Made Config class generic, added option tempate and config file as LoadOptions parameter,
+  changed servers code accordingly, by making use of the shared class
+  and adding a templateconfig.h file included in the place where config loading is done
+
+[MISC]
+Merged all misc functions in a single misc.h and a single misc.cpp files
+Moved config *.h in include dir
+Move the misc.cpp in common/misc
+Added a main.h in common/misc for specific private includes
+
+[ALL SERVERS]
+Modified global.cpp and main.h to use shared PConfig class and shared misc functions
+Removed misc.* and config.* from servers sources
+
+====================
+Hammag; 10.09.2006 00:00 GMT+1
+----------
+<General changes>
+ - Changed filesystem class as a common component
+ - Added command @effect to play with skins effect (see commands.cpp for details)
+ - Added command @speed to play with speed (see commands.cpp for details)
+ - Removed some more #include directive from some main.h files to put them only
+    when needed in .cpp file. This eliminated some unnecessary dependencies and
+    makes recompile faster.
+ - Migrated message decoding to new system for all messages types except 0x13/0x1f (yes... stil lots to do)
+ 
+
+[ALL SERVERS]
+Moved filesystem.h to include dir, and filesystem.cpp to common/filesystem dir
+Removed filesystem.* from servers sources
+Changed patchserver and gameserver accordingly
+
+
+[GAME]
+Added game/include dir to put all .h file to highly facilitate includes.
+Added corresponding include directory path directive in game and game/* makefiles
+
+Put all .def related stuff in game/def subdir.
+*.h files are in game/include
+
+Put all message decoding related stuff in game/decoder subdir.
+msgdecoder.h file are in game/include.
+Other .h files which are not exposed to other gameserver componenets are in game/decoder subdir.
+
+Created a PMsgBuilder class to put message creating methods in it.
+A global PMsgBuilder* MsgBuilder instance is added to gameserver.
+Modified globals.*, gameserver.*, clientmanager.cpp, commands.cpp and various game/_inc accordingly
+
+Moved PGameState definition from gameserver.cpp to gameserver.h
+
+Added PChar* GetChar() method to PClient
+
+Added WorldMap request basic support in PMsgBuilder::BuildReqInfoAnswerMsg() (for futur use)
+Added BodyEffect and SpeedOverride members to PChar class, as well as methods to set and get these values
+Added support for BodyEffect and SpeedOverride in PMsgBuilder::BuildCharHelloMsg()
+
+Reorganised code related to UDP Sync in order to avoid duplicate code.
+Put most of corresponding message building functions in PMsgBuilder class.
+
+====================
+Hammag; 22.09.2006 00:00 GMT+1
+----------
+<General changes>
+ - Added Buddy list management (just the list though, buddy chat isn't working yet)
+    Added a new gameserver DB table ti save the buddy list: buddy_list 
+ - Added Direct chat management (just char selection though, direct chat isn't working yet, and selection isn't saved in DB yet)
+ - Added Genrep list management. List is now working and saved. Registration of GR doesn't register the right GR though (working on that)
+ - Added loading of worldmodel.def and appplace.def files for later (very soon) use.
+ - Migrated most of message handling to new decoder system.
+    Item use is migrated in "a compatibility mode" until item management is fully based on world .dat  and worldmodel.def files
+
+[GAME]
+Removed game/_inc directory
+Removed all UDP message analysis and handling from gameserver.cpp
+Created mode decoder classes in game/decoder
+Moved most UDP packet creation code from gameserver.cpp to msgbuilder.cpp, using PMessages
+Added PBuddyList class
+Added PGenrepList class
+Added loading/saving of Buddy List and Genrep List to char loading/saving in chars.cpp
+
+Added new members to PChar to store skin color and brightness (aka "darkness")  in chars.h and char.cpp (not saved in DB yet)
+  and corresponding support in PMsgBuilder::BuildCharHelloMsg()
+Added new commands "@color" and "@brightness"
+
+====================
+Hammag; 27.09.2006 20:00 GMT+1
+----------
+<General changes>
+ - Added loading of appartements.def and respawn.def files for later (very soon) use.
+ - Corrected and modified dependencies management in make system.
+    No unwanted file date change should occure anymore
+
+[GAME]
+Zoning to appartment now make use of appartements.def data instead of hardcoded data (zoning.cpp)
+Added PMySQL::GetAptLocation() method in sql.cpp
+Prepared some modification for WorldItems and Appartments in sql.cpp (these methodes will later be put in specific classes)
+
+====================
+Hammag; 28.09.2006 17:30 GMT+1
+----------
+<General changes>
+ - Updated the gamserver DB install file to version 5 (database/GameDB5.zip) needed
+    by the current TinNS version.
+ - Added a SQL file to update existing gamserver DB from version 4 to version 5
+    (database/GameDB4_to_GameDB5.sql)
+ - Zoning is now fully based on NC files rather than hardcoded.
+  
+[GAME]
+Filename in now taken from appartments.def (for app zoning) or from worlds.ini (general case)
+Zoning out of appartment (Lift exit) is based on appplaces.def (was in the 27.09.2006 version already)
+Corrected GR use. Now GR gets it true name, and this good name can be registred in the char GR list
+ and seved in DB.
+Changlog in command.cpp updated from last additions (22.09.2006)
+
+====================
+Hammag; 02.10.2006 23:30 GMT+1
+----------
+<General changes>
+ - Started implementation of .dat worldfile parser
+ - added a gameserver config option dev_debug to control development debug outputs
+ 
+[GAME]
+Added PWorldDatParser class, with files include/world_datparser.h and def/world_datparser.cpp
+  (this classes might change/be replaced by a PWorldTemplate class very soon)
+
+====================
+Hammag; 03.10.2006 16:30 GMT+1
+----------
+<General changes>
+ - Fix a big bug in gameserver causing server crash when using new character
+    after its creation without server restart inbetween
+ - added a gameserver config option auto_save_period to control character autosave period (in sec)
+ 
+[GAME]
+chars.cpp/.h :
+  added PChar::CreateNewChar() and moved effective char creation from PChars to PChar
+  added PChar::SQLDelete() (but not implemented yet)
+  added use of auto_save_period config option in PChars::update()
+  removed old XML-storage related code
+accounts.cpp : 
+  fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
+gameserver.cpp :
+  added some more DB cleanup when a char is deleted. Still incomplete and will later be done in PChar::SQLDelete()
+various .cpp files:
+  put more log output under control of dev_debug config option
+
+====================
+Hammag; 04.10.2006 12:00 GMT+1
+----------
+<General changes>
+ - Minor fixes to avoid some warnings
+ - def directory removed from repository
+ 
+====================
+Hammag; 08.10.2006 01:25 GMT+1
+----------
+[rev. 20]
+
+<General changes> 
+ - fixed .pak archive deep file reading
+ - implemented world furniture loading from world dat file (static furniture only atm)
+ - implemented loading of worlds templates from .dat files (just for test now, will be used very soon)
+
+WARNING: more NC files & dirs will be needed for the gameserver from now on:
+./def/* (as already used by previous revisions)
+./worlds.pak
+./worlds/*
+./terrain.pak
+./terrain/*
+
+with . being the gameserver's starting dir (a config option will be added soon to set this dir to something else if wanted)
+
+[COMMON]
+filesystem.cpp :
+  Fixed package reading to enable access to "subdirectories" in archive,
+    as well as translation from unix to dos path separator for in-archive search             
+  Removed the "file not found" message the PFileSystem::Open() was issuing in the corresponding case.
+    A NULL returned for PFile* is sufficient for the calling proc to manage the situation.
+  Changed file search in archives to case-insensitive.
+  
+[GAME]
+def_worlds.cpp :
+  added quotes and spaces trim to mName and mDatFile.
+def/gamedefs.cpp :
+  minor changes in PGameDefs::LoadWorldFileDefs() to make it more silent
+added furnituretemplate.cpp/.h (PFurnitureItemTemplate class)
+added worlddatatemplate.cpp/.h (PWorldDataTemplate class)
+added worlds.cpp/.h (PWorld and PWorlds classes)
+
+====================
+Hammag; 08.10.2006 01:25 GMT+1
+----------
+[rev. 21]
+
+<General changes>
+ - changed ingame debug management for a more generic @debug command:
+    @debug 0|1  : disable|enable all debug outputs
+    @debug loc[ation] 0|1 : disable|enable location output on move
+    @debug it[emid] 0|1 : disable|enable item ID output on item use
+   in the last two forms, omiting 0 or 1 just toggles the debug output
+ - some additions on worlds data checking/loading
+
+[GAME]
+accounts.h :
+  removed IsAdminDebug() and SetAdminDebug() methods
+client.cpp/.h : 
+  added GetDebugMode() and SetDebugMode() methods, along with mDebugMode[] private member.
+commands.cpp :
+  implemented new version of @debug command
+decoder/udp_charmove.cpp :
+  implemented ingame location debug output on move
+decoder/udp_charmove.cpp :
+  implemented ingame item use debug output
+
+====================
+Hammag; 11.10.2006 01:25 GMT+1
+----------
+[rev. 22]
+
+<General changes>
+ - added MySQL keepalive function to avoid connection loss on long server inactivity periods
+ - fixed unreleased MYSQL_RES after all DB Res queries in infoserver leading to memory leak
+ - reintroduced Namikon's ISC 
+
+[Make]
+Rules.make:
+  fixed libs order in linker args to avoid lib not found on some systems
+patch/Makefile :
+  commented out some unused libs in linker args
+info/Makefile :
+  fixed libs order in linker args to avoid lib not found on some systems
+  commented out some unused libs in linker args
+game/Makefile :
+  fixed libs order in linker args to avoid lib not found on some systems
+  commented out some unused libs in linker args
+
+[GAME]
+configtemplate.h, gameserver.conf :
+  added 'mysql_wait_timeout' config option, to be set to value of the
+    wait_timout system variable from the MySQL server (default 28800 sec).
+    It triggers the MySQL keepalive for both gameDB and infoDB connections.
+    Value 0 disables this keepalive function.
+sql.cpp/.h :
+  added Update() method, which now include MySQL keepalive management and CheckResCount()
+  added mKeepaliveDelay and mLastKeepaliveSent members
+main.cpp :
+  updated main loop to call MySQL->Update() instead of MySQL->CheckResCount()
+global.cpp :
+  added Hammag to the coders list
+isc.cpp/.h : reintroduced Namikon's ISC for implementation of serverlist update
+  through MySQL in the coming days.
+  
+[INFO]
+configtemplate.h, infoserver.conf :
+  added 'mysql_wait_timeout' config option (see [GAME])
+sql.cpp/.h :
+  added Update() method, which now include MySQL keepalive management
+  added mKeepaliveDelay and mLastKeepaliveSent members
+  added FreeSQLResult() method to perform mysql_free_result()
+main.cpp :
+  added call to MySQL->Update() in the main loop
+accounts.cpp, infoserver.cpp :
+  added call to FreeSQLResult() where required
+global.cpp :
+  added Hammag to the coders list
+
+====================
+Hammag; 13.10.2006 20:00 GMT+1
+----------
+[rev. 23]
+
+<General changes>
+ - activated modified ISC component. Server list and user count displayed by the infoserver
+   are now updated by the gameserver using the "MySQL" method (same as Neopolis X)
+ - added 'nc_data_path' option to gameserver.conf. It must be set to the root path of the nc data,
+    either the NC1 directory or a copy.  ./ means reative to gameserver start dir
+ - 'defs_path' and 'worlds_path' are not used anymore in gameserver.conf
+ 
+[GAME]
+isc.cpp/isc.h :
+  implemented MySQL mode
+  some other generic addition to the PISC class
+configtemplate.h :
+  set 'isc_method' default to 1 (i.e. MySQL mode only)
+  set 'isc_update_intervall' default to 60 sec
+def/main.h :  
+  values of DEF_* defines for def filenames now include patgh relative to nc_data_path
+gamedefs.cpp :
+  modified to take into account main.h modifs and nc_data_path
+
+[INFO]
+infoserver.cpp :
+  modified PInfoSrver::GSLiveCheck() to be independant of gameserver time.
+    No time sync is needed between servers anymore.
+
+[COMMON]
+filesystem.cpp :
+  fixed a bug when handling some files .pak archives with path starting with ./
+
+====================
+Hammag; 24.10.2006 17:00 GMT+1
+----------
+[rev. 24]
+<General changes>
+Internal changes only
+
+====================
+Hammag; 26.10.2006 02:15 GMT+1
+----------
+[rev. 25]
+
+<General changes>
+ - finished world data on-demand loading
+ - fixed an issue in world "furniture" data loading
+ 
+[GAME]
+added a Worlds global object (class PWorlds)
+modified PChar and PClient classes to Lease/Release world when char changes location,
+  which shall now be done using the new PClient::ChangeCharLocation method
+modified decoder/udp_zoning accordingly
+modified def/world_datstruct.h and def/world_datparser.cpp to fix world data loading
+
+====================
+Hammag; 08.11.2006 22:00 GMT+1
+----------
+[rev. 26]
+
+<General changes>
+ - added isc_server_id in gameserver.conf, to be set to s_id value from infoserver DB.
+    server status should then be kept up to date in the server selection window of NC client
+ - fixed a bug leading to char location being reset to bad zone when login in under some circumstances
+ - sitting on chairs now works again and is seen by others chars. Some more thing are to be added to this though.
+ - all dungeon/sewers/UG entries should work. But spawning place are not always right, as it seems that info in
+    appplaces.def is not allways the right one (about the "entity")
+ - all doors should open and be seen opening by other chars. Locked doors will open like any others
+    as I haven't found the link bewteen button and door
+ - other internal changes
+
+====================
+Hammag; 21.11.2006 02:00 GMT+1
+----------
+[rev. 27]
+
+<General changes>
+ - fixed teleport-to-nowhere-when-leaving-chair issue
+ - implemented free chair check
+ - implemented nice position when leaving chair (orientation still not fixed ...)
+ => problem of char disapearing for others when sitting for some time still not fixed*
+ - added "new_char_location" option in gameserver.conf, with default to mc5 starting zone
+ - added starting apartment creation
+
+====================
+Hammag; 25.11.2006 16:45 GMT+1
+----------
+[rev. 28]
+
+<General changes>
+ - fixed a bug when zoning to holomatch zones
+ - fixed Holomatch exit (but still same problem for spawning entity as in some dungeon zoning)
+ - fixed UG exit (but still same problem for spawning entity as in some dungeon zoning)
+ - fixed appartement lift use
+ - fixed char-vanish-for-others-when-sitting-too-long issue
+    (but already sitting char still invisible for loggin-in chars)
+ - fixed a bug in starting apartment creation 
+ - increased TCP timeout which caused connection loss when taking too much time creating a char
+ - subskill increasing now works (freely, ie. without any check against class or available skill points)
+ 
+====================
+Hammag; 26.11.2006 02:00 GMT+1
+----------
+[rev. 29]
+
+<General changes>
+ - triggered doors now work as expected (hopefully... the trigger button is the one
+    closest to the door). Hack button an money button just work like standard buttons for the moment.
+
+====================
+Namikon; 09.12.2006 01:20 GMT+1
+----------
+[rev. 30]
+
+[GAME]
+ - (Hopefully) Fixed Autoaccount problem with Gameserver (Rehashing accountdata now every 30 seconds. However,
+   this isnt verified.)
+ - New command: @rehash. Does the same as the server every 30 seconds, for those who cant wait :P
+ 
+====================
+Namikon; 09.12.2006 01:32 GMT+1
+----------
+[rev. 31]
+- Forget to update the Changelog, ^_^
+
+====================
+Hammag; 09.12.2006 16:40 GMT+1
+----------
+[rev. 32]
+This revision is mostly a commit of intermediate change to avoid future conflicts, with no new functionnalty added
+
+<General changes>
+ - added regexsupport for futur use in user strings control (username, password, charname, etc)
+
+[GAME]
+main.cpp: changed type used for time in DB rehash from u32 (causing complile warning) to std::time_t which
+          is the time type (for seconds) now used in gameserver.
+          
+[COMMON]
+regex : added the RegEx class (Simple C++ wrapper for PCRE) to the tinns lib :
+        common/regex/regex++.cpp
+        include/regex++.h
+
+====================
+Namikon; 10.12.2006 11:35 GMT+1
+----------
+[rev. 33]
+
+<General changes>
+- Added @uptime to view server's uptime ingame
+
+[GAME]
+gameserver.h: Added "std::time_t mServerStartupTime" and public inline "GetStartTime()" to receive Server's
+	      startup timestamp anywhere in the source
+gameserver.cpp: Added mServerStartupTime to gameserver's class constructor (Var gets set one time uppon startup)
+commands.cpp: Added @uptime. Generates readeable output in the form (Years, Months, Weeks, Days, ...) from the
+              difference between mServerStartUp and the current timestamp
+
+====================
+Hammag; 10.12.2006 14:50 GMT+1
+----------
+[rev. 34]
+
+<General changes>
+ - GenReps now dont need database info anymore.
+   However, the solution is not satisfaying, but will do until we find better
+ - Fixed Makefile issue about buggy dependency files
+ - Removed old unused src/netcode directory (the right dir is in src/common)
+
+[GAME]
+worlddatatemplate.cpp : in SetLinkedObjects(), added storage of GR order to later access to entity info
+def/gamedef.h/.cpp : added GetRespawnEntity() to get GR entity value from respawn.def, by entry order,
+   with management of exceptions in zones 1 & 2
+decoder/udp_useobject.cpp : now use PGameDefs::GetRespawnEntity() to get the entity of a GR object
+
+[INFO]
+Minor change in client connection message after checking for what looked to be a memleak (but was not ! :-D )
+
+====================
+Namikon; 10.12.2006 15:30 GMT+1
+----------
+[rev. 35]
+
+- Added @broadcast. GM and higher can now send out "ADMIN> Server: <text>" broadcasts
+- Worked on Chat subsystem. Current status:
+> Buddy		- Sends text to Buddy, everyone in the same Zone can read. No Buddylist yet
+> Local		- Another problem, local is TCP on retail, we use UDP. Works for now, needs further research
+> Clan		- Same as Buddy
+> Team		- Same as Buddy
+> Direct	- No function yet
+> GM		- Done. (100%)
+> Admin		- Done. (100%)
+> All others	- Nearly done. Sends/Receives to/from correct channel, including zone/fraction/etc
+		  limitation. However, you cant disable channels yet, needs further research.
+
+- 2 new options in gameserver.cfg: 
+> broadcast_new			- If set to 1, the server will send out an broadcast to channel OOC with
+				  a welcome message. Default is 0.
+> broadcast_new_hidestaff	- If set to 1, all "non-players" are not announced over OOC. Default is 0.
+- Fixed some typos in chat.h/.cpp
+
+[GAME]
+chat.h/.cpp	: Corrected some typos.
+		  Added sendBroadcast (Admin channel)
+		  Added sendOOCBroadcast (OOC channel)
+		  Added all missing sendXXX functions
+		  Removed several Console outputs. We know it works, no need to debug it anymore.
+gameserver.cpp	: Changed current welcome message to new OOC broadcast method
+configtemplate.h: Added 2 new default values for broadcast on connect
+commands.cpp	: Added @broadcast command. First command which checks your accesslevel. (as announced before)
+
+====================
+Namikon; 10.12.2006 15:30 GMT+1
+----------
+[rev. 36+37]
+
+- Worked again on Chat subsystem. Current status:
+> Buddy		- Done. (100%)
+
+[GAME]
+buddylist.cpp / .h : Added function "IsInBuddy()" to perform a simple check "Is a buddy? y/n"
+chars.h		   : Added inline to pass IsBuddy to buddylist->IsInBuddy()
+chat.cpp	   : Fixed sendBuddy function. Working as it should now
+
+====================
+Namikon; 10.12.2006 23:20 GMT+1
+----------
+[rev. 38]
+- Worked again on Chat subsystem. Current status:
+> Direct		- Done. (100%)
+
+[GAME]
+chat.cpp/.h	   : Added new function sendPlayerDirect, altered main-chatloop, order is now Local, Direct, others
+
+====================
+Namikon; 11.12.2006 00:59 GMT+1
+----------
+[rev. 39]
+Last update for this weekend lol ^^
+- Worked again on Chat subsystem. (What else)
+  This release may break tinns from working, until Hammag found a way to grab the data i need for the CustomChannels.
+
+[GAME]
+chat.cpp/.h	: Added check for every custom channel if its enabled or not
+chars.cpp/.h	: Added inline and variable to hold custom channel info
+
+====================
+Hammag; 11.12.2006 13:00 GMT+1
+----------
+[rev. 40]
+ - added Custom Chat Channel selection retrieval from client packets
+ - temp deactivated regex lib compilation as there still are some issues with dependencies
+ 
+[GAME]
+chars.h	: Added SetActiveChannels method
+          Regrouped some method declarations by theme
+decoder/udp_chat.h/.cpp : added PUdpChatChannels class for custom channel info decoding
+
+[PATCH]
+Minor change in client connection message, same as what has been done for infoserver.
+
+====================
+Hammag; 11.12.2006 20:10 GMT+1
+----------
+[rev. 41]
+
+<General changes>
+ - added @version command
+ - added directory src/tools for compile tools and corresponding makefile
+ - dependency files issues should hopefully be solved now once for all
+ 
+[GAME]
+commands.cpp: added @version command
+
+[PATCH]
+Minor change in client connection message, same as what has been done for infoserver.
+
+[All Servers]
+Added src/include/svnrevision.h (automatically updated)
+Removed inclusion of version.h for everywhere, and added it to each global.cpp
+Added ServerVersion and SVNRevision as global strings (globals.h) for each server
+Modified accordingly version display at server start in global.cpp
+
+[LIBS]
+misc.h/.cpp: Commented out GetSVNRev() that is not used anymore
+
+[TOOLS]
+ - added src/tools/cleandepfile.c
+   cleandepfile is used to clean dependency files generated by g++
+ - added src/tools/setsvnrev script to update the new src/include/svnrevision.h
+   when needed
+ - updated src/Makefile and src/Rules.make accordingly
+   No manual action should be needed to manage svn revision number inclusion in source
+   Game/Info/Patch servers version can still be set in version.h
+
+====================
+Namikon; 11.12.2006 21:46 GMT+1
+----------
+[rev. 42]
+
+<General changes>
+- Fixed (hopefully) customchannels. They're not loaded / saved from/to SQL yet, but you should be able to enable/disable them.
+  uppon entry, all channels are disabled.
+
+Hopefully, because i cant verify it. (No time to compile and try it). Will verify (and debug) it in the next few days
+
+====================
+Namikon; 13.12.2006 12:02 GMT+1
+----------
+[rev. 43]
+- Quick update: I replaced the "old" function to check if a customchannel is enabled or not with a much
+  faster one. (Bitwise comparison)
+- Fixed an typo in chat.cpp
+
+====================
+Hammag; 13.12.2006 17:10 GMT+1
+----------
+[rev. 44]
+
+<General changes>
+ - Added missing GPL licence file LICENCE.txt
+ - Renamed directory tools to dev-tools to distinguish from futur NC tools
+ - Fixed a small prototype issue causing compile warnings in dev-tools/cleandepfile.c
+ - Added option DO_DEBUG in Makefile to be uncommented if you want debug symbols and not stripped binaries
+ - Added inclusion of src/options.local (if exists, which is not mandatory) in Makefile to set local Makefile options
+    This is mostly for developer use, as it enables local compilation customization without propagation to SVN,
+    and avoids the need to use 'svn revert Makefile' each time...
+    
+    My current options.local file looks like:
+#
+# Local Makefile custom options
+# not in SVN !
+#
+DO_DEBUG = y
+CXXFLAGS += -march=pentium4
+
+    If I don't want to use these additonal options and test the real config, I just rename it to something else.
+
+====================
+Namikon; 14.12.2006 22:58 GMT+1
+----------
+[rev. 45]
+- Updated ISC definition file (v2)
+- Updated isc.h: Added enum for ISC connection stages
+- Added ISC Example.txt to show a few examples of an  "normal" datatransfer between game and infoserver
+
+
+====================
+Hammag; 14.12.2006 23:10 GMT+1
+----------
+[rev. 46]
+
+<General changes>
+ - Really added missing GPL licence file LICENCE.txt this time (hopefully...)
+ - Some compilation warning fixes
+ - Added internal tools to ease sources & bin packages generation
+   
+   make sourcetar : Builds a clean archive of all that is needed to compile and run TinNS (except NC data)
+   make bin tar : Builds a clean archive of TinNS binaries and other files needed to run TinNS (except NC data)
+                  Also alerts about src/options.local presence. (To be improved as check is done AFTER compilation right now ...)
+   Destination directory for tarballs is set in Makefile with TARBALLS_DEST (default ~)
+
+[DEV-TOOLS]
+Modifies src/Makefile (added sourcetar and bintar targets) and src/Rules.make
+Added make-src-tarball and make-bin-tarball in src/dev-tools
+
+====================
+Hammag; 15.12.2006 16:40 GMT+1
+----------
+[rev. 47]
+
+<General changes>
+ - minor internal changes only
+
+[GAME]
+decoder/udp_useobject.cpp : fixed again some signed to unsigned cast issue.
+decoder/udp_zoning.cpp .h : added PUdpEndOfZoning class
+decoder/udp_OOO.cpp : made message reception verbose
+
+====================
+Namikon; 15.12.2006 20:02 GMT+1
+----------
+[rev. 48]
+
+<General changes>
+ - minor internal changes only
+
+[GAME]
+Updated ISC ProtDef again. The protocol itself will be called ISCP from now on (Inter-Server-Communication-Protocol)
+Updated infoserver.conf, added ISC config values
+
+====================
+Namikon; 16.12.2006 15:36 GMT+1
+----------
+[rev. 49]
+
+[IMPORTANT]
+From this release on, TinNS will check more and more for accountlevels.
+If you want admin access, you have to edit your MySQL table. (Admin: Level 100)
+Its not much yet, but the first steps have been made, and more will follow.
+Next step will be the gamemaster/admin commands.
+
+<Infoserver>
+- Changed default error-return for Sql Checkaccount from -12 to -99, to create free place for further errormessages
+- Added require_validation to infoserver.conf. You can enable this if you like to create accounts on your own,
+  not by autoaccount.
+
+<Gameserver>
+- Removed traces of old AutoAccount creation in GameServer. AutoAcc should *only* be done by Infoserver!
+- Added accountlevel check.
+
+====================
+Namikon; 17.12.2006 22:42 GMT+1
+----------
+[rev. 50]
+
+IMPORTANT:
+This rev keeps crashing and it also causes OutOfOrder packets, for whatever reason. we have to trace
+this down first.
+
+[GAME]
+- Fixed errors from last SVN release (Caused several segmentation faults)
+- Added configfile commands.conf
+- Added check for required accountlevel when trying to use ingame command
+
+[INFO]
+- Fixed errors from last SVN release (Caused several segmentation faults)
+- Added default values for isc stuff to configtemplate.h. I forgot to add them in the last revision
+
+====================
+Namikon; 18.12.2006 00:23 GMT+1
+----------
+[rev. 51]
+
+Small update:
+- Fixed AccountLevel (You always got full admin access after login)
+
+====================
+Namikon; 18.12.2006 01:57 GMT+1
+----------
+[rev. 52]
+
+- Fixed bug that you could'nt see the welcome message after login
+- Added (hopefully) a workaround for our SegFault problem (2 user online, 3rd is trying to connect -> SegFault)
+
+====================
+Namikon; 19.12.2006 03:03 GMT+1
+----------
+[rev. 53]
+
+its a pity, but the workaround didnt work. Still investigating this!
+MANY changes to the source, cant remember all. Here is what my brain has stored:
+
+- Direct chat completed. (If target player isnt online, you'll get this nice "Player not online" message)
+- ReEnabled AutoRehash, wasnt responsible for the crash
+- Added @kick, @info, @warpto, @recall and @setlevel. @info is tested and verified, @kick does nothing (yet) the
+  rest is untested but should work. (Hard to test with only 1 char online...)
+- Some more very small changes. If you want a detailed log, ask SVN history :D
+
+====================
+Hammag; 20.12.2006 21:00 GMT+1
+----------
+[rev. 54]
+
+<General changes>
+ - fixed bug in NC datafiles lookup when nc_data_path was set to something else than .
+
+[LIBS]
+filesystem/filesystem.cpp .h : added base path arg to file open method.
+
+[GAME]
+def/defparser.cpp, def/world_dataparser.cpp : modified accordingly to changes made to PFileSystem
+
+[PATCH]
+patchserver.cpp : modified accordingly to changes made to PFileSystem
+
+
+====================
+Namikon; 21.12.2006 19:28 GMT+1
+----------
+[rev. 55]
+
+*Note*
+The new commands have to be tested first! Dont expect them to work yet, its just a upload
+since the entire command files got rewritten.
+
+<General changes>
+ - Rewritten entire commands.cpp/.h files
+ - Fixed ingame command @kick. Works now as it should.
+   Also sets a temp-ban for a configureable amount of seconds to prevent instant-relog.
+ - Added new ingame coommands:
+   @ban <charID/nick> <xS>/<xM>/<xH>/<xD>   || @ban EvilUser 20m  <- Bans "EvilUser" for 20 minutes.
+   - Bans given player for given time. You can only set ONE timevalue. (Either S/M/H or D. Not case sensitive)
+
+   @unban
+   - Not working yet. Has to be done by direct SQL access
+   @listbans
+   - Not working yet. Has to be done by direct SQL access
+
+   @shun <charID/nick>
+   - Blocks all incoming char/command traffic from given client until re relogs
+     Returns error if already shunned
+
+   @unshun <charID/nick>
+   - Remove shun instantly. Returns error if not shunned
+
+   @jail <charID/nick>
+   - Warp given player to Regants legacy. Returns error if player is already in Regants
+
+   @unjail <charID/nick>
+   - Free given player from Regants. Returns error if player is not in Regants/Jailed
+
+   @teleport <charID/nick> <worldID>
+   - Teleport given player to given world
+
+ - Added (experimental) startscript for TinNS. Has to be testen/debugged
+
+[COMMON]
+ <external.h>   Added <cctype> to get access to isdigit() function
+ <version.h>    Increased VerNr
+
+[GAME]
+ <accounts.cpp/.h>   Added vars&methods to store shunned status
+ <globals.cpp/.h>    Added global class for gamecommands
+ <chat.cpp>          Changed GameCommand call to work with the new command class
+ <commands.cpp/.h>   Completely rewritten. Moved every ingame command into own method, called by
+                     a main function which takes care of all args. Maybe has to be improved later, but its ok for now.
+
+====================
+Namikon; 21.12.2006 21:50 GMT+1
+----------
+[rev. 56]
+
+Improved pak_decompress script from Akiko
+- Added errorcheck for in/output file
+- Added check for NC and normal zLib files
+  (Can unpak both)
+- Added optional details-output
+
+The script is now capable to be used in batchfiles, since the only output is either [OK] <filename> or [ERROR] <filename>.
+if you dont want this, you can specify detailed output with all errors.
+
+====================
+Namikon; 21.12.2006 21:55 GMT+1
+----------
+[rev. 57]
+
+Forgot the CHANGELOG ^^
+
+====================
+Namikon; 22.12.2006 17:33 GMT+1
+----------
+[rev. 58]
+
+<General changes>
+- Improved pak_decompress tool from Akiko
+- Added tool "getsvnrev" (Same again in src/dev_tools, required for make process)
+- Improved Hammag's setsvnrev bash script (Now does errorcheck and has an alternative way to
+  grab SVN revision if SVN is not installed)
+- Splitup of commands.cpp. Every command has now its own .cpp file in gamecommands/.
+  Makes it a lot easier to handle new commands or change/fix/remove existing ones
+- ReEnabled debug-output while loading world .dat files. Was commented out for some reason
+
+No real "changes" or "fixes" to main-source files. Only splitup's and new/improved devtools.
+See SVN->Diff for details
+
+====================
+Namikon; 22.12.2006 22:55 GMT+1
+----------
+[rev. 59]
+<internal version: 0.1.5 Dev>
+
+- Added missing Makefile for gamecommands/ subfolder
+- Removed check for ZoneID 552 from jail.cpp and unjail.cpp; This zone is never used
+- Moved mShunned from Account to chars
+- Added mJailed to chars with methods to identify a jailed player
+- Added explicit override to GM teleport and jail/unjail commands (The only way to move someone if target is jailed)
+- Completed shun/unshun command
+
+====================
+Namikon; 22.12.2006 22:55 GMT+1
+----------
+[rev. 60]
+<internal version: 0.1.6 Dev>
+
+- Added several security checks to game commands
+- Added missing status outputs on successfull gamecommand
+- Added solution to send an delayed positionupdate after warping
+
+====================
+Namikon; 23.12.2006 09:31 GMT+1
+----------
+[rev. 61]
+<internal version: 0.1.7 Dev>
+
+Small update:
+- Removed ingamecommands "addworlditem", "delworlditem" and "adddoor". TinNS gets the worlddata dynamicly from loaded
+  .dat files instead of MySQL Database.
+  
+commands.conf   : Removed config settings for the 3 commands mentioned above
+commands.cpp/.h : Commented out the 3 mentioned commands
+adddoor.cpp     : Commented out entire file
+delworlditem.cpp: Commented out entire file
+addworlditem.cpp: Commented out entire file
+
+====================
+Namikon; 24.12.2006 01:30 GMT+1
+----------
+[rev. 62-63]
+<internal version: 0.1.8 Dev - 0.1.10 Dev>
+
+- Added experimental char warp-aura and char disappear packets to all warp-commands
+  (Worked while testing, but not after implementation into the commands)
+- Worked on Chatsystem: Localchat 99% working. Localchat is now limited to a small area around the player
+  (However, the chat is sent over TCP, like all other packets. It should be UDP, but this isnt working
+  for some reason. If anyone finds out why, tell us please)
+- Added Developercommand "@test". It has no fixed function, and is not configureable by config file.
+  Devs can easily add stuff there to test various things.
+- Removed adddoor, delworlditem and addworlditem completely from SVN, they're not needed anymore
+- And a few things i cant remember -.-
+
+====================
+Namikon; 25.12.2006 00:24 GMT+1
+----------
+[rev. 64]
+<internal version: 0.1.11 Dev>
+
+- Fixed Blacksync issue when logging in
+- Disabled position update on warpto and recall commands. It's not possible at the moment to
+  force the client to update the charposition.
+  
+====================
+Namikon; 26.12.2006 22:33 GMT+1
+----------
+[rev. 65]
+<internal version: 0.1.13 Dev>
+
+- Added UDPManager functions to connection_udp. Keeps the last 20 important UDP messages in a queue, for
+  possible resend after a OOO notice by the client
+- Finally fixed the warpcircle and charvanish! The mentioned commands in Rev 62-63 now work as announced
+- UDP_ID and all related stuff moved to connection_udp. Will be more controlled in the future from there
+
+====================
+Namikon; 26.12.2006 22:33 GMT+1
+----------
+[rev. 66]
+<internal version: 0.1.14 Dev>
+
+- Added, by Stings request, serveranswer to worldroute query: "Where is the Primary App" works now.
+- "Fixed" SQL function GetAptLocID(). Now only decreases the location value if the given AppartmentID is higher than 100000
+
+====================
+Namikon; 27.12.2006 19:05 GMT+1
+----------
+[rev. 67]
+<internal version: 0.1.15 Dev>
+
+Small update
+- Added 2 error messages for genrep activation. (Wrong faction and MC5 "broken")
+
+====================
+Namikon; 28.12.2006 18:45 GMT+1
+----------
+[rev. 68]
+<internal version: 0.1.16 Dev>
+
+- 2 new ingame commands:
+ @givemoney <amount> [<charID or nick>]
+ @takemoney <amount> [<charID or nick>]
+ I dont think i have to explain what they do :)
+
+- Added universal udpmessage to trigger messages from text.ini
+
+====================
+Namikon; 28.12.2006 20:02 GMT+1
+----------
+[rev. 69]
+<internal version: 0.1.16H Dev>
+
+Internal Release / "Hotfix"
+The udpmanager was planned to cancel OOO notices, but he causes an segfault when trying to send the message.
+Its not clear yet why, therefore, the OOO handling got disabled. It will be re-enabled when this is fixed.
+
+====================
+Namikon; 30.12.2006 08:11 GMT+1
+----------
+[rev. 70]
+<internal version: 0.1.17 Dev>
+
+- Added "life" to hackbuttons and entrance-fee buttons. (Level GM and higher can just "use" hackbuttons, lower levels
+	must hack it. For entrance fee buttons, everyone must pay. Why? Well, for what is the @givemoney command ^.^)
+	Since hacking is not working yet, (we have to add item-usage first) make sure to set your own level to 50+, or you
+	wont get these doors open)
+- Disabled some debug outputs forgotten in the last release
+
+====================
+Namikon; 30.12.2006 19:41 GMT+1
+----------
+[rev. 71]
+<internal version: 0.1.18 Dev - 0.1.22 Dev>
+
+- Added handling class for item movement (QB<>Inv<>GoGu<>Ground), no real function yet, but its decoded
+- Added handling class for QuickBelt management. You can activate the flashlight in slot 0 now, and others can see it
+  The functions are prepared to handle any item that exists, but we dont have items working until now.
+- Removed Debug output from sql.cpp
+
+====================
+Namikon; 01.01.2007 23:32 GMT+1
+----------
+[rev. 72]
+<internal version: 0.1.22 Dev - 0.1.24 Dev>
+
+**** Happy new year!! ****
+
+- Item movement within quickbelt works
+- Added hacktool to QB to test hacking
+- Added the last missing staffchar (GM>)
+- Added decoder for inithack and starthack messages
+- A few more changes i cannot remember
+
+====================
+Namikon; 02.01.2007 20:52 GMT+1
+----------
+[rev. 73]
+<internal version: 0.1.25 Dev>
+
+- Added new command @spawnactor
+  Usage: @spawnactor <actorID> <functionType>
+   - ActorID can be found in models/pak_models.ini
+   - FunctionType defines the type of the actor.
+     This can be almost everything, from item containers to
+     apartmentlift accesspanels
+   This command spawns and static worldactor next to your current
+   position. Everyone who is within the range of UDP broadcast
+   can see / "use" the new actor. It isnt saved to sql yet, nor is it
+   managed. (You cant spawn an itemcontainer and open it)
+   
+Thanks to Sting for this release! We where working on hack-stuff (doors, hackboxes,..)
+when he found the required information to make this possible.
+
+====================
+Namikon; 04.01.2007 16:15 GMT+1
+----------
+[rev. 74]
+<internal version: 0.1.26 Dev>
+
+- WorldActor management class added.
+	Spawned actors now stay in that zone as long until someone removes them.
+	
+	To remove spawned worldactors, the @remove command has been improved:
+	Type "@remove actor" to set your client into "REMOVE ACTOR" mode (You'll get
+	an ingame notice about this)
+	Then simply click on any dynamic worldactors to remove them. To leave this remove mode,
+	type "@remove actor" again. (And again you'll get a notice about that)
+	
+	Note: You cannot remove static worldactors (those who are in the .dat files) with this.
+	      It is possible to let them disappear (type @remove <rawID>) but they'll respawn when you re-zone.
+	      
+IMPORTANT: This release requires an database update! Make sure you have the latest mysql table availeable.
+
+====================
+Namikon; 07.01.2007 19:40 GMT+1
+----------
+[rev. 75]
+<internal version: 0.1.27 Dev - 0.1.35 Dev>
+
+Huge update!
+
+- Changed default level for @remove from 100 to 50, since we can now also remove dynamic actors with it
+- Added security check to @remove command: You cannot remove Dynamic actors over their IDs anymore.
+  Remove them with @remove actor command
+- UDPManager rewritten. Was almost completely wrong, dunno what happend with me when i first wrote it :P
+  However, it works now. The last 20 UDP messages with 0x03 commandset are saved, and get resend uppon
+  OOO notice from the client.
+  The manager also watches the outgoing UDP IDs. With his, it was possible to fix an udp increment bug in the zoning process.
+- Messages in the VIP queue arent parsed over the udpmanager. We'll have to rename this later on (or add a new queue)
+- The UDP/SessionID offset is now defined in connection-udp.h
+- NPC subsystem added. (Yeah ^^)
+  All NPCs that are in npc_spawns database spawn and stay in their world. We dont have an AI, so dont expect NPCs to
+  do *anything* yet. (Same goes for traders or copbots) But everything is prepared
+- Added function "IsWorldInUse" to clientmanager. In first line required for NPC manager, to check if a world is in use or not
+- Reformatted several files for better readability.
+- Extended dynamic worldactor management:
+   - Spawned worldactors are functional now. (Eg: Spawn a chair and sit on it) (Function is not 100% tested, it *could* procude an segfault, report it
+     if the server crashes for you on a certain actorID)
+   - Only valid worldmodel templates are accepted now while spawning actors
+   - If given worldmodel template needs an linked object (For example an door) you have to add the doorID in the @spawnactor command (example below)
+   - On serverstart and every initworld, the database is checked for duplicate worldactor IDs. If some are found, they get deleted
+   - Another check is done when an worldactor is spawned. If (for any reason) an invalid worldactorset is in the Database,
+     it is ignored uppon spawning. (invalid means, that the actor points to an invalid object, for example door or world)
+- Added detailed output for SQL errors (Prints not only "ERROR" or just returns nothing, instead a full errormessage is written to console)
+- MsgBuilder:
+	- Baselinepacket changed, monsters are now "red"
+	- Fixed increase_udp issue in BuildZoning1Msg
+- Added new decoder:
+	- 0x08: This small (only 1 byte) "packet" is only sent when the client exits abnormal (crash, sometimes on alt+f4)
+	  Does nothing else than closing the connection serverside.
+	  
+*Note* Due the massive update of sourcecode, its likely that i forgot some debug outputs (You'll see D1, D2,.. or whatever else senseless text
+on the console). If you find something, tell me please over forum or bugtracker. But i will remove all outputs when i find some in the next
+releases
+
+====================
+Namikon; 07.01.2007 21:52 GMT+1
+----------
+[rev. 76]
+<internal version: 0.1.36 Dev>
+
+- Added hacking ability to hackbuttons (Both static and dynamic worldactors)
+  Itemcontainers will follow when we have a management class for them
+- Removed several debug outputs, and changed others
+- Fixed an typo in command remove
+
+====================
+Namikon; 08.01.2007 15:47 GMT+1
+----------
+[rev. 77]
+<internal version: 0.1.36 Dev>
+
+Fixed compiler error:
+In member function 'void ConnectionUDP::InsertUDPMessage(PMessage*)':
+udpmanager.cpp:133: error: conversion from 'int' to non-scalar type 'std::_Rb_tree_const_iterator >' requested
+on some systems
+
+====================
+Namikon; 11.01.2007 19:31 GMT+1
+----------
+[rev. 78-79]
+<internal version: 0.1.37 Dev>
+
+- Added up-to-date SQL dump to SVN. (But better use the newest neoX db!)
+- Fixed bug in worldactors that caused the following problems:
+> Spawned actors where removed uppon next serverstart/re-zone
+> Only one actor in a zone at once
+- Added first steps for ingame terminal handling
+
+====================
+Namikon; 13.01.2007 10:57 GMT+1
+----------
+[rev. 80]
+<internal version: 0.1.38 Dev>
+
+- Added a few comments in npc.cpp and removed most debug outputs
+- Splitted up terminal.cpp into 5 files (All stuff in one file will get too big later)
+- Moved TryAccess handling for terminal stuff to PTerminal class
+
+====================
+Hammag; 27.05.2007 12:15 GMT+2
+----------
+[rev. 81]
+
+<General changes>
+ - Minor internal changes
+ 
+[MAKEFILE]
+- Makefile, dev_tools/Makefile, setsvnrev: Disabled the use of getsvnrev.
+  If someone has no SVN, and got sources from tarball, he can compile with the included svnversion.h
+  If he does coding, he needs SVN to commit changes, so there's no need for getsvnrev.
+  If he's doing coding and hasn't SVN, and got sources from tarball, then he won't have .svn files
+    needed by getsvnrev at hand.
+  As I don't see the use of getsvnrev, I disabled it. If it is really needed sometimes,I can add
+    a local option to enable it on a case by case basis.
+  Anyway, if someone submits code changes without having be given write access to SVN, he must submit
+    them to a tinNS dev who has access, so code review, testing and SVN management will be done properly.
+- Other minor change on files cleanup 
+
+[GAME]
+- game/decoder/udp_appartment.* : minor correction on files info
+
+====================
+Hammag; 28.05.2007 23:15 GMT+2
+----------
+[rev. 82]
+
+<General changes>
+ - Major change to account management and character loading:
+    Accounts are not stored in-mem anymore, and database is queried when needed instead.
+    Chars are loaded when needed, and unloaded when not neaded anymore.
+ - New Gameserver Database version (6)
+ - Various fixes.
+
+[DATABASE]
+ - GameDB5.zip has been replaced by GameDB6.zip holding the full gameserver dump to be used
+  to get a fresh new DB needed by this revision of TinNS
+ - GameDB5_to_GameDB6.sql can also be applied to migrate from version 5 to 6 of gameserver DB
+ - infoserver DB is not changed (i.e. version 2)
+
+[GAME]
+More than 50 files changed.
+ - in addition to the changes stated above, Char creation and charslot assignement is now
+    fixed.
+    **** PLEASE MANUALLY FIX THE SLOT NUM OF EXISTING CHARS OR RECREATE THE CHARS ****
+    (Server will complain in logs and won't be hurt by muliple SLOT 0 chars anyway)
+ - @rehash command has been removed as not used anymore
+ - database.cpp and inclide/database.h have been deleted along with PDatabase class
+ - PAccounts class has been removed
+
+[NETCODE]
+ - Fixed mem leak in ConnectionUDP:
+    PMessage held in UDP backlog not being released in object destructor
+ - The static member PMessage::ListPools() can now be used anywhere to get a view of
+    message buffer pools use (in use / free buffers)
+
+====================
+Hammag; 05.06.2007 01:30 GMT+2
+----------
+[rev. 83]
+
+<General changes>
+ - fixed a bug which might be the cause of the "multiuser+char creation crash"
+  (hopefully solved now)
+ - many improvements in char movement (now much more responsively seen by others)
+ - Sitting chars are now visible by later login-in chars
+ - internal changes to PClient
+
+[GAME]
+ - udp_charmove.* : PUdpCharAttitudeUpdate and PUdpCharSitting code is now taken
+    care of in PUdpCharPosUpdate.
+    These two classes are removed.
+ - msgbuilder.* : added MsgBuilder::BuildCharPosUpdate2Msg
+ - client.* : added PClient::FillInUDP_ID() to take care in one place of all UDP_ID
+    filling-in of USP packets
+    added PClient::SendTCPMessage() and PClient::SendUDPMessage(), which take care
+    of NULL TCP or UDP sockets.
+  - chars.* : added PChars::CharExist() to check for char existence by name
+  - chat.cpp : fixed a repeated bug that led to crash when some client was connected
+    without a char ingame (like in char selection, creation or deletion phase) and
+    some chat was sent to him (like when someone else was coming ingame)
+
+====================
+Hammag; 09.06.2007 00:10 GMT+2
+----------
+[rev. 84]
+
+<General changes>
+ - fixed a bug causing the server to crash under some conditions
+ - fixed account management so that ingame account level setting doesn't need relog
+    to be effective
+
+[GAME]
+Started work on the type 0x20 zoning doors.
+Added decoder/udp_entityposreq.cpp decoder/udp_entityposreq.h
+
+[LIBS]
+connection-udp.cpp: Fixed a bug causing server to crash when resending packet.
+
+====================
+Hammag; 19.06.2007 21:10 GMT+2
+----------
+[rev. 85]
+
+<General changes>
+ - fixed zoning (hopefully)
+
+[GAME]
+Fixed zoning for "2nd type zoning" in sewers/caves and UG exits.
+There might remain some wrong zoning points in some case, as there seem to be some duplicate
+zoning spawn location in some zone data... but the "keep last spawn location" policy seem to work ok.
+Only spawn point issue when GRing in apt should remain.
+
+====================
+Hammag; 21.06.2007 01:45 GMT+2
+----------
+[rev. 86]
+
+<General changes>
+ - bug fix
+
+[GAME]
+decoder/udp_entityposreq.cpp: fixed a bug
+
+====================
+Hammag; 15.07.2007 19:00 GMT+2
+----------
+[rev. 87]
+
+<General changes>
+ - infoserver & gameserver now make use of common config/global.conf file (as least in
+    default conf/*.conf files)
+
+[LIBS]
+config.* :
+  - conf/*.conf file can now use the 'include' directive to include other config files
+  - Now use PCRE RegEx instead of "strtok", enabling rentrance and removing potential issues.
+  - Added GetOption & GetOptionInt with const std::string parameter
+  - Fixed a bug in EOF detection in the main file reading loop
+
+conf/global.conf : Moved/added following directives in conf/global.conf
+    minlevel = 0
+    username_filter = ^[a-z][\w\-]{2-14}$
+    password_filter = ^[[:graph:]]{3-15}$
+
+[INFO]
+  Added username and password syntax filter in config (username_filter and password_filter
+    directives, see above). Filters are case insensivite PCRE RegEx.
+  Note: theses filter need to protect at least against sql injection.
+  accounts.* : built common code with gamseserver (Not put in common tinns lib atm
+    because of DB access and log issues)
+    
+[GAME]
+  Added charname and clanname (for future use) syntax filter in config/gameserver.conf :
+    charname_filter = ^[a-z]+([\-\ ]?[a-z]+){0-2}$
+    clanname_filter = ^[a-z][\w\-\ ]{2-14}$
+  Filters are case insensivite PCRE RegEx.
+  Note: theses filter need to protect at least against sql injection.
+
+  sql.*, appartments.* : Moved Apt request methods from PMySQL to PAppartements
+
+====================
+Hammag; 27.10.2007 19:00 GMT+2
+----------
+[rev. 88 to 90]
+<General changes>
+  Items management
+
+[GAME]
+  Added container.cpp & container.h to implement classes used to manage all containers (including backpack, belt, armor, implant, processor, gogo, boxes, etc.)
+  Implemented basic item moves between containers.
+  Box content is randomly generated, and are not saved (you can use them to get rid of items)
+  No partial quantity move/stacking management yet
+  "take all" from boxes doesn't work yet (couldn't figure out yet how it works in detail)
+  No item to/from ground yet, no trading yet, no item type recognition/pre-req/management for implants & armors yet
+
+[LIBS]
+  Netcode: a bug in packet decoding was revealed, which seem to somtime lead to (maybe) infinite loop. Not fixed yet.
+  
+====================
+Hammag; 27.10.2007 19:00 GMT+2
+----------
+[rev. 91]
+
+[GAME]
+  Zoning issue fixed (a bug was leading to always load the same zone data for all zones with the same .bsp file, which is wrong)
+  Improved random-filled boxes
+  Excluded "temporary-items" from available item catalog (ItemsDef)
+
+====================
+Hammag; 28.10.2007 16:15 GMT+2
+----------
+[rev. 92]
+<General changes>
+  @warpto command now works.
+  
+[GAME]
+  Improved container loading in odrer not lo load invalid items from DB.
+  Items are not deleted from DB because it could cause loss of inventory
+   in case of issue with items.def content or loading.
+
+Hammag; 9.11.2007 23:30 GMT+2
+----------
+[rev. 93]
+<General changes>
+  Worked on subway.
+  Subway cabs are now spawned, can be entered, and can be exited but with a wrong pos (you get back to your starting pos :-D )
+  There is a delay between cab door opening/closing, and the acceptance of your entering request, so try multiple times.
+  Visibility between subway travellers isn't working.
+  
+  More work needed on that topic, and some server-side computations need to be fully recreated/emulated.
+  
+[GAME]
+  subway.cpp/.h : Added PSubway class to manage Neocron subway cabs.
+  Many files: Extended the Chair system to a general Seat system, used for subway and maybe for vhc.
+
+Hammag; 18.11.2007 18:45 GMT+2
+----------
+[rev. 94]
+<General changes>
+  Subway is now apparently running well.
+  Much work was needed to achieve that as some server-side computations were needed to emulate the subway movements.
+  There still may be some timing issues about the subway cab positions and door status on the long run...
+  Visibility between subway travellers isn't working yet. It will be done when working on vehicules to try make it all the same way.
+
+  Added subcommand @debug subway
+  
+[GAME]
+  subway.cpp/.h : Various changes
+  decoder/udp_charmove.cpp/.h , decoder/udp_useobject.cpp/.h : Various changes for subway use
+  chars.cpp/.h : moved PCharPosition class out of PChar, and added some required methods to it
+  decoder/udp_terminal.h/.cpp : started some work on that
+
+Hammag; 28.12.2007 00:50 GMT+2
+----------
+[rev. 96]
+<General changes>
+  Basic vehicle is in place.
+  One vhc of each type is available to every character. No prereq limitation.
+  Only pilot access available, and for the owner only.
+  No zoning yet.
+  Orientation issues from the others chars point of view.
+  Many things not implemented (and a good part still to be decoded)
+  
+[GAME]
+  Many changes in decoders and char, client and vehicle code.
+
+Hammag; 20.01.2008 20:00 GMT+2
+----------
+[rev. 97]
+<General changes>
+  [GAME + INFO]
+    sql.cpp/.h : added EscapeString() methode to PMySQL class, to permit string escape in SQL queries
+    *.cpp : escape all strings used in SQL queries, which is now mandatory.
+  [GAME + INFO + PATCH]
+    *.cpp : replaced strcpy(), strcat(), sprintf() with respectively strncpy(), strncat(), snprintf()
+      The first ones are now forbidden.
+
+Hammag; 2.02.2008 16:15 GMT+2
+----------
+[rev. 98]
+
+[Infoserver]
+accounts.cpp : Correction of the account creation/update SQL query - thank to drhawk ;)
+
+Hammag; 11.02.2008 20:30 GMT+2
+----------
+[rev. 99]
+Correction of an initialization issue that caused compilation error on some environments.
+
+Hammag; 20.04.2008 00:50 GMT+1
+----------
+[rev. 100]
+
+<Gameserver>
+msgbuilder.h/.cpp: added method PMessage* BuildTraderItemListMsg() (test version)
+decoded/upd_useobject.cpp: change so that only vhc terminal opens vhc interface
+client.cpp: added fragmented message type 0xac for traders
+chars.cpp: fixed initial inventory saving
+item.cpp/.h: added new method PItem::MakeStandardItem()
+
+Hammag; 15.03.2009 19:25 GMT+1
+----------
+[rev. 103]
+Fixed various warnings due to C++ compiler being more picky.
+  TinNS should now compile without warning on gcc version 4.3.2
+  Abort compliation on warning reactivated in makefile (-Werror)
+
+Added file options.local.exemple to set custom complilation options (read it for more info)
+
+Hammag; 19.03.2009 13:00 GMT+1
+----------
+[rev. 104]
+
+<Gameserver>
+  Fixed some errors in apartment Genrep'ing code
+  Implemted Venture Warp
+
+Hammag; 20.03.2009 14:20 GMT+1
+----------
+[rev. 105]
+
+<Gameserver>
+  Implemted Outfitter (not persistent yet. No need for that now)
+
+Hammag; 28.03.2009 14:20 GMT+1
+----------
+[rev. 106 - 108]
+
+<Database> (by Sting)
+  Slight changes to npcspawn table in Game Database.
+  Removal of most npc out of J01
+
+<Gameserver>
+  Fixed inventory so that items found in boxes and put in inventory are saved as expected
+  Some testing code for inventory
+  Fixed entry in Subway cabs, which had been broken during addition of vhc
+  
+<SVN>
+  Removed zipped database sql files, and put a non-compressed version instead. this will allow to track the changes made to these file.
+  Nota: We should later split these files in database structure files on the one hand, and database data on the other hand.
+
+Hammag; 30.03.2009 14:20 GMT+1
+----------
+[rev. 109]
+
+<Gameserver>
+  Added support for weapons.def
+
+Hammag; 31.03.2009 02:35 GMT+1
+----------
+[rev. 110]
+
+<Gameserver>
+  Modified the gamedefs system to allow easier, cleaner and C++ oriented integration of currently missing def files support.
+  Access to gamedefs data has changed a (little) bit, so take a look at changes in exiting code.
+
+Hammag; 04.04.2009 02:35 GMT+1
+----------
+[rev. 111]
+
+<Gameserver>
+  Added all .h files and declarations for all needed .def files.
+  Added all corresponding .cpp file with skeleton. Effective file parsing method still needed to be implemented for each .def. TinNS should complile and run however, with only a bunch of .def loading error at server start (but that's not blocking)
+
+
+Hammag; 11.04.2009 23:40 GMT+1
+----------
+[rev. 112-113]
+
+<Gameserver>
+  Implemented support for more .def files
+  Moved random number generation methods out of PGameServer to global functions in common/misc
+  Content of item boxes, trashcans, bags, etc. is now based on .def files. Cabinet content is kept as before, i.e generating fully random items.
+  
+Hammag; 18.04.2009 19:10 GMT+1
+----------
+[rev. 114-119]
+
+<Gameserver>
+  Implemented multi-char vhc support:
+    - vhc should now be seen the right way (good pos, good direction) by all present chars
+    - Access to spawned vhc requires owner autorization [This is still bugging for some part though]
+  Fixed various small things
+  Tried an implementation of Jumping (in order to have jumps seen by other chars) [Not tested at all]
+  
+  As these various things require at least 2 simultaneous connexions, and as I can't easily do that atm, it has not been fully tested.
+  
+  Warning: my server crashed while I was away with 2 chars connected. I didn't search for the reason, so don't let your server running on an Internet accessible host when you're away.
+
+Hammag; 18.04.2009 20:00 GMT+1
+----------
+[rev. 120]
+
+<Gameserver>
+  Fixed and added bug in handling deconnection of seating char that was causing the crash mentinned in the previous rev.
+
+Hammag; 28.04.2009 13:30 GMT+1
+----------
+[rev. 121-122]
+
+<Gameserver>
+  Fixed many little accessory things, potential bugs and discrepencies
+  Cleaned up source code format in some files
+  Deactivated as most debug output when dev_debug is not set in conf file (but setting it will generate lots of output !)
+  Continued work on vhc. Some small fixes and multichar tests still need to be performed
+
+Hammag; 01.05.2009 13:10 GMT+1
+----------
+[rev. 123-124]
+
+<Gameserver>
+  Small fixes on vhc zoning
+  Support for all remaining .def added. Good loading of expected data has not been validated yet.
+
+Hammag; 10.05.2009 02:15 GMT+1
+----------
+[rev. 125]
+
+<Gameserver>
+  Fixed loading of weapons.def
+  Started implementation of multiuser viewing of weapon use and basic manual weapon reload
+
+Hammag; 10.05.2009 23:55 GMT+1
+----------
+[rev. 126]
+
+<Gameserver>
+  Improved working and multiuser viewing of weapon reload
+  Started implementation of char death and respawn
+
+Hammag; 12.05.2009 18:00 GMT+1
+----------
+[rev. 127]
+
+<Gameserver>
+  Added support for weapon addons effects activation (flashlight/zoom(not tested)/silencer/laser)
+  Added weather control packet
+  Added zone weather control command @weather ?|<weather id> [<target char id>]
+  Added command @who as alias of @online
+  Added command @whois as alias of @info
+----------
+[rev. 128]
+
+<all>
+  New branch with cmake buildsystem (version 2.6+)
+  Cleanups
+  Small Fixes
