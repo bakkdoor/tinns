@@ -175,16 +175,88 @@ BM:
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x00;
         *tmpMsg << (u8)0x1F;
-        *tmpMsg << (u16)(source->GetChar()->Coords.mY + 768);
-        *tmpMsg << (u16)(source->GetChar()->Coords.mZ + 768);
-        *tmpMsg << (u16)(source->GetChar()->Coords.mX + 768);
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mY + 768);*/ *tmpMsg << (u16)31062;
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mZ + 768);*/ *tmpMsg << (u16)32512;
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mX + 768);*/ *tmpMsg << (u16)33973;
+        *tmpMsg << (u8)0x40;
+        *tmpMsg << (u8)0x53;
+        *tmpMsg << (u8)0x48;
         *tmpMsg << (u8)GetArgInt(2);
         *tmpMsg << (u8)GetArgInt(3);
-        *tmpMsg << (u8)GetArgInt(4);
-        *tmpMsg << (u8)GetArgInt(5);
-        *tmpMsg << (u8)GetArgInt(6);
+        //*tmpMsg << (u8)GetArgInt(4);
+//        *tmpMsg << (u8)GetArgInt(5);
+//        *tmpMsg << (u8)GetArgInt(6);
         source->SendUDPMessage(tmpMsg);
 //11 1b 24 01 00 00 1f 6c 74 00 7f cc 8a 40 ed 4b ff 11
+    }
+    else if(GetArgInt(1) == 6)
+    {
+        PMessage* tmpMsg = new PMessage(23);
+        //source->IncreaseUDP_ID();
+
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x15;
+        *tmpMsg << (u8)0x1B;
+        *tmpMsg << (u8)0x2D;
+        *tmpMsg << (u8)0x01;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x1F;
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mY + 768);*/ *tmpMsg << (u16)31062;
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mZ + 768);*/ *tmpMsg << (u16)32512;
+        /**tmpMsg << (u16)(source->GetChar()->Coords.mX + 768);*/ *tmpMsg << (u16)33973;
+        *tmpMsg << (u8)0x01;
+        *tmpMsg << (u8)0x53;
+        *tmpMsg << (u8)0x48;
+        *tmpMsg << (u16)GetArgInt(2);
+        *tmpMsg << (u16)GetArgInt(3);
+        *tmpMsg << (u16)GetArgInt(4);
+//        *tmpMsg << (u8)GetArgInt(5);
+//        *tmpMsg << (u8)GetArgInt(6);
+        source->SendUDPMessage(tmpMsg);
+//11 1b 24 01 00 00 1f 6c 74 00 7f cc 8a 40 ed 4b ff 11
+    }
+    else if(GetArgInt(1) == 7)
+    {
+        PMessage* tmpMsg = new PMessage(23);
+        source->IncreaseUDP_ID();
+
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x0F;
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u8)0x1F;
+        *tmpMsg << (u16)source->GetLocalID();
+        *tmpMsg << (u8)0x25;
+        *tmpMsg << (u8)0x0B;
+        *tmpMsg << (u16)GetArgInt(2);
+        *tmpMsg << (u8)GetArgInt(3);
+        *tmpMsg << (u32)50;
+        source->SendUDPMessage(tmpMsg);
+    }
+    else if(GetArgInt(1) == 8)
+    {
+        PMessage* tmpMsg = new PMessage(23);
+        source->IncreaseUDP_ID();
+
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x0F;
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u8)0x1F;
+        *tmpMsg << (u16)source->GetLocalID();
+        *tmpMsg << (u8)0x25;
+        *tmpMsg << (u8)0x0B;
+        *tmpMsg << (u16)GetArgInt(2);
+        *tmpMsg << (u8)GetArgInt(3);
+        *tmpMsg << (u32)50;
+        source->SendUDPMessage(tmpMsg);
     }
 
 

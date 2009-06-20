@@ -42,6 +42,7 @@
 #include "udp_vhc.h"
 #include "udp_0x2b.h"
 #include "udp_itemmanualreload.h"
+#include "udp_worldIDinfo.h"
 
 /**** PUdp0x13 ****/
 
@@ -141,6 +142,12 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
             nextAnalyser = new PUdp0x2b( mDecodeData );
             break;
           }
+          case 0x27: // Request for more information about WorldID
+          {
+              nextAnalyser = new PWorldIDInfoReq( mDecodeData );
+              break;
+          }
+
           case 0x24: // ? 06 03 03 00 24 01 00
           default:
           {
@@ -178,7 +185,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
         }
         break;
       }
- 
+
       case 0x20: // Char move
       {
         nextAnalyser = new PUdpCharPosUpdate( mDecodeData );

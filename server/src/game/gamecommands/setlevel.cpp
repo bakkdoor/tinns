@@ -73,7 +73,7 @@ void PCommands::doCmdsetlevel()
     Acc.SetLevel(destLevel);
     Acc.Save();
     source->RefreshAccountInfo(&Acc);
-    
+
     char tmpMsg[60], tmpMsg2[60];
     snprintf(tmpMsg, 59, "Set level for player %s to %d", Chars->GetChar(target->GetCharID())->GetName().c_str(), destLevel);
     snprintf(tmpMsg2, 59, "**POOF** Your new accesslevel is now %d", destLevel);

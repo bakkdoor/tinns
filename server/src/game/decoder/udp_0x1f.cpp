@@ -50,6 +50,7 @@
 #include "udp_itemmanualreload.h"
 #include "udp_itemuse.h"
 #include "udp_deathrespawn.h"
+#include "udp_pvptrade.h"
 
 /**** PUdp0x1f ****/
 
@@ -271,6 +272,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         }
       }
       break;
+    }
+    case 0x3e:
+    {
+        nextAnalyser = new PPvPTrade( mDecodeData );
+        break;
     }
     case 0x4c:
     {

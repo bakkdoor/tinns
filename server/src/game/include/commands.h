@@ -109,6 +109,8 @@ class PCommands
             void doCmdspawnactor();
             void doCmdeditactor();
             void doCmdweather();
+            void doCmdSetMainSkill();
+            void doCmdSetSubSkill();
 
             void doCmdtest();
         /// ------- End commandset -------

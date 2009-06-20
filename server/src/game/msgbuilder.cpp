@@ -491,7 +491,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
   // ---- Section 2 ----
   *BaselineMsg << ( u8 )0x02; // section id
   SectionMsg << ( u8 )0x04; // ?  // section content at offset 3
-  SectionMsg << ( u8 )0x04; // ?
+  SectionMsg << ( u8 )0x50; // ?
   SectionMsg << ( u16 )500; // nChar->GetHealth();
   SectionMsg << ( u16 )500; // nChar->GetMaxHealth();
   SectionMsg << ( u16 )500; // nChar->GetMana();
@@ -504,7 +504,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
   SectionMsg << ( u16 )0x0147; // (nChar->GetHealth() + 1); // ? Torso Health (35% of total)
   SectionMsg << ( u16 )0x0147; // (nChar->GetHealth() + 1); // ? Legs Health (20% of total)
   SectionMsg << ( u8 )100; // 100 - SI
-  SectionMsg << ( u8 )0x80;
+  SectionMsg << ( u8 )0x80; // The lower this value is, the more your char has a "drug effect" on it 0x00 = unmoveable
   SectionMsg << ( u16 )0x0000;
 
   *BaselineMsg << ( u16 )SectionMsg.GetSize();
@@ -1266,6 +1266,8 @@ PMessage* PMsgBuilder::BuildCharAptLocInfoMsg( PClient* nClient )
   return tmpMsg;
 }
 
+// OLD FUNCTION, REWRITTEN BELOW
+/*
 PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 nSkillPoints )
 {
   PMessage* tmpMsg = new PMessage( 33 );
@@ -1302,6 +1304,73 @@ PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 
   //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
 
   return tmpMsg;
+}
+*/
+PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 nSkillPoints )
+{
+  PMessage* tmpMsg = new PMessage( 33 );
+
+    nClient->IncreaseUDP_ID();
+    u16 tFirstUDPID = nClient->GetUDP_ID();
+
+    nClient->IncreaseUDP_ID();
+    u16 tSecondUDPID = nClient->GetUDP_ID();
+    u16 tSecondSessionID = nClient->GetSessionID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )tSecondUDPID;
+  *tmpMsg << ( u16 )tSecondSessionID;
+
+  *tmpMsg << ( u8 )0x09; // SubMessage length;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )tFirstUDPID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25;
+  *tmpMsg << ( u8 )0x23;
+  *tmpMsg << ( u8 )0x27;
+
+  nClient->IncreaseTransactionID();
+  *tmpMsg << ( u8 )0x11; // SubMessage length;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )tSecondUDPID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25;
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetTransactionID(); // testing / 0x0000 ????
+  *tmpMsg << ( u8 )0x09; // ?
+  *tmpMsg << ( u16 )nSubskill;
+  *tmpMsg << ( u16 )nClient->GetChar()->Skill->GetSubSkill( nSubskill ); // nSubskill ?
+  *tmpMsg << ( u16 )nSkillPoints;
+
+  //(*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildLevelUpMessage( PClient* nClient, u8 nMainSkill, u8 nNewLevel, u16 nFreeSkillPoints)
+{
+        PMessage* tmpMsg = new PMessage(21);
+        nClient->IncreaseUDP_ID();
+
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)nClient->GetUDP_ID();
+        *tmpMsg << (u16)nClient->GetSessionID();
+        *tmpMsg << (u8)0x0F;
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u16)nClient->GetUDP_ID();
+        *tmpMsg << (u8)0x1F;
+        *tmpMsg << (u16)nClient->GetLocalID();
+        *tmpMsg << (u8)0x25;
+        *tmpMsg << (u8)0x0B;
+        *tmpMsg << (u16)nMainSkill;
+        *tmpMsg << (u8)nNewLevel;
+        *tmpMsg << (u16)nFreeSkillPoints;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x00;
+
+        return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildChatAddMsg( PClient* nClient, u32 nAddedCharID, u8 nMode )

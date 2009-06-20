@@ -299,6 +299,14 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     {
         doCmdweather(); // Control weather in player zone
     }
+    else if(strcmp(Command, "setmainskill") == 0)
+    {
+        doCmdSetMainSkill(); // Control weather in player zone
+    }
+    else if(strcmp(Command, "setsubskill") == 0)
+    {
+        doCmdSetSubSkill(); // Control weather in player zone
+    }
     // Else: unknown command. Ignore
 }
 

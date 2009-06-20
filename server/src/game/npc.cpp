@@ -322,11 +322,13 @@ void PNPCWorld::MSG_SendAlive( PClient* nClient )
       *tmpNPCUpdate << ( u16 )tNPC->mPosY;
       *tmpNPCUpdate << ( u16 )tNPC->mPosZ;
       *tmpNPCUpdate << ( u16 )tNPC->mPosX;
-      *tmpNPCUpdate << ( u8 )0x00; // ??
+      //*tmpNPCUpdate << ( u8 )0x00; // ??
+      *tmpNPCUpdate << (u8)tNPC->GetActionStatus();
       *tmpNPCUpdate << ( u8 )0x00; // ??
       *tmpNPCUpdate << ( u8 )tNPC->mHealth;
       *tmpNPCUpdate << ( u8 )0x00; // ??
-      *tmpNPCUpdate << ( u8 )0x00; // ??
+      //*tmpNPCUpdate << ( u8 )0x00; // ??
+      *tmpNPCUpdate << (u8)tNPC->mAction;
 // Weird is: The next packet that is commented out, lets the NPCs all look into one direction...
 
       /*
