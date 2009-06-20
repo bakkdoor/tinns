@@ -80,7 +80,6 @@ bool PNPC::SQL_Load()
   mUnknown = atoi( row[npc_unknown] );
   mTrader = atoi( row[npc_trader] );
 
-
   if ( row[npc_name] != NULL )
     mName = row[npc_name];
 
@@ -90,7 +89,7 @@ bool PNPC::SQL_Load()
   if ( row[npc_customscript] != NULL )
     mCustomLua = row[npc_customscript];
 
-  if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+  if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, /*mUnknown,*/ mTrader, /*mLoot,*/ mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
   MySQL->FreeGameSQLResult( result );
   return true;
 }

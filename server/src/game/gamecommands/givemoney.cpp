@@ -38,7 +38,9 @@ void PCommands::doCmdgivemoney()
         cashtoadd = (u32)GetArgInt(1);
     }
     if(cashtoadd == 0)
-        return;
+    {
+        SyntaxError = true;
+    }
 
     if(SyntaxError == true)
     {
