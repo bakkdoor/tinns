@@ -113,13 +113,17 @@ class PNPC
     // 10000000 (128): Death
 
     bool SQL_Load();
+    bool DEF_Load(u32 nWorldID);
     bool mSuccess;
 
     PNPC( int nSQLID );
+    PNPC( int nDEFID, u32 nWorldID );
     ~PNPC();
+    void InitVars();
 
   public:
     friend class PNPCWorld;
+
     inline void Attack( PClient* nClient ) { mTarget = nClient->GetChar()->GetID(); mDirty = true; }
     inline void Attack( u16 nLocalCharID ) { mTarget = nLocalCharID; mDirty = true; }
     inline void Move( u16 nNewX, u16 nNewY, u16 nNewZ ) { mPosX = nNewX; mPosY = nNewY; mPosZ = nNewZ; mDirty = true; }
@@ -155,6 +159,8 @@ class PNPCWorld
     // Send "alive" message for all NPCs as zone broadcast to everyone or as unicast if nClient is given
     void MSG_SendAlive( PClient* nClient = NULL );
 
+    bool LoadNPCfromSQL();
+    bool LoadNPCfromDEF();
 
   public:
     friend class PNPCManager;

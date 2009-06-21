@@ -100,7 +100,7 @@ struct PSec2ElemType5Start //door
                    //last param = 0/1 for lateral move direction ? no ...
                    //(*) here is the bug(?) that makes open only one half of a double door
 
-
+/*
 struct PSec2ElemType6Start //npc
 {
   u16 mUnknown1; //20 00 ?
@@ -123,6 +123,34 @@ struct PSec2ElemType6End
   f32 mPosY2; //second position for movement ?
   f32 mPosZ2; //
   f32 mPosX2; //
+};
+*/
+struct PSec2NPC_EntryPart1
+{
+    u32       mUnknown1; // Is always 0x20001200, in every log. maybe header for NPCs?
+    f32       mPosY;
+    f32       mPosZ;
+    f32       mPosX;
+    u32       mNPCTypeID; //npc type in npc.def
+    u8        mActorStringSize; //string size with ending 0
+    u8        mAngleStringSize; //string size with ending 0
+    u16       mNpcID;
+    u8        mHasAdditionalCoords;
+    u8        mUnknown2a;
+    u8        mUnknown2b;
+    u8        mUnknown2c;
+    u16       mUnknown3; //00 00 ?
+    u16       mUnknown4; //04 00 ?
+};
+
+//    u8    mActorName[mActorStringSize];
+//    u8    mAngle[mAngleStringSize];
+
+struct PSec2NPC_EntryPart2  // Waypoints! or something like that...
+{
+    f32       mPosY;
+    f32       mPosZ;
+    f32       mPosX;
 };
 
 

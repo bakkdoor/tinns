@@ -80,6 +80,10 @@ class PWorld
     inline PSpawnedVehicles* GetSpawnedVehicules() { return &mSpawnedVehicles; }
     bool CheckVhcNeedZoning( PVhcCoordinates const* nPos ) const;
     u32 GetVhcZoningDestination( PSpawnedVehicle const* nVhc, PVhcCoordinates* nPos = 0 ) const;
+
+    // Evil thing... bounced through stuff :| wasnt able to find a better solution for this
+    inline const PNPCsMap       *GetNPCMap() const { return (mWorldDataTemplate ? mWorldDataTemplate->GetNPCMap() : NULL); };
+    inline const PNPCTemplate   *GetNPCTemplate( u32 nNPCID ) const { return (mWorldDataTemplate ? mWorldDataTemplate->GetNPC( nNPCID ) : NULL ); };
 };
 
 

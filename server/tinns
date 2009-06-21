@@ -35,7 +35,7 @@ TINNS_DIR=.
 # IGNORE_ROOT
 # for security reasons, you should never run any deamon as root. Therefore, we stop the script from running.
 # If you still want to run TinNS as root, set this value to "true"
-IGNORE_ROOT=false
+IGNORE_ROOT=true
 
 # RUN_AS
 # If you want to start TinNS while server's boot time, uncomment RUN_AS and set the

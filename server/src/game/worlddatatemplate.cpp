@@ -25,6 +25,9 @@
  MODIFIED: 04 Oct 2006 Hammag
  REASON: - creation
 
+ MODIFIED: 21 Jun 2009 Namikon
+ REASON: - Added NPC Template stuff
+
 */
 
 
@@ -34,6 +37,7 @@
 #include "world_datparser.h"
 #include "furnituretemplate.h"
 #include "doortemplate.h"
+#include "npctemplate.h"
 
 PWorldDataTemplate::PWorldDataTemplate()
 {
@@ -54,6 +58,8 @@ void PWorldDataTemplate::DatFileDataCleanup()
   for ( PFurnitureItemsMap::iterator i = mFurnitureItems.begin(); i != mFurnitureItems.end(); i++ )
     delete i->second;
   for ( PDoorsMap::iterator i = mDoors.begin(); i != mDoors.end(); i++ )
+    delete i->second;
+  for ( PNPCsMap::iterator i = mNPCs.begin(); i != mNPCs.end(); i++ )
     delete i->second;
 }
 
@@ -196,6 +202,33 @@ const PDoorTemplate* PWorldDataTemplate::GetDoor( u32 DoorID )
 {
   PDoorsMap::const_iterator it = mDoors.find( DoorID );
   if ( it == mDoors.end() )
+    return NULL;
+  else
+    return it->second;
+}
+
+
+u32 PWorldDataTemplate::AddNPC( PNPCTemplate* nNPC )
+{
+  if ( nNPC )
+  {
+    if ( mNPCs.insert( std::make_pair( nNPC->GetNpcID(), nNPC ) ).second )
+    {
+      if ( gDevDebug ) Console->Print( "%s NPC %d added to world template", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), nNPC->GetNpcID() );
+      return nNPC->GetNpcID();
+    }
+    else
+    {
+      Console->Print( "%s Duplicate NPC ID %d !!! Not added to world template", Console->ColorText( YELLOW, BLACK, "[NOTICE]" ), nNPC->GetNpcID() );
+    }
+  }
+  return 0;
+}
+
+const PNPCTemplate* PWorldDataTemplate::GetNPC( u32 NPCID )
+{
+  PNPCsMap::const_iterator it = mNPCs.find( NPCID );
+  if ( it == mNPCs.end() )
     return NULL;
   else
     return it->second;
