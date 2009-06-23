@@ -24,12 +24,12 @@ void PCommands::doCmdsetlevel()
 {
     int destLevel = 0;
     bool SyntaxError = false;
-    if(ArgC < 2)
+    if (ArgC < 2)
     {
         SyntaxError = true;
     }
 
-    if(IsArgNumeric(2) == false)
+    if (IsArgNumeric(2) == false)
     {
         SyntaxError = true;
     }
@@ -38,13 +38,13 @@ void PCommands::doCmdsetlevel()
         destLevel = GetArgInt(2);
     }
 
-    if(SyntaxError == true)
+    if (SyntaxError == true)
     {
         Chat->send(source, CHAT_DIRECT, "Usage", "@setlevel <charID or nickname> <newlevel 1-99>");
         return;
     }
 
-    if(IsArgNumeric(1) == true)
+    if (IsArgNumeric(1) == true)
     {
         target = GetClientByID(GetArgInt(1));
     }
@@ -55,12 +55,12 @@ void PCommands::doCmdsetlevel()
         target = GetClientByNick(tmp_destNick);
     }
 
-    if(target == NULL) // If victim isnt found, return error
+    if (target == NULL) // If victim isnt found, return error
     {
         Chat->send(source, CHAT_DIRECT, "System", "No such player");
         return;
     }
-    if(source->GetAccountLevel() <= target->GetAccountLevel())
+    if (source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
         snprintf(tmpMsg, 199, "Cant set new level for %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());

@@ -1,32 +1,32 @@
 /*
- TinNS (TinNS is not a Neocron Server)
- Copyright (C) 2005 Linux Addicted Community
- maintainer Akiko <akiko@gmx.org>
+TinNS (TinNS is not a Neocron Server)
+Copyright (C) 2005 Linux Addicted Community
+maintainer Akiko <akiko@gmx.org>
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- 02110-1301, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
 */
 
 /*
 
- npc.cpp - Management class for NPC worldactors
+npc.cpp - Management class for NPC worldactors
 
- CREATION: 04 Jan 2007 Namikon
+CREATION: 04 Jan 2007 Namikon
 
- MODIFIED: 28 Apr 2009 Hammag
- REASON: changed worlds/zones Id from u16 (wrong !!!) to u32
+MODIFIED: 28 Apr 2009 Hammag
+REASON: changed worlds/zones Id from u16 (wrong !!!) to u32
 
 */
 
@@ -44,8 +44,8 @@ bool PNPC::DEF_Load(u32 nWorldID)
     const PNPCTemplate* t_defNPC = Worlds->GetWorld(nWorldID)->GetNPCTemplate(mWorldID);
 
     mNameID = (u16)t_defNPC->GetNPCTypeID(); // 16 or 32??
-    //mTypeID = not defined in dat?
-    //mClothing = not defined in dat?
+//mTypeID = not defined in dat?
+//mClothing = not defined in dat?
     mPosX = t_defNPC->GetPosX()+32768;
     mPosY = t_defNPC->GetPosY()+32768;
     mPosZ = t_defNPC->GetPosZ()+32768;
@@ -53,13 +53,14 @@ bool PNPC::DEF_Load(u32 nWorldID)
     mLoot = 0;
     mUnknown = 19646;
     mTrader = 57;
-    //mLoot = not defined in dat?
-    //mUnknown = not defined in dat?
-    //mTrader = not defined in dat?
+//mLoot = not defined in dat?
+//mUnknown = not defined in dat?
+//mTrader = not defined in dat?
 
     mName = t_defNPC->GetActorName();
 
-    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, /*mUnknown,*/ mTrader, /*mLoot,*/ mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", , mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     return true;
 }
 
@@ -117,7 +118,8 @@ bool PNPC::SQL_Load()
     if ( row[npc_customscript] != NULL )
         mCustomLua = row[npc_customscript];
 
-    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ANG:%d LT:%d NAME:%s CNAME:%s SCRIPT:%s", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ, mAngle, /*mUnknown,*/ mTrader, /*mLoot,*/ mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", , mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     MySQL->FreeGameSQLResult( result );
     return true;
 }
@@ -170,7 +172,7 @@ void PNPC::InitVars()
 PNPC::PNPC( int nSQLID )
 {
     InitVars();
-    //if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
+//if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
     mID = nSQLID;
     if ( SQL_Load() == false )  // Try to load NPC contents
         mSuccess = false;
@@ -181,7 +183,7 @@ PNPC::PNPC( int nSQLID )
 PNPC::PNPC( int nDEFID, u32 nWorldID )
 {
     InitVars();
-    //if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
+//if(gDevDebug) Console->Print("[DEBUG] New NPC instance created. ID is %d", nSQLID);
     mWorldID = nDEFID;
     if ( DEF_Load(nWorldID) == false )  // Try to load NPC contents
         mSuccess = false;
@@ -191,7 +193,7 @@ PNPC::PNPC( int nDEFID, u32 nWorldID )
 
 PNPC::~PNPC()
 {
-    //if(gDevDebug) Console->Print("[DEBUG] NPC ID %d terminated", mID);
+//if(gDevDebug) Console->Print("[DEBUG] NPC ID %d terminated", mID);
 }
 
 u8 PNPC::GetActionStatus()
@@ -213,28 +215,28 @@ void PNPCWorld::MSG_SendNPCs( PClient* nClient )
 {
     PMessage* npc_initmsg = new PMessage( 256 );
     PNPC* tNPC;
-    //if (gDevDebug) Console->Print("Starting to assemble NPC message");
+//if (gDevDebug) Console->Print("Starting to assemble NPC message");
 
     *npc_initmsg << ( u8 )0x13; // Begin UDP message
     *npc_initmsg << ( u16 )0x0000; // Placeholder for UDP ID
     *npc_initmsg << ( u16 )0x0000; // Placeholder for Session ID
 
-    // Loop all NPCs in world
+// Loop all NPCs in world
     for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
     {
-        //if (gDevDebug) Console->Print("Got first NPC");
+//if (gDevDebug) Console->Print("Got first NPC");
         if ( !it->second ) // Got an error and NPC doesnt exist? Skip this one
             continue;
 
         tNPC = it->second; // Get NPC
 
-        // Get "string" for NPC angle
+// Get "string" for NPC angle
         std::string tAngleStr = Ssprintf( "%d", tNPC->mAngle );
 
-        // Calculate messagesize
+// Calculate messagesize
         u8 tMsgLen = 29 + tNPC->mName.size() + tAngleStr.size();
-        //if (gDevDebug) Console->Print("MsgLen will be %d bytes ", tMsgLen);
-        // Check for customname
+//if (gDevDebug) Console->Print("MsgLen will be %d bytes ", tMsgLen);
+// Check for customname
         bool tUseCustomName = false;
         if ( tNPC->mCustomName.size() > 1 )
         {
@@ -245,8 +247,8 @@ void PNPCWorld::MSG_SendNPCs( PClient* nClient )
             tUseCustomName = true;
         }
 
-        // Check if messagebuffer is full
-        //if (gDevDebug) Console->Print("LEN: %d MAX: %d INUSE: %d", tMsgLen, npc_initmsg->GetMaxSize(), npc_initmsg->GetSize());
+// Check if messagebuffer is full
+//if (gDevDebug) Console->Print("LEN: %d MAX: %d INUSE: %d", tMsgLen, npc_initmsg->GetMaxSize(), npc_initmsg->GetSize());
         if (( int )tMsgLen > ( npc_initmsg->GetMaxSize() - npc_initmsg->GetSize() ) )
         {
             //if (gDevDebug) Console->Print("The messagequeue is full. Sending it");
@@ -301,36 +303,36 @@ void PNPCWorld::MSG_SendNPCs( PClient* nClient )
                 *npc_initmsg << tNPC->mCustomName.c_str();
         }
 
-        // Remove link to NPC instance
+// Remove link to NPC instance
         tNPC = NULL;
     }
-    //if (gDevDebug) Console->Print("Done with mainloop. Now lets check if we have a message waiting...");
+//if (gDevDebug) Console->Print("Done with mainloop. Now lets check if we have a message waiting...");
     if ( npc_initmsg->GetSize() > 5 ) // Check if we really have an packet and not only the header
     {
-        //if (gDevDebug) Console->Print("Message is waiting! Trying to send...");
-        // It is full. Now set final UDP/Session ID's and send packet
+//if (gDevDebug) Console->Print("Message is waiting! Trying to send...");
+// It is full. Now set final UDP/Session ID's and send packet
         npc_initmsg->U16Data( 0x01 ) = nClient->GetUDP_ID();    // Set final UDP ID
         npc_initmsg->U16Data( 0x03 ) = nClient->GetSessionID(); // Set final SessionID
 
-        // Send message to client
+// Send message to client
         if ( npc_initmsg->GetSize() > 5 )
             nClient->SendUDPMessage( npc_initmsg );
         else
             delete npc_initmsg;
 
-        //if (gDevDebug) Console->Print("Done. Now dumping packet");
-        //if (gDevDebug) (*npc_initmsg).Dump();
+//if (gDevDebug) Console->Print("Done. Now dumping packet");
+//if (gDevDebug) (*npc_initmsg).Dump();
     }
     else
     {
-        //if (gDevDebug) Console->Print("No messages waiting to be send, removing message from memory");
+//if (gDevDebug) Console->Print("No messages waiting to be send, removing message from memory");
         delete npc_initmsg;
     }
-    // Free message
-    //if (gDevDebug) Console->Print("Done. Removing link to list");
+// Free message
+//if (gDevDebug) Console->Print("Done. Removing link to list");
     npc_initmsg = NULL;
-    //delete npc_initmsg;
-    //if (gDevDebug) Console->Print("Allowing client to accept NPC updates");
+//delete npc_initmsg;
+//if (gDevDebug) Console->Print("Allowing client to accept NPC updates");
     nClient->SetAcceptNPCUpdates( true );
 }
 
@@ -420,7 +422,7 @@ void PNPCWorld::MSG_SendAlive( PClient* nClient )
             }
         }
     }
-    // Check if broad or unicast
+// Check if broad or unicast
     if ( nClient == NULL )
     {
         if ( tmpNPCUpdate->GetSize() > 5 )
@@ -451,13 +453,13 @@ void PNPCWorld::MSG_SendAlive( PClient* nClient )
 
 bool PNPCWorld::LoadNPCfromSQL()
 {
-    // Load NPC defs from MySQL
+// Load NPC defs from MySQL
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
     char query[100];
 
     snprintf( query, 100, "SELECT * FROM `npc_spawns` WHERE `npc_location` = %d", mWorldID );
-    //if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
+//if(gDevDebug) Console->Print("[DEBUG] Query is: %s", query);
     result = MySQL->GameResQuery( query );
     if ( result == NULL )
     {
@@ -470,10 +472,10 @@ bool PNPCWorld::LoadNPCfromSQL()
     if ( mysql_num_rows( result ) == 0 ) // No NPCs found
     {
         MySQL->FreeGameSQLResult( result );
-        //if(gDevDebug) Console->Print("[NPC] No NPCs for this world found");
+//if(gDevDebug) Console->Print("[NPC] No NPCs for this world found");
         return true;
     }
-    //if(gDevDebug) Console->Print("[DEBUG] Found NPCs, now adding!");
+//if(gDevDebug) Console->Print("[DEBUG] Found NPCs, now adding!");
     PNPC* tmpNpc = NULL;
     u32 tRawID = 0;
     int tSQLID = 0;
@@ -508,10 +510,10 @@ bool PNPCWorld::LoadNPCfromDEF()
 
     for ( PNPCsMap::const_iterator i = tNPCmap->begin(); i != tNPCmap->end(); i++ )
     {
-        // call PNPC with NPC ID and WorldID
+// call PNPC with NPC ID and WorldID
         tDEFID = i->first;
         tmpNpc = new PNPC( tDEFID, mWorldID );
-        if( tmpNpc->mSuccess == true )
+        if ( tmpNpc->mSuccess == true )
         {
             mNPCs.insert( std::make_pair( tDEFID, tmpNpc ) );
             tmpNpc = NULL;
@@ -527,9 +529,9 @@ bool PNPCWorld::LoadNPCfromDEF()
 
 PNPCWorld::PNPCWorld( u32 nWorldID )
 {
-    //if(gDevDebug) Console->Print("[DEBUG] New world got initialized! Now starting to add NPCs. (WorldID %d)", nWorldID);
+//if(gDevDebug) Console->Print("[DEBUG] New world got initialized! Now starting to add NPCs. (WorldID %d)", nWorldID);
 
-    // Assign WorldValues now
+// Assign WorldValues now
     mCreation = std::time( NULL );
     mWorldID = nWorldID;
     mLastAliveMsg = 0;
@@ -540,7 +542,7 @@ PNPCWorld::PNPCWorld( u32 nWorldID )
 PNPCWorld::~PNPCWorld()
 {
     if ( gDevDebug ) Console->Print( "[DEBUG] Erasing all NPCs" );
-    // Erase all NPCs
+// Erase all NPCs
     for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
     {
         delete it->second;
@@ -551,7 +553,7 @@ PNPCWorld::~PNPCWorld()
 void PNPCWorld::Update()
 {
     int tDirtyNPC = 0;
-    // Check for dirty NPCs
+// Check for dirty NPCs
 
     for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
         tDirtyNPC++;
@@ -646,7 +648,7 @@ PNPC* PNPCWorld::GetNPC( u32 nNPCID )
 PNPCManager::PNPCManager()
 {
     if ( gDevDebug ) Console->Print( "[DEBUG] NPCManager wakeup!" );
-    // Nothing yet
+// Nothing yet
 }
 
 PNPCManager::~PNPCManager()
@@ -662,22 +664,22 @@ PNPCManager::~PNPCManager()
 void PNPCManager::InitPlayer( PClient* nClient )
 {
     if ( gDevDebug ) Console->Print( "[DEBUG] Player entered zone, doing init" );
-    // Ok, player entered zone. First, get zone!
+// Ok, player entered zone. First, get zone!
     u32 nZone = nClient->GetChar()->GetLocation();
     if ( gDevDebug ) Console->Print( "[DEBUG] Now searching for zone %d in list", nZone );
-    // Search worldmanager for this zone
+// Search worldmanager for this zone
     PNPCWorld* tmpWorld = GetWorld( nZone );
 
     if ( tmpWorld != NULL )
     {
         if ( gDevDebug ) Console->Print( "[DEBUG] World found, poking MSG_SendNPCs" );
-        // World found? Fine. Then poke the class to send its content to the client
+// World found? Fine. Then poke the class to send its content to the client
         tmpWorld->MSG_SendNPCs( nClient );
     }
     else
     {
         if ( gDevDebug ) Console->Print( "[DEBUG] World not found, creating...." );
-        // World not found! OMG! Create it!
+// World not found! OMG! Create it!
         tmpWorld = InitWorld( nZone );
         if ( tmpWorld == NULL )
         {
@@ -685,7 +687,7 @@ void PNPCManager::InitPlayer( PClient* nClient )
             return;
         }
         if ( gDevDebug ) Console->Print( "[DEBUG] Done. Poking MSG_SendNPCs" );
-        // now we have the world, poke it to send its content
+// now we have the world, poke it to send its content
         tmpWorld->MSG_SendNPCs( nClient );
         tmpWorld->MSG_SendAlive( nClient ); // Force instand-update of NPCs for this client
     }
@@ -713,13 +715,13 @@ PNPCWorld* PNPCManager::InitWorld( u32 nWorldID )
 void PNPCManager::Update()
 {
     static std::time_t lastdebug = std::time( NULL );
-    // Loop all worlds
+// Loop all worlds
 //    if(lastdebug < std::time(NULL))
 //        if(gDevDebug) Console->Print("[DEBUG] WorldLoop still running...");
 
     for ( PNPCWorldMap::iterator it = mWorlds.begin(); it != mWorlds.end(); it++ )
     {
-        // Make sure target still exists
+// Make sure target still exists
         if ( it->second )
         {
             // Getworld, and check if zone is in use
@@ -757,7 +759,7 @@ void PNPCManager::Update()
     if ( lastdebug < std::time( NULL ) )
     {
         lastdebug = std::time( NULL ) + 3;
-        //if(gDevDebug) Console->Print("[DEBUG] next updateloopmsg in 3 seconds");
+//if(gDevDebug) Console->Print("[DEBUG] next updateloopmsg in 3 seconds");
     }
 }
 

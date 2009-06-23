@@ -37,22 +37,22 @@ class PWorldDataTemplate;
 
 class PWorldDatParser
 {
-	private :
-	  PFile* f;
-	  std::string mNCDataPath;
+private :
+    PFile* f;
+    std::string mNCDataPath;
 
-	  PWorldDataTemplate* mWorld;
-	  bool mDiscardPassiveObjects;
+    PWorldDataTemplate* mWorld;
+    bool mDiscardPassiveObjects;
 
     bool ProcessSec2ElemType3(u32 nSize);
     bool ProcessSec2ElemType5(u32 nSize);
     bool ProcessSec2NPCEntry(u32 nSize);
 
-	public :
-		PWorldDatParser();
-		~PWorldDatParser();
+public :
+    PWorldDatParser();
+    ~PWorldDatParser();
 
-		int LoadDatFile(const std::string& nFilename, PWorldDataTemplate* nWorld, const bool nDiscardPassiveObjects = true, const bool nTestAccesOnly = false);
+    int LoadDatFile(const std::string& nFilename, PWorldDataTemplate* nWorld, const bool nDiscardPassiveObjects = true, const bool nTestAccesOnly = false);
 
 };
 

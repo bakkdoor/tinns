@@ -41,9 +41,9 @@ class PSpawnedVehicle;
 
 class PMsgBuilder
 {
-  private:
+private:
 
-  public:
+public:
     PMsgBuilder() {};
     ~PMsgBuilder() {};
 

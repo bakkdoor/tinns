@@ -35,11 +35,11 @@
 
 class PPvPTrade : public PUdpMsgAnalyser
 {
-    public:
-        PPvPTrade(PMsgDecodeData* nDecodeData);
-        //~PPvPTrade();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
+public:
+    PPvPTrade(PMsgDecodeData* nDecodeData);
+    //~PPvPTrade();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
 };
 
 #endif

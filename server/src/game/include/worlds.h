@@ -40,14 +40,14 @@ class PWorld
 {
     friend class PWorlds;
 
-  public:
+public:
     static u16 const mZoneOutLimitOffset;
     static u16 const mBottomZoneOutLimit;
     static u16 const mBottomZoneInLimit;
     static u16 const mTopZoneOutLimit;
     static u16 const mTopZoneInLimit;
 
-  private:
+private:
     u32 mID;
     bool mIsAppartment;
     int mUseCount;
@@ -55,35 +55,71 @@ class PWorld
     PChairsInUseMap mChairsInUseMap;
     PSpawnedVehicles mSpawnedVehicles;
 
-    inline void IncreaseUseCount() { ++mUseCount; }
-    inline int DecreaseUseCount() { return ( mUseCount ? --mUseCount : 0 ); }
-    inline int GetUseCount() { return mUseCount; }
+    inline void IncreaseUseCount()
+    {
+        ++mUseCount;
+    }
+    inline int DecreaseUseCount()
+    {
+        return ( mUseCount ? --mUseCount : 0 );
+    }
+    inline int GetUseCount()
+    {
+        return mUseCount;
+    }
     bool Load( u32 nWorldID );
 
-  public:
+public:
     PWorld();
     ~PWorld();
 
-    inline std::string GetName() { return ( mWorldDataTemplate ? mWorldDataTemplate->GetName() : EmptyString ); }
-    inline std::string GetBspName() { return ( mWorldDataTemplate ? mWorldDataTemplate->GetBspName() : EmptyString ); }
-    inline bool IsAppartment() { return mIsAppartment; }
-    inline const PFurnitureItemTemplate* GetFurnitureItemTemplate( u32 nItemID ) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetFurnitureItem( nItemID ) : NULL ) ; }
+    inline std::string GetName()
+    {
+        return ( mWorldDataTemplate ? mWorldDataTemplate->GetName() : EmptyString );
+    }
+    inline std::string GetBspName()
+    {
+        return ( mWorldDataTemplate ? mWorldDataTemplate->GetBspName() : EmptyString );
+    }
+    inline bool IsAppartment()
+    {
+        return mIsAppartment;
+    }
+    inline const PFurnitureItemTemplate* GetFurnitureItemTemplate( u32 nItemID )
+    {
+        return ( mWorldDataTemplate ? mWorldDataTemplate->GetFurnitureItem( nItemID ) : NULL ) ;
+    }
     const PDefWorldModel* GetFurnitureItemModel( u32 nItemID );
-    inline const PDoorTemplate* GetDoor( u32 nDoorID ) { return ( mWorldDataTemplate ? mWorldDataTemplate->GetDoor( nDoorID ) : NULL ); }
-    inline bool getPositionItemPosition( u8 PosID, f32* pX, f32* pY, f32* pZ ) { return ( mWorldDataTemplate ? mWorldDataTemplate->getPositionItemPosition( PosID, pX, pY, pZ ) : false ); }
+    inline const PDoorTemplate* GetDoor( u32 nDoorID )
+    {
+        return ( mWorldDataTemplate ? mWorldDataTemplate->GetDoor( nDoorID ) : NULL );
+    }
+    inline bool getPositionItemPosition( u8 PosID, f32* pX, f32* pY, f32* pZ )
+    {
+        return ( mWorldDataTemplate ? mWorldDataTemplate->getPositionItemPosition( PosID, pX, pY, pZ ) : false );
+    }
 
     bool CharUseChair( int CharLocalID, u32 nItemID );
     void CharLeaveChair( int CharLocalID, u32 nItemID );
 
     PClient* GetClientByCharLocalId( u32 rawObjectId ) const; // returns Client if object is a PC char, and 0 if not.
 
-    inline PSpawnedVehicles* GetSpawnedVehicules() { return &mSpawnedVehicles; }
+    inline PSpawnedVehicles* GetSpawnedVehicules()
+    {
+        return &mSpawnedVehicles;
+    }
     bool CheckVhcNeedZoning( PVhcCoordinates const* nPos ) const;
     u32 GetVhcZoningDestination( PSpawnedVehicle const* nVhc, PVhcCoordinates* nPos = 0 ) const;
 
     // Evil thing... bounced through stuff :| wasnt able to find a better solution for this
-    inline const PNPCsMap       *GetNPCMap() const { return (mWorldDataTemplate ? mWorldDataTemplate->GetNPCMap() : NULL); };
-    inline const PNPCTemplate   *GetNPCTemplate( u32 nNPCID ) const { return (mWorldDataTemplate ? mWorldDataTemplate->GetNPC( nNPCID ) : NULL ); };
+    inline const PNPCsMap       *GetNPCMap() const
+    {
+        return (mWorldDataTemplate ? mWorldDataTemplate->GetNPCMap() : NULL);
+    };
+    inline const PNPCTemplate   *GetNPCTemplate( u32 nNPCID ) const
+    {
+        return (mWorldDataTemplate ? mWorldDataTemplate->GetNPC( nNPCID ) : NULL );
+    };
 };
 
 
@@ -94,7 +130,7 @@ class PWorlds
 {
     friend class PWorld;
 
-  public:
+public:
     static u32 const mNcSubwayWorldId;
     static u32 const mAptBaseWorldId;
     static u32 const mOutdoorBaseWorldId;
@@ -103,7 +139,7 @@ class PWorlds
     static u8 const mOutdoorWorldmapVSize;
     static u32 const mOutdoorMaxWorldId;
 
-  private:
+private:
     bool mPreloadWorldsTemplates;
     bool mPreloadStaticWorlds;
 
@@ -117,17 +153,23 @@ class PWorlds
     PWorldDataTemplate* GetWorldDataTemplate( const std::string& nFileName );
     PWorld* LeaseWorld( u32 nWorldID, const bool nPreloadPhase );
 
-  public:
+public:
     PWorlds();
     ~PWorlds();
 
     bool LoadWorlds();
     bool IsValidWorld( u32 nWorldID ) const;
-    inline PWorld* LeaseWorld( u32 nWorldID ) { return LeaseWorld( nWorldID, false ); }
+    inline PWorld* LeaseWorld( u32 nWorldID )
+    {
+        return LeaseWorld( nWorldID, false );
+    }
     PWorld* GetWorld( u32 nWorldID );
     void ReleaseWorld( u32 nWorldID );
     bool IsAppartment( u32 nWorldID );
-    inline bool IsPotentialAppartement( u32 nWorldID ) { return ( nWorldID > PWorlds::mAptBaseWorldId ); }
+    inline bool IsPotentialAppartement( u32 nWorldID )
+    {
+        return ( nWorldID > PWorlds::mAptBaseWorldId );
+    }
 
     void Update();
     void Shutdown();

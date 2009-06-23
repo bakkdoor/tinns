@@ -53,26 +53,26 @@ typedef std::map<u32, PNPCWorld*> PNPCWorldMap;
 
 class PNPC
 {
-  private:
+private:
     // SQL layout
     enum
     {
-      npc_id,
-      npc_worldid,
-      npc_nameid,
-      npc_typeid,
-      npc_name,
-      npc_location,
-      npc_x,
-      npc_y,
-      npc_z,
-      npc_angle,
-      npc_clothing,
-      npc_loot,
-      npc_unknown,
-      npc_trader,  // trader.def entry, or clan/faction data!
-      npc_customname,
-      npc_customscript
+        npc_id,
+        npc_worldid,
+        npc_nameid,
+        npc_typeid,
+        npc_name,
+        npc_location,
+        npc_x,
+        npc_y,
+        npc_z,
+        npc_angle,
+        npc_clothing,
+        npc_loot,
+        npc_unknown,
+        npc_trader,  // trader.def entry, or clan/faction data!
+        npc_customname,
+        npc_customscript
     };
 
     // SQL values
@@ -121,12 +121,26 @@ class PNPC
     ~PNPC();
     void InitVars();
 
-  public:
+public:
     friend class PNPCWorld;
 
-    inline void Attack( PClient* nClient ) { mTarget = nClient->GetChar()->GetID(); mDirty = true; }
-    inline void Attack( u16 nLocalCharID ) { mTarget = nLocalCharID; mDirty = true; }
-    inline void Move( u16 nNewX, u16 nNewY, u16 nNewZ ) { mPosX = nNewX; mPosY = nNewY; mPosZ = nNewZ; mDirty = true; }
+    inline void Attack( PClient* nClient )
+    {
+        mTarget = nClient->GetChar()->GetID();
+        mDirty = true;
+    }
+    inline void Attack( u16 nLocalCharID )
+    {
+        mTarget = nLocalCharID;
+        mDirty = true;
+    }
+    inline void Move( u16 nNewX, u16 nNewY, u16 nNewZ )
+    {
+        mPosX = nNewX;
+        mPosY = nNewY;
+        mPosZ = nNewZ;
+        mDirty = true;
+    }
 
     void Die(); // ... die?
     void Update(); // Check respawn timer
@@ -136,13 +150,19 @@ class PNPC
 
 class PNPCWorld
 {
-  private:
+private:
     std::time_t mCreation;  // Creation time. (Required to check zone-reset timer
     std::time_t mLastAliveMsg;  // Time of last "ping" message to keep NPCs in world
 
     PNPCMap mNPCs;
-    PNPCMap::iterator GetNPCListBegin() { return mNPCs.begin(); }
-    PNPCMap::iterator GetNPCListEnd() { return mNPCs.end(); }
+    PNPCMap::iterator GetNPCListBegin()
+    {
+        return mNPCs.begin();
+    }
+    PNPCMap::iterator GetNPCListEnd()
+    {
+        return mNPCs.end();
+    }
 
     bool mSuccessfullInit;
 
@@ -162,7 +182,7 @@ class PNPCWorld
     bool LoadNPCfromSQL();
     bool LoadNPCfromDEF();
 
-  public:
+public:
     friend class PNPCManager;
     PNPC* GetNPC( u32 nNPCID );
 };
@@ -171,12 +191,18 @@ class PNPCWorld
 
 class PNPCManager
 {
-  private:
+private:
     PNPCWorldMap mWorlds;
-    PNPCWorldMap::iterator GetWorldListBegin() { return mWorlds.begin(); }
-    PNPCWorldMap::iterator GetWorldListEnd() { return mWorlds.end(); }
+    PNPCWorldMap::iterator GetWorldListBegin()
+    {
+        return mWorlds.begin();
+    }
+    PNPCWorldMap::iterator GetWorldListEnd()
+    {
+        return mWorlds.end();
+    }
 
-  public:
+public:
     PNPCManager();
     ~PNPCManager();
 

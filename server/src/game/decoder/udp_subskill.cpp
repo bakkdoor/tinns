@@ -60,7 +60,7 @@ bool PUdpSubskillInc::DoAction()
     int tRemainingSkillPoints = 0;
     tRemainingSkillPoints = nChar->Skill->IncreaseSubSkill(SubskillID);
 
-    if( tRemainingSkillPoints > -1 )
+    if ( tRemainingSkillPoints > -1 )
     {
         PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, tRemainingSkillPoints); // last is remaining skillpoints
         nClient->SendUDPMessage(tmpMsg);

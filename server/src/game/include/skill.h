@@ -99,7 +99,7 @@
 
 class PSkillHandler
 {
-    private:
+private:
     struct PMainSkills
     {
         int mINT;
@@ -236,7 +236,7 @@ class PSkillHandler
     PSkills m_Skills;
     bool IncSubSkillPossible(SUB_SKILLS Skill);
 
-    public:
+public:
 
     void SetSubSkill(SUB_SKILLS Skill, int value);
     void SetMainSkill(MAIN_SKILLS Skill, int value);

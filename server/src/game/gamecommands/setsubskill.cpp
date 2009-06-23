@@ -44,7 +44,7 @@ void PCommands::doCmdSetSubSkill()
     if (tNewLevel == 0)
         SyntaxError = true;
 
-    if( source->GetChar()->Skill->IsValidSubSkill(tSubSkill) == false)
+    if ( source->GetChar()->Skill->IsValidSubSkill(tSubSkill) == false)
         SyntaxError = true;
 
     if (SyntaxError == true)
@@ -55,9 +55,9 @@ void PCommands::doCmdSetSubSkill()
     }
 
     PClient *temp_target = NULL;
-    if( ArgC == 3 )
+    if ( ArgC == 3 )
     {
-        if(IsArgNumeric(3) == true)
+        if (IsArgNumeric(3) == true)
         {
             temp_target = GetClientByID(GetArgInt(3));
         }
@@ -67,7 +67,7 @@ void PCommands::doCmdSetSubSkill()
             GetArgText(3, tmp_destNick, 50);
             temp_target = GetClientByNick(tmp_destNick);
         }
-        if(temp_target == NULL)
+        if (temp_target == NULL)
         {
             Chat->send(source, CHAT_DIRECT, "System", "No such player");
             return;
@@ -84,7 +84,7 @@ void PCommands::doCmdSetSubSkill()
     // Grab old Level
     tOldLevel = temp_target->GetChar()->Skill->GetSubSkill(tSubSkill);
     tLevelDiff = tNewLevel - tOldLevel;
-    if( tLevelDiff == 0 )
+    if ( tLevelDiff == 0 )
     {
         Chat->send(source, CHAT_DIRECT, "System", "Not setting anything. No difference at all");
         return;

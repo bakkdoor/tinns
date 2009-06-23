@@ -33,9 +33,9 @@
 
 struct PWorldFileHeader
 {
-  u32 mHeaderSize; // must be 08 00 00 00, = header size after this field
-  u32 mHeaderSig; // must be CF CF 0F 00
-  u32 mSection; // must be 01 00 00 00
+    u32 mHeaderSize; // must be 08 00 00 00, = header size after this field
+    u32 mHeaderSig; // must be CF CF 0F 00
+    u32 mSection; // must be 01 00 00 00
 };
 
 struct PSectionHeader
@@ -56,49 +56,49 @@ struct PSec2ElemHeader
 
 struct PSec2ElemType3a //static object ?
 {
-  f32 mPosY; //= u16 PosY - 32000
-  f32 mPosZ;
-  f32 mPosX;
-  f32 mRotY;
-  f32 mRotZ;
-  f32 mRotX;
-  f32 mScale; //00 00 80 3F ? = float(1.000000) !!! => scale factor ?????
-  u32 mUnknown2; //01 00 00 00 ?
-  u16 mModelID; // points to models.ini
-  u32 mUnknown3; //00 00 00 00 ?
-  u32 mUnknown4; //00 00 00 00 ?
-  u16 mWorldmodelID; // points to worldmodel.def
-  u16 mUnknown5; //12 00 ?
-  u32 mObjectID;
+    f32 mPosY; //= u16 PosY - 32000
+    f32 mPosZ;
+    f32 mPosX;
+    f32 mRotY;
+    f32 mRotZ;
+    f32 mRotX;
+    f32 mScale; //00 00 80 3F ? = float(1.000000) !!! => scale factor ?????
+    u32 mUnknown2; //01 00 00 00 ?
+    u16 mModelID; // points to models.ini
+    u32 mUnknown3; //00 00 00 00 ?
+    u32 mUnknown4; //00 00 00 00 ?
+    u16 mWorldmodelID; // points to worldmodel.def
+    u16 mUnknown5; //12 00 ?
+    u32 mObjectID;
 };
 struct PSec2ElemType3b //this part is optional
 {
-  f32 mBoxLowerY; //Bounding box, for useflag "64 - selfconstructing colisionbox"
-  f32 mBoxLowerZ; // s32 or u32 ?
-  f32 mBoxLowerX;
-  f32 mBoxUpperY;
-  f32 mBoxUpperZ;
-  f32 mBoxUpperX;
+    f32 mBoxLowerY; //Bounding box, for useflag "64 - selfconstructing colisionbox"
+    f32 mBoxLowerZ; // s32 or u32 ?
+    f32 mBoxLowerX;
+    f32 mBoxUpperY;
+    f32 mBoxUpperZ;
+    f32 mBoxUpperX;
 };
 
 struct PSec2ElemType5Start //door
 {
-  u16 mUnknown1; //18 00
-  u16 mUnknown1bis; //00 00 ? varies
-  f32 mPosY;
-  f32 mPosZ;
-  f32 mPosX;
-  u8 mActorStringSize; //string size with ending 0
-  u8 mParamStringSize; //string size with ending 0
-  u16 mUnknown5; //00 00 ? second byte varies
-  u16 mDoorID; // but what is the link with ObjectID sent in Use message (can't find the base offset .. or 0x80 for doors ???)
-  u16 mWorldmodelID; //door type from worldmodel.def
+    u16 mUnknown1; //18 00
+    u16 mUnknown1bis; //00 00 ? varies
+    f32 mPosY;
+    f32 mPosZ;
+    f32 mPosX;
+    u8 mActorStringSize; //string size with ending 0
+    u8 mParamStringSize; //string size with ending 0
+    u16 mUnknown5; //00 00 ? second byte varies
+    u16 mDoorID; // but what is the link with ObjectID sent in Use message (can't find the base offset .. or 0x80 for doors ???)
+    u16 mWorldmodelID; //door type from worldmodel.def
 };
-  //Actor As String //null terminated string
-  //Params As String //null terminated string - for DDOOR, 2nd param is the ID of the other (half)door (*)
-                   //param1 = 2 => simple lateral move ?, 3 => door frontal+lateral move (as at Typherra memorial) ?
-                   //last param = 0/1 for lateral move direction ? no ...
-                   //(*) here is the bug(?) that makes open only one half of a double door
+//Actor As String //null terminated string
+//Params As String //null terminated string - for DDOOR, 2nd param is the ID of the other (half)door (*)
+//param1 = 2 => simple lateral move ?, 3 => door frontal+lateral move (as at Typherra memorial) ?
+//last param = 0/1 for lateral move direction ? no ...
+//(*) here is the bug(?) that makes open only one half of a double door
 
 /*
 struct PSec2ElemType6Start //npc
@@ -158,11 +158,11 @@ struct PSec2NPC_EntryPart2  // Waypoints! or something like that...
 //  Name As String //non-zero terminated string
 struct PSec2ElemType15End //area definition/sound ?
 {
-  f32 mUnknown1;
-  f32 mUnknown2;
-  f32 mUnknown3;
-  f32 mUnknown4;
-  f32 mUnknown5;
+    f32 mUnknown1;
+    f32 mUnknown2;
+    f32 mUnknown3;
+    f32 mUnknown4;
+    f32 mUnknown5;
 };
 
 #endif

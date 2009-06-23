@@ -384,16 +384,16 @@ bool PWorldDatParser::ProcessSec2ElemType5( u32 nSize ) // doors
     ActorString = StringData;
     StringData[szb - 1] = 0;
     ParamString = StringData + Data.mActorStringSize;
-/*
-    if ( gDevDebug )
-    {
-        Console->Print( "-------------------------------------------------------" );
-        Console->Print( "Door %s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mDoorID );
-        Console->Print( "y:%f z:%f x:%f", Data.mPosY , Data.mPosZ, Data.mPosX );
-        Console->Print( "Uk1:0x%04x Uk1bis:0x%04x Uk5:0x%04x", Data.mUnknown1, Data.mUnknown1bis, Data.mUnknown5 );
-        Console->Print( "Type=%s Param=%s", ActorString, ParamString );
-    }
-*/
+    /*
+        if ( gDevDebug )
+        {
+            Console->Print( "-------------------------------------------------------" );
+            Console->Print( "Door %s (%d) : ID %d", nName.c_str(), Data.mWorldmodelID, Data.mDoorID );
+            Console->Print( "y:%f z:%f x:%f", Data.mPosY , Data.mPosZ, Data.mPosX );
+            Console->Print( "Uk1:0x%04x Uk1bis:0x%04x Uk5:0x%04x", Data.mUnknown1, Data.mUnknown1bis, Data.mUnknown5 );
+            Console->Print( "Type=%s Param=%s", ActorString, ParamString );
+        }
+    */
 // Let's keep knowledge of doors even without models !
     /*  if ((!nWorldModel || (!nWorldModel->GetFunctionType() && !(nWorldModel->GetUseFlags() & nonDiscardUseFlags))) && mDiscardPassiveObjects)
       {
@@ -508,7 +508,7 @@ bool PWorldDatParser::ProcessSec2NPCEntry( u32 nSize )
     u8 tCurrWayP = 0;
     if ( tNPCPartA.mHasAdditionalCoords > 0 )
     {
-        while( tCurrWayP < tNPCPartA.mHasAdditionalCoords )
+        while ( tCurrWayP < tNPCPartA.mHasAdditionalCoords )
         {
             memset(&tNPCPartB, 0, tSizeOfB);
             if (( u32 )( f->Read( &tNPCPartB, tSizeOfB ) ) < tSizeOfB )

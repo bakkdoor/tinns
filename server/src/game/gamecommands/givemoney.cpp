@@ -24,12 +24,12 @@ void PCommands::doCmdgivemoney()
 {
     u32 cashtoadd = 0;
     bool SyntaxError = false;
-    if(ArgC < 1)
+    if (ArgC < 1)
     {
         SyntaxError = true;
     }
 
-    if(IsArgNumeric(1) == false)
+    if (IsArgNumeric(1) == false)
     {
         SyntaxError = true;
     }
@@ -37,20 +37,20 @@ void PCommands::doCmdgivemoney()
     {
         cashtoadd = (u32)GetArgInt(1);
     }
-    if(cashtoadd == 0)
+    if (cashtoadd == 0)
     {
         SyntaxError = true;
     }
 
-    if(SyntaxError == true)
+    if (SyntaxError == true)
     {
         Chat->send(source, CHAT_DIRECT, "Usage", "@givemoney <amount> [<charID or nickname>]");
         return;
     }
 
-    if(ArgC == 2)
+    if (ArgC == 2)
     {
-        if(IsArgNumeric(2) == true)
+        if (IsArgNumeric(2) == true)
         {
             target = GetClientByID(GetArgInt(2));
         }
@@ -60,12 +60,12 @@ void PCommands::doCmdgivemoney()
             GetArgText(2, tmp_destNick, 50);
             target = GetClientByNick(tmp_destNick);
         }
-        if(target == NULL)
+        if (target == NULL)
         {
             Chat->send(source, CHAT_DIRECT, "System", "No such player");
             return;
         }
-        if(source->GetAccountLevel() <= target->GetAccountLevel())
+        if (source->GetAccountLevel() <= target->GetAccountLevel())
         {
             char tmpMsg[200];
             snprintf(tmpMsg, 199, "Cant manipulate %s's credits, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());

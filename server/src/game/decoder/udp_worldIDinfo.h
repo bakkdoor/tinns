@@ -35,11 +35,11 @@
 
 class PWorldIDInfoReq : public PUdpMsgAnalyser
 {
-    public:
-        PWorldIDInfoReq(PMsgDecodeData* nDecodeData);
-        //~PWorldIDInfoReq();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
+public:
+    PWorldIDInfoReq(PMsgDecodeData* nDecodeData);
+    //~PWorldIDInfoReq();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
 };
 
 #endif
