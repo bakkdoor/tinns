@@ -1781,4 +1781,38 @@ Hammag; 12.05.2009 18:00 GMT+1
   Added zone weather control command @weather ?|<weather id> [<target char id>]
   Added command @who as alias of @online
   Added command @whois as alias of @info
+
+
+?????
+[rev. 128 to 132]
+NO ONE BOTHERED TO PUT A COMMENT IN THE CHANGELOG
+so.. taken from SVN log:
+...
+------------------------------------------------------------------------
+r130 | Namikon | 2009-06-20 23:51:31 +0200 (sam 20 jun 2009) | 4 lines
+
+- Added 2 new commands: setmainskill and setsubskill (The 1st for PSI, INT, STR,.. the 2nd for HCK,BRT, ...)
+- Added 2 new decoders for yet-unknown packets
+- Prepared future work on the npc subsystem. (They'll soon be able to shoot you :) )
+- Fixed subskill system. You can now increase any subskill without getting OOO Packets, as long as there are enough skillpoints left of course
+------------------------------------------------------------------------
+r132 | Namikon | 2009-06-23 16:36:42 +0200 (mar 23 jun 2009) | 3 lines
+
+As by request of Akkiko, (hopefully) fixed all files with \n\r. (Also switched by editor to only use \n now.
+As by request of Sting (and to revert my mistake i did a few days ago) re-enabled mUnknown and mLoot values in NPC.cpp
+Also reformattet the output, the old one was way to long
+------------------------------------------------------------------------
+
+Hammag; 07.07.2009 14:40 GMT+2
+----------
+[rev. 133]
+
+<Config>
+  Reverted gameserver.conf and infoserver.conf to their previous content which shouldn't be changed to installation-specific values !!!
+
+<Gameserver>
+  Fixed naming of added class "PPvPTrade" to PUdpPvPTrade to try a bit to keep coherent...
+  Added packets for held item use, drug use, recration unit use (experimental, not fully functionnal)
+  Fixed use of decoded packed initially taken as "hack init/start"
+  Fixed 2 compil-fatal SYNTAX ERRORS in npc.cpp ...
   

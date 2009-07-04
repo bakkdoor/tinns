@@ -35,38 +35,20 @@
 
 class PUdpHackFail : public PUdpMsgAnalyser
 {
-    public:
-        PUdpHackFail(PMsgDecodeData* nDecodeData);
-        //~PUdpHackFail();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
+  public:
+    PUdpHackFail( PMsgDecodeData* nDecodeData );
+    //~PUdpHackFail();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
 };
 
 class PUdpHackSuccess : public PUdpMsgAnalyser
 {
-    public:
-        PUdpHackSuccess(PMsgDecodeData* nDecodeData);
-        //~PUdpHackSuccess();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
-};
-
-class PUdpHackInit : public PUdpMsgAnalyser
-{
-    public:
-        PUdpHackInit(PMsgDecodeData* nDecodeData);
-        //~PUdpHackInit();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
-};
-
-class PUdpHackStart : public PUdpMsgAnalyser
-{
-    public:
-        PUdpHackStart(PMsgDecodeData* nDecodeData);
-        //~PUdpHackStart();
-        PUdpMsgAnalyser* Analyse();
-        bool DoAction();
+  public:
+    PUdpHackSuccess( PMsgDecodeData* nDecodeData );
+    //~PUdpHackSuccess();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
 };
 
 #endif

@@ -34,13 +34,13 @@ class PDefDrug : public PDef
 {
   protected :
     //int mIndex;
-	int mType;
-	//int mUseSound;
-	int mDuration;
-	int mChangeNum;
+    int mType;
+    //int mUseSound;
+    int mDuration;
+    int mChangeNum;
     int mChangeType[8]; // 1: bonus, 2:malus, ... other ?
     float mChangeScale[8];
-	int mChangeTarget[8];
+    int mChangeTarget[8];
 
   public :
     PDefDrug();
@@ -49,11 +49,26 @@ class PDefDrug : public PDef
     bool LoadFromDef( PTokenList *Tokens );
 
     inline int GetType() const { return mType; }
-	inline int GetDuration() const { return mDuration; }
+    inline int GetDuration() const { return mDuration; }
     inline int GetChangeNum() const { return mChangeNum; }
-    inline int GetChangeType(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeType[nIdx] : 0) ; }
-	inline float GetChangeScale(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeScale[nIdx] : 0) ; }
-	inline int GetChangeTarget(int nIdx) const { return ( ((nIdx >= 0) && (nIdx < mChangeNum)) ? mChangeTarget[nIdx] : 0) ; }
+    inline int GetChangeType( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < mChangeNum ) ) ? mChangeType[nIdx] : 0 ) ; }
+    inline float GetChangeScale( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < mChangeNum ) ) ? mChangeScale[nIdx] : 0 ) ; }
+    inline int GetChangeTarget( int nIdx ) const { return ((( nIdx >= 0 ) && ( nIdx < mChangeNum ) ) ? mChangeTarget[nIdx] : 0 ) ; }
 };
+
+//type of drug:
+//1 normal Drug
+//2 Skill ver�ndernder PSI Spruch K�mpfer
+//3 Skill ver�ndernder PSI Spruch Supporter
+//4 Skill ver�ndernder PSI Spruch Resists
+//6+A274  PSI entferne Sprcuh
+
+// drugeffects  < 1000  Subskill
+//  <2000 Skill
+//  <2100 Energy  (permanent)
+//  <2200 Maxenergy
+//  <2300 Armor
+//  <2400 Subskills
+//  3000-3500 Actionmods
 
 #endif

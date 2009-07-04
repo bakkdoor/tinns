@@ -25,8 +25,8 @@
 
  CREATION: 20 Jun 2009 Namikon
 
- MODIFIED:
- REASON: -
+ MODIFIED: 4 Jul 2009 Hammag
+ REASON: Corrected class name
 
 */
 
@@ -35,12 +35,12 @@
 
 /**** PPvPTrade ****/
 
-PPvPTrade::PPvPTrade(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
+PUdpPvPTrade::PUdpPvPTrade(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
 {
     nDecodeData->mName << "/0x3e";
 }
 
-PUdpMsgAnalyser* PPvPTrade::Analyse()
+PUdpMsgAnalyser* PUdpPvPTrade::Analyse()
 {
     mDecodeData->mName << "=Switch PvP Trading";
 
@@ -48,7 +48,7 @@ PUdpMsgAnalyser* PPvPTrade::Analyse()
     return this;
 }
 
-bool PPvPTrade::DoAction()
+bool PUdpPvPTrade::DoAction()
 {
     // TODO: Handle client PvP trade switch on/off
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;

@@ -25,19 +25,19 @@
 
  CREATION: 20 Jun 2009 Namikon
 
- MODIFIED:
- REASON: -
+ MODIFIED: 4 Jul 2009 Hammag
+ REASON: Corrected class name
 
 */
 
 #ifndef UDPPVPTRADE_H
 #define UDPPVPTRADE_H
 
-class PPvPTrade : public PUdpMsgAnalyser
+class PUdpPvPTrade : public PUdpMsgAnalyser
 {
 public:
-    PPvPTrade(PMsgDecodeData* nDecodeData);
-    //~PPvPTrade();
+    PUdpPvPTrade(PMsgDecodeData* nDecodeData);
+    //~PUdpPvPTrade();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

@@ -71,7 +71,9 @@ public:
     PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
 
     PMessage* BuildStartWeaponReloadAnimMsg( PClient* nClient );
-    PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore = 0 );
+    PMessage* BuildHeldItemUseMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore = 0 );
+    PMessage* BuildHeldItemUse2Msg( u16 nUserCharLocalId, u32 nTargetRawItemID );
+    PMessage* BuildHeldItemUse4Msg( u16 nUserCharLocalId, u32 nTargetRawItemID, u16 nUnknown1, u16 nUnknown2, u8 nTargetedHeight );
     PMessage* BuildHeldItemAddonActivationMsg( PClient* nClient, u8 nState );
 
     // Temp. NPC update message for testing
@@ -144,6 +146,12 @@ public:
     PMessage* BuildDBAnswerMsg( PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols );
 
     PMessage* BuildTraderItemListMsg( PClient* nClient, u32 nTraderNpcID );
+
+    PMessage* BuildHeldItemUse3Msg(  PClient* nClient, u16 nUnknown1, u16 nUnknown2, u16 nUnknown3, u16 nUnknown4  );
+
+    PMessage* BuildCharUseTimedDrugMsg( PClient* nClient, const PDefDrug* nDrugDef, u16 nItemId );
+    PMessage* BuildCharUseInstantDrugMsg( PClient* nClient, const PDefDrug* nDrugDef );
+    PMessage* BuildCharUseRecreationUnitMsg( PClient* nClient, u32 nObjectId );
 
     PMessage* BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
 };

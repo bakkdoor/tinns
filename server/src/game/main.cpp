@@ -69,7 +69,7 @@ void signal_handler(int signal)
 int main()
 {
     // Connect signal with handlerfunction
-    signal(SIGINT, signal_handler);
+    signal(SIGINT, signal_handler); // TODO: change for sigaction()
 
 
 	if(!InitTinNS())

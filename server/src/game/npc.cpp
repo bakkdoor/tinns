@@ -60,7 +60,7 @@ bool PNPC::DEF_Load(u32 nWorldID)
     mName = t_defNPC->GetActorName();
 
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", , mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     return true;
 }
 
@@ -119,7 +119,7 @@ bool PNPC::SQL_Load()
         mCustomLua = row[npc_customscript];
 
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", , mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     MySQL->FreeGameSQLResult( result );
     return true;
 }

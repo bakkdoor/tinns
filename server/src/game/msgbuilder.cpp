@@ -234,8 +234,7 @@ PMessage* PMsgBuilder::BuildCharPosUpdateMsg( PClient* nClient )
     *tmpMsg << ( u16 )0x0000;  // Client->GetSessionID(); // just placeholder, must be set outside
     *tmpMsg << ( u8 )0x00; // Message length placeholder;
     *tmpMsg << ( u8 )0x1b;
-    *tmpMsg << ( u16 )nClient->GetLocalID();
-    *tmpMsg << ( u16 )0x0000; // pad to keep LocalID on u16
+    *tmpMsg << ( u32 )nClient->GetLocalID();
     *tmpMsg << ( u8 )0x03;
     if ( cSeatType )
     {
@@ -486,7 +485,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 2 ----
     *BaselineMsg << ( u8 )0x02; // section id
@@ -509,7 +508,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 3 ----
     *BaselineMsg << ( u8 )0x03; // section id
@@ -556,7 +555,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 4 ----
     *BaselineMsg << ( u8 )0x04; // section id
@@ -658,7 +657,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 5 ----
     *BaselineMsg << ( u8 )0x05; // section id
@@ -669,7 +668,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 6 ----
     *BaselineMsg << ( u8 )0x06; // section id
@@ -815,7 +814,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 7 ----
     *BaselineMsg << ( u8 )0x07; // section id
@@ -824,7 +823,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 0c ----
     *BaselineMsg << ( u8 )0x0c; // section id
@@ -836,7 +835,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 8 ----
     *BaselineMsg << ( u8 )0x08; // section id
@@ -896,7 +895,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 9 ----
     *BaselineMsg << ( u8 )0x09; // section id
@@ -933,7 +932,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 0a ----
     *BaselineMsg << ( u8 )0x0a; // section id
@@ -941,7 +940,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
     // Clan data ?
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 0b ----
     *BaselineMsg << ( u8 )0x0b; // section id
@@ -950,7 +949,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     // ---- Section 0d ----
     *BaselineMsg << ( u8 )0x0d; // section id
@@ -962,7 +961,7 @@ PMessage* PMsgBuilder::BuildBaselineMsg( PClient* nClient )
 
     *BaselineMsg << ( u16 )SectionMsg.GetSize();
     *BaselineMsg << SectionMsg;
-    SectionMsg.Clear();
+    SectionMsg.Reset();
 
     return BaselineMsg;
 }
@@ -2856,7 +2855,7 @@ PMessage* PMsgBuilder::BuildStartWeaponReloadAnimMsg( PClient* nClient )
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore )
+PMessage* PMsgBuilder::BuildHeldItemUseMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore )
 {
     PMessage* tmpMsg = new PMessage( 22 );
 
@@ -2879,6 +2878,78 @@ PMessage* PMsgBuilder::BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId
     ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
     return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildHeldItemUse2Msg( u16 nUserCharLocalId, u32 nTargetRawItemID )
+{
+  PMessage* tmpMsg = new PMessage( 18 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nUserCharLocalId;
+  *tmpMsg << ( u8 )0x2c; // cmd
+  *tmpMsg << ( u8 )0x09; // cmd
+  *tmpMsg << ( u32 )nTargetRawItemID;
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildHeldItemUse3Msg(  PClient* nClient, u16 nUnknown1, u16 nUnknown2, u16 nUnknown3, u16 nUnknown4 )
+{
+  PMessage* tmpMsg = new PMessage( 22 );
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x1a; // cmd
+  *tmpMsg << ( u16 )nUnknown1;
+  *tmpMsg << ( u16 )nUnknown2;
+  *tmpMsg << ( u16 )nUnknown3;
+  *tmpMsg << ( u16 )nUnknown4;
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildHeldItemUse4Msg( u16 nUserCharLocalId, u32 nTargetRawItemID, u16 nUnknown1, u16 nUnknown2, u8 nTargetedHeight )
+{
+  PMessage* tmpMsg = new PMessage( 23 );
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u16 )0x0000; // placeholder for SessionID();
+
+  *tmpMsg << ( u8 )0x00;  // Message length placeholder;
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )0x0000; // placeholder for UDP_ID;
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nUserCharLocalId;
+  *tmpMsg << ( u8 )0x2c; // cmd
+  *tmpMsg << ( u8 )0x01; // cmd
+  *tmpMsg << ( u16 )nUnknown1;
+  *tmpMsg << ( u16 )nUnknown2;
+  *tmpMsg << ( u32 )nTargetRawItemID;
+  *tmpMsg << ( u8 )nTargetedHeight;
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildHeldItemAddonActivationMsg( PClient* nClient, u8 nState )
@@ -2920,6 +2991,90 @@ PMessage* PMsgBuilder::BuildWeatherControlMsg( u16 nWeatherId )
     ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
     return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseTimedDrugMsg( PClient* nClient, const PDefDrug* nDrugDef, u16 nItemId )
+{
+  PMessage* tmpMsg = new PMessage( 60 );
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x06; // cmd
+  *tmpMsg << ( u8 )nDrugDef->GetChangeNum();
+  *tmpMsg << ( u8 )0x01; // ??? not working if 0, no apparent change if > 1
+  *tmpMsg << ( u16 )nDrugDef->GetDuration();
+  *tmpMsg << ( u16 )nItemId;
+  for( u8 i = 0; i < nDrugDef->GetChangeNum(); ++i )
+  {
+    *tmpMsg << ( u8 )nDrugDef->GetChangeType( i );
+    *tmpMsg << ( u16 )( nDrugDef->GetChangeScale( i ) * 100 );
+    *tmpMsg << ( u16 )nDrugDef->GetChangeTarget( i );
+  }
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseInstantDrugMsg( PClient* nClient, const PDefDrug* nDrugDef )
+{
+  PMessage* tmpMsg = new PMessage( 60 );
+  nClient->IncreaseUDP_ID();
+
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x07; // cmd
+  *tmpMsg << ( u8 )nDrugDef->GetChangeNum();
+  *tmpMsg << ( u8 )0x02; // ??? other values not tested
+  for( u8 i = 0; i < nDrugDef->GetChangeNum(); ++i )
+  {
+    *tmpMsg << ( u8 )nDrugDef->GetChangeType( i );
+    *tmpMsg << ( f32 )( nDrugDef->GetChangeScale( i ) * 100 ); // f32 in nc2.2 - u16 in nc1 ???
+    *tmpMsg << ( u16 )nDrugDef->GetChangeTarget( i );
+  }
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+  Console->Print( "%s PMsgBuilder::BuildCharUseInstantDrugMsg : data format not tested", Console->ColorText( YELLOW, BLACK, "[WARNING]" ) );
+
+  return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildCharUseRecreationUnitMsg( PClient* nClient, u32 nObjectId )
+{
+  PMessage* tmpMsg = new PMessage( 16 );
+  nClient->IncreaseUDP_ID();
+/*
+  *tmpMsg << ( u8 )0x13;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u16 )nClient->GetSessionID();
+  *tmpMsg << ( u8 )0x00; // Message length
+  *tmpMsg << ( u8 )0x03;
+  *tmpMsg << ( u16 )nClient->GetUDP_ID();
+  *tmpMsg << ( u8 )0x1f;
+  *tmpMsg << ( u16 )nClient->GetLocalID();
+  *tmpMsg << ( u8 )0x25; // cmd
+  *tmpMsg << ( u8 )0x16; // cmd
+
+  ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+*/
+  Console->Print( "%s PMsgBuilder::BuildCharUseRecreationUnitMsg : not implemented (target: 0x%08x)", Console->ColorText( YELLOW, BLACK,"[WARNING]" ), nObjectId );
+  return tmpMsg;
 }
 
 // For testing - packet to be broadcasted to zone
