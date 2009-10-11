@@ -185,8 +185,77 @@ bool PNPC::HasSQLShoppingList( PClient* nClient )
         return false;
 }
 
+void PNPC::StartDialog( PClient* nClient, string &nDialogscript )
+{
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u32 ) 0x0000; // UDP Placeholder
+    //*tmpMsg << ( u16 )nClient->GetUDP_ID();
+    //*tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x00; // Message length
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x18;
+    if(mFromDEF == true)
+        *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
+    else
+        *tmpMsg << mWorldID; // Dont forget the offset!!!
+
+    // Todo: is this correct? random u32 value??
+    *tmpMsg << ( u16 ) GetRandom( 32000, 1 );
+    *tmpMsg << ( u16 ) GetRandom( 32000, 1 );
+    *tmpMsg << ( u32 ) 0x0000;
+    *tmpMsg << nDialogscript.c_str();
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x0a;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x1a;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+
+    ( *tmpMsg )[1] = ( u16 )nClient->GetUDP_ID();
+    ( *tmpMsg )[3] = ( u16 )nClient->GetSessionID();
+
+    nClient->SendUDPMessage(tmpMsg);
+    Console->Print("[PNPC::StartDialog] Sending NPC DialogStart for Script %s", nDialogscript.c_str());
+    return;
+}
+
 void PNPC::StartConversation( PClient* nClient )
 {
+    // Check if NPC has script for talking
+    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+    if(t_npc)
+    {
+        size_t tfound;
+        string t_dialogscript = t_npc->GetDialogScript();
+        string t_replacechr ("\"");
+
+        tfound = t_dialogscript.find(t_replacechr);
+        while(tfound != string::npos)
+        {
+            t_dialogscript.replace(tfound, 1, " ");
+            tfound = t_dialogscript.find( t_replacechr, tfound +1 );
+        }
+        Trim(&t_dialogscript);
+        if(t_dialogscript.length() > 1)
+        {
+            StartDialog(nClient, t_dialogscript);
+            return;
+        }
+    }
+
     // Check if NPC has a TradeID
     Console->Print("[DEBUG] NPC WorldID %u  NPC TraderDefID %u", mWorldID, mTrader);
     if(IsAllbuyer(nClient) == true)

@@ -131,6 +131,7 @@ private:
     bool DoSQLShoppingList( PClient* nClient, PMessage* nContentList );
     bool HasSQLShoppingList( PClient* nClient );
     bool IsAllbuyer( PClient* nClient );
+    void StartDialog( PClient* nClient, string &nDialogscript );
 
 public:
     friend class PNPCWorld;
