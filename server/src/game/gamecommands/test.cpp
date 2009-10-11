@@ -274,6 +274,53 @@ void PCommands::doCmdtest()
 //        *tmpMsg << (u8)GetArgInt(6);
         source->SendUDPMessage(tmpMsg);
     }
+    else if (GetArgInt(1) == 11)
+    {
+        PMessage* tmpMsg = new PMessage(54);
+        source->IncreaseUDP_ID();
+//13 87 00 7A DF
+//23 03 7E 00 28 00 01 2D 01 00 00 17 EF 6F 06 C8 11 72 78 00 80 3B 7D 00 57 00 6E 00 57 53 4B 00 31 38 30 00
+//23 03 25 00 28 00 01 15 01 00 00 36 3f 14 53 01 00 58 83 80 7f 37 82 00 56 7e 00 00 57 43 4f 50 00 39 30 00
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x00; // Message length
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u8)0x28;
+        *tmpMsg << (u16)0x0100;
+        *tmpMsg << (u32)0xFF12b; // NpcId
+        *tmpMsg << (u16)GetArgInt(2); // Type
+        *tmpMsg << (u16)GetArgInt(3); // Cloth
+        *tmpMsg << (u16)GetArgInt(4); // Name
+
+        *tmpMsg << (u16)(source->GetChar()->Coords.mY + 768);
+        //*tmpMsg << (u16)31062;
+        *tmpMsg << (u16)(source->GetChar()->Coords.mZ + 768);
+        //*tmpMsg << (u16)32512;
+        *tmpMsg << (u16)(source->GetChar()->Coords.mX + 768);
+        //*tmpMsg << (u16)33973;
+
+        *tmpMsg << (u8)0x00;
+
+        *tmpMsg << (u8)0xbe;
+        *tmpMsg << (u8)0x4c;
+        *tmpMsg << (u8)0x39;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x57;
+        *tmpMsg << (u8)0x4c;
+        *tmpMsg << (u8)0x44;
+        *tmpMsg << (u8)0x4b;
+        *tmpMsg << (u8)0x4c;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x2d;
+        *tmpMsg << (u8)0x37;
+        *tmpMsg << (u8)0x36;
+        *tmpMsg << (u8)0x00;
+
+        (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+        source->SendUDPMessage(tmpMsg);
+    }
 
 
 

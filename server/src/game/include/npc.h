@@ -72,7 +72,8 @@ private:
         npc_unknown,
         npc_trader,  // trader.def entry, or clan/faction data!
         npc_customname,
-        npc_customscript
+        npc_customscript,
+        npc_shop_quality
     };
 
     // SQL values
@@ -88,6 +89,7 @@ private:
     u16 mLoot;
     u16 mUnknown;
     u16 mTrader;
+    u8 mItemQuality; // Used for Shopping stuff
     std::string mName;
     std::string mCustomName;
     std::string mCustomLua;
@@ -100,6 +102,9 @@ private:
     u8 mHealth;         // NPC Health
     u16 mTarget;        // Current focused player
     bool mDirty;        // Needs update to clients
+
+    // WorldID Fix 10.10.2009
+    bool mFromDEF;      // to differ DEF NPCs from SQL NPCs
 
     u8 GetActionStatus();
     // Looks like we have a bitmask. However, only 2 are 100% identified yet
@@ -120,6 +125,11 @@ private:
     PNPC( int nDEFID, u32 nWorldID );
     ~PNPC();
     void InitVars();
+
+    void ContentListAddItem(PMessage* nContentList, u16 nItemID, u32 nQuality, u32 nBasePrice = 0, f32 nPriceCoef = 0.0f);
+    void ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID, u32 nQuality);
+    bool DoSQLShoppingList( PClient* nClient, PMessage* nContentList );
+    bool HasSQLShoppingList( PClient* nClient );
 
 public:
     friend class PNPCWorld;
@@ -144,6 +154,7 @@ public:
 
     void Die(); // ... die?
     void Update(); // Check respawn timer
+    void StartConversation( PClient* nClient );
 };
 
 // *****************************************

@@ -46,16 +46,27 @@ bool PNPC::DEF_Load(u32 nWorldID)
     mNameID = (u16)t_defNPC->GetNPCTypeID(); // 16 or 32??
 //mTypeID = not defined in dat?
 //mClothing = not defined in dat?
+
+    // DAT NPC Name fix
+    // TODO: Find out what exactly these TypeID and ClothingID values do and where they are generated/read
+    mTypeID = GetRandom(32767, 1);
+    mClothing = GetRandom(32767, 1);
+    // -------------
+
     mPosX = t_defNPC->GetPosX()+32768;
     mPosY = t_defNPC->GetPosY()+32768;
     mPosZ = t_defNPC->GetPosZ()+32768;
     mAngle = atoi( t_defNPC->GetAngle().c_str() );
     mLoot = 0;
     mUnknown = 19646;
-    mTrader = 57;
+    //mTrader = 57;
+    mTrader = t_defNPC->GetTradeID();
+
+    // WorldID Fix 10.10.2009
+    mFromDEF = true;
 //mLoot = not defined in dat?
 //mUnknown = not defined in dat?
-//mTrader = not defined in dat?
+//mTrader = not defined in dat? // it is!
 
     mName = t_defNPC->GetActorName();
 
@@ -108,6 +119,7 @@ bool PNPC::SQL_Load()
     mLoot = atoi( row[npc_loot] );
     mUnknown = atoi( row[npc_unknown] );
     mTrader = atoi( row[npc_trader] );
+    mItemQuality = atoi( row[npc_shop_quality] );
 
     if ( row[npc_name] != NULL )
         mName = row[npc_name];
@@ -167,6 +179,9 @@ void PNPC::InitVars()
     mHealth = 127; // Max health
     mTarget = 0;
     mDirty = false; // No need to send instand update
+    // WorldID Fix 10.10.2009
+    mFromDEF = false;
+    mItemQuality = 50;
 }
 
 PNPC::PNPC( int nSQLID )
@@ -287,7 +302,13 @@ void PNPCWorld::MSG_SendNPCs( PClient* nClient )
             *npc_initmsg << ( u8 )0x28;
             *npc_initmsg << ( u8 )0x00;
             *npc_initmsg << ( u8 )0x01;
-            *npc_initmsg << ( u32 )tNPC->mWorldID;
+
+            // WorldID Fix 10.10.2009
+            if(tNPC->mFromDEF == false)
+                *npc_initmsg << ( u32 )tNPC->mWorldID;
+            else
+                *npc_initmsg << ( u32 )tNPC->mWorldID + 255;
+
             *npc_initmsg << ( u16 )tNPC->mTypeID;
             *npc_initmsg << ( u16 )tNPC->mClothing;
             *npc_initmsg << ( u16 )tNPC->mNameID;
@@ -358,7 +379,13 @@ void PNPCWorld::MSG_SendAlive( PClient* nClient )
 
             *tmpNPCUpdate << ( u8 )0x11;
             *tmpNPCUpdate << ( u8 )0x1B;
-            *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
+
+            // WorldID Fix 10.10.2009
+            if(tNPC->mFromDEF == false)
+                *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
+            else
+                *tmpNPCUpdate << ( u32 )tNPC->mWorldID + 255;
+
             *tmpNPCUpdate << ( u8 )0x1F;
             *tmpNPCUpdate << ( u16 )tNPC->mPosY;
             *tmpNPCUpdate << ( u16 )tNPC->mPosZ;
@@ -581,7 +608,13 @@ void PNPCWorld::Update()
 
                     *tmpNPCUpdate << ( u8 )0x15; // Message length
                     *tmpNPCUpdate << ( u8 )0x1b;
-                    *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
+
+                    // WorldID Fix 10.10.2009
+                    if(tNPC->mFromDEF == false)
+                        *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
+                    else
+                        *tmpNPCUpdate << ( u32 )tNPC->mWorldID + 255;
+
                     *tmpNPCUpdate << ( u8 )0x1F;
                     *tmpNPCUpdate << ( u16 )tNPC->mPosY;
                     *tmpNPCUpdate << ( u16 )tNPC->mPosZ;

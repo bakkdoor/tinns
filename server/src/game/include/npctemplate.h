@@ -57,7 +57,7 @@ private:
     u8        mUnknown2a;
     u8        mUnknown2b;
     u8        mUnknown2c;
-    u16       mUnknown3; //00 00 ?
+    u16       mTradeID;  //mUnknown3; //00 00 ?
     u16       mUnknown4; //04 00 ?
     string    mActorName;
     string    mAngle;
@@ -135,9 +135,9 @@ public:
     {
         return mUnknown2c;
     };
-    inline u16 GetUnknown3() const
+    inline u16 /*GetUnknown3*/GetTradeID() const
     {
-        return mUnknown3;
+        return mTradeID;//mUnknown3;
     };
     inline u16 GetUnknown4() const
     {
@@ -201,9 +201,9 @@ public:
     {
         mUnknown2c = nValue;
     };
-    inline void SetUnknown3( u16 nValue )
+    inline void /*SetUnknown3*/SetTradeID( u16 nValue )
     {
-        mUnknown3 = nValue;
+        /*mUnknown3*/mTradeID = nValue;
     };
     inline void SetUnknown4( u16 nValue )
     {

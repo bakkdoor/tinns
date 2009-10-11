@@ -258,21 +258,30 @@ bool PUdpUseObject::DoAction()
 
         if ( !( mDecodeData->mState & DECODE_ACTION_DONE ) ) // not a vhc nor a pc
         {
+            //Console->Print(">>> Searching world");
           // Is it a NPC ?
           PNPC* targetNPC = 0;
           PNPCWorld* currentNPCWorld = NPCManager->GetWorld( nChar->GetLocation() );
           if ( currentNPCWorld )
           {
+              //Console->Print(">>> Searching NPC (SQL Version)");
             targetNPC = currentNPCWorld->GetNPC( mRawItemID );
+            if(!targetNPC)
+            {
+                //Console->Print(">>> Searching NPC (DEF Version)");
+                // Note to myself: This is UGLY!!!! and BAD!!! but it works for now. CHANGE THIS!
+                targetNPC = currentNPCWorld->GetNPC( mRawItemID - 255 );
+            }
           }
           if ( targetNPC )
           {
             /*if(gDevDebug)*/
-            Console->Print( "%s using NPC %d as test trader", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mRawItemID );
+            Console->Print( "%s Player talks to NPC %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mRawItemID );
             //if(gDevDebug) tContainer->Dump();
-            tmpMsg = MsgBuilder->BuildTraderItemListMsg( nClient, mRawItemID );
+            targetNPC->StartConversation(nClient);
+            //tmpMsg = MsgBuilder->BuildTraderItemListMsg( nClient, mRawItemID );
             //tmpMsg->Dump();
-            nClient->FragmentAndSendUDPMessage( tmpMsg, 0xac );
+            //nClient->FragmentAndSendUDPMessage( tmpMsg, 0xac );
           }
         }
 

@@ -139,7 +139,7 @@ struct PSec2NPC_EntryPart1
     u8        mUnknown2a;
     u8        mUnknown2b;
     u8        mUnknown2c;
-    u16       mUnknown3; //00 00 ?
+    u16       mTradeID; //mUnknown3; //00 00 ?
     u16       mUnknown4; //04 00 ?
 };
 

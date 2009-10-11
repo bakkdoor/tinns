@@ -498,7 +498,7 @@ bool PWorldDatParser::ProcessSec2NPCEntry( u32 nSize )
     tNPC->SetUnknown2a(tNPCPartA.mUnknown2a);
     tNPC->SetUnknown2b(tNPCPartA.mUnknown2b);
     tNPC->SetUnknown2c(tNPCPartA.mUnknown2c);
-    tNPC->SetUnknown3(tNPCPartA.mUnknown3);
+    tNPC->SetTradeID/*SetUnknown3*/(tNPCPartA.mTradeID/*mUnknown3*/);
     tNPC->SetUnknown4(tNPCPartA.mUnknown4);
 
     tNPC->SetActorName(tActorName);

@@ -26,7 +26,7 @@
 
 	MODIFIED: 25 Dec 2005 Namikon
 	REASON: - Added GPL
-	
+
   MODIFIED: 10 Jul Hammag
   REASON: - Full Item Def implementation
 */
@@ -50,14 +50,14 @@ class PDefItems : public PDef
     // int mBmNum; // used IG for inventory display
     // int mmBmNumIndex; // used IG for inventory display
     int mSizeX;
-    int mSizeY;	
+    int mSizeY;
     // int mSmallbmnum; // used IG for inventory display
     float mWeight;
     int mStackable;
     float mFillWeight;
     int mQualifier;
     int mGfxMods;
-    int mItemGroupID;	
+    int mItemGroupID;
     int mTextDescID;
     int mBasePrice;
     int mTechlevel;
@@ -83,7 +83,7 @@ class PDefItems : public PDef
 		inline float GetFillWeight() const { return mFillWeight; }
 		inline int GetQualifier() const { return mQualifier; }
 		inline int GetGfxMods() const { return mGfxMods; }
-		inline int GetItemGroupID() const { return mItemGroupID; }	
+		inline int GetItemGroupID() const { return mItemGroupID; }
 		inline int GetTextDescID() const { return mTextDescID; }
 		inline int GetBasePrice() const { return mBasePrice; }
 		inline int GetTechlevel() const { return mTechlevel; }
@@ -107,6 +107,9 @@ class PDefItemsMap : public PDefMap<PDefItems>
     bool Load(const char* nName, const char* nFilename);
     const PDefItems* GetDefBySeqIndex( int nSeqIndex ) const;
     int GetRandomItemIdFromGroup( int nGroupId ) const;
+
+    // Offer read-only itemlist
+    inline const std::map<int, PDefItems*> GetMap() const { return mDefs; };
 };
 
 #endif

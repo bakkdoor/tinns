@@ -45,7 +45,7 @@ PNPCTemplate::PNPCTemplate()
     mUnknown2a = 0;
     mUnknown2b = 0;
     mUnknown2c = 0;
-    mUnknown3 = 0;
+    /*mUnknown3*/mTradeID = 0;
     mUnknown4 = 0;
     mActorName = "";
     mAngle = "";
