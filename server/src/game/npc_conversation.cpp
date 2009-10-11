@@ -126,13 +126,39 @@ bool PNPC::DoSQLShoppingList( PClient* nClient, PMessage* nContentList )
     while((row = mysql_fetch_row(result)))
     {
         const PDefItems* t_item = GameDefs->Items()->GetDef(atoi( row[2] ));
-
-        *nContentList << ( u16 ) atoi(row[2]);
-        *nContentList << ( u32 )( atoi(row[3]) * PriceCoef );
-        if (gDevDebug) Console->Print("Adding item: ID: %d Price: %d", atoi(row[2]), t_item->GetBasePrice());
+        if(t_item)
+        {
+            *nContentList << ( u16 ) atoi(row[2]);
+            *nContentList << ( u32 )( atoi(row[3]) * PriceCoef );
+            if (gDevDebug) Console->Print("Adding item: ID: %d Price: %d", atoi(row[2]), t_item->GetBasePrice());
+        }
     }
     MySQL->FreeGameSQLResult( result );
     return true;
+}
+
+bool PNPC::IsAllbuyer( PClient* nClient )
+{
+    MYSQL_RES *result = NULL;
+    char query[100];
+
+    snprintf( query, 100, "SELECT * FROM `npc_shop` WHERE `c_npc_id` = %d AND `c_zoneid` = %d and `c_itemid` = -1", mWorldID, nClient->GetChar()->GetLocation());
+    Console->Print( "[PNPC::IsAllbuyer] Executing query %s", query );
+    result = MySQL->GameResQuery( query );
+    if ( result == NULL )
+    {
+        Console->Print( YELLOW, BLACK, "[PNPC::IsAllbuyer] could not check if npc is allbuyer" );
+        Console->Print( "Query was:" );
+        Console->Print( "%s", query );
+        MySQL->ShowGameSQLError();
+        return false;
+    }
+    int count = mysql_num_rows(result);
+    MySQL->FreeGameSQLResult( result );
+    if(count > 0)
+        return true;
+    else
+        return false;
 }
 
 bool PNPC::HasSQLShoppingList( PClient* nClient )
@@ -162,12 +188,41 @@ bool PNPC::HasSQLShoppingList( PClient* nClient )
 void PNPC::StartConversation( PClient* nClient )
 {
     // Check if NPC has a TradeID
+    Console->Print("[DEBUG] NPC WorldID %u  NPC TraderDefID %u", mWorldID, mTrader);
+    if(IsAllbuyer(nClient) == true)
+    {
+        PMessage* tmpMsg = new PMessage();
+        nClient->IncreaseUDP_ID();
+
+        *tmpMsg << ( u8 )0x13;
+        *tmpMsg << ( u16 )nClient->GetUDP_ID();
+        *tmpMsg << ( u16 )nClient->GetSessionID();
+        *tmpMsg << ( u8 )0x00; // Message length
+        *tmpMsg << ( u8 )0x03;
+        *tmpMsg << ( u16 )nClient->GetUDP_ID();
+        *tmpMsg << ( u8 )0x1f;
+        *tmpMsg << ( u16 )nClient->GetLocalID();
+        *tmpMsg << ( u8 )0x26;
+        if(mFromDEF == true)
+            *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
+        else
+            *tmpMsg << mWorldID; // Dont forget the offset!!!
+        *tmpMsg << ( u8 )0x01; // Traders inventory
+        *tmpMsg << ( u16 )0xFFFF; // Traders inventory
+
+        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+        nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
+
+        return;
+    }
+
     if(mTrader > 0)
     {
         // NPC is a trader. Fetch trader template from def
         const PDefTrader* nTraderDef = GameDefs->Traders()->GetDef(mTrader);
+
         // Is the NPC a trading one? (Def-defined)
-        if(mTrader)
+        if(nTraderDef)
         {
             // Preparing ItemList for shopping
             PMessage* ContentList = new PMessage();
@@ -223,7 +278,7 @@ void PNPC::StartConversation( PClient* nClient )
         }
         else
         {
-            Console->Print( YELLOW, BLACK, "[PNPC::StartConversation] unknown traderID ignoring traderequest" );
+            Console->Print( YELLOW, BLACK, "[PNPC::StartConversation] unknown/invalid traderID ignoring traderequest" );
             return;
         }
     }

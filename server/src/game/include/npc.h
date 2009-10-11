@@ -130,6 +130,7 @@ private:
     void ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID, u32 nQuality);
     bool DoSQLShoppingList( PClient* nClient, PMessage* nContentList );
     bool HasSQLShoppingList( PClient* nClient );
+    bool IsAllbuyer( PClient* nClient );
 
 public:
     friend class PNPCWorld;
