@@ -376,7 +376,7 @@ void PCommands::doCmdtest()
         }
         else
         {
-            Chat->send(source, CHAT_DIRECT, "Error", "Invalid item ID %d", GetArgInt(2));
+            Chat->send(source, CHAT_DIRECT, "Error", "Invalid item ID");
             return;
         }
 
