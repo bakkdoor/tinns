@@ -108,8 +108,8 @@ class PDefItemsMap : public PDefMap<PDefItems>
     const PDefItems* GetDefBySeqIndex( int nSeqIndex ) const;
     int GetRandomItemIdFromGroup( int nGroupId ) const;
 
-    // Offer read-only itemlist
-    inline const std::map<int, PDefItems*> GetMap() const { return mDefs; };
+    // Offer read-only itemlist. doesnt work...
+    //inline const std::map<int, PDefItems*> GetMap() const { return mDefs; };
 };
 
 #endif

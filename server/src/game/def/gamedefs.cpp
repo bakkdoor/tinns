@@ -108,5 +108,7 @@ bool PGameDefs::Init()
   Res |= mWorldFilesDefs.Load ("World files", "worlds/worlds.ini");
   Res |= mWorldModelsDefs.Load ("World models", "defs/worldmodel.def");
 
+  Res |= mScriptDefs.Load ("Script defs", "defs/scripts.def");
+
   return ( Res );
 }

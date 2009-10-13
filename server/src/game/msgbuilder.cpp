@@ -1305,6 +1305,73 @@ PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 
   return tmpMsg;
 }
 */
+// NPC Dialog. Start dialog with NPC
+PMessage* PMsgBuilder::BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  )
+{
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 ) 0x0000; // UDP Placeholder
+    *tmpMsg << ( u16 ) 0x0000; // UDP Placeholder
+    *tmpMsg << ( u8 )0x00; // Message length
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x18;
+    *tmpMsg << ( u32 ) nNPCWorldID;
+
+    // Todo: is this correct? random u32 value??
+    *tmpMsg << ( u16 ) GetRandom( 65535, 4369 );
+    *tmpMsg << ( u16 ) GetRandom( 65535, 4369 );
+    *tmpMsg << ( u32 ) 0x0000;
+    *tmpMsg << nDialogScript->c_str();
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x0a;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x1a;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+
+    tmpMsg->U16Data( 1 ) = nClient->GetUDP_ID();
+    tmpMsg->U16Data( 3 ) = nClient->GetSessionID();
+
+    return tmpMsg;
+}
+// NPC Dialog. Send next node number in lua script to client
+PMessage* PMsgBuilder::BuildNPCDialogReplyMsg( PClient* nClient, u8 nNextNode )
+{
+    PMessage* tmpMsg = new PMessage();
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();;
+    *tmpMsg << ( u16 )nClient->GetSessionID();;
+    *tmpMsg << ( u8 )0x00; // SubMessage length;
+
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();;
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x1a;
+    *tmpMsg << ( u8 )nNextNode;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    return tmpMsg;
+}
+
 PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 nSkillPoints )
 {
     PMessage* tmpMsg = new PMessage( 33 );

@@ -90,6 +90,13 @@ private:
     u16 mUnknown;
     u16 mTrader;
     u8 mItemQuality; // Used for Shopping stuff
+
+    std::string mDialogScript;
+    std::string mLUAFile; // Load File; Preloaded uppon NPC creation
+    // Moved to chars.cpp
+//    u16 mDialogPartner; // LoaclID of player that is current in conversation with NPC
+//    u8 mCurrentLUANode; // if in dialog, this is the node(x) the player is currently on
+
     std::string mName;
     std::string mCustomName;
     std::string mCustomLua;
@@ -131,7 +138,8 @@ private:
     bool DoSQLShoppingList( PClient* nClient, PMessage* nContentList );
     bool HasSQLShoppingList( PClient* nClient );
     bool IsAllbuyer( PClient* nClient );
-    void StartDialog( PClient* nClient, string &nDialogscript );
+    void StartDialog( PClient* nClient/*, string &nDialogscript */);
+    void LoadLUAScript();
 
 public:
     friend class PNPCWorld;
@@ -157,6 +165,7 @@ public:
     void Die(); // ... die?
     void Update(); // Check respawn timer
     void StartConversation( PClient* nClient );
+    void DoConversation( PClient* nClient, u8 nAnswer ) ;
 };
 
 // *****************************************

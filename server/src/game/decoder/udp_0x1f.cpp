@@ -51,6 +51,7 @@
 #include "udp_itemuse.h"
 #include "udp_deathrespawn.h"
 #include "udp_pvptrade.h"
+#include "udp_npcdialog.h"
 
 /**** PUdp0x1f ****/
 
@@ -86,6 +87,16 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     case 0x17:
     {
       nextAnalyser = new PUdpUseObject( mDecodeData );
+      break;
+    }
+    case 0x19: // NPC Dialog closed
+    {
+      nextAnalyser = new PUdpNPCDialogClose( mDecodeData );
+      break;
+    }
+    case 0x1a: // NPC Dialog action/reply
+    {
+      nextAnalyser = new PUdpNPCDialogAction( mDecodeData );
       break;
     }
     case 0x1b:

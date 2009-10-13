@@ -23,10 +23,10 @@
 
 /*
 	defs.h - include file for all def_* files related stuff used by all modules
-  
+
 	MODIFIED: 21 Sep 2006 Hammag
 	REASON: - created
-	
+
 */
 
 #ifndef DEFS_H
@@ -70,6 +70,8 @@
 #include "def_worlds.h"
 #include "def_worldfile.h"
 #include "def_worldmodels.h"
+
+#include "def_scripts.h"
 
 #include "gamedefs.h"
 

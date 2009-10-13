@@ -89,5 +89,6 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <algorithm> // std::transform
 
 #endif

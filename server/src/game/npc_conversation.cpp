@@ -32,6 +32,7 @@ CREATION: 11 Oct 2009 Namikon
 #include "worlds.h"
 #include "npctemplate.h"
 #include "worlddatatemplate.h"
+#include "msgbuilder.h"
 
 ///***********************************************************************
 
@@ -185,63 +186,34 @@ bool PNPC::HasSQLShoppingList( PClient* nClient )
         return false;
 }
 
-void PNPC::StartDialog( PClient* nClient, string &nDialogscript )
+void PNPC::StartDialog( PClient* nClient/*, string &nDialogscript*/ )
 {
-    PMessage* tmpMsg = new PMessage();
-    nClient->IncreaseUDP_ID();
-
-
-    *tmpMsg << ( u8 )0x13;
-    *tmpMsg << ( u16 ) 0x0000; // UDP Placeholder
-    *tmpMsg << ( u16 ) 0x0000; // UDP Placeholder
-    //*tmpMsg << ( u16 )nClient->GetUDP_ID();
-    //*tmpMsg << ( u16 )nClient->GetSessionID();
-    *tmpMsg << ( u8 )0x00; // Message length
-    *tmpMsg << ( u8 )0x03;
-    *tmpMsg << ( u16 )nClient->GetUDP_ID();
-    *tmpMsg << ( u8 )0x1f;
-    *tmpMsg << ( u16 )nClient->GetLocalID();
-    *tmpMsg << ( u8 )0x18;
+    u32 tWorldID = 0;
     if(mFromDEF == true)
-        *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
+        tWorldID = mWorldID + 255; // Dont forget the offset!!!
     else
-        *tmpMsg << mWorldID; // Dont forget the offset!!!
+        tWorldID = mWorldID; // Dont forget the offset!!!
 
-    // Todo: is this correct? random u32 value??
-    *tmpMsg << ( u16 ) GetRandom( 65535, 4369 );
-    *tmpMsg << ( u16 ) GetRandom( 65535, 4369 );
-    //*tmpMsg << ( u8 ) 0x79;
-    //*tmpMsg << ( u8 ) 0xe1;
-    //*tmpMsg << ( u8 ) 0xf2;
-    //*tmpMsg << ( u8 ) 0x9f;
-    *tmpMsg << ( u32 ) 0x0000;
-    *tmpMsg << nDialogscript.c_str();
-    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+    // Starts dialog with NPC
+    // First, set required values in client's char
+    nClient->GetChar()->SetDialogNPC(mWorldID);
+    nClient->GetChar()->SetDialogNode(0);
 
-    nClient->IncreaseUDP_ID();
-
-    *tmpMsg << ( u8 )0x0a;
-    *tmpMsg << ( u8 )0x03;
-    *tmpMsg << ( u16 )nClient->GetUDP_ID();
-    *tmpMsg << ( u8 )0x1f;
-    *tmpMsg << ( u16 )nClient->GetLocalID();
-    *tmpMsg << ( u8 )0x1a;
-    *tmpMsg << ( u8 )0x00;
-    *tmpMsg << ( u8 )0x00;
-    *tmpMsg << ( u8 )0x00;
-
-    tmpMsg->U16Data( 1 ) = nClient->GetUDP_ID();
-    tmpMsg->U16Data( 3 ) = nClient->GetSessionID();
-
+    // Second generate start-dialog message
+    PMessage* tmpMsg = MsgBuilder->BuildNPCStartDialogMsg(nClient, tWorldID, &mDialogScript);
     nClient->SendUDPMessage(tmpMsg);
-    Console->Print("[PNPC::StartDialog] Sending NPC DialogStart for Script %s", nDialogscript.c_str());
+
+    Console->Print("[PNPC::StartDialog] Sending NPC DialogStart for Script %s", mDialogScript.c_str());
     return;
 }
 
 void PNPC::StartConversation( PClient* nClient )
 {
     // Check if NPC has script for talking
-    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+    if(mDialogScript.length() > 0)
+    {
+
+/*    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
     if(t_npc)
     {
         if(t_npc->GetDialogScript().length() > 3)
@@ -258,11 +230,12 @@ void PNPC::StartConversation( PClient* nClient )
             }
             Trim(&t_dialogscript);
             if(t_dialogscript.length() > 1)
-            {
-                StartDialog(nClient, t_dialogscript);
+            {*/
+                StartDialog(nClient/*, t_dialogscript*/);
                 return;
-            }
+           /* }
         }
+    }*/
     }
 
     // Check if NPC has a TradeID
@@ -406,5 +379,81 @@ void PNPC::StartConversation( PClient* nClient )
     {
         if (gDevDebug) Console->Print("[PNPC::StartConversation] No npc script handling yet");
         return;
+    }
+}
+
+
+// DoConversation:
+// nClient : The client which startet the conversation / is doing it right now
+// nAnswer: the Answer the player clicked
+void PNPC::DoConversation( PClient* nClient, u8 nAnswer )
+{
+    PChar* tChar = nClient->GetChar();
+
+    istringstream isLUA(mLUAFile);
+    std::string tBuffer = "";
+    bool foundAnswer = false;
+    bool tNodeFound = false;
+    u8 tAnswerCount = 0;
+    char *ptr;
+
+    getline(isLUA, tBuffer);
+    while(!isLUA.eof())
+    {
+        //Console->Print("Processing lua line %s", tBuffer.c_str());
+        if(strstr(tBuffer.c_str(), "NODE"))
+        {
+            ptr = strchr(tBuffer.c_str(), ')');
+            if(!ptr)
+                continue;
+
+            *ptr = 0;
+            ptr = strchr(tBuffer.c_str(), '(');
+            if(!ptr)
+                continue;
+
+            *ptr = 0;
+            ptr++;
+            if(tChar->GetDialogNode() == (u8)atoi(ptr))
+            {
+                //Console->Print("Found node %d", (u8)atoi(ptr));
+                tNodeFound = true;
+                tAnswerCount = 0;
+            }
+        }
+        else if ( (strstr (tBuffer.c_str(), "ANSWER")) && (tNodeFound == true) )
+        {
+            tAnswerCount++;
+            //Console->Print("ANSWER hit %d", tAnswerCount);
+            if (tAnswerCount == nAnswer)
+            {
+                ptr = strchr (tBuffer.c_str(), ')');
+                if (!ptr)
+                    continue;
+
+                *ptr = 0;
+                ptr = strchr (tBuffer.c_str(), '(');
+                if (!ptr)
+                    continue;
+
+                *ptr = 0;
+                ptr++;
+                ptr = strrchr (ptr, ',');
+                *ptr = 0;
+                ptr++;
+
+                // Next node will be at ptr
+                tChar->SetDialogNode(atoi(ptr));
+
+                //Console->Print("Next node will be: %d", atoi(ptr));
+                PMessage* tmpMsg = MsgBuilder->BuildNPCDialogReplyMsg(nClient, tChar->GetDialogNode());
+                nClient->SendUDPMessage(tmpMsg);
+                foundAnswer = true;
+            }
+        }
+        if(foundAnswer == true)
+            break;
+
+        getline(isLUA, tBuffer);
     }
 }

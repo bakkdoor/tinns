@@ -82,6 +82,9 @@ public:
 
 // Following methods for unicast messages DO include UDP_ID increment and
 // UDP_ID / SessionID setting when needed (at least for now)
+    PMessage* BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  );
+    PMessage* BuildNPCDialogReplyMsg( PClient* nClient, u8 nNextNode );
+
     PMessage* BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength );
 
     PMessage* BuildPacket0Msg( PClient* nClient );

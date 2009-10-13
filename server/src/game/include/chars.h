@@ -96,7 +96,7 @@ class PCharCoordinates
     //inline PCharCoordinates() { mX = mY = mZ = mUD = mLR = mAct = mUnknown = mJumpingState = 0;}
     void SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD = 0x80, u8 nLR = 0 );
     void SetInterpolate( PCharCoordinates& Pos1, PCharCoordinates& Pos2, f32 nCoef );
-    
+
     //Temp
     u16 minPos[3];
     u16 maxPos[3];
@@ -174,12 +174,15 @@ class PChar
     u16 mLookingAt;  // Zone charID of currently targeted player
     std::time_t mLookAtTimestamp; // Lifetimer of lookat var
     u32 mLastUsedWorldObjectId; // Last world object clicked on
-    
+
     bool mIsOnline;
     bool mDirtyFlag;
 
     bool mShunned;
     bool mJailed;
+
+    u32 mDialogNPC; // NPCID the player talks to
+    u8 mCurrentDialogNode; // Node in .lua file we're at right now
 
     class PInventory mInventory;
 
@@ -263,6 +266,13 @@ class PChar
 
     inline bool IsJailed() { return mJailed; };
     inline bool IsShunned() { return mShunned; };
+
+    inline void SetDialogNPC( u32 nNPC ) { mDialogNPC = nNPC; };
+    inline u32 GetDialogNPC() const { return mDialogNPC; };
+
+    inline void SetDialogNode( u32 nNode ) { mCurrentDialogNode = nNode; };
+    inline u32 GetDialogNode() const { return mCurrentDialogNode; };
+
 
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();

@@ -215,7 +215,7 @@ PChar::PChar()
   mSeatInUseObjectId = 0;
   mSeatInUseSeatId = 0;
   mVhcAccessRequestList = NULL;
-  
+
   mContainerInExclusiveUse = NULL;
 
   mIsOnline = false;
@@ -223,6 +223,9 @@ PChar::PChar()
 
   mShunned = false;
   mJailed = false;
+
+  mDialogNPC = 0;
+  mCurrentDialogNode = 0;
 
   Skill = new PSkillHandler();
   mBuddyList = NULL;

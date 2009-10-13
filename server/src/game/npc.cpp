@@ -70,9 +70,81 @@ bool PNPC::DEF_Load(u32 nWorldID)
 
     mName = t_defNPC->GetActorName();
 
+
+    // Load dialogscript for this NPC right uppon startup
+    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+    if(t_npc)
+    {
+        if(t_npc->GetDialogScript().length() > 3)
+        {
+            size_t tfound;
+            string t_dialogscript = t_npc->GetDialogScript();
+            string t_replacechr ("\"");
+
+            tfound = t_dialogscript.find(t_replacechr);
+            while(tfound != string::npos)
+            {
+                t_dialogscript.replace(tfound, 1, " ");
+                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
+            }
+            Trim(&t_dialogscript);
+            if(t_dialogscript.length() > 1)
+            {
+                mDialogScript = t_dialogscript;
+                LoadLUAScript();
+            }
+        }
+    }
+
+
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
     return true;
+}
+
+void PNPC::LoadLUAScript()
+{
+
+    // Get LUA filename
+    const PDefScripts* tDefScripts = NULL;
+    std::map<int, PDefScripts*>::const_iterator itScrStart = GameDefs->Scripts()->ConstIteratorBegin();
+    std::map<int, PDefScripts*>::const_iterator itScrEnd = GameDefs->Scripts()->ConstIteratorEnd();
+    for ( std::map<int, PDefScripts*>::const_iterator i = itScrStart; i != itScrEnd; i++ )
+    {
+        tDefScripts = i->second;
+//        Console->Print("[DEBUG PNPC::LoadLUAScript] Identifier: [%s] LUA: [%s]", tDefScripts->GetIdentifier().c_str(), tDefScripts->GetLuaFile().c_str());
+
+        if(tDefScripts->GetIdentifier().compare(mDialogScript) == 0)
+        {
+            break;
+        }
+    }
+    if(tDefScripts->GetIdentifier().compare(mDialogScript) != 0)
+        return;
+
+    u32 tFileLen = 0;
+    PFile* fLua = NULL;
+    std::string tLuaFile = tDefScripts->GetLuaFile();
+    std::transform(tLuaFile.begin(), tLuaFile.end(), tLuaFile.begin(), (int(*)(int))std::tolower);
+
+    fLua = Filesystem->Open( "", tLuaFile.c_str(), Config->GetOption( "nc_data_path" ) );
+    if(fLua)
+    {
+        tFileLen = fLua->GetSize();
+        char* t_content = new char[tFileLen];
+        fLua->Read( t_content, tFileLen );
+        Filesystem->Close( fLua );
+        mLUAFile = t_content;
+        delete t_content;
+        if (gDevDebug) Console->Print( "%s [PNPC::LoadLUAScript] Loaded LUA Script %s", Console->ColorText( GREEN, BLACK, "[SUCCESS]" ), tLuaFile.c_str() );
+        //Console->Print( "%s", mLUAFile.c_str() );
+    }
+    else
+    {
+        Console->Print( "%s [PNPC::LoadLUAScript] Unable to load file %s", Console->ColorText( RED, BLACK, "[ERROR]" ), tLuaFile.c_str() );
+        return;
+    }
 }
 
 bool PNPC::SQL_Load()
@@ -130,8 +202,35 @@ bool PNPC::SQL_Load()
     if ( row[npc_customscript] != NULL )
         mCustomLua = row[npc_customscript];
 
+    // Load dialogscript for this NPC right uppon startup
+    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+    if(t_npc)
+    {
+        if(t_npc->GetDialogScript().length() > 3)
+        {
+            size_t tfound;
+            string t_dialogscript = t_npc->GetDialogScript();
+            string t_replacechr ("\"");
+
+            tfound = t_dialogscript.find(t_replacechr);
+            while(tfound != string::npos)
+            {
+                t_dialogscript.replace(tfound, 1, " ");
+                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
+            }
+            Trim(&t_dialogscript);
+            if(t_dialogscript.length() > 1)
+            {
+
+                mDialogScript = t_dialogscript;
+            }
+        }
+    }
+
+
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s SCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
     MySQL->FreeGameSQLResult( result );
     return true;
 }
@@ -171,6 +270,7 @@ void PNPC::InitVars()
     mUnknown = 0;
     mTrader = 0;
     mLoot = 0;
+    mDialogScript = "";
     mName = "";
     mCustomName = "";
     mCustomLua = "";

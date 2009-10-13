@@ -80,6 +80,9 @@ typedef PDefMap<PDefWeather> PDefWeathersMap;
 typedef PDefMap<PDefWorld> PDefWorldsMap;
 class PDefWorldFilesMap;
 typedef PDefMap<PDefWorldModel> PDefWorldModelsMap;
+
+class PDefScriptsMap;
+//typedef PDefMap<PDefScripts> PDefScriptsMap;
 // ___Add new entries here in alpĥabetical order___
 
 
@@ -121,6 +124,8 @@ class PGameDefs
     PDefWorldsMap mWorldsDefs;
     PDefWorldFilesMap mWorldFilesDefs;
     PDefWorldModelsMap mWorldModelsDefs;
+
+    PDefScriptsMap mScriptDefs;
     // ___Add new entries here___
 
   public :
@@ -164,6 +169,8 @@ class PGameDefs
     inline const PDefWorldsMap* Worlds() const { return &mWorldsDefs; }
     inline const PDefWorldFilesMap* WorldFiles() const { return &mWorldFilesDefs; }
     inline const PDefWorldModelsMap* WorldModels() const { return &mWorldModelsDefs; }
+
+    inline const PDefScriptsMap* Scripts() const { return &mScriptDefs; }
     // ___Add new entries here___
 
 };
