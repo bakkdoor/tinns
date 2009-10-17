@@ -30,6 +30,12 @@ CREATION: 13 Oct 2009 Namikon
 #ifndef PLUA_H
 #define PLUA_H
 
+extern "C" {
+  #include <lua.h>
+  #include <lauxlib.h>
+  #include <lualib.h>
+}
+
 #define PLUAENGINE_DEFAULT      0
 #define PLUAENGINE_GETANSWER    4096
 #define PLUAENGINE_EXECUTENODE  8192

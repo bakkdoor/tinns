@@ -90,9 +90,5 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <algorithm> // std::transform
-extern "C" {
-  #include <lua.h>
-  #include <lauxlib.h>
-  #include <lualib.h>
-}
+
 #endif
