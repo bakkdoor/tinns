@@ -1,0 +1,309 @@
+(c) 2009; Written by Namikon for http://www.linux-addicted.net
+Last Updated: 15.10.2009
+----------------------------------------------------------------
+
+
+Hi. In this document i'll try to explain how the NPC Script-System works in
+Neocron.
+
+First off, we have the .lua scripts, like this one:
+
+--snip--
+function DIALOG()
+	NODE(0)
+		SAY("Hi there")
+		ANSWER("Yo man",1)
+	NODE(1)
+		SAY("See ya")
+		ENDDIALOG()
+end
+--snip--
+
+if you ever worked with lua, you'll notice that NODE, SAY and ANSWER are no
+common lua functions.
+Those function calls are defined in either missionheader.lua and/or 
+dialogheader.lua. (Open scripts.def; The last entry tells you if the lua script
+defined in that line includes mission or dialogheader).
+
+So the lua files in the scripts/ folder cannot be executed alone. They HAVE to be
+combined with either dialogheader.lua or missionheader.lua.
+
+You might think now "What the heck, there is only one function, how is this supposed to work?"
+Thats correct. Only DIALOG() is defined. I'll explain how that works exactly below.
+
+First, in order to communicate with your lua script from c/c++ source code, you need
+a) An entry function, like main() that can be called from within your source
+b) A "callback" function, if the script needs any action to be done, like give and item
+   let npc die, or whatever.
+c) A function to deliver results back to the running script. If you call RAND(2), you might want
+   to know the result. Would you?
+
+For a), a function called "lSendAction" is defined
+For b), a function called "SendScriptMsg" is defined
+For c), a function called "SetResult" is defined
+
+So now how is this "single function dialog" working:
+You see those NODE() lines in the source. NODE is defined as:
+
+--snip--
+function NODE(index)  	
+	node = index 
+end
+--snip--
+
+"index" is a variable which is set to 0 uppon every script-start (mission/dialogheader, 1st line)
+So you have some variables, and a dozen of functions. If you start this lua script, nothing will happen.
+
+When you click on a NPC, your client sends "use item xx".
+The server detects if this id is an npc. If so, the server will send
+a packet back that tells the client what lua script to use.
+(The short name in scripts.def, not the entire scriptfile name; NCPD for example)
+
+Right after that packet, another one follows. This packet tells the client to call "lSendAction", with
+a given state number. After that, your dialog/mission script is running.
+
+lSendAction is defined as:
+--snip--
+function lSendAction (in_dialogclass, newstate)
+
+	dialogclass = in_dialogclass
+	state = newstate
+	counter = 0
+	
+	DIALOG()
+end
+--snip--
+
+There is our DIALOG() call. So what happens here? Look at the entire script that is processed after 
+a lSendAction call:
+
+-------
+dialogclass, counter, state, node = 0
+
+function lSendAction (in_dialogclass, newstate)
+
+	dialogclass = in_dialogclass
+	state = newstate
+	counter = 0
+	
+	DIALOG()
+end
+
+function NODE(index)  	
+	node = index 
+end
+
+function SAY(text)
+	if (node==state) then
+		SendScriptMsg("say", dialogclass,text)
+	end
+end
+
+function ANSWER(text,resultstate)
+	if (node==state) then	
+		counter = counter + 1
+		SendScriptMsg("setanswer", dialogclass,counter,text,resultstate, 0)
+	end
+end
+
+function ENDDIALOG()
+	if (node==state) then
+		SendScriptMsg("enddialog", dialogclass)
+	end
+end
+
+function DIALOG()
+	NODE(0)
+		SAY("Hi there")
+		ANSWER("Yo man",1)
+	NODE(1)
+		SAY("See ya")
+		ENDDIALOG()
+end
+-------
+
+- We call "lSendAction(0,0)"
+- Global var "state" is now 0 (the other 2 dont matter here)
+- NODE() is called:
+-- NODE(0) is called, global var "node" is now 0
+-- SAY is called
+--- if-statement is true, state is equal node, so we call the c/c++ callback function "SendScriptMsg",
+    Neocron now displays "Hi there" in a dialog screen
+-- ANSWER() is called
+--- if-statement is true, state is equal node, so we call the c/c++ callback function "SendScriptMsg",
+    Neocron now displays "Yo man" in a dialog screen as selectable answer.
+-- NODE(1) is called, global var "node" is now 1
+-- SAY is called
+--- if-statement is now FALSE. state is still 0, but we're at NODE 1, nothing happens
+-- ENDDIALOG() is called
+--- if-statement is FALSE. state is still 0, but we're at NODE 1, nothing happens
+-- function DIALOG ends
+- Script execution finished
+
+Now, if we click the answer, the client sends the answernumber to us. !Nothing else! We ONLY get the
+answer number. Thats why in ANSWER the var "counter" is increased every call.
+Good for us, at the server is, lua does that for us. We only need to grab the correct answer number.
+
+Ok, we got the answernumber from our client. We know that our answer had this little 1 after its text.
+That 1 tells us which NODE comes next.
+So what would we send now to the client? Correct:
+
+- We call "lSendAction(0,1)"
+- Global var "state" is now 1 
+- NODE() is called:
+-- NODE(0) is called, global var "node" is now 0
+-- SAY is called
+--- if-statement is false (node = 0, state = 1)
+-- ANSWER is called
+--- if-statement is false (node = 0, state = 1)
+-- NODE(1) is called, global var "node" is now 1
+-- SAY is called
+--- if-statement is true, (node = 1, state = 1) so we call the c/c++ callback function "SendScriptMsg",
+    Neocron now displays "See ya" in a dialog screen
+-- ENDDIALOG() is called
+--- if-statement is true, (node = 1, state = 1) so we call the c/c++ callback function "SendScriptMsg",
+    Neocron closes the NPC dialog
+-- function DIALOG ends
+- Script execution finished
+
+So far, thats how "normal" lua scripts work. Nothing special about that.
+But NPC scripts are far more complex; KK wrote BlackJack and roulette games for NC2
+in lua. They handle epic runs, let NPCs attack and give you tons of nice items on christmas
+if you where a good boy(girl) last year.
+
+So far, i know that the packet where you return a node Number can be extended with
+and u32 (?) value; And i think this could be either a hidden result, or 
+a defined seed for an rand() generator, not sure about that yet.
+
+For takeitem/giveitem stuff, the script stops right after it called SendScriptMsg and returns
+to our callback function. We have now the time to give / take any item,
+check faction standings,... and return the result to our script before it continues.
+
+The client does *NOT* perform any action besides SAY.. and ANSWER.. stuff.
+All actions that lead to an result are performed by the server.
+Lets take TAKEITEM(90) as example and extend our basic script from above:
+
+--snip
+<old script here>
+
+function TAKEITEM(itemtype)
+	if (node==state) then
+		SendScriptMsg("takeitem", dialogclass,itemtype)
+	end
+end
+
+NODE (10)
+  TAKEITEM(90)
+  if (result==1) then
+    SAY("Thanks for that copbot rifle")
+    ANSWER("You're welcome")
+  else
+    SAY("You dont have a Copbot rifle")
+    ANSWER("Too bad for you")
+  end
+ENDDIALOG();
+
+--snip
+
+You should already know what happens here, so i wont explain it again.
+Remember: 
+- We choose the answer
+- The server processes the destination node
+- And sends us the Nodenumber back, together with results, if any.
+
+So, when the client reaches TAKEITEM(x), he will NOT take your item away,
+he will stop the script for a moment, like we do it on the server.
+
+Difference: The client looks inside the last lSendAction packet
+if there are any results. If so, he will call SendResults() and push
+these value(s) back to the script.
+You see, result is now set to the same value as it where on the server.
+
+One word about those values:
+They ARE integer. But KK decided that it would be cool to have negative AND positive
+results, they choose float as format.
+
+
+This RAW packet could be a positive answer to our TAKEITEM command:
+0E 03 91 00 1F 01 00 1A 0A 00 01 00 00 80 3F
+Which splits up as:
+0E		- Packetlen
+03		- Commandset 0x03
+09 00		- UDP ID
+1F		- Subcommand 1F
+01 00		- Local PlayerID
+1A		- SubSubcommand Dialog
+0A 00		- NODE ID to be processed next (u16 format)
+01		- How many values will follow?
+00 00 80 3F	- 1.0 in float
+
+
+===== !! THEORY !! =====
+===== !! This part is NOT verified yet !! =====
+
+If you have more than one result, for example if you take away 2 or more items,
+they are attached to the packet in the same order as they appear.
+If the first result is 0 and the second is 1,
+it would be like this:
+
+0E		- Packetlen
+03		- Commandset 0x03
+09 00		- UDP ID
+1F		- Subcommand 1F
+01 00		- Local PlayerID
+1A		- SubSubcommand Dialog
+0A 00		- NODE ID to be processed next (u16 format)
+02		- How many values will follow?
+00 00 00 00	- 0.0 in float (and any other format too i know...)
+00 00 80 3F	- 1.0 in float
+======================================= 
+
+PM me if you can proof that this is correct, thanks!
+
+END
+
+If you find any typos, errors, whatever, please tell me over PM
+on linux-addicted.net.
+
+-Namikon
+
+================== PACKETS BELOW ==================
+The packets are defined as:
+
+
+"LOADSCRIPT" Packet (After USE) // SERVER > CLIENT
+----
+<u8>	Len
+<u8>	0x03
+<u16>	UDP ID
+<u8>	0x1F
+<u16>	Players ZoneID
+<u8>	0x18
+<u32>	NPCs WorldID
+<u32>	Some 32-bit value that changes everytime you click on an npc. We have *no* clue what this does :)
+<u32>	0x00000000
+<u8>*	Name of the script \0 terminated
+----
+
+"lSendAction" Packet // SERVER > CLIENT // Server tells client which node next, and what results to use
+----
+<u8>	Len
+<u8>	0x03
+<u16>	UDP ID
+<u8>	0x1F
+<u16>	Players ZoneID
+<u8>	0x1a
+<u16>	NodeID
+<u8>	# of Values to follow (float values)
+----
+
+"ANSWER x" // CLIENT > SERVER
+----
+<u8>	Len
+<u8>	0x03
+<u16>	UDP ID
+<u8>	0x1F
+<u16>	Players ZoneID
+<u8>	0x1a
+<u8>	AnswerNr
+----

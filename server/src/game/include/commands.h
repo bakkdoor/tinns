@@ -111,6 +111,8 @@ private:
     void doCmdweather();
     void doCmdSetMainSkill();
     void doCmdSetSubSkill();
+    void doNPC();
+    void doNPC_Shop();
 
     void doCmdtest();
     /// ------- End commandset -------

@@ -104,21 +104,31 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
 
         // ok, we have the command, now read the args
         // Loop till entire chatpacket is parsed or MAXARGS is reached
+        bool tEncapsedString = false;
         while (packet[posPacket] != '\0' && ArgC <= MAXARGS)
         {
             // First set tmpPos for next Arg to 0
             tmpPos = 0;
 
-            // Now loop until next space ' ' or end '\0' is reached
-            while (packet[posPacket] != ' ' && packet[posPacket] != '\0')
+            // Now loop until next space ' '  or end '\0' is reached
+            // Added extraction of encapsulated strings "test 123 123"
+            while (packet[posPacket] != ' ' || tEncapsedString == true)
             {
-                // Copy arg from chatpacket to final arg var
-                ArgV[ArgC][tmpPos] = packet[posPacket];
-
-                // Increment tmpPos and posPacket
+                // Watch out for >"<
+                if(packet[posPacket] == '"')
+                    tEncapsedString = !tEncapsedString;
+                else
+                {
+                    // Copy arg from chatpacket to final arg var
+                    ArgV[ArgC][tmpPos] = packet[posPacket];
+                    tmpPos++;
+                }
+                    // Increment tmpPos and posPacket
                 posPacket++;
-                tmpPos++;
+                if(packet[posPacket] == '\0')
+                    break;
             }
+            tEncapsedString = false;
             // Reached either the end of packet or an whitespace
             // Terminate current ArgV
             ArgV[ArgC][tmpPos] = '\0';
@@ -287,11 +297,11 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     }
     else if (strcmp(Command, "givemoney") == 0)
     {
-        doCmdgivemoney(); // Testcommand for various testings.
+        doCmdgivemoney();
     }
     else if (strcmp(Command, "takemoney") == 0)
     {
-        doCmdtakemoney(); // Testcommand for various testings.
+        doCmdtakemoney();
     }
     else if (strcmp(Command, "spawnactor") == 0)
     {
@@ -303,11 +313,19 @@ void PCommands::HandleGameCommand(char *packet, PClient *Client)
     }
     else if (strcmp(Command, "setmainskill") == 0)
     {
-        doCmdSetMainSkill(); // Control weather in player zone
+        doCmdSetMainSkill();
     }
     else if (strcmp(Command, "setsubskill") == 0)
     {
-        doCmdSetSubSkill(); // Control weather in player zone
+        doCmdSetSubSkill();
+    }
+    else if (strcmp(Command, "npc") == 0)
+    {
+        doNPC();
+    }
+    else if (strcmp(Command, "npcshop") == 0)
+    {
+        doNPC_Shop();
     }
     // Else: unknown command. Ignore
 }

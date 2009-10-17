@@ -29,7 +29,7 @@ B_TARGET := gameserver
 # Local flags
 ######################################################
 # local dir CXX Flags
-EXTRA_CXXFLAGS := -I/usr/include/mysql -Iinclude
+EXTRA_CXXFLAGS := -I/usr/include/mysql -Iinclude 
 
 # per-object CXX Flags
 #CXXFLAGS_funcdef2.o := -g
@@ -42,7 +42,7 @@ LINK_TINNSLIBS := tinns
 
 # local dir Linker Flags (for final executable linking)
 #EXTRA_LINKFLAGS := -lpthread -lm -lcrypt -lrt -L"/usr/lib/mysql" -lmysqlclient -lz
-EXTRA_LINKFLAGS := -lrt -L"/usr/lib/mysql" -lmysqlclient -lz -lpcre
+EXTRA_LINKFLAGS := -lrt -L"/usr/lib/mysql" -lmysqlclient -lz -lpcre -llua
 
 
 #####################################################

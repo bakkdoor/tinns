@@ -150,6 +150,21 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScript )
+{
+    PMessage* tmpMsg;
+
+    tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x19;
+    *tmpMsg << ( u16 )0x0006; // InfoQuery
+    *tmpMsg << ( u16 )0x0003; // NPC Script
+    *tmpMsg << ( u32 )nInfoId;
+    *tmpMsg << nNPCScript->c_str();
+
+    return tmpMsg;
+
+}
 
 PMessage* PMsgBuilder::BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength )
 {
@@ -1348,7 +1363,7 @@ PMessage* PMsgBuilder::BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID
     return tmpMsg;
 }
 // NPC Dialog. Send next node number in lua script to client
-PMessage* PMsgBuilder::BuildNPCDialogReplyMsg( PClient* nClient, u8 nNextNode )
+PMessage* PMsgBuilder::BuildNPCDialogReplyMsg( PClient* nClient, u16 nNextNode, std::vector<int>*nResultBuffer)
 {
     PMessage* tmpMsg = new PMessage();
 
@@ -1364,14 +1379,246 @@ PMessage* PMsgBuilder::BuildNPCDialogReplyMsg( PClient* nClient, u8 nNextNode )
     *tmpMsg << ( u8 )0x1f;
     *tmpMsg << ( u16 )nClient->GetLocalID();
     *tmpMsg << ( u8 )0x1a;
-    *tmpMsg << ( u8 )nNextNode;
-    *tmpMsg << ( u8 )0x00;
-    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u16 )nNextNode;
+    //*tmpMsg << ( u8 )nNumResults;
+    *tmpMsg << ( u8 )nResultBuffer->size();
+
+    std::vector<int>::const_iterator it;
+
+    for(it = nResultBuffer->begin(); it != nResultBuffer->end(); it++)
+    {
+        *tmpMsg << ( f32 )*(it);
+    }
+
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    return tmpMsg;
+}
+PMessage* PMsgBuilder::BuildNPCBeginAllBuyerTradeMsg( PClient* nClient, int nWorldID )
+{
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x00; // Message length
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x26;
+    *tmpMsg << ( u32 ) nWorldID;
+    *tmpMsg << ( u8 )0x01; // Traders inventory
+    *tmpMsg << ( u16 )0xFFFF; // Traders inventory
+
     ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
     return tmpMsg;
 }
 
+PMessage* PMsgBuilder::BuildNPCShoppingListMsg( PClient* nClient, PMessage* nContentList, int nWorldID, u8 nItemQuality)
+{
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x00; // Message length
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x26;
+    *tmpMsg << ( u32 ) nWorldID;
+    *tmpMsg << ( u8 )0x01; // Traders inventory
+    *tmpMsg << ( u16 )( nContentList->GetSize() / 6 ); // List entries
+    *tmpMsg << ( u8 )nItemQuality; // Items quality
+    *tmpMsg << *nContentList;
+
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    return tmpMsg;
+}
+
+// ==========================
+PMessage* PMsgBuilder::BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing,
+u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown,
+u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
+// Initial NPC Packet that defines how the NPC look, etc
+{
+//    u8 tMsgLen = 29 + nNpcName->size() + nAngleStr->size() + nCustomName->size();
+
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x28;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x01;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u16 )nTypeID;
+    *tmpMsg << ( u16 )nClothing;
+    *tmpMsg << ( u16 )nNameID;
+    *tmpMsg << ( u16 )nPosY;
+    *tmpMsg << ( u16 )nPosZ;
+    *tmpMsg << ( u16 )nPosX;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u16 )nUnknown;
+    *tmpMsg << ( u16 )nTraderID;
+    *tmpMsg << nNpcName->c_str();
+    *tmpMsg << nAngleStr->c_str();
+    if(nCustomName->length() > 1)
+        *tmpMsg << nCustomName->c_str();
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing,
+u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown,
+u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
+// Initial NPC Packet that defines how the NPC look, etc
+{
+//    u8 tMsgLen = 29 + nNpcName->size() + nAngleStr->size() + nCustomName->size();
+
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x28;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x01;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u16 )nTypeID;
+    *tmpMsg << ( u16 )nClothing;
+    *tmpMsg << ( u16 )nNameID;
+    *tmpMsg << ( u16 )nPosY;
+    *tmpMsg << ( u16 )nPosZ;
+    *tmpMsg << ( u16 )nPosX;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u16 )nUnknown; // Unknwon = HEALTH!!
+    *tmpMsg << ( u16 )nTraderID;
+    *tmpMsg << nNpcName->c_str();
+    *tmpMsg << nAngleStr->c_str();
+    if(nCustomName->length() > 1)
+        *tmpMsg << nCustomName->c_str();
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+    return tmpMsg;
+}
+
+
+PMessage* PMsgBuilder::BuildNPCSingleAliveMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction )
+{
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x11;
+    *tmpMsg << ( u8 )0x1B;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u8 )0x1F;
+    *tmpMsg << ( u16 )nY;
+    *tmpMsg << ( u16 )nZ;
+    *tmpMsg << ( u16 )nX;
+    *tmpMsg << ( u8 )nActionStatus;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )nHealth;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )nAction;
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildNPCMassAliveMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction )
+{
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x11;
+    *tmpMsg << ( u8 )0x1B;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u8 )0x1F;
+    *tmpMsg << ( u16 )nY;
+    *tmpMsg << ( u16 )nZ;
+    *tmpMsg << ( u16 )nX;
+    *tmpMsg << ( u8 )nActionStatus;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )nHealth;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )nAction;
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildNPCMassUpdateMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction )
+{
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x15; // Message length
+    *tmpMsg << ( u8 )0x1b;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u8 )0x1F;
+    *tmpMsg << ( u16 )nY;
+    *tmpMsg << ( u16 )nZ;
+    *tmpMsg << ( u16 )nX;
+    *tmpMsg << ( u8 )nActionStatus;
+    *tmpMsg << ( u8 )0x77; // ?
+    *tmpMsg << ( u8 )nHealth;
+    *tmpMsg << ( u16 )nTarget;
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )nAction;
+
+    return tmpMsg;
+}
+
+// ==========================
+
+PMessage* PMsgBuilder::BuildNPCSingleUpdateMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction )
+{
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13; // Begin UDP message
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x15; // Message length
+    *tmpMsg << ( u8 )0x1b;
+    *tmpMsg << ( u32 )nWorldID;
+    *tmpMsg << ( u8 )0x1F;
+    *tmpMsg << ( u16 )nY;
+    *tmpMsg << ( u16 )nZ;
+    *tmpMsg << ( u16 )nX;
+    *tmpMsg << ( u8 )nActionStatus;
+    *tmpMsg << ( u8 )0x77; // ?
+    *tmpMsg << ( u8 )nHealth;
+    *tmpMsg << ( u16 )nTarget;
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )0x00; // ?
+    *tmpMsg << ( u8 )nAction;
+
+    return tmpMsg;
+}
+// ==========================
 PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 nSkillPoints )
 {
     PMessage* tmpMsg = new PMessage( 33 );
@@ -3176,18 +3423,16 @@ PMessage* PMsgBuilder::BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknow
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd )
+PMessage* PMsgBuilder::BuildNpcCleanupMsg( u32 nNpcId, u8 nCmd )
 {
-    PMessage* tmpMsg = new PMessage( 19 );
-
-    nClient->IncreaseUDP_ID();
+    PMessage* tmpMsg = new PMessage();
 
     *tmpMsg << ( u8 )0x13;
-    *tmpMsg << ( u16 )nClient->GetUDP_ID();
-    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
     *tmpMsg << ( u8 )0x00; // Message length
     *tmpMsg << ( u8 )0x03;
-    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )0x0000;
     *tmpMsg << ( u8 )0x2d;
     *tmpMsg << ( u32 )nNpcId;
     *tmpMsg << ( u8 )nCmd; // 6: npc/vhc "cleanup", 1: kill npc + msg "no reward, too small"
@@ -3196,6 +3441,8 @@ PMessage* PMsgBuilder::BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd
 
     return tmpMsg;
 }
+
+
 /*
 void Cmd_GiveItem (int ItemId, int Amount, int ClientNum)
 {

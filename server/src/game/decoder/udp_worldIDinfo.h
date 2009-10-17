@@ -35,6 +35,8 @@
 
 class PWorldIDInfoReq : public PUdpMsgAnalyser
 {
+    u32 mInfoId;
+
 public:
     PWorldIDInfoReq(PMsgDecodeData* nDecodeData);
     //~PWorldIDInfoReq();

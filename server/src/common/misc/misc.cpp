@@ -92,6 +92,41 @@ void PrintPacket( u8 *Packet, int PacketSize )
 
 }//end function
 
+void CleanUpString(std::string *nString)
+{
+    if(!nString)
+        return;
+
+    // Skip if string is >" "<
+    if(nString->length() > 3)
+    {
+        size_t tfound;
+        string t_replacechr ("\"");
+
+        tfound = nString->find(t_replacechr);
+        while(tfound != string::npos)
+        {
+            nString->replace(tfound, 1, " ");
+            tfound = nString->find( t_replacechr, tfound +1 );
+        }
+        // Skip if string consists of spaces now
+        if(strncmp(nString->c_str(), "   ", 3) == 0)
+        {
+            // Set empty
+            *nString = "";
+        }
+        else
+        {
+            // Trim spaces
+            Trim(nString);
+        }
+    }
+    else
+    {
+        *nString = "";
+    }
+}
+
 void Trim( char *t )
 {
   RTrim( t );

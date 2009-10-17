@@ -182,7 +182,7 @@ class PChar
     bool mJailed;
 
     u32 mDialogNPC; // NPCID the player talks to
-    u8 mCurrentDialogNode; // Node in .lua file we're at right now
+    u16 mCurrentDialogNode; // Node in .lua file we're at right now
 
     class PInventory mInventory;
 
@@ -258,6 +258,8 @@ class PChar
 
     inline u32 GetCash() const { return mCash; }
     u32 SetCash( u32 nCash );  // Does return the new cashvalue, NO udpmessage is sent out!!
+    u32 AddCash( u32 nAmount );
+    u32 TakeCash( u32 nAmount );
 
     inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
@@ -270,8 +272,8 @@ class PChar
     inline void SetDialogNPC( u32 nNPC ) { mDialogNPC = nNPC; };
     inline u32 GetDialogNPC() const { return mDialogNPC; };
 
-    inline void SetDialogNode( u32 nNode ) { mCurrentDialogNode = nNode; };
-    inline u32 GetDialogNode() const { return mCurrentDialogNode; };
+    inline void SetDialogNode( u16 nNode ) { mCurrentDialogNode = nNode; };
+    inline u16 GetDialogNode() const { return mCurrentDialogNode; };
 
 
     inline s8 GetSoullight() const { return mSoullight; }

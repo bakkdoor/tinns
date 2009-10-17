@@ -33,6 +33,19 @@
 #ifndef NPC_H
 #define NPC_H
 
+// Healthfactor for NPCs (see old npc.def)
+#define NPC_HEALTHFACTOR 15
+
+// Minimum time in seconds that has to pass before an NPC
+// gets his heartbeat send
+#define NPC_HEARTBEAT_MIN 5
+// Maximum time in seconds that is allowed to pass without
+// an NPC heartbeat
+#define NPC_HEARTBEAT_MAX 20
+
+// If no custom NPC is set in this Zone, what ID to start with?
+#define NEW_NPC_ZONEID_START 1000
+
 // How many seconds have to pass until the zone gets reset?
 // Reset in: NPCs and PWorld object gets deleted and reloaded when
 // next player syncs to that zone.
@@ -50,6 +63,11 @@ class PNPCWorld;
 typedef std::map<u32, PNPC*> PNPCMap;
 typedef std::map<u32, PNPCWorld*> PNPCWorldMap;
 
+typedef struct
+{
+	u16 ItemID;
+	u32 Price;
+} stShopListEntry;
 
 class PNPC
 {
@@ -73,8 +91,12 @@ private:
         npc_trader,  // trader.def entry, or clan/faction data!
         npc_customname,
         npc_customscript,
-        npc_shop_quality
+        npc_shop_quality,
+        npc_scripting
     };
+
+    std::time_t mNextUpdate;    // Timestamp for next heartbeat
+    inline void PushUpdateTimer() { mNextUpdate = std::time(NULL) + GetRandom(NPC_HEARTBEAT_MAX, NPC_HEARTBEAT_MIN); };
 
     // SQL values
     u32 mID;
@@ -87,15 +109,18 @@ private:
     u16 mPosZ;
     s8 mAngle;
     u16 mLoot;
-    u16 mUnknown;
+    u16 mUnknown; // = HEALTH!
     u16 mTrader;
     u8 mItemQuality; // Used for Shopping stuff
 
     std::string mDialogScript;
     std::string mLUAFile; // Load File; Preloaded uppon NPC creation
-    // Moved to chars.cpp
-//    u16 mDialogPartner; // LoaclID of player that is current in conversation with NPC
-//    u8 mCurrentLUANode; // if in dialog, this is the node(x) the player is currently on
+
+    std::vector<stShopListEntry> mVectItemsInShop;    // We need to keep track of the itemorder for shopping
+    void AddToVectorList(u16 nItemID, u32 nPrice);
+    inline const stShopListEntry* GetItemNum(u32 nIdx) const { if(nIdx > mVectItemsInShop.size()) { return NULL; } else { return &mVectItemsInShop[nIdx]; }};
+
+    bool mScripting;    // Manual override to disable scripting for an NPC TRUE: Scripts will be executed FALSE: Scripts will be ignored
 
     std::string mName;
     std::string mCustomName;
@@ -106,7 +131,7 @@ private:
     // Runtime values
     u8 mAction;         // Current action
     bool mDeath;        // Death...
-    u8 mHealth;         // NPC Health
+    u8 mHealth;         // NPC Health 0-127
     u16 mTarget;        // Current focused player
     bool mDirty;        // Needs update to clients
 
@@ -133,13 +158,14 @@ private:
     ~PNPC();
     void InitVars();
 
-    void ContentListAddItem(PMessage* nContentList, u16 nItemID, u32 nQuality, u32 nBasePrice = 0, f32 nPriceCoef = 0.0f);
-    void ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID, u32 nQuality);
+    void ContentListAddItem(PMessage* nContentList, u16 nItemID, u32 nBasePrice = 0, bool nAddToList = true);
+    void ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID);
     bool DoSQLShoppingList( PClient* nClient, PMessage* nContentList );
     bool HasSQLShoppingList( PClient* nClient );
     bool IsAllbuyer( PClient* nClient );
     void StartDialog( PClient* nClient/*, string &nDialogscript */);
-    void LoadLUAScript();
+    bool LoadLUAScript();
+    inline u32 GetRealWorldID() { if(mFromDEF == true) return mWorldID+255; else return mWorldID; };
 
 public:
     friend class PNPCWorld;
@@ -166,6 +192,16 @@ public:
     void Update(); // Check respawn timer
     void StartConversation( PClient* nClient );
     void DoConversation( PClient* nClient, u8 nAnswer ) ;
+
+    // GameCommands
+    bool ReloadLUAScript();
+    bool ReloadShopList();
+    bool SetShopQuality(u8 nNewVal);
+    inline bool IsSQLNPC() const { return !mFromDEF; };
+    inline int GetNPCID() const { return mWorldID; };
+    inline int GetNPCSQLID() const { return mID; };
+    inline void SetTrader( u16 nTraderDef ) { mTrader = nTraderDef; };
+    inline void SetScripting(bool nVal) { mScripting = nVal; };
 };
 
 // *****************************************
@@ -198,15 +234,23 @@ private:
     // Send all NPCs to one player (Initial zone setup)
     void MSG_SendNPCs( PClient* nClient );
 
-    // Send "alive" message for all NPCs as zone broadcast to everyone or as unicast if nClient is given
-    void MSG_SendAlive( PClient* nClient = NULL );
+    // Send "alive" message for all NPCs as zone broadcast to everyone
+    //void MSG_SendAlive();
 
     bool LoadNPCfromSQL();
     bool LoadNPCfromDEF();
 
+    void BroadcastNewNPC(PNPC* nNpc);
+
 public:
     friend class PNPCManager;
     PNPC* GetNPC( u32 nNPCID );
+
+    // Functions to add/remove an NPC while server is running
+    void SendSingleNPCInfo( PClient* nClient, PNPC* nNpc ); // Send
+    bool AddNPC(u32 nSQL_ID, u32 nRaw_ID); // Load single SQL NPC from given SQL ID
+    void DelNPC(u32 nWorldID); // Remove given NPC from list. Works for *all* npcs
+                                                     // but uppon zone reset they're back.
 };
 
 // *****************************************

@@ -85,6 +85,7 @@
 #include "filesystem.h"
 #include "defparser.h"
 
+
 #include "skill.h"
 #include "chars.h"
 #include "accounts.h"
@@ -101,6 +102,7 @@
 #include "npc.h"
 #include "terminal.h"
 
+#include "lua_engine.h"
 #include "chat.h"
 #include "commands.h"
 #include "clientmanager.h"

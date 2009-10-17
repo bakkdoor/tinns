@@ -35,6 +35,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+extern class PLuaEngine *LuaEngine;
+
 extern class ServerSocket *ServerSock;
 extern class PConsole *Console;
 //extern class PRConsole *RemoteConsole;

@@ -311,7 +311,7 @@ u32 PMySQL::EscapeString(const char* nText, char* dText, u32 dMaxLength)
   {
     nLength = tMax;
   }
-  
+
   return mysql_real_escape_string(game_dbHandle, dText, nText, nLength);
 }
 

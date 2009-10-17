@@ -55,7 +55,9 @@ bool PDefScripts::LoadFromDef( PTokenList *Tokens )
         CleanUpString(&mLuaFile);
         break;
       case 4 :
-        //mScriptHeader = *i; break;
+        mScriptHeader = *i;
+        CleanUpString(&mScriptHeader);
+        break;
         continue;
     }
   }
@@ -63,26 +65,6 @@ bool PDefScripts::LoadFromDef( PTokenList *Tokens )
   return true;
 }
 
-void PDefScripts::CleanUpString(std::string *nString)
-{
-    if(nString->length() > 3)
-    {
-        size_t tfound;
-        string t_replacechr ("\"");
-
-        tfound = nString->find(t_replacechr);
-        while(tfound != string::npos)
-        {
-            nString->replace(tfound, 1, " ");
-            tfound = nString->find( t_replacechr, tfound +1 );
-        }
-        Trim(nString);
-    }
-    else
-    {
-        *nString = "";
-    }
-}
 /*
 bool PDefScriptsMap::Load(const char* nName, const char* nFilename)
 {

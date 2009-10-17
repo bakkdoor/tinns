@@ -38,9 +38,7 @@ class PDefScripts : public PDef
     //int mIndex;
     std::string mIdentifier;
     std::string mLuaFile;
-    //std::string mScriptHeader
-    void CleanUpString(std::string *nString);
-
+    std::string mScriptHeader;
 
   public :
     PDefScripts();
@@ -50,6 +48,7 @@ class PDefScripts : public PDef
 
     inline const std::string &GetIdentifier() const { return mIdentifier; }
     inline const std::string &GetLuaFile() const { return mLuaFile; }
+    inline const std::string &GetScriptHeader() const { return mScriptHeader; }
 };
 
 class PDefScriptsMap : public PDefMap<PDefScripts>

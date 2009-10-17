@@ -79,6 +79,7 @@ PWorldActors* WorldActors = 0;
 PNPCManager* NPCManager = 0;
 PSubway* Subway = 0;
 PTerminal* Terminal = 0;
+PLuaEngine* LuaEngine = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -150,6 +151,8 @@ bool InitTinNS()
     Worlds->LoadWorlds();
 
     WorldActors = new PWorldActors();
+    LuaEngine = new PLuaEngine();
+
     NPCManager = new PNPCManager();
     Appartements = new PAppartements;
     Subway = new PSubway;
@@ -164,14 +167,14 @@ bool InitTinNS()
       Console->Print("%s Could not creat password_filter PCRE '%s'", Console->ColorText(RED, BLACK, "[Error]"), Config->GetOption("password_filter").c_str());
       return false;
     }
-    
+
     if (!PChar::SetCharnameRegexFilter(Config->GetOption("charname_filter").c_str()))
     {
       Console->Print("%s Could not creat charname_filter PCRE '%s'", Console->ColorText(RED, BLACK, "[Error]"), Config->GetOption("charname_filter").c_str());
       return false;
     }
     Chars = new PChars();
-       
+
     ServerSock = new ServerSocket();
     Server = new PServer();
     GameServer = new PGameServer();
@@ -191,6 +194,8 @@ bool InitTinNS()
 
 void Shutdown()
 {
+    if(LuaEngine)
+        delete LuaEngine;
     if(Terminal)
         delete Terminal;
     if(WorldActors)

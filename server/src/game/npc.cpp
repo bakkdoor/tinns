@@ -35,8 +35,19 @@ REASON: changed worlds/zones Id from u16 (wrong !!!) to u32
 #include "worlds.h"
 #include "npctemplate.h"
 #include "worlddatatemplate.h"
+#include "msgbuilder.h"
 
 ///***********************************************************************
+
+// Reload LUA script while running, in case we modified it and dont want to restart the entire server
+bool PNPC::ReloadLUAScript()
+{
+    // Erase current LUA script
+    mLUAFile = "";
+
+    // Reload it
+    return LoadLUAScript();
+}
 
 bool PNPC::DEF_Load(u32 nWorldID)
 {
@@ -44,11 +55,15 @@ bool PNPC::DEF_Load(u32 nWorldID)
     const PNPCTemplate* t_defNPC = Worlds->GetWorld(nWorldID)->GetNPCTemplate(mWorldID);
 
     mNameID = (u16)t_defNPC->GetNPCTypeID(); // 16 or 32??
-//mTypeID = not defined in dat?
-//mClothing = not defined in dat?
+    const PDefNpc* t_NpcTypeDef = GameDefs->Npcs()->GetDef(mNameID);
+    if(!t_NpcTypeDef)
+    {
+        Console->Print("%s [PNPC::DEF_Load()] Unknown NPC Type %d in .dat file found", Console->ColorText(RED,BLACK, "[Error]"), mNameID);
+        return false;
+    }
 
-    // DAT NPC Name fix
     // TODO: Find out what exactly these TypeID and ClothingID values do and where they are generated/read
+    // Possible (working) solution: Random seed for name generation that happens clientside
     mTypeID = GetRandom(32767, 1);
     mClothing = GetRandom(32767, 1);
     // -------------
@@ -57,93 +72,157 @@ bool PNPC::DEF_Load(u32 nWorldID)
     mPosY = t_defNPC->GetPosY()+32768;
     mPosZ = t_defNPC->GetPosZ()+32768;
     mAngle = atoi( t_defNPC->GetAngle().c_str() );
-    mLoot = 0;
-    mUnknown = 19646;
-    //mTrader = 57;
+    mLoot = t_NpcTypeDef->GetLoot();
+    mUnknown = t_NpcTypeDef->GetHealth() * NPC_HEALTHFACTOR;
     mTrader = t_defNPC->GetTradeID();
 
     // WorldID Fix 10.10.2009
     mFromDEF = true;
-//mLoot = not defined in dat?
-//mUnknown = not defined in dat?
-//mTrader = not defined in dat? // it is!
 
     mName = t_defNPC->GetActorName();
 
 
     // Load dialogscript for this NPC right uppon startup
-    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
-    if(t_npc)
-    {
-        if(t_npc->GetDialogScript().length() > 3)
-        {
-            size_t tfound;
-            string t_dialogscript = t_npc->GetDialogScript();
-            string t_replacechr ("\"");
+    mDialogScript = t_NpcTypeDef->GetDialogScript();
+    CleanUpString(&mDialogScript);
 
-            tfound = t_dialogscript.find(t_replacechr);
-            while(tfound != string::npos)
-            {
-                t_dialogscript.replace(tfound, 1, " ");
-                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
-            }
-            Trim(&t_dialogscript);
-            if(t_dialogscript.length() > 1)
-            {
-                mDialogScript = t_dialogscript;
-                LoadLUAScript();
-            }
-        }
-    }
-
-
+    // Try to load any lua scripts
+    // Checks are done in target function
+    LoadLUAScript();
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
     if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
     return true;
 }
 
-void PNPC::LoadLUAScript()
+bool PNPC::LoadLUAScript()
 {
-
-    // Get LUA filename
-    const PDefScripts* tDefScripts = NULL;
-    std::map<int, PDefScripts*>::const_iterator itScrStart = GameDefs->Scripts()->ConstIteratorBegin();
-    std::map<int, PDefScripts*>::const_iterator itScrEnd = GameDefs->Scripts()->ConstIteratorEnd();
-    for ( std::map<int, PDefScripts*>::const_iterator i = itScrStart; i != itScrEnd; i++ )
-    {
-        tDefScripts = i->second;
-//        Console->Print("[DEBUG PNPC::LoadLUAScript] Identifier: [%s] LUA: [%s]", tDefScripts->GetIdentifier().c_str(), tDefScripts->GetLuaFile().c_str());
-
-        if(tDefScripts->GetIdentifier().compare(mDialogScript) == 0)
-        {
-            break;
-        }
-    }
-    if(tDefScripts->GetIdentifier().compare(mDialogScript) != 0)
-        return;
-
     u32 tFileLen = 0;
     PFile* fLua = NULL;
-    std::string tLuaFile = tDefScripts->GetLuaFile();
-    std::transform(tLuaFile.begin(), tLuaFile.end(), tLuaFile.begin(), (int(*)(int))std::tolower);
+    string tLuaFile = "";
+    string tHDRFile = "";
+
+    // Load LUA script and include the correct header file
+    // based in mDialogScript
+    // if mDialogScript is empty, look at mCustomLua and load this file. Standart include header for custom
+    // script files is dialogheader.lua since we dont know (yet) what standart header the NC Client uses
+    // for custom loaded scripts.
+
+    if(mDialogScript.length() > 1)
+    {
+        // Get LUA filename from defs
+        const PDefScripts* tDefScripts = NULL;
+        std::map<int, PDefScripts*>::const_iterator itScrStart = GameDefs->Scripts()->ConstIteratorBegin();
+        std::map<int, PDefScripts*>::const_iterator itScrEnd = GameDefs->Scripts()->ConstIteratorEnd();
+        for ( std::map<int, PDefScripts*>::const_iterator i = itScrStart; i != itScrEnd; i++ )
+        {
+            tDefScripts = i->second;
+    //        Console->Print("[DEBUG PNPC::LoadLUAScript] Identifier: [%s] LUA: [%s]", tDefScripts->GetIdentifier().c_str(), tDefScripts->GetLuaFile().c_str());
+
+            if(tDefScripts->GetIdentifier().compare(mDialogScript) == 0)
+            {
+                break;
+            }
+        }
+        // If we left the loop without an positive match.. false!
+        if(tDefScripts->GetIdentifier().compare(mDialogScript) != 0)
+        {
+            return false;
+        }
+
+        // Assign our LUA file to load later
+        tLuaFile = tDefScripts->GetLuaFile();
+        // MaKe ThE sTrInG aLl lowercase! :)
+        std::transform(tLuaFile.begin(), tLuaFile.end(), tLuaFile.begin(), (int(*)(int))std::tolower);
+
+
+        // We only have 2 headerfiles, so this one is hardcoded
+        if(tDefScripts->GetScriptHeader() == "DIALOGHEADER")
+        {
+            tHDRFile = "scripts/lua/dialogheader.lua";
+        }
+        else if(tDefScripts->GetScriptHeader() == "MISSIONHEADER")
+        {
+            tHDRFile = "scripts/lua/missionheader.lua";
+        }
+    }
+    // Customlua is set?
+    else if(mCustomLua.length() > 1)
+    {
+        // Assign lua file and header
+        tLuaFile = mCustomLua;
+        tHDRFile = "scripts/lua/dialogheader.lua";
+    }
+    else
+    {
+        // No LUA Scripts to load. Skipping
+        return true;
+    }
+
+    // Load HEADER file
+    fLua = Filesystem->Open( "", tHDRFile.c_str(), Config->GetOption( "nc_data_path" ) );
+    if(fLua)
+    {
+        tFileLen = fLua->GetSize();
+        char* t_content = new char[tFileLen+1];
+        memset(t_content, '\0', tFileLen+1);
+
+        fLua->Read( t_content, tFileLen );
+        Filesystem->Close( fLua );
+        mLUAFile = t_content;
+        delete t_content;
+        if (gDevDebug) Console->Print( "%s [PNPC::LoadLUAScript] Loaded LUA Header Script %s", Console->ColorText( GREEN, BLACK, "[SUCCESS]" ), tHDRFile.c_str() );
+    }
+    else
+    {
+        Console->Print( "%s [PNPC::LoadLUAScript] Unable to load LUA Header script %s NPC is now DISABLED for scripting", Console->ColorText( RED, BLACK, "[ERROR]" ), tLuaFile.c_str() );
+        // We encountered an error while loading. Make sure this NPC will never act as Dialog NPC!
+        mLUAFile = "";
+        mCustomLua = "";
+        mDialogScript = "";
+        return false;
+    }
+
+    // Reset vars
+    tFileLen = 0;
+    fLua = NULL;
 
     fLua = Filesystem->Open( "", tLuaFile.c_str(), Config->GetOption( "nc_data_path" ) );
     if(fLua)
     {
         tFileLen = fLua->GetSize();
-        char* t_content = new char[tFileLen];
+        char* t_content = new char[tFileLen+1];
+        memset(t_content, '\0', tFileLen+1);
+
         fLua->Read( t_content, tFileLen );
         Filesystem->Close( fLua );
-        mLUAFile = t_content;
+        mLUAFile += t_content;  // APPEND the script to our existing lua headerfile
         delete t_content;
         if (gDevDebug) Console->Print( "%s [PNPC::LoadLUAScript] Loaded LUA Script %s", Console->ColorText( GREEN, BLACK, "[SUCCESS]" ), tLuaFile.c_str() );
         //Console->Print( "%s", mLUAFile.c_str() );
     }
     else
     {
-        Console->Print( "%s [PNPC::LoadLUAScript] Unable to load file %s", Console->ColorText( RED, BLACK, "[ERROR]" ), tLuaFile.c_str() );
-        return;
+        Console->Print( "%s [PNPC::LoadLUAScript] Unable to load LUA Script %s NPC is now DISABLED for scripting", Console->ColorText( RED, BLACK, "[ERROR]" ), tLuaFile.c_str() );
+        // We encountered an error while loading. Make sure this NPC will never act as Dialog NPC!
+        mLUAFile = "";
+        mCustomLua = "";
+        mDialogScript = "";
+        return false;
+    }
+    // LUA file prepared. Check if LUA file is valid
+    if(LuaEngine->CheckLUAFile(mLUAFile) == true)
+    {
+        // Everything is fine. NPC is ready for action
+        return true;
+    }
+    else
+    {
+        // LUA file seems to be corrupt
+        mLUAFile = "";
+        mCustomLua = "";
+        mDialogScript = "";
+        return false;
     }
 }
 
@@ -192,6 +271,10 @@ bool PNPC::SQL_Load()
     mUnknown = atoi( row[npc_unknown] );
     mTrader = atoi( row[npc_trader] );
     mItemQuality = atoi( row[npc_shop_quality] );
+    if(atoi(row[npc_scripting]) == 1)
+        mScripting = true;
+    else
+        mScripting = false;
 
     if ( row[npc_name] != NULL )
         mName = row[npc_name];
@@ -203,29 +286,35 @@ bool PNPC::SQL_Load()
         mCustomLua = row[npc_customscript];
 
     // Load dialogscript for this NPC right uppon startup
-    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
-    if(t_npc)
+    // !-> Only if no custom lua script is attached <-!
+    if(mCustomLua.length() < 1)
     {
-        if(t_npc->GetDialogScript().length() > 3)
+        const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+        if(t_npc)
         {
-            size_t tfound;
-            string t_dialogscript = t_npc->GetDialogScript();
-            string t_replacechr ("\"");
-
-            tfound = t_dialogscript.find(t_replacechr);
-            while(tfound != string::npos)
+            if(t_npc->GetDialogScript().length() > 3)
             {
-                t_dialogscript.replace(tfound, 1, " ");
-                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
-            }
-            Trim(&t_dialogscript);
-            if(t_dialogscript.length() > 1)
-            {
+                size_t tfound;
+                string t_dialogscript = t_npc->GetDialogScript();
+                string t_replacechr ("\"");
 
-                mDialogScript = t_dialogscript;
+                tfound = t_dialogscript.find(t_replacechr);
+                while(tfound != string::npos)
+                {
+                    t_dialogscript.replace(tfound, 1, " ");
+                    tfound = t_dialogscript.find( t_replacechr, tfound +1 );
+                }
+                Trim(&t_dialogscript);
+                if(t_dialogscript.length() > 1)
+                {
+                    mDialogScript = t_dialogscript;
+                }
             }
         }
     }
+    // Try to load any lua scripts
+    // Checks are done in target function
+    LoadLUAScript();
 
 
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
@@ -282,6 +371,12 @@ void PNPC::InitVars()
     // WorldID Fix 10.10.2009
     mFromDEF = false;
     mItemQuality = 50;
+    mScripting = true;
+
+    // Set next update timer for this NPC to 10 - 30 seconds
+    // Note: this is for regular heartbeats only. If npc is dirty,
+    // an update is sent anyway
+    mNextUpdate = std::time(NULL) + GetRandom(30, 10);
 }
 
 PNPC::PNPC( int nSQLID )
@@ -326,256 +421,82 @@ u8 PNPC::GetActionStatus()
 ///***********************************************************************
 ///***********************************************************************
 
-void PNPCWorld::MSG_SendNPCs( PClient* nClient )
+// Broadcast a single NPC
+void PNPCWorld::BroadcastNewNPC(PNPC* nNpc)
 {
-    PMessage* npc_initmsg = new PMessage( 256 );
-    PNPC* tNPC;
-//if (gDevDebug) Console->Print("Starting to assemble NPC message");
+    std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
+    PMessage* tmpMsg = MsgBuilder->BuildNPCMassInfoMsg (nNpc->mWorldID, nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
+                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                        &nNpc->mName, &nNpc->mCustomName);
 
-    *npc_initmsg << ( u8 )0x13; // Begin UDP message
-    *npc_initmsg << ( u16 )0x0000; // Placeholder for UDP ID
-    *npc_initmsg << ( u16 )0x0000; // Placeholder for Session ID
-
-// Loop all NPCs in world
-    for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
-    {
-//if (gDevDebug) Console->Print("Got first NPC");
-        if ( !it->second ) // Got an error and NPC doesnt exist? Skip this one
-            continue;
-
-        tNPC = it->second; // Get NPC
-
-// Get "string" for NPC angle
-        std::string tAngleStr = Ssprintf( "%d", tNPC->mAngle );
-
-// Calculate messagesize
-        u8 tMsgLen = 29 + tNPC->mName.size() + tAngleStr.size();
-//if (gDevDebug) Console->Print("MsgLen will be %d bytes ", tMsgLen);
-// Check for customname
-        bool tUseCustomName = false;
-        if ( tNPC->mCustomName.size() > 1 )
-        {
-            //if (gDevDebug) Console->Print("NPC has an custom attached name, adding!");
-            // NPC has customname, add to size
-            tMsgLen += tNPC->mCustomName.size();
-            tMsgLen++; // the 0x00 is not counted in .size() !
-            tUseCustomName = true;
-        }
-
-// Check if messagebuffer is full
-//if (gDevDebug) Console->Print("LEN: %d MAX: %d INUSE: %d", tMsgLen, npc_initmsg->GetMaxSize(), npc_initmsg->GetSize());
-        if (( int )tMsgLen > ( npc_initmsg->GetMaxSize() - npc_initmsg->GetSize() ) )
-        {
-            //if (gDevDebug) Console->Print("The messagequeue is full. Sending it");
-            // It is full. Now set final UDP/Session ID's and send packet
-            npc_initmsg->U16Data( 0x01 ) = nClient->GetUDP_ID();    // Set final UDP ID
-            npc_initmsg->U16Data( 0x03 ) = nClient->GetSessionID(); // Set final SessionID
-
-            // Send message to client
-            if ( npc_initmsg->GetSize() > 5 )
-                nClient->SendUDPMessage( npc_initmsg );
-            else
-                delete npc_initmsg;
-            //if (gDevDebug) Console->Print("Message sent. Trying to dump");
-            //if (gDevDebug) (*npc_initmsg).Dump();
-
-            // Clear messagebuffer and ReInit for next NPCs
-            //if (gDevDebug) Console->Print("Packet is in queue now, removing link to list");
-            npc_initmsg = NULL;
-            //if (gDevDebug) Console->Print("And getting a new msg");
-            npc_initmsg = new PMessage( 256 );
-
-            //if (gDevDebug) Console->Print("Preparing new message block");
-
-            *npc_initmsg << ( u8 )0x13; // Begin UDP message
-            *npc_initmsg << ( u16 )0x0000; // Placeholder for UDP ID
-            *npc_initmsg << ( u16 )0x0000; // Placeholder for Session ID
-            //if (gDevDebug) Console->Print("And starting over");
-        }
-        else
-        {
-            nClient->IncreaseUDP_ID();
-
-            *npc_initmsg << ( u8 )tMsgLen;
-            *npc_initmsg << ( u8 )0x03;
-            *npc_initmsg << ( u16 )nClient->GetUDP_ID();
-            *npc_initmsg << ( u8 )0x28;
-            *npc_initmsg << ( u8 )0x00;
-            *npc_initmsg << ( u8 )0x01;
-
-            // WorldID Fix 10.10.2009
-            if(tNPC->mFromDEF == false)
-                *npc_initmsg << ( u32 )tNPC->mWorldID;
-            else
-                *npc_initmsg << ( u32 )tNPC->mWorldID + 255;
-
-            *npc_initmsg << ( u16 )tNPC->mTypeID;
-            *npc_initmsg << ( u16 )tNPC->mClothing;
-            *npc_initmsg << ( u16 )tNPC->mNameID;
-            *npc_initmsg << ( u16 )tNPC->mPosY;
-            *npc_initmsg << ( u16 )tNPC->mPosZ;
-            *npc_initmsg << ( u16 )tNPC->mPosX;
-            *npc_initmsg << ( u8 )0x00; // Was always 0x00 in all logs
-            *npc_initmsg << ( u16 )tNPC->mUnknown;
-            *npc_initmsg << ( u16 )tNPC->mTrader;
-            *npc_initmsg << tNPC->mName.c_str();
-            *npc_initmsg << tAngleStr.c_str();
-            if ( tUseCustomName == true )
-                *npc_initmsg << tNPC->mCustomName.c_str();
-        }
-
-// Remove link to NPC instance
-        tNPC = NULL;
-    }
-//if (gDevDebug) Console->Print("Done with mainloop. Now lets check if we have a message waiting...");
-    if ( npc_initmsg->GetSize() > 5 ) // Check if we really have an packet and not only the header
-    {
-//if (gDevDebug) Console->Print("Message is waiting! Trying to send...");
-// It is full. Now set final UDP/Session ID's and send packet
-        npc_initmsg->U16Data( 0x01 ) = nClient->GetUDP_ID();    // Set final UDP ID
-        npc_initmsg->U16Data( 0x03 ) = nClient->GetSessionID(); // Set final SessionID
-
-// Send message to client
-        if ( npc_initmsg->GetSize() > 5 )
-            nClient->SendUDPMessage( npc_initmsg );
-        else
-            delete npc_initmsg;
-
-//if (gDevDebug) Console->Print("Done. Now dumping packet");
-//if (gDevDebug) (*npc_initmsg).Dump();
-    }
-    else
-    {
-//if (gDevDebug) Console->Print("No messages waiting to be send, removing message from memory");
-        delete npc_initmsg;
-    }
-// Free message
-//if (gDevDebug) Console->Print("Done. Removing link to list");
-    npc_initmsg = NULL;
-//delete npc_initmsg;
-//if (gDevDebug) Console->Print("Allowing client to accept NPC updates");
-    nClient->SetAcceptNPCUpdates( true );
+    ClientManager->UDPBroadcast( tmpMsg, mWorldID );
 }
 
-void PNPCWorld::MSG_SendAlive( PClient* nClient )
+
+bool PNPCWorld::AddNPC(u32 nSQL_ID, u32 nRaw_ID)
 {
-    if ( gDevDebug ) Console->Print( "[PNPCWorld::MSG_SendAlive] Sending NPC alive msg" );
-
-    PMessage* tmpNPCUpdate = new PMessage( 256 );
-    *tmpNPCUpdate << ( u8 )0x13;
-    *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-    *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-    int tMsgLen = 12;
-//    int tMsgLen = 22;
-
-    for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
+    PNPC* tmpNpc = new PNPC( nSQL_ID );
+    if(tmpNpc->mSuccess == true)
     {
-        if ( it->second )
-        {
-            PNPC* tNPC = it->second;
-            // Build multiframe message
-            //13 31 00 a5 ff 15 1b e7 03 00 00 1f 2c 84 80 7f 6b 84 03 77 02  01 00 00 00 00 14
-            //NC UDP.| Sess  Ln Cs |..NPCID..| 1F |.Y.| |.Z.| |.X.| BM ?  Hlt TrgCh ?  ?  ?  Ac
-
-            *tmpNPCUpdate << ( u8 )0x11;
-            *tmpNPCUpdate << ( u8 )0x1B;
-
-            // WorldID Fix 10.10.2009
-            if(tNPC->mFromDEF == false)
-                *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
-            else
-                *tmpNPCUpdate << ( u32 )tNPC->mWorldID + 255;
-
-            *tmpNPCUpdate << ( u8 )0x1F;
-            *tmpNPCUpdate << ( u16 )tNPC->mPosY;
-            *tmpNPCUpdate << ( u16 )tNPC->mPosZ;
-            *tmpNPCUpdate << ( u16 )tNPC->mPosX;
-            //*tmpNPCUpdate << ( u8 )0x00; // ??
-            *tmpNPCUpdate << (u8)tNPC->GetActionStatus();
-            *tmpNPCUpdate << ( u8 )0x00; // ??
-            *tmpNPCUpdate << ( u8 )tNPC->mHealth;
-            *tmpNPCUpdate << ( u8 )0x00; // ??
-            //*tmpNPCUpdate << ( u8 )0x00; // ??
-            *tmpNPCUpdate << (u8)tNPC->mAction;
-// Weird is: The next packet that is commented out, lets the NPCs all look into one direction...
-
-            /*
-                        *tmpNPCUpdate << (u8)0x15; // Message length
-                        *tmpNPCUpdate << (u8)0x1b;
-                        *tmpNPCUpdate << (u32)tNPC->mWorldID;
-                        *tmpNPCUpdate << (u8)0x1F;
-                        *tmpNPCUpdate << (u16)tNPC->mPosY;
-                        *tmpNPCUpdate << (u16)tNPC->mPosZ;
-                        *tmpNPCUpdate << (u16)tNPC->mPosX;
-                        *tmpNPCUpdate << (u8)tNPC->GetActionStatus();
-                        *tmpNPCUpdate << (u8)0x77; // ?
-                        *tmpNPCUpdate << (u8)tNPC->mHealth;
-                        *tmpNPCUpdate << (u16)tNPC->mTarget;
-                        *tmpNPCUpdate << (u8)0x00; // ?
-                        *tmpNPCUpdate << (u8)0x00; // ?
-                        *tmpNPCUpdate << (u8)0x00; // ?
-                        *tmpNPCUpdate << (u8)tNPC->mAction;
-            */
-            if (( int )tMsgLen > ( tmpNPCUpdate->GetMaxSize() - tmpNPCUpdate->GetSize() ) )
-            {
-                //if (gDevDebug) Console->Print("DEBUG: Sending part-message");
-
-                // Check if broad or unicast
-                if ( nClient == NULL )
-                {
-                    if ( tmpNPCUpdate->GetSize() > 5 )
-                        ClientManager->UDPBroadcast( tmpNPCUpdate, mWorldID, 0, false, true );
-                    else
-                        delete tmpNPCUpdate;
-                }
-                else
-                {
-                    tmpNPCUpdate->U16Data( 0x01 ) = nClient->GetUDP_ID();    // Set final UDP ID
-                    tmpNPCUpdate->U16Data( 0x03 ) = nClient->GetSessionID(); // Set final SessionID
-                    //(*tmpNPCUpdate).Dump();
-                    if ( tmpNPCUpdate->GetSize() > 5 )
-                        nClient->SendUDPMessage( tmpNPCUpdate );
-                    else
-                        delete tmpNPCUpdate;
-                }
-
-                tmpNPCUpdate = NULL;
-                tmpNPCUpdate = new PMessage( 256 );
-
-                // ReInit message
-                *tmpNPCUpdate << ( u8 )0x13;
-                *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-                *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-            }
-        }
-    }
-// Check if broad or unicast
-    if ( nClient == NULL )
-    {
-        if ( tmpNPCUpdate->GetSize() > 5 )
-        {
-            ClientManager->UDPBroadcast( tmpNPCUpdate, mWorldID, 0, false, true );
-        }
-        else
-        {
-            delete tmpNPCUpdate;
-        }
+        // Now broadcast the new NPC to all clients
+        BroadcastNewNPC(tmpNpc);
+        mNPCs.insert( std::make_pair( nRaw_ID, tmpNpc ) );
+        tmpNpc = NULL;
+        if ( gDevDebug ) Console->Print( "[PNPCWorld::AddNPC] Custom NPC added" );
     }
     else
     {
-        if ( tmpNPCUpdate->GetSize() > 5 )
-        {
-            tmpNPCUpdate->U16Data( 0x01 ) = nClient->GetUDP_ID();    // Set final UDP ID
-            tmpNPCUpdate->U16Data( 0x03 ) = nClient->GetSessionID(); // Set final SessionID
-            //(*tmpNPCUpdate).Dump();
-            nClient->SendUDPMessage( tmpNPCUpdate );
-        }
-        else
-        {
-            delete tmpNPCUpdate;
-        }
+        if ( gDevDebug ) Console->Print( "[PNPCWorld::AddNPC] Custom NPC not added due error" );
+        delete tmpNpc;
+        return false;
     }
-    tmpNPCUpdate = NULL;
+
+    return true;
+}
+
+void PNPCWorld::DelNPC(u32 nWorldID)
+{
+    PNPCMap::iterator it = mNPCs.find( nWorldID );
+    if ( it == mNPCs.end() )
+        return;
+
+    // Delete NPC from Map
+    mNPCs.erase(it);
+
+    // Send Vanish message to clients
+    PMessage* tmpMsg = MsgBuilder->BuildRemoveWorldObjectMsg(nWorldID);
+    ClientManager->UDPBroadcast( tmpMsg, mWorldID );
+
+    return;
+}
+
+void PNPCWorld::SendSingleNPCInfo( PClient* nClient, PNPC* nNpc )
+{
+    std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
+    PMessage* tmpMsg = MsgBuilder->BuildNPCSingleInfoMsg (nClient, nNpc->GetRealWorldID(), nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
+                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                        &nNpc->mName, &nNpc->mCustomName);
+
+    nClient->SendUDPMessage( tmpMsg );
+    return;
+}
+
+void PNPCWorld::MSG_SendNPCs( PClient* nClient )
+{
+    PNPC* nNpc = NULL;
+    for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
+    {
+        nNpc = it->second;
+
+        std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
+        PMessage* tmpMsg = MsgBuilder->BuildNPCSingleInfoMsg (nClient, nNpc->GetRealWorldID(), nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
+                                                            nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                            &nNpc->mName, &nNpc->mCustomName);
+
+        nClient->SendUDPMessage( tmpMsg );
+    }
+
+    return;
 }
 
 bool PNPCWorld::LoadNPCfromSQL()
@@ -679,90 +600,39 @@ PNPCWorld::~PNPCWorld()
 
 void PNPCWorld::Update()
 {
-    int tDirtyNPC = 0;
-// Check for dirty NPCs
-
+    // Updates NPC in a World.
+    // If NPC is dirty, send "large" update. Else
+    // send small "i'm alive" message
+    std::time_t tNow = std::time(NULL);
+    PNPC* tNPC = NULL;
     for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
-        tDirtyNPC++;
-
-    if ( tDirtyNPC > 0 )
     {
-        PMessage* tmpNPCUpdate = new PMessage( 256 );
-        *tmpNPCUpdate << ( u8 )0x13;
-        *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-        *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-
-        int framecounter = 0;
-        int tMsgLen = 22;
-
-        for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
+        if ( it->second )
         {
-            if ( it->second )
+            tNPC = it->second;
+            // Only update dirty npcs
+            if ( tNPC->mDirty == true )
             {
-                if ( it->second->mDirty == true )
-                {
-                    if ( gDevDebug ) Console->Print( "[DEBUG] Found dirty NPC! Sending update" );
-                    PNPC* tNPC = it->second;
-                    tNPC->mDirty = false;
-                    // Build multiframe message
+                PMessage* tmpMsg = MsgBuilder->BuildNPCMassUpdateMsg( tNPC->GetRealWorldID(), tNPC->mPosX, tNPC->mPosY,
+                                                                     tNPC->mPosZ, tNPC->GetActionStatus(), tNPC->mHealth, tNPC->mTarget, tNPC->mAction);
 
-                    *tmpNPCUpdate << ( u8 )0x15; // Message length
-                    *tmpNPCUpdate << ( u8 )0x1b;
+                ClientManager->UDPBroadcast( tmpMsg, mWorldID );
+                tNPC->mDirty = false;
+                // Large update also counts as small one, inc update counter
+                tNPC->PushUpdateTimer();
+            }
+            else if(tNPC->mNextUpdate <= tNow)
+            {
+                PMessage* tmpMsg = MsgBuilder->BuildNPCMassAliveMsg( tNPC->GetRealWorldID(), tNPC->mPosX, tNPC->mPosY,
+                                                                     tNPC->mPosZ, tNPC->GetActionStatus(), tNPC->mHealth, tNPC->mAction);
 
-                    // WorldID Fix 10.10.2009
-                    if(tNPC->mFromDEF == false)
-                        *tmpNPCUpdate << ( u32 )tNPC->mWorldID;
-                    else
-                        *tmpNPCUpdate << ( u32 )tNPC->mWorldID + 255;
-
-                    *tmpNPCUpdate << ( u8 )0x1F;
-                    *tmpNPCUpdate << ( u16 )tNPC->mPosY;
-                    *tmpNPCUpdate << ( u16 )tNPC->mPosZ;
-                    *tmpNPCUpdate << ( u16 )tNPC->mPosX;
-                    *tmpNPCUpdate << ( u8 )tNPC->GetActionStatus();
-                    *tmpNPCUpdate << ( u8 )0x77; // ?
-                    *tmpNPCUpdate << ( u8 )tNPC->mHealth;
-                    *tmpNPCUpdate << ( u16 )tNPC->mTarget;
-                    *tmpNPCUpdate << ( u8 )0x00; // ?
-                    *tmpNPCUpdate << ( u8 )0x00; // ?
-                    *tmpNPCUpdate << ( u8 )0x00; // ?
-                    *tmpNPCUpdate << ( u8 )tNPC->mAction;
-
-                    if (( int )tMsgLen > ( tmpNPCUpdate->GetMaxSize() - tmpNPCUpdate->GetSize() ) )
-                    {
-                        if ( gDevDebug ) Console->Print( "DEBUG: Sending part-message (got more than 30 npcs" );
-                        if ( tmpNPCUpdate->GetSize() > 5 )
-                            ClientManager->UDPBroadcast( tmpNPCUpdate, mWorldID );
-                        else
-                            delete tmpNPCUpdate;
-
-                        tmpNPCUpdate = NULL;
-                        PMessage* tmpNPCUpdate = new PMessage( 256 );
-
-                        framecounter = 0; // Clear framecounter
-
-                        // ReInit message
-                        *tmpNPCUpdate << ( u8 )0x13;
-                        *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-                        *tmpNPCUpdate << ( u16 )0x0000; // Placeholder
-                        if ( gDevDebug ) Console->Print( "DEBUG: Done. Starting over!" );
-                    }
-                }
+                ClientManager->UDPBroadcast( tmpMsg, mWorldID );
+                tNPC->PushUpdateTimer();
             }
         }
-        if ( tmpNPCUpdate->GetSize() > 5 )
-            ClientManager->UDPBroadcast( tmpNPCUpdate, mWorldID );
-        else
-            delete tmpNPCUpdate;
+    }
 
-        tmpNPCUpdate = NULL;
-    }
-    if (( mLastAliveMsg + NPC_ALIVE_MSG ) <= std::time( NULL ) )
-    {
-        if ( gDevDebug ) Console->Print( "DEBUG: Sending NPC alive messages" );
-        MSG_SendAlive();
-        mLastAliveMsg = std::time( NULL );
-    }
+    return;
 }
 
 PNPC* PNPCWorld::GetNPC( u32 nNPCID )
@@ -822,7 +692,7 @@ void PNPCManager::InitPlayer( PClient* nClient )
         if ( gDevDebug ) Console->Print( "[DEBUG] Done. Poking MSG_SendNPCs" );
 // now we have the world, poke it to send its content
         tmpWorld->MSG_SendNPCs( nClient );
-        tmpWorld->MSG_SendAlive( nClient ); // Force instand-update of NPCs for this client
+        //tmpWorld->MSG_SendAlive( nClient ); // Force instand-update of NPCs for this client
     }
 }
 

@@ -216,9 +216,9 @@ void PCommands::doCmdtest()
         *tmpMsg << (u8)0x01;
         *tmpMsg << (u8)0x53;
         *tmpMsg << (u8)0x48;
-        *tmpMsg << (u16)GetArgInt(2);
-        *tmpMsg << (u16)GetArgInt(3);
-        *tmpMsg << (u16)GetArgInt(4);
+        *tmpMsg << (u16)GetArgInt(2); // local id
+        *tmpMsg << (u16)GetArgInt(3); // 0
+        *tmpMsg << (u16)GetArgInt(4); // 4863
 //        *tmpMsg << (u8)GetArgInt(5);
 //        *tmpMsg << (u8)GetArgInt(6);
         source->SendUDPMessage(tmpMsg);
@@ -381,7 +381,42 @@ void PCommands::doCmdtest()
         }
 
     }
+    else if (GetArgInt(1) == 13)
+    {
+        PMessage* tmpMsg = new PMessage();
 
+        *tmpMsg << (u8)0x13;
+        *tmpMsg << (u16)source->GetUDP_ID();
+        *tmpMsg << (u16)source->GetSessionID();
+        *tmpMsg << (u8)0x11;
+        *tmpMsg << (u8)0x1b;
+        *tmpMsg << (u8)0xFF;
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x1F;
+        *tmpMsg << (u8)0x6c;
+        *tmpMsg << (u8)0x79;
+        *tmpMsg << (u8)0x00;
+        *tmpMsg << (u8)0x7F;
+        *tmpMsg << (u8)0x7D;
+        *tmpMsg << (u8)0x84;
+        *tmpMsg << (u8)0x03;
+        *tmpMsg << (u8)GetArgInt(2);
+        *tmpMsg << (u8)0x7F;
+        *tmpMsg << (u8)GetArgInt(3);
+        *tmpMsg << (u8)0x14;
+        source->SendUDPMessage(tmpMsg);
+    }
+    else if (GetArgInt(1) == 14)
+    {
+        char text2[50];
+        GetArgText(2, text2, 50);
+
+        char text[50];
+        snprintf(text, 50, "You typed: [%s]", text2);
+        Chat->send(source, CHAT_DIRECT, "Server", text);
+    }
 
 
 

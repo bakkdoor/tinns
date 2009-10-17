@@ -50,7 +50,7 @@ class PDefNpc : public PDef
     float mModelScaling; // 0 - 0.9
     int mMoneyLoose; // 0 - 190
     float mSkillScale; // 0 - 120
-    std::string mStandardScript; 
+    std::string mStandardScript;
     std::string mStandardParameter;
     int mMass; // 1 - 10000
     //int mStartHour; // not used

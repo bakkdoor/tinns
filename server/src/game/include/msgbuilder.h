@@ -79,11 +79,24 @@ public:
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
 
+    PMessage* BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCMassAliveMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
+    PMessage* BuildNPCMassUpdateMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
+    // Moved here since its a zone broadcast!
+    PMessage* BuildNpcCleanupMsg( u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
 
 // Following methods for unicast messages DO include UDP_ID increment and
 // UDP_ID / SessionID setting when needed (at least for now)
     PMessage* BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  );
-    PMessage* BuildNPCDialogReplyMsg( PClient* nClient, u8 nNextNode );
+    PMessage* BuildNPCDialogReplyMsg( PClient* nClient, u16 nNextNode, std::vector<int>*nResultBuffer);
+    PMessage* BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScript );
+    PMessage* BuildNPCShoppingListMsg( PClient* nClient, PMessage* nContentList, int nWorldID, u8 nItemQuality);
+    PMessage* BuildNPCBeginAllBuyerTradeMsg( PClient* nClient, int nWorldID );
+
+    PMessage* BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCSingleAliveMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
+    PMessage* BuildNPCSingleUpdateMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
+
 
     PMessage* BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength );
 
@@ -155,8 +168,6 @@ public:
     PMessage* BuildCharUseTimedDrugMsg( PClient* nClient, const PDefDrug* nDrugDef, u16 nItemId );
     PMessage* BuildCharUseInstantDrugMsg( PClient* nClient, const PDefDrug* nDrugDef );
     PMessage* BuildCharUseRecreationUnitMsg( PClient* nClient, u32 nObjectId );
-
-    PMessage* BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
 };
 
 #endif

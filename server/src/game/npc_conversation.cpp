@@ -36,67 +36,75 @@ CREATION: 11 Oct 2009 Namikon
 
 ///***********************************************************************
 
-void PNPC::ContentListAddItem(PMessage* nContentList, u16 nItemID, u32 nQuality, u32 nBasePrice, f32 nPriceCoef)
+bool PNPC::SetShopQuality(u8 nNewVal)
 {
-    // TODO: What if BasePrice is 0? For now its techlevel * quality
-    // TODO: nPriceCoef depends on faction standing!
-    f32 tPriceCoef;
-    if(nPriceCoef == 0.0f)
-        tPriceCoef = 1 / 1.379942;
-    else
-        tPriceCoef = nPriceCoef;
+    // Ignore that setting if NPC is loaded from .def
+    if(mFromDEF == true)
+        return false;
 
-    u32 tBasePrice = 0;
-    if(nBasePrice == 0)
-    {
-        const PDefItems* t_item = GameDefs->Items()->GetDef(nItemID);
-        tBasePrice = t_item->GetTechlevel() * nQuality ;
-    }
+    if(nNewVal == 0)
+        return false;
 
-    *nContentList << ( u16 ) nItemID;
-    *nContentList << ( u32 )( tBasePrice * tPriceCoef );
-    if (gDevDebug) Console->Print("[PNPC::ContentListAddItem] Adding item: ID: %d Price: %u", nItemID, tBasePrice);
+    mItemQuality = nNewVal;
+    return true;
 }
 
-void PNPC::ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID, u32 nQuality)
+bool PNPC::ReloadShopList()
 {
-    int maxitems = 16000;
-    for( int i = 0; i < maxitems; i++ )
+    // Shop list will be reloaded uppon next click
+    mVectItemsInShop.erase(mVectItemsInShop.begin(), mVectItemsInShop.end());
+    return true;
+}
+
+void PNPC::AddToVectorList(u16 nItemID, u32 nPrice)
+{
+    stShopListEntry tEntry;
+    tEntry.ItemID = nItemID;
+    tEntry.Price = nPrice;
+    Console->Print("New item in buffer: %d price %d", tEntry.ItemID, tEntry.Price);
+    mVectItemsInShop.push_back(tEntry);
+}
+
+void PNPC::ContentListAddItem(PMessage* nContentList, u16 nItemID, u32 nBasePrice, bool nAddToList)
+{
+    // Items with baseprice = 0 are ignored!
+    if(nBasePrice == 0)
+        return;
+
+    // Modify baseprice with Config value
+    f32 tPerCent = Config->GetOptionInt("item_price");
+    tPerCent = tPerCent / 100;
+    u32 tPrice = nBasePrice * tPerCent;
+    *nContentList << ( u16 ) nItemID;
+    *nContentList << ( u32 )( tPrice );
+
+    if(nAddToList)
+        AddToVectorList(nItemID, tPrice);
+
+    if (gDevDebug) Console->Print("[PNPC::ContentListAddItem] Adding item: ID: %d Price: %u", nItemID, tPrice);
+}
+
+void PNPC::ContentListAddItemGroup(PMessage* nContentList, u32 nItemGroupID)
+{
+    const PDefItems* tDefItems = NULL;
+    std::map<int, PDefItems*>::const_iterator itStart = GameDefs->Items()->ConstIteratorBegin();
+    std::map<int, PDefItems*>::const_iterator itEnd = GameDefs->Items()->ConstIteratorEnd();
+    for ( std::map<int, PDefItems*>::const_iterator i = itStart; i != itEnd; i++ )
     {
-        const PDefItems* t_item = GameDefs->Items()->GetDef(i);
-        if(t_item)
+        tDefItems = i->second;
+        if((u32)tDefItems->GetItemGroupID() == nItemGroupID)
         {
-            if((u32)t_item->GetItemGroupID() == nItemGroupID)
+            // Pricing: Use Baseprice
+            // If Baseprice is 0, use Quality * Techlevel * 2
+            u32 tPrice = tDefItems->GetBasePrice();
+            if(tPrice == 0)
             {
-                int baseprice = t_item->GetBasePrice();
-                if(baseprice == 0)
-                {
-                    // Set price (if base = 0) to techlevel * quality
-                    baseprice = t_item->GetTechlevel() * nQuality;
-                }
-                ContentListAddItem(nContentList, i, baseprice);
-                //Console->Print("[PNPC::ContentListAddItemGroup] Item: %d Price: %d (Group %d)", i, baseprice, nItemGroupID);
+                tPrice = tDefItems->GetTechlevel() * mItemQuality * 2;
             }
+
+            ContentListAddItem(nContentList, i->first, tPrice);
         }
     }
-    // This iterator loop stucks at its 3rd loop with 100% cpu load and i dont know why. thats
-    // the reason why i used this simple 0 to 16000 loop. Would be nice if hammag could check this
-    /*
-    for ( std::map<int, PDefItems*>::const_iterator i = GameDefs->Items()->GetMap().begin(); i != GameDefs->Items()->GetMap().end(); i++ )
-    {
-        if(i->second)
-        {
-            if(i->second->GetItemGroupID() == nItemGroupID)
-            {
-                int itemid = i->first;
-                int baseprice = i->second->GetBasePrice();
-                Console->Print("[PNPC::ContentListAddItemGroup] Item: %d Price: %d (Group %d)", itemid, baseprice, nItemGroupID);
-                //ContentListAddItem(nContentList, itemid, baseprice, coef);
-            }
-        }
-        //do something..
-    }
-    */
 }
 
 bool PNPC::DoSQLShoppingList( PClient* nClient, PMessage* nContentList )
@@ -123,15 +131,37 @@ bool PNPC::DoSQLShoppingList( PClient* nClient, PMessage* nContentList )
         return false;
     }
 
-    f32 PriceCoef = 1 / 1.379942;
+    f32 tPerCent = Config->GetOptionInt("item_price");
+    tPerCent = tPerCent / 100;
+
     while((row = mysql_fetch_row(result)))
     {
         const PDefItems* t_item = GameDefs->Items()->GetDef(atoi( row[2] ));
         if(t_item)
         {
-            *nContentList << ( u16 ) atoi(row[2]);
-            *nContentList << ( u32 )( atoi(row[3]) * PriceCoef );
-            if (gDevDebug) Console->Print("Adding item: ID: %d Price: %d", atoi(row[2]), t_item->GetBasePrice());
+            // Pricing: If no value in DB is set, use Baseprice
+            // If Baseprice is 0, use Quality * Techlevel * 2
+            u32 tPrice = atoi(row[3]);
+            if(tPrice == 0)
+            {
+                tPrice = t_item->GetBasePrice();
+                if(tPrice == 0)
+                {
+                    tPrice = t_item->GetTechlevel() * mItemQuality * 2;
+                }
+            }
+
+            // Modify price as told in config
+            tPrice = tPrice * tPerCent;
+            u16 tItemID = atoi(row[2]);
+
+            *nContentList << ( u16 ) tItemID;
+            *nContentList << ( u32 ) tPrice;
+
+            // Store item position in list for later trade stuff
+            AddToVectorList(tItemID, tPrice);
+
+            if (gDevDebug) Console->Print("Adding item: ID: %d Price: %d",  tItemID, tPrice);
         }
     }
     MySQL->FreeGameSQLResult( result );
@@ -188,81 +218,56 @@ bool PNPC::HasSQLShoppingList( PClient* nClient )
 
 void PNPC::StartDialog( PClient* nClient/*, string &nDialogscript*/ )
 {
-    u32 tWorldID = 0;
-    if(mFromDEF == true)
-        tWorldID = mWorldID + 255; // Dont forget the offset!!!
+    std::string t_ScriptName = "";
+    if(mFromDEF == false && mCustomLua.length() > 1)
+    {
+        char tmpnum[11];
+        snprintf(tmpnum, 11, "%d", mID);
+        t_ScriptName = tmpnum;
+    }
     else
-        tWorldID = mWorldID; // Dont forget the offset!!!
+    {
+        t_ScriptName = mDialogScript;
+    }
 
+    u32 tWorldID = GetRealWorldID();
     // Starts dialog with NPC
     // First, set required values in client's char
     nClient->GetChar()->SetDialogNPC(mWorldID);
     nClient->GetChar()->SetDialogNode(0);
 
     // Second generate start-dialog message
-    PMessage* tmpMsg = MsgBuilder->BuildNPCStartDialogMsg(nClient, tWorldID, &mDialogScript);
+    PMessage* tmpMsg = MsgBuilder->BuildNPCStartDialogMsg(nClient, tWorldID, &t_ScriptName);
     nClient->SendUDPMessage(tmpMsg);
 
-    Console->Print("[PNPC::StartDialog] Sending NPC DialogStart for Script %s", mDialogScript.c_str());
+    Console->Print("[PNPC::StartDialog] Sending NPC DialogStart for Script %s", t_ScriptName.c_str());
     return;
 }
 
 void PNPC::StartConversation( PClient* nClient )
 {
+    // Set Offset to mWorldID
+    // .def NPCs need this offset in order to work
+    u32 tRealID = GetRealWorldID();
+
     // Check if NPC has script for talking
-    if(mDialogScript.length() > 0)
+    // OR
+    // Check if NPC is from SQL and has a custom LUA script stored in DB
+    if(mScripting == true)
     {
-
-/*    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
-    if(t_npc)
-    {
-        if(t_npc->GetDialogScript().length() > 3)
+        if(mDialogScript.length() > 0 || (mFromDEF == false && mCustomLua.length() > 1))
         {
-            size_t tfound;
-            string t_dialogscript = t_npc->GetDialogScript();
-            string t_replacechr ("\"");
-
-            tfound = t_dialogscript.find(t_replacechr);
-            while(tfound != string::npos)
-            {
-                t_dialogscript.replace(tfound, 1, " ");
-                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
-            }
-            Trim(&t_dialogscript);
-            if(t_dialogscript.length() > 1)
-            {*/
-                StartDialog(nClient/*, t_dialogscript*/);
-                return;
-           /* }
+            StartDialog(nClient);
+            return;
         }
-    }*/
     }
 
     // Check if NPC has a TradeID
-    Console->Print("[DEBUG] NPC WorldID %u  NPC TraderDefID %u", mWorldID, mTrader);
+    Console->Print("[DEBUG] NPC WorldID %u  NPC TraderDefID %u", tRealID, mTrader);
     if(IsAllbuyer(nClient) == true)
     {
-        PMessage* tmpMsg = new PMessage();
-        nClient->IncreaseUDP_ID();
-
-        *tmpMsg << ( u8 )0x13;
-        *tmpMsg << ( u16 )nClient->GetUDP_ID();
-        *tmpMsg << ( u16 )nClient->GetSessionID();
-        *tmpMsg << ( u8 )0x00; // Message length
-        *tmpMsg << ( u8 )0x03;
-        *tmpMsg << ( u16 )nClient->GetUDP_ID();
-        *tmpMsg << ( u8 )0x1f;
-        *tmpMsg << ( u16 )nClient->GetLocalID();
-        *tmpMsg << ( u8 )0x26;
-        if(mFromDEF == true)
-            *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
-        else
-            *tmpMsg << mWorldID; // Dont forget the offset!!!
-        *tmpMsg << ( u8 )0x01; // Traders inventory
-        *tmpMsg << ( u16 )0xFFFF; // Traders inventory
-
-        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
-        nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
+        PMessage* tmpMsg = MsgBuilder->BuildNPCBeginAllBuyerTradeMsg(nClient, tRealID);
+        nClient->SendUDPMessage(tmpMsg);
 
         return;
     }
@@ -278,54 +283,44 @@ void PNPC::StartConversation( PClient* nClient )
             // Preparing ItemList for shopping
             PMessage* ContentList = new PMessage();
 
-            int t_ItemGroupID = nTraderDef->GetType();
-            int t_CurrItem = 0;
-            int t_DefItemEnt = nTraderDef->GetItemId(t_CurrItem);
-            while(t_DefItemEnt != 0)
+            // Check if we already have our Vector filled with itemIDs
+            if(mVectItemsInShop.size() > 0)
             {
-                // Loop through all item(groups) in trader.def
-                if(t_DefItemEnt < 0)
-                {
-                    // We got a ItemGroup
-                    ContentListAddItemGroup(ContentList, (t_DefItemEnt * -1), nTraderDef->GetQuality());
-                }
-                else
-                {
-                    // We got a normal Item
-                    ContentListAddItem(ContentList, t_DefItemEnt, 0, nTraderDef->GetItemPriceScale(t_CurrItem), nTraderDef->GetQuality());
-                }
-
-                t_DefItemEnt = nTraderDef->GetItemId(++t_CurrItem);
+                Console->Print("Using Vector shopping list");
+                vector <stShopListEntry>::iterator it;
+                for(it = mVectItemsInShop.begin(); it < mVectItemsInShop.end(); it++)
+                    ContentListAddItem(ContentList, (*it).ItemID, (*it).Price, false);
             }
-            if (gDevDebug) Console->Print("[PNPC::StartConversation] TraderTemplate: %d, Type: %d", mTrader, t_ItemGroupID);
+            else
+            {
+                int t_ItemGroupID = nTraderDef->GetType();
+                int t_CurrItem = 0;
+                int t_DefItemEnt = nTraderDef->GetItemId(t_CurrItem);
+                while(t_DefItemEnt != 0)
+                {
+                    // Loop through all item(groups) in trader.def
+                    if(t_DefItemEnt < 0)
+                    {
+                        // We got a ItemGroup
+                        ContentListAddItemGroup(ContentList, (t_DefItemEnt * -1));
+                    }
+                    else
+                    {
+                        // We got a normal Item
+                        ContentListAddItem(ContentList, t_DefItemEnt, 0, nTraderDef->GetQuality());
+                    }
+
+                    t_DefItemEnt = nTraderDef->GetItemId(++t_CurrItem);
+                }
+                if (gDevDebug) Console->Print("[PNPC::StartConversation] TraderTemplate: %d, Type: %d", mTrader, t_ItemGroupID);
+            }
+
 
             // Step 2: Send Packet to start trade
-            PMessage* tmpMsg = new PMessage();
-            nClient->IncreaseUDP_ID();
-
-            *tmpMsg << ( u8 )0x13;
-            *tmpMsg << ( u16 )nClient->GetUDP_ID();
-            *tmpMsg << ( u16 )nClient->GetSessionID();
-            *tmpMsg << ( u8 )0x00; // Message length
-            *tmpMsg << ( u8 )0x03;
-            *tmpMsg << ( u16 )nClient->GetUDP_ID();
-            *tmpMsg << ( u8 )0x1f;
-            *tmpMsg << ( u16 )nClient->GetLocalID();
-            *tmpMsg << ( u8 )0x26;
-            if(mFromDEF == true)
-                *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
-            else
-                *tmpMsg << mWorldID; // Dont forget the offset!!!
-            *tmpMsg << ( u8 )0x01; // Traders inventory
-            *tmpMsg << ( u16 )( ContentList->GetSize() / 6 ); // List entries
-            *tmpMsg << ( u8 )nTraderDef->GetQuality(); // Items quality
-            *tmpMsg << *ContentList;
-
-            ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+            PMessage* tmpMsg = MsgBuilder->BuildNPCShoppingListMsg(nClient, ContentList, tRealID, nTraderDef->GetQuality());
+            nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
 
             delete ContentList;
-
-            nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
         }
         else
         {
@@ -339,32 +334,10 @@ void PNPC::StartConversation( PClient* nClient )
         PMessage* ContentList = new PMessage();
         if(DoSQLShoppingList(nClient, ContentList) == true)
         {
-            PMessage* tmpMsg = new PMessage();
-            nClient->IncreaseUDP_ID();
-
-            *tmpMsg << ( u8 )0x13;
-            *tmpMsg << ( u16 )nClient->GetUDP_ID();
-            *tmpMsg << ( u16 )nClient->GetSessionID();
-            *tmpMsg << ( u8 )0x00; // Message length
-            *tmpMsg << ( u8 )0x03;
-            *tmpMsg << ( u16 )nClient->GetUDP_ID();
-            *tmpMsg << ( u8 )0x1f;
-            *tmpMsg << ( u16 )nClient->GetLocalID();
-            *tmpMsg << ( u8 )0x26;
-            if(mFromDEF == true)
-                *tmpMsg << mWorldID + 255; // Dont forget the offset!!!
-            else
-                *tmpMsg << mWorldID; // Dont forget the offset!!!
-            *tmpMsg << ( u8 )0x01; // Traders inventory
-            *tmpMsg << ( u16 )( ContentList->GetSize() / 6 ); // List entries
-            *tmpMsg << ( u8 )mItemQuality; // Items quality
-            *tmpMsg << *ContentList;
-
-            ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+            PMessage* tmpMsg = MsgBuilder->BuildNPCShoppingListMsg(nClient, ContentList, tRealID, mItemQuality);
+            nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
 
             delete ContentList;
-
-            nClient->FragmentAndSendUDPMessage(tmpMsg, 0xac);
         }
         else
         {
@@ -373,11 +346,10 @@ void PNPC::StartConversation( PClient* nClient )
         }
         return;
     }
-    // No sql shopping list and no def-based one? Then
-    // TODO: Add npc script management
     else
     {
-        if (gDevDebug) Console->Print("[PNPC::StartConversation] No npc script handling yet");
+        // No script found? No shopping list? Well, then this NPC looks.. inactive :)
+        if (gDevDebug) Console->Print("[PNPC::StartConversation] Inactive NPC");
         return;
     }
 }
@@ -388,72 +360,8 @@ void PNPC::StartConversation( PClient* nClient )
 // nAnswer: the Answer the player clicked
 void PNPC::DoConversation( PClient* nClient, u8 nAnswer )
 {
-    PChar* tChar = nClient->GetChar();
+    // LUA Engine v3: Let the LuaEngine handle everything!
+    LuaEngine->ProcessDialogScript(nClient, mLUAFile, nAnswer);
 
-    istringstream isLUA(mLUAFile);
-    std::string tBuffer = "";
-    bool foundAnswer = false;
-    bool tNodeFound = false;
-    u8 tAnswerCount = 0;
-    char *ptr;
-
-    getline(isLUA, tBuffer);
-    while(!isLUA.eof())
-    {
-        //Console->Print("Processing lua line %s", tBuffer.c_str());
-        if(strstr(tBuffer.c_str(), "NODE"))
-        {
-            ptr = strchr(tBuffer.c_str(), ')');
-            if(!ptr)
-                continue;
-
-            *ptr = 0;
-            ptr = strchr(tBuffer.c_str(), '(');
-            if(!ptr)
-                continue;
-
-            *ptr = 0;
-            ptr++;
-            if(tChar->GetDialogNode() == (u8)atoi(ptr))
-            {
-                //Console->Print("Found node %d", (u8)atoi(ptr));
-                tNodeFound = true;
-                tAnswerCount = 0;
-            }
-        }
-        else if ( (strstr (tBuffer.c_str(), "ANSWER")) && (tNodeFound == true) )
-        {
-            tAnswerCount++;
-            //Console->Print("ANSWER hit %d", tAnswerCount);
-            if (tAnswerCount == nAnswer)
-            {
-                ptr = strchr (tBuffer.c_str(), ')');
-                if (!ptr)
-                    continue;
-
-                *ptr = 0;
-                ptr = strchr (tBuffer.c_str(), '(');
-                if (!ptr)
-                    continue;
-
-                *ptr = 0;
-                ptr++;
-                ptr = strrchr (ptr, ',');
-                *ptr = 0;
-                ptr++;
-
-                // Next node will be at ptr
-                tChar->SetDialogNode(atoi(ptr));
-
-                //Console->Print("Next node will be: %d", atoi(ptr));
-                PMessage* tmpMsg = MsgBuilder->BuildNPCDialogReplyMsg(nClient, tChar->GetDialogNode());
-                nClient->SendUDPMessage(tmpMsg);
-                foundAnswer = true;
-            }
-        }
-        if(foundAnswer == true)
-            break;
-
-        getline(isLUA, tBuffer);
-    }
+    return;
 }

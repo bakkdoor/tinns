@@ -189,6 +189,10 @@ void PClient::FragmentAndSendUDPMessage( PMessage* nMessage, u8 nType )
       MultiTriggeringSize = 230;
       break;
     }
+    case 0x06: // For sending Custom LUA Scripts to client
+    {
+        break;
+    }
     case 0x19: //BaselineMsg (with no header)
     {
       break;

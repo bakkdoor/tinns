@@ -55,6 +55,7 @@
 #include "../gamemonkey/gmMachine.h"
 #include "../gamemonkey/gmCall.h"
 */
+#include "filesystem.h"
 
 // MySQL Support // shouldn't be needed as DB-objects access class should do that
 #include "mysql.h"

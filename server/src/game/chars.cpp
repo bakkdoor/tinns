@@ -937,6 +937,24 @@ u8 PChar::GetMainRank()
   return (( u8 )( total / 5 ) );
 }
 
+u32 PChar::AddCash( u32 nAmount )
+{
+    return SetCash(nAmount + mCash);
+}
+
+u32 PChar::TakeCash( u32 nAmount )
+{
+    if(nAmount > mCash)
+    {
+        //Tries to take away more cash that user has, set to zero
+        return SetCash(0);
+    }
+    else
+    {
+        return SetCash(mCash-nAmount);
+    }
+}
+
 u32 PChar::SetCash( u32 nCash )
 {
   //Console->Print("Trying to set cash to nCash: %d", nCash);

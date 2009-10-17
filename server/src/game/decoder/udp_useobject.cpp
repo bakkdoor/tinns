@@ -278,7 +278,10 @@ bool PUdpUseObject::DoAction()
             /*if(gDevDebug)*/
             Console->Print( "%s Player talks to NPC %d", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mRawItemID );
             //if(gDevDebug) tContainer->Dump();
+
+            // Well its not "start a conversation" its more "User clicked NPC, do anything with it (Trade, script,...)
             targetNPC->StartConversation(nClient);
+
             //tmpMsg = MsgBuilder->BuildTraderItemListMsg( nClient, mRawItemID );
             //tmpMsg->Dump();
             //nClient->FragmentAndSendUDPMessage( tmpMsg, 0xac );
