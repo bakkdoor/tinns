@@ -79,7 +79,7 @@ public:
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
 
-    PMessage* BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
     PMessage* BuildNPCMassAliveMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
     PMessage* BuildNPCMassUpdateMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
     // Moved here since its a zone broadcast!
@@ -93,10 +93,12 @@ public:
     PMessage* BuildNPCShoppingListMsg( PClient* nClient, PMessage* nContentList, int nWorldID, u8 nItemQuality);
     PMessage* BuildNPCBeginAllBuyerTradeMsg( PClient* nClient, int nWorldID );
 
-    PMessage* BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
     PMessage* BuildNPCSingleAliveMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
     PMessage* BuildNPCSingleUpdateMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
 
+    // NEW for testing. Combined update message
+    PMessage* BuildNPCUpdateMsg(u32 nWorldID, u16 nPosY, u16 nPosZ, u16 nPosX, u8 nActionBM, u16 nHealth, u8 nWeaponState, u8 nUnknown, u32 nTargetID = 0);
 
     PMessage* BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength );
 

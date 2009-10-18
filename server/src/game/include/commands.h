@@ -36,7 +36,7 @@
 
 #ifndef COMMANDS_H
 #define COMMANDS_H
-#define MAXARGS 4       // Define the max nr. of args here. Should never be more than 4, but who knows...
+#define MAXARGS 10       // Define the max nr. of args here. Should never be more than 4, but who knows...
 #define MAXDUMBSIZE 256 // Max size of packetdumb
 
 class PCommands

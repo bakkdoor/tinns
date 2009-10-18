@@ -48,6 +48,7 @@ bool PDefFaction::LoadFromDef(PTokenList *Tokens)
 	int Idx=0;
 	for(PTokenList::iterator i=Tokens->begin(); i!=Tokens->end(); i++, Idx++)
 	{
+	    // setfracc	19	"Monster"	-1024	0	0	-1024	-1024	-1024	-1
 		switch(Idx)
 		{
 			case 0 : // setfrac
@@ -56,16 +57,24 @@ bool PDefFaction::LoadFromDef(PTokenList *Tokens)
 			case 1 :
 				mIndex = atol(i->c_str()); break;
 
-			case 2 :
-				mStartValue = atol(i->c_str()); break;
+            case 2 :
+                mName = *i;
+                CleanUpString(&mName);
+                break;
 
 			case 3 :
+				mStartValue = atol(i->c_str()); break;
+
+			case 4 :
 				mAffected = atol(i->c_str())!=0; break;
+
+			case 5 :
+				mSL = atol(i->c_str()); break;
 
 			default :
 			{
-				if(Idx-4 < NUMFACTIONS)
-					mRelations[Idx-4] = atol(i->c_str()); break;
+				if(Idx-6 < NUMFACTIONS)
+					mRelations[Idx-6] = atol(i->c_str()); break;
 			}
 		}
 	}

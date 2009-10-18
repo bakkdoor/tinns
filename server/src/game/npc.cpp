@@ -73,9 +73,10 @@ bool PNPC::DEF_Load(u32 nWorldID)
     mPosZ = t_defNPC->GetPosZ()+32768;
     mAngle = atoi( t_defNPC->GetAngle().c_str() );
     mLoot = t_NpcTypeDef->GetLoot();
-    mUnknown = t_NpcTypeDef->GetHealth() * NPC_HEALTHFACTOR;
+    mHealth = t_NpcTypeDef->GetHealth() * NPC_HEALTHFACTOR;
+    mMaxHealth = mHealth;
     mTrader = t_defNPC->GetTradeID();
-
+    mFaction = t_NpcTypeDef->GetFaction();
     // WorldID Fix 10.10.2009
     mFromDEF = true;
 
@@ -90,8 +91,111 @@ bool PNPC::DEF_Load(u32 nWorldID)
     // Checks are done in target function
     LoadLUAScript();
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "ANG:%d HITPOINTS:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mHealth, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
     if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
+    return true;
+}
+
+bool PNPC::SQL_Load()
+{
+    if ( gDevDebug ) Console->Print( "[DEBUG] Now loading NPC data for NPC id %d from SQL", mID );
+    MYSQL_RES *result = NULL;
+    MYSQL_ROW row;
+    char query[100];
+
+    snprintf( query, 100, "SELECT * FROM `npc_spawns` WHERE `npc_id` = %d", mID );
+    if ( gDevDebug ) Console->Print( "[DEBUG] Executing query %s", query );
+    result = MySQL->GameResQuery( query );
+    if ( result == NULL )
+    {
+        Console->Print( RED, BLACK, "PNPC::SQL_Load could not load NPC definition" );
+        Console->Print( "Query was:" );
+        Console->Print( "%s", query );
+        MySQL->ShowGameSQLError();
+        return false;
+    }
+    if ( mysql_num_rows( result ) == 0 )
+    {
+        if ( gDevDebug ) Console->Print( "[DEBUG] No NPCs found, returning false" );
+        MySQL->FreeGameSQLResult( result );
+        return false;
+    }
+    else if ( mysql_num_rows( result ) > 1 )
+    {
+        Console->Print( RED, BLACK, "PNPC::SQL_Load Duplicate entry for NPC %d", mID );
+        MySQL->FreeGameSQLResult( result );
+        return false;
+    }
+    if ( gDevDebug ) Console->Print( "[DEBUG] One NPC found for my ID. Now grabbing data..." );
+    row = mysql_fetch_row( result );
+
+    mWorldID = atoi( row[npc_worldid] );
+    mNameID = atoi( row[npc_nameid] );
+    mTypeID = atoi( row[npc_typeid] );
+    mClothing = atoi( row[npc_clothing] );
+    mPosX = atoi( row[npc_x] );
+    mPosY = atoi( row[npc_y] );
+    mPosZ = atoi( row[npc_z] );
+    mAngle = atoi( row[npc_angle] );
+    mLoot = atoi( row[npc_loot] );
+    mHealth = atoi( row[npc_unknown] );
+    mMaxHealth = mHealth;
+    mTrader = atoi( row[npc_trader] );
+    mItemQuality = atoi( row[npc_shop_quality] );
+    if(atoi(row[npc_scripting]) == 1)
+        mScripting = true;
+    else
+        mScripting = false;
+
+    if ( row[npc_name] != NULL )
+        mName = row[npc_name];
+
+    if ( row[npc_customname] != NULL )
+        mCustomName = row[npc_customname];
+
+    if ( row[npc_customscript] != NULL )
+        mCustomLua = row[npc_customscript];
+
+    // Now make sure we have an valid NPC here. Besides we need some more information
+    const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
+    if(!t_npc)
+    {
+        Console->Print( RED, BLACK, "PNPC::SQL_Load Invalid NPC Type found; SQL ID: %d", mID );
+        return false;
+    }
+    mFaction = t_npc->GetFaction();
+
+    // Load dialogscript for this NPC right uppon startup
+    // !-> Only if no custom lua script is attached <-!
+    if(mCustomLua.length() < 1)
+    {
+        if(t_npc->GetDialogScript().length() > 3)
+        {
+            size_t tfound;
+            string t_dialogscript = t_npc->GetDialogScript();
+            string t_replacechr ("\"");
+
+            tfound = t_dialogscript.find(t_replacechr);
+            while(tfound != string::npos)
+            {
+                t_dialogscript.replace(tfound, 1, " ");
+                tfound = t_dialogscript.find( t_replacechr, tfound +1 );
+            }
+            Trim(&t_dialogscript);
+            if(t_dialogscript.length() > 1)
+            {
+                mDialogScript = t_dialogscript;
+            }
+        }
+    }
+    // Try to load any lua scripts
+    // Checks are done in target function
+    LoadLUAScript();
+
+    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
+    if ( gDevDebug ) Console->Print( "ANG:%d HITPTS:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mHealth, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
+    if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
+    MySQL->FreeGameSQLResult( result );
     return true;
 }
 
@@ -226,121 +330,24 @@ bool PNPC::LoadLUAScript()
     }
 }
 
-bool PNPC::SQL_Load()
-{
-    if ( gDevDebug ) Console->Print( "[DEBUG] Now loading NPC data for NPC id %d from SQL", mID );
-    MYSQL_RES *result = NULL;
-    MYSQL_ROW row;
-    char query[100];
-
-    snprintf( query, 100, "SELECT * FROM `npc_spawns` WHERE `npc_id` = %d", mID );
-    if ( gDevDebug ) Console->Print( "[DEBUG] Executing query %s", query );
-    result = MySQL->GameResQuery( query );
-    if ( result == NULL )
-    {
-        Console->Print( RED, BLACK, "PNPC::SQL_Load could not load NPC definition" );
-        Console->Print( "Query was:" );
-        Console->Print( "%s", query );
-        MySQL->ShowGameSQLError();
-        return false;
-    }
-    if ( mysql_num_rows( result ) == 0 )
-    {
-        if ( gDevDebug ) Console->Print( "[DEBUG] No NPCs found, returning false" );
-        MySQL->FreeGameSQLResult( result );
-        return false;
-    }
-    else if ( mysql_num_rows( result ) > 1 )
-    {
-        Console->Print( RED, BLACK, "PNPC::SQL_Load Duplicate entry for NPC %d", mID );
-        MySQL->FreeGameSQLResult( result );
-        return false;
-    }
-    if ( gDevDebug ) Console->Print( "[DEBUG] One NPC found for my ID. Now grabbing data..." );
-    row = mysql_fetch_row( result );
-
-    mWorldID = atoi( row[npc_worldid] );
-    mNameID = atoi( row[npc_nameid] );
-    mTypeID = atoi( row[npc_typeid] );
-    mClothing = atoi( row[npc_clothing] );
-    mPosX = atoi( row[npc_x] );
-    mPosY = atoi( row[npc_y] );
-    mPosZ = atoi( row[npc_z] );
-    mAngle = atoi( row[npc_angle] );
-    mLoot = atoi( row[npc_loot] );
-    mUnknown = atoi( row[npc_unknown] );
-    mTrader = atoi( row[npc_trader] );
-    mItemQuality = atoi( row[npc_shop_quality] );
-    if(atoi(row[npc_scripting]) == 1)
-        mScripting = true;
-    else
-        mScripting = false;
-
-    if ( row[npc_name] != NULL )
-        mName = row[npc_name];
-
-    if ( row[npc_customname] != NULL )
-        mCustomName = row[npc_customname];
-
-    if ( row[npc_customscript] != NULL )
-        mCustomLua = row[npc_customscript];
-
-    // Load dialogscript for this NPC right uppon startup
-    // !-> Only if no custom lua script is attached <-!
-    if(mCustomLua.length() < 1)
-    {
-        const PDefNpc* t_npc = GameDefs->Npcs()->GetDef(mNameID);
-        if(t_npc)
-        {
-            if(t_npc->GetDialogScript().length() > 3)
-            {
-                size_t tfound;
-                string t_dialogscript = t_npc->GetDialogScript();
-                string t_replacechr ("\"");
-
-                tfound = t_dialogscript.find(t_replacechr);
-                while(tfound != string::npos)
-                {
-                    t_dialogscript.replace(tfound, 1, " ");
-                    tfound = t_dialogscript.find( t_replacechr, tfound +1 );
-                }
-                Trim(&t_dialogscript);
-                if(t_dialogscript.length() > 1)
-                {
-                    mDialogScript = t_dialogscript;
-                }
-            }
-        }
-    }
-    // Try to load any lua scripts
-    // Checks are done in target function
-    LoadLUAScript();
-
-
-    if ( gDevDebug ) Console->Print( "[DEBUG] NPC: WID:%d NID:%d TID:%d CL:%d PX:%d PY:%d PZ:%d ", mWorldID, mNameID, mTypeID, mClothing, mPosX, mPosY, mPosZ);
-    if ( gDevDebug ) Console->Print( "ANG:%d UNKN:%d TRADE:%d LOOT:%d NAME:%s CNAME:%s CUSTOMSCRIPT:%s", mAngle, mUnknown, mTrader, mLoot, mName.c_str(), mCustomName.c_str(), mCustomLua.c_str() );
-    if ( gDevDebug ) Console->Print( "DIALOGSCR:%s", mDialogScript.c_str() );
-    MySQL->FreeGameSQLResult( result );
-    return true;
-}
-
-
 void PNPC::Die()
 {
     if ( gDevDebug ) Console->Print( "[DEBUG] NPC dying now" );
     mHealth = 0;
-    mDeath = true;
+    mAction = NPC_ACTIONSTATE_DEATH;
     mRespawn = std::time( NULL ) + NPC_RESPAWN_AFTER;
     mDirty = true;
 }
 
 void PNPC::Update()
 {
-    if ( gDevDebug ) Console->Print( "[DEBUG] NPC Update: Respawn timer triggered! Setting NPC back to life" );
-    if ( std::time( NULL ) >= mRespawn && mDeath == true )
+    // Has to be changed for mobs later
+    if ( std::time( NULL ) >= mRespawn && (mAction&NPC_ACTIONSTATE_DEATH) )
     {
-        mHealth = 127;
-        mDeath = false;
+        if ( gDevDebug ) Console->Print( "[DEBUG] NPC Update: Respawn timer triggered! Setting NPC back to life" );
+        mHealth = mMaxHealth;
+        mAction = NPC_ACTIONSTATE_IDLE;
+        mWeaponStatus = NPC_SHOOT_IDLE;
         mDirty = true;
     }
 }
@@ -356,6 +363,7 @@ void PNPC::InitVars()
     mPosY = 0;
     mPosZ = 0;
     mAngle = 0;
+    mHealth = 0;
     mUnknown = 0;
     mTrader = 0;
     mLoot = 0;
@@ -363,20 +371,30 @@ void PNPC::InitVars()
     mName = "";
     mCustomName = "";
     mCustomLua = "";
-    mAction = 20; // 0x14: Do nothing?
-    mDeath = false;
-    mHealth = 127; // Max health
+    mAction = NPC_ACTIONSTATE_IDLE;
+    mWeaponStatus = NPC_SHOOT_IDLE;
+    //mDeath = false;
     mTarget = 0;
     mDirty = false; // No need to send instand update
     // WorldID Fix 10.10.2009
     mFromDEF = false;
     mItemQuality = 50;
     mScripting = true;
+    mFaction = 0;
 
     // Set next update timer for this NPC to 10 - 30 seconds
     // Note: this is for regular heartbeats only. If npc is dirty,
     // an update is sent anyway
     mNextUpdate = std::time(NULL) + GetRandom(30, 10);
+}
+
+void PNPC::Attack( u32 nWorldID, u8 nType, u8 nUnknown )
+{
+    mDirty = true;
+    mTarget = nWorldID;
+    mAction = NPC_ACTIONSTATE_ATTACK;
+    mWeaponStatus = nType;
+    mUnknown = nUnknown;
 }
 
 PNPC::PNPC( int nSQLID )
@@ -405,7 +423,7 @@ PNPC::~PNPC()
 {
 //if(gDevDebug) Console->Print("[DEBUG] NPC ID %d terminated", mID);
 }
-
+/*
 u8 PNPC::GetActionStatus()
 {
     if ( mDeath == true )
@@ -417,7 +435,7 @@ u8 PNPC::GetActionStatus()
         return 3; // 3 is the value found in many packets. However, no idea what this does
     }
 }
-
+*/
 ///***********************************************************************
 ///***********************************************************************
 
@@ -426,7 +444,7 @@ void PNPCWorld::BroadcastNewNPC(PNPC* nNpc)
 {
     std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
     PMessage* tmpMsg = MsgBuilder->BuildNPCMassInfoMsg (nNpc->mWorldID, nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
-                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mHealth, nNpc->mTrader, &tAngleStr,
                                                         &nNpc->mName, &nNpc->mCustomName);
 
     ClientManager->UDPBroadcast( tmpMsg, mWorldID );
@@ -474,7 +492,7 @@ void PNPCWorld::SendSingleNPCInfo( PClient* nClient, PNPC* nNpc )
 {
     std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
     PMessage* tmpMsg = MsgBuilder->BuildNPCSingleInfoMsg (nClient, nNpc->GetRealWorldID(), nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
-                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                        nNpc->mPosZ, nNpc->mPosX, nNpc->mHealth, nNpc->mTrader, &tAngleStr,
                                                         &nNpc->mName, &nNpc->mCustomName);
 
     nClient->SendUDPMessage( tmpMsg );
@@ -490,7 +508,7 @@ void PNPCWorld::MSG_SendNPCs( PClient* nClient )
 
         std::string tAngleStr = Ssprintf( "%d", nNpc->mAngle );
         PMessage* tmpMsg = MsgBuilder->BuildNPCSingleInfoMsg (nClient, nNpc->GetRealWorldID(), nNpc->mTypeID, nNpc->mClothing, nNpc->mNameID, nNpc->mPosY,
-                                                            nNpc->mPosZ, nNpc->mPosX, nNpc->mUnknown, nNpc->mTrader, &tAngleStr,
+                                                            nNpc->mPosZ, nNpc->mPosX, nNpc->mHealth, nNpc->mTrader, &tAngleStr,
                                                             &nNpc->mName, &nNpc->mCustomName);
 
         nClient->SendUDPMessage( tmpMsg );
@@ -598,6 +616,45 @@ PNPCWorld::~PNPCWorld()
     }
 }
 
+void PNPCWorld::Update() // v2; New send function
+{
+    // Updates NPC in a World.
+    // If NPC is dirty, send "large" update. Else
+    // send small "i'm alive" message
+    std::time_t tNow = std::time(NULL);
+    PNPC* tNPC = NULL;
+    for ( PNPCMap::iterator it = mNPCs.begin(); it != mNPCs.end(); it++ )
+    {
+        if ( it->second )
+        {
+            tNPC = it->second;
+            // Check for enemies nearby
+            CheckForEnemies(tNPC);
+            // Let NPC make themselfs "dirty"
+            tNPC->Update();
+            // Only update dirty npcs
+            if ( tNPC->mDirty == true || tNPC->mNextUpdate <= tNow)
+            {
+                PMessage* tmpMsg = MsgBuilder->BuildNPCUpdateMsg(tNPC->GetRealWorldID(),
+                                                                 tNPC->mPosY,
+                                                                 tNPC->mPosZ,
+                                                                 tNPC->mPosX,
+                                                                 tNPC->GetActionStatus(),
+                                                                 tNPC->mHealth,
+                                                                 tNPC->GetWeaponStatus(),
+                                                                 tNPC->mUnknown,
+                                                                 tNPC->mTarget);
+
+                ClientManager->UDPBroadcast( tmpMsg, mWorldID );
+                tNPC->mDirty = false;
+                tNPC->PushUpdateTimer();
+            }
+        }
+    }
+
+    return;
+}
+/*
 void PNPCWorld::Update()
 {
     // Updates NPC in a World.
@@ -610,6 +667,10 @@ void PNPCWorld::Update()
         if ( it->second )
         {
             tNPC = it->second;
+            // Check for enemies nearby
+            CheckForEnemies(tNPC);
+            // Let NPC make themselfs "dirty"
+            tNPC->Update();
             // Only update dirty npcs
             if ( tNPC->mDirty == true )
             {
@@ -634,7 +695,7 @@ void PNPCWorld::Update()
 
     return;
 }
-
+*/
 PNPC* PNPCWorld::GetNPC( u32 nNPCID )
 {
     if ( gDevDebug ) Console->Print( "[DEBUG] Searching for NPC %d in list", nNPCID );

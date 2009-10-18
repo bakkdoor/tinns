@@ -92,12 +92,12 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
     *tmpMsg << ( u8 )0x01; // ???
     *tmpMsg << ( u8 )0x01; // ???
     *tmpMsg << ( u8 )( 128 + nChar->GetSoullight() );
+
     *tmpMsg << ( u8 )nChar->GetMainRank(); // in fact, Ranks are of type s8, but it doesn't matter much
     *tmpMsg << ( u8 )nChar->GetCombatRank();
-
     *tmpMsg << ( u8 )nChar->GetFaction();
 
-    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00; // This was 0x21 for an GM, with faction 0x00. However, no visible change when set...
     *tmpMsg << ( u8 )0x0f; // size of the next bloc (skin + ?clan?)
     // Current skin
     *tmpMsg << ( u16 )nSkin;
@@ -1482,7 +1482,7 @@ u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
 }
 
 PMessage* PMsgBuilder::BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing,
-u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown,
+u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth,
 u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
 // Initial NPC Packet that defines how the NPC look, etc
 {
@@ -1507,7 +1507,7 @@ u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
     *tmpMsg << ( u16 )nPosZ;
     *tmpMsg << ( u16 )nPosX;
     *tmpMsg << ( u8 )0x00;
-    *tmpMsg << ( u16 )nUnknown; // Unknwon = HEALTH!!
+    *tmpMsg << ( u16 )nHealth;
     *tmpMsg << ( u16 )nTraderID;
     *tmpMsg << nNpcName->c_str();
     *tmpMsg << nAngleStr->c_str();
@@ -1518,6 +1518,33 @@ u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
     return tmpMsg;
 }
 
+// **************
+PMessage* PMsgBuilder::BuildNPCUpdateMsg(u32 nWorldID, u16 nPosY, u16 nPosZ, u16 nPosX, u8 nActionBM, u16 nHealth, u8 nWeaponState, u8 nUnknown, u32 nTargetID)
+{
+    PMessage* tmpMsg = new PMessage();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x00;      // len
+    *tmpMsg << ( u8 )0x1b;      // NPC Update
+    *tmpMsg << ( u32 )nWorldID; // NPCs world ID
+    *tmpMsg << ( u8 )0x1f;      // Parameters
+    *tmpMsg << ( u16 )nPosY;    // Position Y
+    *tmpMsg << ( u16 )nPosZ;    // Position Z
+    *tmpMsg << ( u16 )nPosX;    // Position X
+    *tmpMsg << ( u8 )nActionBM; // NPCs current action-bitmask
+    *tmpMsg << ( u16 )nHealth;   // Health value
+    if(nTargetID > 0)
+        *tmpMsg << ( u32 )nTargetID; // WorldID of NPCs target (if any)
+    *tmpMsg << ( u8 )nUnknown;
+    *tmpMsg << ( u8 )nWeaponState;
+
+    (*tmpMsg)[5] = (u8)(tmpMsg->GetSize() - 6);
+
+    return tmpMsg;
+}
+// **************
 
 PMessage* PMsgBuilder::BuildNPCSingleAliveMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction )
 {

@@ -33,7 +33,7 @@
 
 #include "def.h"
 
-static const int NUMFACTIONS = 19;	// for faction relations only
+static const int NUMFACTIONS = 20;	// for faction relations only
 
 class PDefFaction : public PDef
 {
@@ -42,6 +42,7 @@ class PDefFaction : public PDef
 		std::string mName;
 		int mStartValue;
 		bool mAffected;
+		int mSL;
 		int mRelations[NUMFACTIONS];
 	public :
 		PDefFaction();
@@ -52,6 +53,7 @@ class PDefFaction : public PDef
 		inline const std::string &GetName() const { return mName; }
 		inline int GetStartValue() const { return mStartValue; }
 		inline bool GetAffected() const { return mAffected; }
+		inline int GetSL() const { return mSL; };
 		int GetRelation(int Faction) const;
 };
 

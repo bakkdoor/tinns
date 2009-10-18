@@ -56,9 +56,9 @@
 #define PAL_BANNED -1
 #define PAL_UNREGPLAYER 0
 #define PAL_REGPLAYER 1
-#define PAL_VOLUNTEER 30
-#define PAL_GM 50
-#define PAL_ADMIN 100
+#define PAL_VOLUNTEER 30 // Special Rank: 50/50
+#define PAL_GM 50       // Special Rank: 120/120
+#define PAL_ADMIN 100   // Special Rank: 127/127
 
 // Max number of char slots per account
 #define MAX_CHARS_PER_ACCOUNT  4
@@ -75,7 +75,7 @@ enum PAccountStatus
     PAS_ONLINE = 1,
     PAS_BANNED = 2
 };
-  
+
 class PAccount
 {
 	private :
@@ -88,11 +88,11 @@ class PAccount
         a_status,
         a_bandate
     };
-    
+
     // static members
 	  static RegEx* mUsernameRegexFilter;
 	  static RegEx* mPasswordRegexFilter;
-	  
+
 	  // instance members
 	  u32 mID;
 	  std::string mName;
@@ -103,17 +103,17 @@ class PAccount
 
     bool LoadFromQuery(char* query);
     bool DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword);
-    
+
 	public :
 	  PAccount();
 	  PAccount(const u32 AccountId);
 	  PAccount(const char *Username);
-	  
+
 	  static bool SetUsernameRegexFilter(const char* RegexStr);
 		static bool SetPasswordRegexFilter(const char* RegexStr);
 		static bool IsUsernameWellFormed(const char *Username);
 		static bool IsPasswordWellFormed(const char *Password);
-		
+
 		inline u32 GetID() const { return mID; }
 		bool SetName(const std::string &Pass);
 		inline const std::string &GetName() const { return mName; }
@@ -131,7 +131,7 @@ class PAccount
 
 		bool Authenticate(const u8* PasswordData, int PassLen, const u8 *Key);
 		bool Authenticate(const char *Password) const;
-		    
+
 		bool Create();
     bool Save(bool CreateMode = false);
 

@@ -92,7 +92,7 @@ int npcscript_callback(lua_State *nLua)
     {
         int tAmount = lua_tointeger(nLua, 3);
 
-        int tNewMoneyValue = tClient->GetChar()->AddCash(tAmount);
+        /*int tNewMoneyValue = */tClient->GetChar()->AddCash(tAmount);
 
         // This issnt required, since the client adds the money already. It
         // isnt added twice, but you get the message twice and thats confusing :)

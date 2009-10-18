@@ -742,7 +742,7 @@ bool PChar::CreateNewChar( u32 Account, const std::string &Name, u32 Gender, u32
 
   // This part will have to be rewritten with proper methods
   mSoullight = 10;
-  mCombatRank = ( u8 )( random() % 127 ); // bad result there on randomness
+  mCombatRank = ( u8 )( random() % 80 ); // bad result there on randomness
   mSynaptic = 0;
   mIsDead = false;
 
@@ -928,13 +928,38 @@ void PChar::SetOnlineStatus( bool IsOnline )
   return;
 }
 
+u8 PChar::GetCombatRank()
+{
+    // Override for Special Account Levels
+    PAccount Acc(mAccount);
+    if(Acc.GetLevel() == PAL_ADMIN)
+        return 127;
+    else if(Acc.GetLevel() >= PAL_GM)
+        return 120;
+    else if(Acc.GetLevel() >= PAL_VOLUNTEER)
+        return 50;
+    else
+        return mCombatRank;
+}
+
 u8 PChar::GetMainRank()
 {
-  u16 total;
-  total  = Skill->GetMainSkill( MS_STR ) + Skill->GetMainSkill( MS_DEX );
-  total += Skill->GetMainSkill( MS_CON ) + Skill->GetMainSkill( MS_INT );
-  total += Skill->GetMainSkill( MS_PSI );
-  return (( u8 )( total / 5 ) );
+    // Override for Special Account Levels
+    PAccount Acc(mAccount);
+    if(Acc.GetLevel() == PAL_ADMIN)
+        return 127;
+    else if(Acc.GetLevel() >= PAL_GM)
+        return 120;
+    else if(Acc.GetLevel() >= PAL_VOLUNTEER)
+        return 50;
+    else
+    {
+      u16 total;
+      total  = Skill->GetMainSkill( MS_STR ) + Skill->GetMainSkill( MS_DEX );
+      total += Skill->GetMainSkill( MS_CON ) + Skill->GetMainSkill( MS_INT );
+      total += Skill->GetMainSkill( MS_PSI );
+      return (( u8 )( total / 5 ) );
+    }
 }
 
 u32 PChar::AddCash( u32 nAmount )

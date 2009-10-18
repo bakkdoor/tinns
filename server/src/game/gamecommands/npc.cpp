@@ -144,7 +144,7 @@ void PCommands::doNPC()
         /*-------------------------------------------------------*/
         MYSQL_RES *result = NULL;
         char tSql[100];
-        snprintf(tSql, 100, "SELECT MAX(npc_worldid)+1 FROM npc_spawns WHERE npc_location = %d", tLocation);
+        snprintf(tSql, 100, "SELECT IFNULL(MAX(npc_worldid)+1,0) FROM npc_spawns WHERE npc_location = %d", tLocation);
         result = MySQL->GameResQuery(tSql);
         if(!result)
         {
@@ -152,9 +152,12 @@ void PCommands::doNPC()
             MySQL->ShowGameSQLError();
             return;
         }
+
         int tNewWorldID = atoi(mysql_fetch_row(result)[0]);
+
         if(tNewWorldID == 0)
             tNewWorldID = NEW_NPC_ZONEID_START;
+
         /*-------------------------------------------------------*/
         // Insert NPC into DB
         /*-------------------------------------------------------*/
