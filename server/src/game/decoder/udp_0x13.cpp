@@ -43,6 +43,7 @@
 #include "udp_0x2b.h"
 #include "udp_itemmanualreload.h"
 #include "udp_worldIDinfo.h"
+#include "udp_multipart.h"
 
 /**** PUdp0x13 ****/
 
@@ -120,6 +121,11 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
             case 0x01: // Out of order
             {
                 nextAnalyser = new PUdpOOO( mDecodeData );
+                break;
+            }
+            case 0x07: // Fragmented message
+            {
+                nextAnalyser = new PUdpMultiPart( mDecodeData );
                 break;
             }
             case 0x08: // Client zoning completed (!!! does not happen on login)

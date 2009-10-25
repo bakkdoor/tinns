@@ -64,6 +64,7 @@ extern class PChat *Chat;
 extern class PCommands *GameCommands;
 
 extern class POutpost *Outposts;
+extern class PMultiPart *MultiPartHandler;
 
 // Development debug output control
 extern bool gDevDebug;

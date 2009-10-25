@@ -97,6 +97,7 @@ int main()
 		MySQL->Update(); // Memory leak check	and MySQL keepalive
 		ISC->Update();
 		Console->Update();
+		MultiPartHandler->Update();
 	}
 
 	return 0;

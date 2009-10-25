@@ -40,7 +40,7 @@ class PUdpPing : public PUdpMsgAnalyser
 
   public:
     PUdpPing( PMsgDecodeData* nDecodeData );
-    //~PUdpPing();
+
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };

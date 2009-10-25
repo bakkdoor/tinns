@@ -81,6 +81,7 @@ PSubway* Subway = 0;
 PTerminal* Terminal = 0;
 PLuaEngine* LuaEngine = 0;
 POutpost* Outposts = 0;
+PMultiPart* MultiPartHandler = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -192,11 +193,15 @@ bool InitTinNS()
 
     Outposts = new POutpost();
 
+    MultiPartHandler = new PMultiPart();
+
     return true;
 }
 
 void Shutdown()
 {
+    if(MultiPartHandler)
+        delete MultiPartHandler;
     if(Outposts)
         delete Outposts;
     if(LuaEngine)

@@ -101,6 +101,7 @@
 #include "worldactors.h"
 #include "npc.h"
 #include "outpost.h"
+#include "multipart.h"
 #include "terminal.h"
 
 #include "lua_engine.h"

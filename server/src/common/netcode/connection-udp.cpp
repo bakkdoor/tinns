@@ -315,6 +315,7 @@ bool ConnectionUDP::update()
         }
         //Console->Print("ConnectionUDP::update() - %d messages ready in Input Queue", mQueueIn.size());
     }
+
     return true;
 }
 
