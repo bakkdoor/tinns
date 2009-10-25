@@ -81,7 +81,6 @@ void PCommands::doCmdtest()
 
 
 
-
     /*
         u8 val1 = 0;
         u8 val2 = 0;

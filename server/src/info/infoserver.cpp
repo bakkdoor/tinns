@@ -156,7 +156,8 @@ void PInfoServer::GSLiveCheck()
         if(it != Serverlist.end())
         {
             strncpy(it->second.mName, row[s_name], MAX_SERVER_NAME_LENGTH);
-            it->second.mIp = IPStringToDWord(row[s_addr]);
+            it->second.mLanIp = IPStringToDWord(row[s_lanaddr]);
+            it->second.mWanIp = IPStringToDWord(row[s_wanaddr]);
             it->second.mPort = atoi(row[s_port]);
             it->second.mPlayers = atoi(row[s_players]);
             /* Prepared for future addon Servers by Accesslevel */
@@ -184,7 +185,8 @@ void PInfoServer::GSLiveCheck()
             GameServers tmpServer;
 
             strncpy(tmpServer.mName, row[s_name], MAX_SERVER_NAME_LENGTH);
-            tmpServer.mIp = IPStringToDWord(row[s_addr]);
+            tmpServer.mLanIp = IPStringToDWord(row[s_lanaddr]);
+            tmpServer.mWanIp = IPStringToDWord(row[s_wanaddr]);
             tmpServer.mLasttimestamp = atol(row[s_lastupdate]);
             tmpServer.mPlayers = atoi(row[s_players]);
             tmpServer.mPort = atoi(row[s_port]);
@@ -269,7 +271,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
     // -99: General fault. Contact admin
 	ConnectionTCP *Socket = Client->getTCPConn();
 	PAccount* currentAccount = NULL;
-	
+
 	if(PacketSize > 20 && *(u16*)&Packet[3]==0x8084)
 	{
 		const u8 *Key = &Packet[5];			// password key
@@ -292,7 +294,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
         {
           delete currentAccount;
           currentAccount = new PAccount();
-          
+
           if(!currentAccount->SetName(UserName)) // !!! len
           {
               returnval = -7;
@@ -301,7 +303,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
           {
               returnval = returnval ? -8 : -6;
           }
-              
+
           if(!returnval)
           {
             if(currentAccount->Create())
@@ -340,7 +342,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
               Client->setAccountID(currentAccount->GetID());
               returnval = 0;
           }
-  
+
         }
         else
         {
@@ -348,7 +350,7 @@ bool PInfoServer::HandleAuthenticate(PClient *Client, PInfoState *State, const u
         }
       }
     }
-    
+
 		bool Failed = false;
 		if(returnval == 0)
 		{
@@ -513,18 +515,19 @@ bool PInfoServer::HandleServerList(PClient *Client, const u8 *Packet, int Packet
 //            if(accesslevel >= it->second.mMinLv)
 //            {
             /* ------------------------------------------------ */
-      *(u32*)&SERVERLIST[0] = it->second.mIp;
+            // Todo: Set correct lan/wan IP here!
+      *(u32*)&SERVERLIST[0] = it->second.mLanIp;
       *(u16*)&SERVERLIST[4] = it->second.mPort;
       *(u8*)&SERVERLIST[8] = strlen(it->second.mName) + 1;
       *(u16*)&SERVERLIST[9] = it->second.mPlayers;
       if(it->second.mOnline == true)
       {
-          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: yes", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
+          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: yes", it->second.mName, IPlongToString(it->second.mLanIp), it->second.mPlayers, it->second.mPort);
           *(u16*)&SERVERLIST[11] = 1;
       }
       else if(it->second.mOnline == false)
       {
-          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: no", it->second.mName, IPlongToString(it->second.mIp), it->second.mPlayers, it->second.mPort);
+          Console->Print("Sending server name: %s ip: %s player: %d port: %d online: no", it->second.mName, IPlongToString(it->second.mLanIp), it->second.mPlayers, it->second.mPort);
           *(u16*)&SERVERLIST[11] = 0;
       }
       Socket->write(SERVERLIST, sizeof(SERVERLIST));

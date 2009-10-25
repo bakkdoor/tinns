@@ -31,31 +31,22 @@
 
 #include "main.h"
 #include "terminal.h"
+#include "msgbuilder.h"
 
-void PTerminal::SendNewMailNotice(PClient* nClient, u8 nNewMails)
+
+PTerminal::PTerminal()
 {
-    PMessage* tmpMsg = new PMessage(18);
-    nClient->IncreaseUDP_ID();
-
-    *tmpMsg << (u8)0x13;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u16)nClient->GetSessionID();
-    *tmpMsg << (u8)0x0c;
-    *tmpMsg << (u8)0x03;
-    *tmpMsg << (u16)nClient->GetUDP_ID();
-    *tmpMsg << (u8)0x1f;
-    *tmpMsg << (u16)nClient->GetLocalID();
-    *tmpMsg << (u8)0x3d;
-    *tmpMsg << (u8)0x0c;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << (u8)0x00;
-    *tmpMsg << nNewMails;
-
-    nClient->SendUDPMessage(tmpMsg);
+    snprintf(mConPrefix, 50, "[PConsole]");
+    EraseVars();
 }
 
-u8 PTerminal::GetNewEmailCount(PClient* nClient)
+void PTerminal::EraseVars()
+{
+    memset(mSQLQuery, '\0', 500);
+    mResultFields = 0;
+}
+
+u8 PTerminal::GetNewEmailCount(PClient* nClient, bool nNoticeClient)
 {
     MYSQL_RES *result = NULL;
     MYSQL_ROW row;
@@ -84,7 +75,11 @@ u8 PTerminal::GetNewEmailCount(PClient* nClient)
     u8 tRetVal = (u8)atoi(row[0]);
     MySQL->FreeGameSQLResult(result);
 
-    SendNewMailNotice(nClient, tRetVal);
+    if(nNoticeClient)
+    {
+        PMessage* tmpMsg = MsgBuilder->BuildYouGotEmailsMsg(nClient, tRetVal);
+        nClient->SendUDPMessage(tmpMsg);
+    }
     return tRetVal;
 }
 

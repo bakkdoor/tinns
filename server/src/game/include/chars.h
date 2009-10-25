@@ -152,7 +152,7 @@ class PChar
     u16 mMana;
     u16 mStamina;
 
-    s8 mSoullight; // *** Not got/saved from DB atm ***
+    s8 mSoullight;
     u8 mCombatRank; // *** Not got/saved from DB atm ***
     u8 mSynaptic; // *** Not got/saved from DB atm ***
     bool mIsDead; // *** Not got/saved from DB atm ***
@@ -174,6 +174,9 @@ class PChar
     u16 mLookingAt;  // Zone charID of currently targeted player
     std::time_t mLookAtTimestamp; // Lifetimer of lookat var
     u32 mLastUsedWorldObjectId; // Last world object clicked on
+
+    u8 mClanLevel; // 1-15
+    u16 mClanID;
 
     bool mIsOnline;
     bool mDirtyFlag;
@@ -275,6 +278,9 @@ class PChar
     inline void SetDialogNode( u16 nNode ) { mCurrentDialogNode = nNode; };
     inline u16 GetDialogNode() const { return mCurrentDialogNode; };
 
+    inline u8 GetClanLevel() const { return mClanLevel; };
+    inline u16 GetClan() const { return mClanID; };
+    void LoadClanLevel();
 
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();

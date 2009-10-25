@@ -112,20 +112,20 @@ bool PUdpReqInfo::DoAction()
         snprintf (query, 255, "SELECT c_name FROM characters WHERE c_id = %i", mInfoId);
         break;
         case 1: //Clan Long Name
-        //Console->Print("Client %d : Clan Long Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        snprintf (query, 255, "SELECT cl_lname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Long Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        snprintf (query, 255, "SELECT cl_name FROM clans WHERE cl_id = %i", mInfoId);
         break;
         case 3: // NPC Script
         Console->Print("Client %d:: Requested LUA script for NPC %i", mDecodeData->mClient->GetID(), mInfoId);
         snprintf (query, 255, "SELECT npc_customscript FROM npc_spawns WHERE npc_id = %i", mInfoId);
         break;
         case 4: //Clan Short name
-        //Console->Print("Client %d : Clan Short Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Short Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        snprintf (query, 255, "SELECT cl_shortdesc FROM clans WHERE cl_id = %i", mInfoId);
         break;
         case 5: //Clan Rank
-        //Console->Print("Client %d : Clan Rank Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        //snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Rank Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        //snprintf (query, 255, "SELECT cll_desc FROM clanlevels INNER JOIN clans ON (cl_id = cll_clanid) WHERE cl_id = %d AND cll_level = %d", mInfoId, mClanRank);
         snprintf(txtmsg, 32, "Undef");
         Answer = txtmsg;
         break;

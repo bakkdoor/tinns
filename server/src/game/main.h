@@ -100,6 +100,7 @@
 #include "inventory.h"
 #include "worldactors.h"
 #include "npc.h"
+#include "outpost.h"
 #include "terminal.h"
 
 #include "lua_engine.h"

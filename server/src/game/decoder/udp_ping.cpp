@@ -54,8 +54,8 @@ bool PUdpPing::DoAction()
 {
   if ( mDecodeData->mState & DECODE_ACTION_READY )
   {
-    if(gDevDebug)
-      Console->Print( "%s PUdpPing: Client timestamp %d (0x%08x)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mClientTime, mClientTime );
+   // if(gDevDebug)
+    //  Console->Print( "%s PUdpPing: Client timestamp %d (0x%08x)", Console->ColorText( CYAN, BLACK, "[DEBUG]" ), mClientTime, mClientTime );
 
     PMessage* tmpMsg = MsgBuilder->BuildPingMsg( mDecodeData->mClient, mClientTime );
     mDecodeData->mClient->SendUDPMessage( tmpMsg );

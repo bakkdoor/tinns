@@ -105,72 +105,75 @@ void PCharCoordinates::SetPosition( u16 nY, u16 nZ, u16 nX, u8 nUD, u8 nLR )
 // SQL Layout
 enum
 {
-  c_id,
-  c_name,
-  c_str_lvl,
-  c_str_pts,
-  c_int_lvl,
-  c_int_pts,
-  c_dex_lvl,
-  c_dex_pts,
-  c_con_lvl,
-  c_con_pts,
-  c_psi_lvl,
-  c_psi_pts,
-  a_id,
-  c_class,
-  c_profession,
-  c_sex,
-  c_location,
-  c_mc,
-  c_hc,
-  c_tra,
-  c_pc,
-  c_rc,
-  c_tc,
-  c_vhc,
-  c_agl,
-  c_rep,
-  c_rec,
-  c_rcl,
-  c_atl,
-  c_end,
-  c_for,
-  c_fir,
-  c_enr,
-  c_xrr,
-  c_por,
-  c_hlt, // In SQL, this is STILL c_htl. Maxx hasnt changed it yet
-  c_hck,
-  c_brt,
-  c_psu,
-  c_wep,
-  c_cst,
-  c_res,
-  c_imp,
-  c_ppu,
-  c_apu,
-  c_mst,
-  c_ppw,
-  c_psr,
-  c_wpw,
-  c_apt,
-  c_cash,
-  c_head,
-  c_torso,
-  c_legs,
-  c_str_xp,
-  c_int_xp,
-  c_dex_xp,
-  c_psi_xp,
-  c_con_xp,
-  c_pos_x,
-  c_pos_y,
-  c_pos_z,
-  c_angle_ud,
-  c_angle_lr,
-  c_faction,
-  c_slot
+    c_id,
+    c_name,
+    c_str_lvl,
+    c_str_pts,
+    c_int_lvl,
+    c_int_pts,
+    c_dex_lvl,
+    c_dex_pts,
+    c_con_lvl,
+    c_con_pts,
+    c_psi_lvl,
+    c_psi_pts,
+    a_id,
+    c_class,
+    c_profession,
+    c_sex,
+    c_location,
+    c_mc,
+    c_hc,
+    c_tra,
+    c_pc,
+    c_rc,
+    c_tc,
+    c_vhc,
+    c_agl,
+    c_rep,
+    c_rec,
+    c_rcl,
+    c_atl,
+    c_end,
+    c_for,
+    c_fir,
+    c_enr,
+    c_xrr,
+    c_por,
+    c_hlt,
+    c_hck,
+    c_brt,
+    c_psu,
+    c_wep,
+    c_cst,
+    c_res,
+    c_imp,
+    c_ppu,
+    c_apu,
+    c_mst,
+    c_ppw,
+    c_psr,
+    c_wpw,
+    c_apt,
+    c_cash,
+    c_head,
+    c_torso,
+    c_legs,
+    c_str_xp,
+    c_int_xp,
+    c_dex_xp,
+    c_psi_xp,
+    c_con_xp,
+    c_pos_x,
+    c_pos_y,
+    c_pos_z,
+    c_angle_ud,
+    c_angle_lr,
+    c_faction,
+    c_slot,
+    c_online,
+    c_clan,
+    c_soullight
 };
 
 RegEx* PChar::mCharnameRegexFilter = NULL;
@@ -234,10 +237,18 @@ PChar::PChar()
   // Required for initial OOC Broadcast welcome message.
   //Gets overwritten as soon as the first PingPacket arrives
   mActiveChatChannels = 262144;
+
+  mClanLevel = 0;
+  mClanID = 0;
 }
 
 PChar::~PChar()
 {
+  // Addition; Set char's online status to OFFLINE
+  char sqlqry[50];
+  snprintf(sqlqry, 50, "UPDATE characters SET c_online = 0 WHERE c_id = %d", mID);
+  MySQL->GameQuery(sqlqry);
+
   delete Skill;
   delete mBuddyList;
   delete mGenrepList;
@@ -487,6 +498,32 @@ void PChar::SetBaseInventory()
   }
 }
 
+void PChar::LoadClanLevel()
+{
+    MYSQL_RES *result;
+    char query[200];
+
+    snprintf(query, 200, "SELECT cll_level FROM clanlevels WHERE cll_charid = %d AND cll_clanid = %d", mID, mClanID);
+    result = MySQL->GameResQuery( query );
+    if ( result == NULL )
+    {
+        mClanID = 0;
+        Console->Print( RED, BLACK, "PChar::GetClanLevel could not load ClanLevel from the database" );
+        Console->Print( "Query was:" );
+        Console->Print( "%s", query );
+        MySQL->ShowGameSQLError();
+        return;
+    }
+    else if(mysql_num_rows(result) == 0)
+    {
+        mClanID = 0;
+        Console->Print( RED, BLACK, "PChar::GetClanLevel No level entry found for clan!" );
+        return;
+    }
+    mClanLevel = atoi(mysql_fetch_row(result)[0]);
+    if (gDevDebug) Console->Print("Loaded ClanLevel %d for char %d, clan %d", mClanLevel, mID, mClanID);
+}
+
 bool PChar::SQLLoad( int CharID )
 {
   MYSQL_RES *result;
@@ -578,6 +615,11 @@ bool PChar::SQLLoad( int CharID )
     mPrimaryApt = static_cast<u32>( primapt );
     mStartApt = mPrimaryApt;
 
+    mSoullight = atoi( row[c_soullight] );
+    mClanID = atoi( row[c_clan] );
+    if(mClanID > 0)
+        LoadClanLevel();
+
     // Cash
     f32 cashvalue = atof( row[c_cash] );
     mCash = static_cast<u32>( cashvalue );
@@ -644,7 +686,6 @@ bool PChar::SQLLoad( int CharID )
     mInventory.SQLLoad();
 
     // temp value forcing, not get/saved from DB atm
-    mSoullight = 10;
     mCombatRank = ( u8 )( random() % 127 ); // bad result there on randomness
     mSynaptic = 0;
     mIsDead = false;
@@ -665,6 +706,11 @@ bool PChar::SQLLoad( int CharID )
 
   }
   MySQL->FreeGameSQLResult( result );
+
+  // Addition; Set char's online status to ONLINE
+  char sqlqry[50];
+  snprintf(sqlqry, 50, "UPDATE characters SET c_online = 1 WHERE c_id = %d", mID);
+  MySQL->GameQuery(sqlqry);
 
   return true;
 }

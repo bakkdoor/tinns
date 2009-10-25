@@ -15,7 +15,7 @@ void PNPCWorld::CheckForEnemies(PNPC* nNPC)
 
     if(tNow > nNPC->mNextEnemyCheck)
     {
-        Console->Print("[NPC AI] Checking enemy status for NPC %d", nNPC->GetRealWorldID());
+        //Console->Print("[NPC AI] Checking enemy status for NPC %d", nNPC->GetRealWorldID());
         nNPC->mNextEnemyCheck = time(NULL) + NPC_ENEMYCHECK;
         // Loop all NPCs in my world
 
@@ -57,7 +57,7 @@ void PNPCWorld::CheckForEnemies(PNPC* nNPC)
                 // He is! Look closer at him. Get Faction standing
                 int tFactionMe = nNPC->mFaction;
                 int tFactionHim = tNPC->mFaction;
-                Console->Print("[NPC AI] Checking InRange NPC %d; MyFac: %d HisFac: %d", tNPC->GetRealWorldID(), tFactionMe, tFactionHim);
+                //Console->Print("[NPC AI] Checking InRange NPC %d; MyFac: %d HisFac: %d", tNPC->GetRealWorldID(), tFactionMe, tFactionHim);
 
                 // Hey, we're friends :)
                 if(tFactionMe == tFactionHim)

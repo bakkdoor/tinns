@@ -40,6 +40,36 @@
 #include "item.h"
 #include "container.h"
 
+PMessage* PMsgBuilder::BuildOutpostClanInfoMsg( PClient* nClient, u32 nClanID, u8 nFaction )
+{
+        PMessage* tmpMsg = new PMessage();
+        nClient->IncreaseUDP_ID();
+
+        *tmpMsg << (u8)0x13;
+    	*tmpMsg << (u16)nClient->GetUDP_ID();
+    	*tmpMsg << (u16)nClient->GetSessionID();
+    	*tmpMsg << (u8)0x13; // Message length
+    	*tmpMsg << (u8)0x03;
+    	*tmpMsg << (u16)nClient->GetUDP_ID();
+    	*tmpMsg << (u8)0x23;
+
+    	//*tmpMsg << (u16)GetArgInt(2);
+    	*tmpMsg << (u16)14;
+    	*tmpMsg << (u8)0x00;
+    	*tmpMsg << (f32)nClanID; // ClanID f32
+    	*tmpMsg << (u8)nFaction;  // Faction
+    	// The next 3 bytes are unknown.
+    	// However, with this combination, the OP and its bonuses are
+    	// set correctly; eg Own clan full bonus, friend clan 75%, etc
+    	*tmpMsg << (u8)0x06; // 6? 0x06
+    	*tmpMsg << (u8)0x14; // 0? 0x14
+    	*tmpMsg << (u8)0x0b; // 11? 0x0b
+        *tmpMsg << (u32)nClanID; // ClanID u32
+
+        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+        return tmpMsg;
+}
 
 PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
 {
@@ -50,7 +80,7 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
     nChar->GetCurrentLook( nSkin, nHead, nTorso, nLegs );
     nChar->GetCurrentBodyColor( nHeadColor, nTorsoColor, nLegsColor, nHeadDarkness, nTorsoDarkness, nLegsDarkness );
 
-    PMessage* tmpMsg = new PMessage( 80 );
+    PMessage* tmpMsg = new PMessage( );
 
     u8 currentActiveSlot = nChar->GetQuickBeltActiveSlot();
     u16 weaponId = 0;
@@ -137,7 +167,19 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
         *tmpMsg << ( u8 )0x00; // size of empty effect list
     }
 
-    *tmpMsg << ( u8 )0x00; // ending null
+    // Clans working, yeah :D
+    u16 tClanVal = nChar->GetClan();
+    if(tClanVal > 0)
+    {
+        u8 tClanLevel = nChar->GetClanLevel();
+        u32 tmpVal;
+        tmpVal = tClanVal << 4;
+        tmpVal |= tClanLevel;
+        *tmpMsg << ( u8 )0x04;
+        *tmpMsg << ( u32 )tmpVal;
+    }
+    else
+        *tmpMsg << ( u8 )0x00; // ending null
     // alternate interpretation to this "ending null"/optional bloc:
     /* *tmpMsg << (u8)0x04; // size of unknown bloc ... 0x00 when empty (aka the "ending null")
      *tmpMsg << (u8)0x0b; // vary ... ??? 0b, eb, ee, ...
@@ -164,6 +206,145 @@ PMessage* PMsgBuilder::BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScri
 
     return tmpMsg;
 
+}
+
+PMessage* PMsgBuilder::BuildYouGotEmailsMsg( PClient* nClient, u8 nMailCount )
+{
+    PMessage* tmpMsg = new PMessage();
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x0c;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x1f;
+    *tmpMsg << ( u16 )nClient->GetLocalID();
+    *tmpMsg << ( u8 )0x3d;
+    *tmpMsg << ( u8 )0x0c;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )nMailCount;
+
+    return tmpMsg;
+}
+
+PMessage* PMsgBuilder::BuildReceiveDBAnswerMsg( PClient* nClient, PMessage* nResultBuffer, std::string* nCommandName, u16 nNumRows, u16 nNumFields)
+{
+    PMessage* tmpMsg = new PMessage();
+/*    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u16 )0x0000;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x2b;
+    *tmpMsg << ( u8 )0x1a;
+    if(nCommandName->length() > 0)
+        *tmpMsg << ( u8 )0x01;
+    else
+        *tmpMsg << ( u8 )0x00;
+
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << *nCommandName;
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+    // 2nd message
+    *tmpMsg << ( u16 )(13 + nCommandName->length() + nResultBuffer->GetSize()); // ??
+*/
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << ( u8 )0x13;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u16 )nClient->GetSessionID();
+    *tmpMsg << ( u8 )0x00;
+    *tmpMsg << ( u8 )0x03;
+    *tmpMsg << ( u16 )nClient->GetUDP_ID();
+    *tmpMsg << ( u8 )0x2b;
+    *tmpMsg << ( u8 )0x17;
+    *tmpMsg << ( u16 )(nCommandName->length()+1);
+    *tmpMsg << ( u16 )nNumRows;
+    *tmpMsg << ( u16 )nNumFields;
+    *tmpMsg << *nCommandName;
+    *tmpMsg << *nResultBuffer;
+
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+
+
+    return tmpMsg;
+			//len = (unsigned int)strlen(DB);
+			//SendBuffer[0] = 0x13;
+			//SendBuffer[5] = 11 + len;
+			//SendBuffer[6] = 0x03;
+			//Network_IncrementUDP (ClientNum);
+			//*(unsigned short*)&SendBuffer[7] = Client_Sockets[ClientNum].UDP_ID;
+	//		SendBuffer[9] = 0x2b;
+	//		SendBuffer[10] = 0x1a;
+	//		*(unsigned short*)&SendBuffer[11] = len;
+	//		if (num == 0)
+	//			SendBuffer[13] = 0x00;
+	//		else
+	//			SendBuffer[13] = 0x01;
+	//		SendBuffer[14] = 0x00;
+	//		SendBuffer[15] = 0x00;
+	//		strcpy (SendBuffer+16, DB);
+	//		plen = 17+len;
+
+	//		SendBuffer[plen] = 13+len+slen;
+	//		SendBuffer[plen+1] = 0x03;
+	//		Network_IncrementUDP (ClientNum);
+	//		*(unsigned short*)&SendBuffer[plen+2] = Client_Sockets[ClientNum].UDP_ID;
+	//		*(unsigned short*)&SendBuffer[1] = Client_Sockets[ClientNum].UDP_ID;
+	//		*(unsigned short*)&SendBuffer[3] = Client_Sockets[ClientNum].UDP_ID_HIGH;
+	//		SendBuffer[plen+4] = 0x2b;
+	//		SendBuffer[plen+5] = 0x17;
+	//		*(unsigned short*)&SendBuffer[plen+6] = len+1;
+	//		*(unsigned short*)&SendBuffer[plen+8] = num;
+	//		*(unsigned short*)&SendBuffer[plen+10] = Fields;
+	//		//Fieldnum is defined in each DB below
+	//		strcpy (SendBuffer+plen+12, DB);
+	//		plen += 13+len;
+
+	//		for (i=0;i<slen;i++)
+	//			SendBuffer[plen+i] = TempBuffer[i];
+
+
+}
+
+
+PMessage* PMsgBuilder::BuildTryAccessAnswerMsg(PClient* nClient, char *nArea, bool nAllowed)
+{
+    PMessage* tmpMsg = new PMessage();
+    //u8 i = (u8)strlen(nArea);
+
+    nClient->IncreaseUDP_ID();
+
+    *tmpMsg << (u8)0x13;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u16)nClient->GetSessionID();
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)0x03;
+    *tmpMsg << (u16)nClient->GetUDP_ID();
+    *tmpMsg << (u8)0x2b;
+    *tmpMsg << (u8)0x1a;
+    *tmpMsg << (u16)(strlen(nArea)+1);
+
+    if(nAllowed)
+        *tmpMsg << (u8)0x01;
+    else
+        *tmpMsg << (u8)0x00;
+
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << (u8)0x00;
+    *tmpMsg << nArea;
+
+    ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+    return tmpMsg;
 }
 
 PMessage* PMsgBuilder::BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength )

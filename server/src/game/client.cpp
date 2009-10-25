@@ -175,6 +175,15 @@ void PClient::FragmentAndSendUDPMessage( PMessage* nMessage, u8 nType )
 
   switch ( nType )
   {
+    case 0x68: // Terminal ReceiveDB
+    {
+        ReplaceFirstByte = true;
+        ReplaceFirstByteValue = 0x21;
+        MultiTriggeringSize = 220;
+        IncludedHeaderSize = 9;
+        StartIncUDPIDOnChunk = 1;
+        break;
+    }
     case 0x04:
     {
       Console->Print( RED, BLACK, "[Error] PClient::FragmentAndSendUDPMessage: Message type 0x%02x not managed yet", nType );

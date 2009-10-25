@@ -80,6 +80,7 @@ PNPCManager* NPCManager = 0;
 PSubway* Subway = 0;
 PTerminal* Terminal = 0;
 PLuaEngine* LuaEngine = 0;
+POutpost* Outposts = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -189,11 +190,15 @@ bool InitTinNS()
     ISC = new PISC();
     Terminal = new PTerminal();
 
+    Outposts = new POutpost();
+
     return true;
 }
 
 void Shutdown()
 {
+    if(Outposts)
+        delete Outposts;
     if(LuaEngine)
         delete LuaEngine;
     if(Terminal)

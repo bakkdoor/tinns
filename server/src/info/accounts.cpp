@@ -37,8 +37,8 @@
 	REASON: - Fixed an issue in PAccount::SetBannedStatus() that was causing the "can't update banned status" error message.
 	MODIFIED: 27 May 2007 Hammag
 	REASON: - Full changes for on-demand account access (no more memory-resident account data)
-	
-	
+
+
 	MODIFIED: 2 Feb 2008 Hammag
 	REASON: - Correction of the account creation/update SQL query (thank to drhawk ;) )
 */
@@ -72,7 +72,7 @@ bool PAccount::SetUsernameRegexFilter(const char* RegexStr)
     delete mUsernameRegexFilter;
     mUsernameRegexFilter = NULL;
   }
-  
+
   if(RegexStr)
   {
     try {
@@ -92,7 +92,7 @@ bool PAccount::SetPasswordRegexFilter(const char* RegexStr)
     delete mPasswordRegexFilter;
     mPasswordRegexFilter = NULL;
   }
-  
+
   if(RegexStr)
   {
     try {
@@ -125,7 +125,7 @@ bool PAccount::IsPasswordWellFormed(const char *Password)
     return true;
 }
 
-/** Instance members **/	    
+/** Instance members **/
 PAccount::PAccount()
 {
 	mID = 0;
@@ -158,7 +158,7 @@ bool PAccount::LoadFromQuery(char* query)
 {
   MYSQL_ROW row = 0;
   MYSQL_RES *result = 0;
-  
+
   bool FinalResult = false;
 
   //result = MySQL->InfoResQuery(query);
@@ -195,7 +195,7 @@ bool PAccount::LoadFromQuery(char* query)
   {
 Console->Print(YELLOW, BLACK, "Failed to load AccountData from SQL; Nothing to load...");
   }
-  
+
   //MySQL->FreeInfoSQLResult(result);
   MySQL->FreeSQLResult(result);
   return FinalResult;
@@ -230,7 +230,7 @@ bool PAccount::SetPassword(const std::string &Password)
 bool PAccount::SetPasswordEncoded(const u8* PasswordData, int PassLen, const u8* Key)
 {
 	char Pass[128];
-	
+
 	if(DecodePassword(PasswordData, PassLen, Key, Pass))
   {
 		return SetPassword((std::string)Pass);
@@ -292,7 +292,7 @@ bool PAccount::SetBannedUntilTime(std::time_t BannedUntil)
 bool PAccount::DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword)
 {
   ClearPassword[0] = 0;
-  
+
   if(PassLen < 128)
 	{
 		if(Key[0]>7) // TODO: >7 correct?
@@ -317,7 +317,7 @@ bool PAccount::DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key
 bool PAccount::Authenticate(const u8* PasswordData, int PassLen, const u8 *Key)
 {
 	char Pass[128];
-	
+
 	if(DecodePassword(PasswordData, PassLen, Key, Pass))
   {
 		return Authenticate(Pass);
@@ -336,7 +336,7 @@ bool PAccount::Authenticate(const char *Password) const
 	  Console->Print(RED, BLACK, "[Bug]: user %s doesn't exist and was not checked by code !", mName.c_str());
 	  return false;
 	}
-	
+
 	return(mPassword == Password);
 }
 
@@ -359,7 +359,7 @@ bool PAccount::Save(bool CreateMode)
   char escPassword[256];
   MySQL->EscapeString(mName.c_str(), escUsername, 256);
   MySQL->EscapeString(mPassword.c_str(), escPassword, 256);
-    
+
   std::string Query;
   Query = CreateMode ? "INSERT INTO" : "UPDATE";
   Query += " accounts SET ";
@@ -367,8 +367,12 @@ bool PAccount::Save(bool CreateMode)
   Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
   if(!CreateMode )
   {
+      Query += Ssprintf(" a_lastused = NOW()");
     Query += Ssprintf(" WHERE a_id = %d LIMIT 1", mID);
   }
+  else
+    Query += Ssprintf(" a_creationdate = NOW()");
+
 
   //if(MySQL->InfoQuery(Query.c_str()))
   if(MySQL->Query(Query.c_str()))
@@ -384,7 +388,7 @@ bool PAccount::Save(bool CreateMode)
 std::string PAccount::GetBannedTime() const
 {
   const char* unit[5] = {"seconds", "minutes", "hours", "days", "weeks"};
-  
+
   std::time_t timediff = mBannedUntil - std::time(NULL);
   if(timediff <=0)
   {

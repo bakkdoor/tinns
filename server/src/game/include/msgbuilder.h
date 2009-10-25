@@ -87,6 +87,11 @@ public:
 
 // Following methods for unicast messages DO include UDP_ID increment and
 // UDP_ID / SessionID setting when needed (at least for now)
+    PMessage* BuildOutpostClanInfoMsg( PClient* nClient, u32 nClanID, u8 nFaction );
+    PMessage* BuildTryAccessAnswerMsg(PClient* nClient, char *nArea, bool nAllowed);
+    PMessage* BuildReceiveDBAnswerMsg( PClient* nClient, PMessage* nResultBuffer, std::string* nCommandName, u16 nNumRows, u16 nNumFields);
+    PMessage* BuildYouGotEmailsMsg( PClient* nClient, u8 nMailCount );
+
     PMessage* BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  );
     PMessage* BuildNPCDialogReplyMsg( PClient* nClient, u16 nNextNode, std::vector<int>*nResultBuffer);
     PMessage* BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScript );

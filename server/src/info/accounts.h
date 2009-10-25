@@ -75,7 +75,7 @@ enum PAccountStatus
     PAS_ONLINE = 1,
     PAS_BANNED = 2
 };
-  
+
 class PAccount
 {
 	private :
@@ -86,13 +86,16 @@ class PAccount
         a_password,
         a_priv,
         a_status,
-        a_bandate
+        a_bandate,
+        a_emailaddress,
+        a_creationdate,
+        a_lastused
     };
-    
+
     // static members
 	  static RegEx* mUsernameRegexFilter;
 	  static RegEx* mPasswordRegexFilter;
-	  
+
 	  // instance members
 	  u32 mID;
 	  std::string mName;
@@ -103,17 +106,17 @@ class PAccount
 
     bool LoadFromQuery(char* query);
     bool DecodePassword(const u8* PasswordData, int PassLen, const u8 *Key, char* ClearPassword);
-    
+
 	public :
 	  PAccount();
 	  PAccount(const u32 AccountId);
 	  PAccount(const char *Username);
-	  
+
 	  static bool SetUsernameRegexFilter(const char* RegexStr);
 		static bool SetPasswordRegexFilter(const char* RegexStr);
 		static bool IsUsernameWellFormed(const char *Username);
 		static bool IsPasswordWellFormed(const char *Password);
-		
+
 		inline u32 GetID() const { return mID; }
 		bool SetName(const std::string &Pass);
 		inline const std::string &GetName() const { return mName; }
@@ -131,7 +134,7 @@ class PAccount
 
 		bool Authenticate(const u8* PasswordData, int PassLen, const u8 *Key);
 		bool Authenticate(const char *Password) const;
-		    
+
 		bool Create();
     bool Save(bool CreateMode = false);
 

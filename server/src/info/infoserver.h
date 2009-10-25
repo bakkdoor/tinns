@@ -30,7 +30,8 @@
 struct GameServers
 {
   char            mName[MAX_SERVER_NAME_LENGTH];
-	unsigned int    mIp;
+	unsigned int    mLanIp;
+	unsigned int    mWanIp;
 	short           mPort;
 	int             mPlayers;
 	bool            mOnline;
@@ -48,10 +49,11 @@ class PInfoServer
         enum {
             s_id,
             s_name,
-            s_addr,
+            s_wanaddr,
             s_port,
             s_players,
             s_lastupdate,
+            s_lanaddr,
             s_timecheck // computed field, not in table !
         };
 		//int mNumClients;

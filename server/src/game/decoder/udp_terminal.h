@@ -38,18 +38,19 @@
 class PUdpReceiveDB : public PUdpMsgAnalyser
 {
   private:
-    static const u8 mMaxOptions = 4;
+    static const u8 mMaxOptions = 9; // Largest: forum\forenlist.tsc(21, 114,...)
     u16 mTerminalSessionId;
     std::string mCommandName;
     std::string mOptions[mMaxOptions];
     u8 mOptionsCount;
-    
+
     u16 mUnknown1;
-    u16 mUnknown2;
-    
+    u8 mUnknown2;
+    u16 mDBId;
+
 		bool ActionVehicleListing();
 		bool ActionVehicleControl();
-		
+
   public:
     PUdpReceiveDB(PMsgDecodeData* nDecodeData);
     //~PUdpReceiveDB();
@@ -59,6 +60,17 @@ class PUdpReceiveDB : public PUdpMsgAnalyser
 
 class PUdpUpdateDB : public PUdpMsgAnalyser
 {
+  private:
+    static const u8 mMaxOptions = 7; // Largest: forum\bbcnewthread.tsc(66):
+    u16 mTerminalSessionId;
+    std::string mCommandName;
+    std::string mOptions[mMaxOptions];
+    u8 mOptionsCount;
+
+    u16 mUnknown1;
+    u8 mUnknown2;
+    u16 mDBId;
+
   public:
     PUdpUpdateDB(PMsgDecodeData* nDecodeData);
     //~PUdpUpdateDB();
@@ -68,6 +80,16 @@ class PUdpUpdateDB : public PUdpMsgAnalyser
 
 class PUdpTryAccessDB : public PUdpMsgAnalyser
 {
+  private:
+    static const u8 mMaxOptions = 9; // Largest: stockx\depot.tsc(227):
+    u16 mTerminalSessionId;
+    std::string mCommandName;
+    std::string mOptions[mMaxOptions];
+    u8 mOptionsCount;
+
+    u16 mUnknown1;
+    u8 mUnknown2;
+    u16 mDBId;
   public:
     PUdpTryAccessDB(PMsgDecodeData* nDecodeData);
     //~PUdpTryAccessDB();
@@ -75,11 +97,12 @@ class PUdpTryAccessDB : public PUdpMsgAnalyser
     bool DoAction();
 };
 
-class PUdpQueryDB : public PUdpMsgAnalyser
+class PUdpQueryDB : public PUdpMsgAnalyser // Also called "ServerMessage" in .tsc scripts!
 {
   private:
-    static const u8 mMaxOptions = 4;
+    static const u8 mMaxOptions = 5; // Largest: politics\transcomment.tsc(36):
     u16 mTerminalSessionId;
+    u16 mDBId;
     std::string mDBCommandName;
     std::string mCommandName;
     std::string mOptions[mMaxOptions];
@@ -88,7 +111,7 @@ class PUdpQueryDB : public PUdpMsgAnalyser
 		bool ActionSpawnVehicle();
 		bool ActionRepairVehicle();
 		bool ActionDismissVehicle();
-		  
+
   public:
     PUdpQueryDB(PMsgDecodeData* nDecodeData);
     //~PUdpQueryDB();
@@ -100,7 +123,7 @@ class PUdpTeminal0x1f : public PUdpMsgAnalyser
 {
   private:
     u16 mTerminalSessionId;
-    
+
   public:
     PUdpTeminal0x1f(PMsgDecodeData* nDecodeData);
     //~PUdpTeminal0x1f();
