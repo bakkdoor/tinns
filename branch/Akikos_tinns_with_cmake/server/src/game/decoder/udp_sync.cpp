@@ -248,6 +248,9 @@ bool PUdpSync2::DoAction()
     // Send NPC information to client
     NPCManager->InitPlayer( nClient );
 
+    //Console->Print("OP Data inc");
+    Outposts->SendOPAreaData( nClient );
+
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
   }

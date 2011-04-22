@@ -88,7 +88,10 @@ class PAccount
         a_password,
         a_priv,
         a_status,
-        a_bandate
+        a_bandate,
+        a_emailaddress,
+        a_creationdate,
+        a_lastused
     };
     
     // static members

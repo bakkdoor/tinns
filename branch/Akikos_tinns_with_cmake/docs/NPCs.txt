@@ -1,0 +1,14 @@
+So far, if you type
+   @test 1
+   A copbot will spawn at your current location
+
+   @test 5 <your local ID> 17
+   the copbot will put out his weapon and run to a location in Plaza 1, left
+to medicare (i had to set a static pos here)
+
+   @test 6 <your local ID> 0 4863
+   the copbot will start shooting you.
+
+   type
+   @test 5 0 15
+   and the copbot will put back his weapon and stop fire

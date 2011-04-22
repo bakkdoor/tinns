@@ -78,13 +78,13 @@ bool PContainerEntry::SQLSave( u32 CharID, u32 InvLoc )
 
   queryv += Ssprintf( " inv_charid='%u',inv_loc='%u',inv_x='%u',inv_y='%u'", CharID, InvLoc, mPosX, mPosY );
   queryv += Ssprintf( ",inv_itemid='%u',inv_qty='%u'", mItem->mItemID, mItem->mStackSize );
-  queryv += Ssprintf( ",inv_type='%u'", 0 );
-  queryv += Ssprintf( ",inv_curdur='%u'", mItem->mCurDuration );
+  //queryv += Ssprintf( ",inv_type='%u'", 0 );
+  queryv += Ssprintf( ",inv_cdur='%u'", mItem->mCurDuration );
   queryv += Ssprintf( ",inv_dmg='%u'", mItem->mDamages );
-  queryv += Ssprintf( ",inv_freq='%u'", mItem->mFrequency );
-  queryv += Ssprintf( ",inv_hand='%u'", mItem->mHandling );
+  queryv += Ssprintf( ",inv_frq='%u'", mItem->mFrequency );
+  queryv += Ssprintf( ",inv_hnd='%u'", mItem->mHandling );
   queryv += Ssprintf( ",inv_rng='%u'", mItem->mRange );
-  queryv += Ssprintf( ",inv_maxdur='%u'", mItem->mMaxDuration );
+  queryv += Ssprintf( ",inv_mdur='%u'", mItem->mMaxDuration );
 
   if ( mInvID )
   {

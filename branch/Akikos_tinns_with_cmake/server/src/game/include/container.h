@@ -52,14 +52,24 @@ class PContainerEntry
       i_x,
       i_y,
       i_itemid,
-      i_type,
+      //i_type,
+	  i_flag,
       i_qty,
+	  i_sqty,
       i_curdur,
       i_dmg,
       i_freq,
       i_hand,
       i_rng,
-      i_maxdur
+      i_maxdur,
+      i_slots,
+      i_slt1,
+      i_slt2,
+      i_slt3,
+      i_slt4,
+      i_slt5,
+      i_atype,
+      i_conatin
     };
     
     PItem* mItem;

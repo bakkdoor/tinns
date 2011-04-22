@@ -107,6 +107,9 @@ class PDefItemsMap : public PDefMap<PDefItems>
     bool Load(const char* nName, const char* nFilename);
     const PDefItems* GetDefBySeqIndex( int nSeqIndex ) const;
     int GetRandomItemIdFromGroup( int nGroupId ) const;
+
+	inline std::map<int, PDefItems*>::const_iterator ConstIteratorBegin() const { return mDefs.begin(); }
+	inline std::map<int, PDefItems*>::const_iterator ConstIteratorEnd() const { return mDefs.end(); }
 };
 
 #endif

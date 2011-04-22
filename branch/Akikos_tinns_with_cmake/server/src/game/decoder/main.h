@@ -59,6 +59,8 @@
 #include "../gamemonkey/gmCall.h"
 */
 
+#include "filesystem.h"
+
 // MySQL Support // shouldn't be needed as DB-objects access class should do that
 #include <mysql/mysql.h>
 #include "include/sql.h"
@@ -83,6 +85,8 @@
 #include "include/msgbuilder.h"
 #include "include/worldactors.h"
 #include "include/npc.h"
+#include "outpost.h"
+#include "multipart.h"
 #include "include/terminal.h"
 
 using namespace std;

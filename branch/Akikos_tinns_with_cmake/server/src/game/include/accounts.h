@@ -58,9 +58,9 @@
 #define PAL_BANNED -1
 #define PAL_UNREGPLAYER 0
 #define PAL_REGPLAYER 1
-#define PAL_VOLUNTEER 30
-#define PAL_GM 50
-#define PAL_ADMIN 100
+#define PAL_VOLUNTEER 30 // Special Rank: 50/50
+#define PAL_GM 50 // Special Rank: 120/120
+#define PAL_ADMIN 100 // Special Rank: 127/127
 
 // Max number of char slots per account
 #define MAX_CHARS_PER_ACCOUNT  4

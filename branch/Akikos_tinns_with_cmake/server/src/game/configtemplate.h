@@ -72,6 +72,7 @@ const char* GameConfigTemplate[][2] = {
   {"broadcast_new", "0"},
   {"broadcast_new_hidestaff", "0"},
   {"max_cash", "20000000"},
+  {"item_price", "70"},
   {"require_validation", "0"},
   {"minlevel", "0"},
   {"username_filter", "^[a-z][\\w\\-]{2,14}$"},
@@ -125,6 +126,11 @@ const char* CommandsTemplate[][2] = {
     {"givemoney", "50"},     // Warp targetplayer XX to zone YY
     {"takemoney", "50"},     // Warp targetplayer XX to zone YY
     {"spawnactor", "50"},     // Spawn given actor next to player
+
+    {"weather", "50"},     // Set weather in a zone
+    {"setmainskill", "50"},     // Set mainskill (INT,PSI,DEX,CON,STR) of own char or someone else
+    {"setsubskill", "50"},     // Set subskill (BRT,HCK,PPU,...) of own char or someone else
+    {"npc", "50"},     // do actions with NPCs
 
     {"", ""} // do not change this line (end mark)
 };

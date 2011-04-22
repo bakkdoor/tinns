@@ -35,13 +35,28 @@
 class PTerminal
 {
     private:
-        void SendNewMailNotice(PClient* nClient, u8 nNewMails = 0);
         void SendTryAccessAnswer(PClient* nClient, char *nArea, bool nAllowed);
+        char mSQLQuery[500];
+
+        int mResultFields;
+        void EraseVars();
+
+        char mConPrefix[50];
+
+        inline bool ChkOpt(u8 nNumOptions, u8 nReqOpt) { if(nNumOptions < nReqOpt) return false; else return true; };
+        bool DoStockXCheck(PClient* nClient, int nAmountEntered, int nNewAmount);
 
     public:
+        PTerminal();
+        //~PTerminal();
         // Check accesslevel of Player for various Terminal actions
-        void CheckAccess(PClient* nClient, char *nArea, u16 nCmdNr, char *nOption1, char *nOption2, char *nOption3);
-        u8 GetNewEmailCount(PClient* nClient);
+        bool CheckAccess(PClient* nClient, char *nArea, u16 nCmdNr, char *nOption1, char *nOption2, char *nOption3);
+        u8 GetNewEmailCount(PClient* nClient, bool nNoticeClient = true);
+        // Handle ReceiveDB queries
+        bool HandleQueryDB(PClient* nClient, std::string *nDBCommandName, std::string *nCommandName, std::string *nOptions, u8 nNumOptions);
+        bool HandleReceiveDB(PClient* nClient, u16 mTerminalSessionId, std::string *nCommandName, std::string *nOptions, u8 nNumOptions, u16 nDBID, u8 nUnknown);
+        bool HandleTryAccess(PClient* nClient, u16 mTerminalSessionId, std::string *nCommandName, std::string *nOptions, u8 nNumOptions, u16 nDBID, u8 nUnknown, bool nCheckOnly = false);
+        bool HandleUpdateDB(PClient* nClient, u16 mTerminalSessionId, std::string *nCommandName, std::string *nOptions, u8 nNumOptions, u16 nDBID, u8 nUnknown);
 };
 
 #endif

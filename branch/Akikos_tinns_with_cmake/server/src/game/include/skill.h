@@ -99,7 +99,7 @@
 
 class PSkillHandler
 {
-    private:
+private:
     struct PMainSkills
     {
         int mINT;
@@ -221,7 +221,7 @@ class PSkillHandler
             DEX = new PSubSkillDEX();
             PSI = new PSubSkillPSI();
         }
-        
+
         inline ~PSkills()
         {
             delete Main;
@@ -234,8 +234,9 @@ class PSkillHandler
     };
 
     PSkills m_Skills;
+    bool IncSubSkillPossible(SUB_SKILLS Skill);
 
-    public:
+public:
 
     void SetSubSkill(SUB_SKILLS Skill, int value);
     void SetMainSkill(MAIN_SKILLS Skill, int value);
@@ -245,6 +246,16 @@ class PSkillHandler
     int GetMainSkill(MAIN_SKILLS Skill);
     int GetSubSkill(SUB_SKILLS Skill);
     int GetSKPCost(SUB_SKILLS Skill);
+
+    // Get Mainskill from given Subskill, client doesn't tell us this
+    MAIN_SKILLS GetMSfromSS(SUB_SKILLS Skill);
+
+    bool IsValidSubSkill(SUB_SKILLS Skill);
+    bool IsValidMainSkill(MAIN_SKILLS Skill);
+
+    void ZeroMSSubSkills(MAIN_SKILLS Skill);
+
+    int IncreaseSubSkill(SUB_SKILLS Skill);
 
     unsigned short GetSP(MAIN_SKILLS Skill);
     float GetXP(MAIN_SKILLS Skill);

@@ -74,7 +74,7 @@ void signal_handler(int signal)
 int main()
 {
     // Connect signal with handlerfunction
-    signal(SIGINT, signal_handler);
+    signal(SIGINT, signal_handler); // TODO: change for sigaction()
 
 
 	if(!InitTinNS())
@@ -103,6 +103,7 @@ int main()
 		MySQL->Update(); // Memory leak check	and MySQL keepalive
 		ISC->Update();
 		Console->Update();
+		MultiPartHandler->Update();
 	}
 
 	return 0;

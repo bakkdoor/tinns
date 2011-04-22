@@ -52,14 +52,31 @@ PUdpMsgAnalyser* PUdpSubskillInc::Analyse()
 
 bool PUdpSubskillInc::DoAction()
 {
-  PClient* nClient = mDecodeData->mClient;
-  PChar* nChar = nClient->GetChar();
-  // Validity check must be done here
-  nChar->Skill->SetSubSkill(SubskillID, nChar->Skill->GetSubSkill(SubskillID) + 1); // SubskillID
-//Console->Print("Skill %d inc to %d", SubskillID, nChar->Skill->GetSubSkill(SubskillID)); 
-  PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, 20); // last is remaining skillpoints
-  nClient->SendUDPMessage(tmpMsg);
+    PClient* nClient = mDecodeData->mClient;
+    PChar* nChar = nClient->GetChar();
 
-  mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-  return true;
+    // Function tries to increase given subskill. If it fails, returnvalue is -1.
+    // If success, returnvalue is amount of skillpoints left
+    int tRemainingSkillPoints = 0;
+    tRemainingSkillPoints = nChar->Skill->IncreaseSubSkill(SubskillID);
+
+    if ( tRemainingSkillPoints > -1 )
+    {
+        PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, tRemainingSkillPoints); // last is remaining skillpoints
+        nClient->SendUDPMessage(tmpMsg);
+    }
+    else
+    {
+        // Send NACK, or just ignore..
+    }
+    /*if(nChar->Skill->IncSubSkillPossible(SubskillID) == true)
+    {
+        int tRemainingSkillPoints = 0;
+        nChar->Skill->IncreaseSubSkill(SubskillID); // SubskillID
+        PMessage* tmpMsg = MsgBuilder->BuildSubskillIncMsg(nClient, SubskillID, tRemainingSkillPoints); // last is remaining skillpoints
+        nClient->SendUDPMessage(tmpMsg);
+    }*/
+
+    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
+    return true;
 }

@@ -33,8 +33,18 @@
 #ifndef HELDITEMACTION_H
 #define HELDITEMACTION_H
 
-class PUdpHeldItemAction : public PUdpMsgAnalyser
+class PUdpHeldItemBasicAction : public PUdpMsgAnalyser
 {
+  public:
+    PUdpHeldItemBasicAction( PMsgDecodeData* nDecodeData );
+    //~PUdpHeldItemBasicAction();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
+class PUdpHeldItemAimedAction : public PUdpMsgAnalyser
+{
+
   private:
     u16 mWeaponId;
     u32 mTargetRawItemID;
@@ -43,11 +53,32 @@ class PUdpHeldItemAction : public PUdpMsgAnalyser
     u8 mScore; // ??? looks quite random...
 
   public:
-    PUdpHeldItemAction( PMsgDecodeData* nDecodeData );
-    //~PUdpHeldItemAction();
+    PUdpHeldItemAimedAction( PMsgDecodeData* nDecodeData );
+    //~PUdpHeldItemAimedAction();
     PUdpMsgAnalyser* Analyse();
     bool DoAction();
 };
+
+class PUdpHeldItemLaunchingAction : public PUdpMsgAnalyser
+{
+  private:
+    u16 mWeaponId;
+    u16 mSourceY;
+    u16 mSourceZ;
+    u16 mSourceX;
+    u8 mSourceUD;
+    u8 mSourceLR;
+    u16 mUnknown1;
+    u32 mUnknown2; // client timestamp ? => TODO: compare with data from ping request
+    u32 mTargetRawItemID;
+
+  public:
+    PUdpHeldItemLaunchingAction( PMsgDecodeData* nDecodeData );
+    //~PUdpHeldItemLaunchingAction();
+    PUdpMsgAnalyser* Analyse();
+    bool DoAction();
+};
+
 
 class PUdpItemAddonActivation : public PUdpMsgAnalyser
 {

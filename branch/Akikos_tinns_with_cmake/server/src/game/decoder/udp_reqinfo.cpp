@@ -63,6 +63,11 @@ PUdpMsgAnalyser* PUdpReqInfo::Analyse()
             mDecodeData->mName << "/0x01=Clan Long Name";
             break;
         }
+        case 3:
+        {
+            mDecodeData->mName << "/0x03=NPC Script";
+            break;
+        }
         case 4:
         {
             mDecodeData->mName << "/0x04=Clan Short Name";
@@ -107,16 +112,20 @@ bool PUdpReqInfo::DoAction()
         snprintf (query, 255, "SELECT c_name FROM characters WHERE c_id = %i", mInfoId);
         break;
         case 1: //Clan Long Name
-        //Console->Print("Client %d : Clan Long Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        snprintf (query, 255, "SELECT cl_lname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Long Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        snprintf (query, 255, "SELECT cl_name FROM clans WHERE cl_id = %i", mInfoId);
+        break;
+        case 3: // NPC Script
+        Console->Print("Client %d:: Requested LUA script for NPC %i", mDecodeData->mClient->GetID(), mInfoId);
+        snprintf (query, 255, "SELECT npc_customscript FROM npc_spawns WHERE npc_id = %i", mInfoId);
         break;
         case 4: //Clan Short name
-        //Console->Print("Client %d : Clan Short Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Short Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        snprintf (query, 255, "SELECT cl_shortdesc FROM clans WHERE cl_id = %i", mInfoId);
         break;
         case 5: //Clan Rank
-        //Console->Print("Client %d : Clan Rank Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
-        //snprintf (query, 255, "SELECT cl_sname FROM clans WHERE cl_id = %i", mInfoId);
+        Console->Print("Client %d : Clan Rank Name Request for ClanID %i", mDecodeData->mClient->GetID(), mInfoId);
+        //snprintf (query, 255, "SELECT cll_desc FROM clanlevels INNER JOIN clans ON (cl_id = cll_clanid) WHERE cl_id = %d AND cll_level = %d", mInfoId, mClanRank);
         snprintf(txtmsg, 32, "Undef");
         Answer = txtmsg;
         break;
@@ -181,8 +190,38 @@ bool PUdpReqInfo::DoAction()
         MySQL->FreeGameSQLResult(result);
     }
 
-    PMessage* tmpMsg = MsgBuilder->BuildReqInfoAnswerMsg(mDecodeData->mClient, mRequestType, mInfoId, Answer, len);
-    mDecodeData->mClient->SendUDPMessage(tmpMsg);
+    // Special case for NPC Scripts. We have only the NAME of the script in "Answer"
+    // We need to load the filecontents first; Also, the reply msg is different
+    // from normal reqinfo messages
+    if(mRequestType == 3)
+    {
+        u32 tFileLen = 0;
+        PFile* fLua = NULL;
+        fLua = Filesystem->Open( "", (char*)Answer, Config->GetOption( "nc_data_path" ) );
+        std::string tLUAScript = "";
+        if(fLua)
+        {
+            tFileLen = fLua->GetSize();
+            char* t_content = new char[tFileLen+1];
+            memset(t_content, '\0', tFileLen+1);
+
+            fLua->Read( t_content, tFileLen );
+            fLua = NULL;
+
+            Filesystem->Close( fLua );
+            tLUAScript =  t_content;  // APPEND the script to our existing lua headerfile
+            delete t_content;
+            if (gDevDebug) Console->Print( "%s [PUdpReqInfo::DoAction()] Loaded LUA Script %s", Console->ColorText( GREEN, BLACK, "[SUCCESS]" ), (char*)Answer );
+        }
+        else
+        {
+            Console->Print( "%s [PUdpReqInfo::DoAction()] Unable to load LUA Script %s", Console->ColorText( RED, BLACK, "[ERROR]" ), (char*)Answer );
+            return false;
+        }
+        PMessage* tmpMsg = MsgBuilder->BuildReqNPCScriptAnswerMsg( mInfoId, &tLUAScript );
+        mDecodeData->mClient->FragmentAndSendUDPMessage(tmpMsg, 0x06);
+        return true;
+    }
 
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return (query[0]);

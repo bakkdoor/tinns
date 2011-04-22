@@ -1,22 +1,22 @@
 /*
-	TinNS (TinNS is not a Neocron Server)
-	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
+   TinNS (TinNS is not a Neocron Server)
+   Copyright (C) 2005 Linux Addicted Community
+   maintainer Akiko <akiko@gmx.org>
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License
+   as published by the Free Software Foundation; either version 2
+   of the License, or (at your option) any later version.
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-	02110-1301, USA.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301, USA.
 */
 #include "main.h"
 
@@ -24,12 +24,12 @@ void PCommands::doCmdsetlevel()
 {
     int destLevel = 0;
     bool SyntaxError = false;
-    if(ArgC < 2)
+    if (ArgC < 2)
     {
         SyntaxError = true;
     }
 
-    if(IsArgNumeric(2) == false)
+    if (IsArgNumeric(2) == false)
     {
         SyntaxError = true;
     }
@@ -38,13 +38,13 @@ void PCommands::doCmdsetlevel()
         destLevel = GetArgInt(2);
     }
 
-    if(SyntaxError == true)
+    if (SyntaxError == true)
     {
         Chat->send(source, CHAT_DIRECT, "Usage", "@setlevel <charID or nickname> <newlevel 1-99>");
         return;
     }
 
-    if(IsArgNumeric(1) == true)
+    if (IsArgNumeric(1) == true)
     {
         target = GetClientByID(GetArgInt(1));
     }
@@ -55,12 +55,12 @@ void PCommands::doCmdsetlevel()
         target = GetClientByNick(tmp_destNick);
     }
 
-    if(target == NULL) // If victim isnt found, return error
+    if (target == NULL) // If victim isnt found, return error
     {
         Chat->send(source, CHAT_DIRECT, "System", "No such player");
         return;
     }
-    if(source->GetAccountLevel() <= target->GetAccountLevel())
+    if (source->GetAccountLevel() <= target->GetAccountLevel())
     {
         char tmpMsg[200];
         snprintf(tmpMsg, 199, "Cant set new level for %s, target level is higher or equal to yours!", Chars->GetChar(target->GetCharID())->GetName().c_str());
@@ -73,7 +73,7 @@ void PCommands::doCmdsetlevel()
     Acc.SetLevel(destLevel);
     Acc.Save();
     source->RefreshAccountInfo(&Acc);
-    
+
     char tmpMsg[60], tmpMsg2[60];
     snprintf(tmpMsg, 59, "Set level for player %s to %d", Chars->GetChar(target->GetCharID())->GetName().c_str(), destLevel);
     snprintf(tmpMsg2, 59, "**POOF** Your new accesslevel is now %d", destLevel);

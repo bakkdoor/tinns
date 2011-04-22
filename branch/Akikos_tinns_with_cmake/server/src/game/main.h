@@ -101,8 +101,11 @@
 #include "include/inventory.h"
 #include "include/worldactors.h"
 #include "include/npc.h"
+#include "outpost.h"
+#include "multipart.h"
 #include "include/terminal.h"
 
+#include "lua_engine.h"
 #include "include/chat.h"
 #include "include/commands.h"
 #include "include/clientmanager.h"

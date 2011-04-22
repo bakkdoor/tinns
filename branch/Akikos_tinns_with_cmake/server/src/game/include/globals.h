@@ -35,6 +35,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+extern class PLuaEngine *LuaEngine;
+
 extern class ServerSocket *ServerSock;
 extern class PConsole *Console;
 //extern class PRConsole *RemoteConsole;
@@ -59,7 +61,10 @@ extern class PTerminal* Terminal;
 extern class PClientManager *ClientManager;
 extern class PNPCManager* NPCManager;
 extern class PChat *Chat;
-extern class PCommands *GameCommands;
+extern class PCommands *GameCommandis;
+
+extern class POutpost *Outposts;
+extern class PMultiPart *MultiPartHandler;
 
 // Development debug output control
 extern bool gDevDebug;

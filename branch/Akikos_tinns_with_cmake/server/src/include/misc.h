@@ -48,6 +48,8 @@ std::string GetAccessString(int level);
 
 void PrintPacket(u8 *Packet, int PacketSize);
 
+// Cleanup for strings read from .def
+void CleanUpString(std::string *nString);
 void Trim(char *t);
 void Trim(std::string *stString);
 void RTrim(char *t);

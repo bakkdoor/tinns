@@ -39,28 +39,6 @@
 #include "include/furnituretemplate.h"
 #include "include/doortemplate.h"
 
-
-/**** PUdpHackInit ****/
-
-PUdpHackInit::PUdpHackInit(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
-{
-    nDecodeData->mName << "/0x00";
-}
-
-PUdpMsgAnalyser* PUdpHackInit::Analyse()
-{
-    mDecodeData->mName << "=Hackgame announced";
-
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
-}
-
-bool PUdpHackInit::DoAction()
-{
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
-}
-
 /**** PUdpHackSuccess ****/
 
 PUdpHackSuccess::PUdpHackSuccess(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
@@ -160,70 +138,6 @@ PUdpMsgAnalyser* PUdpHackFail::Analyse()
 
 bool PUdpHackFail::DoAction()
 {
-    mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
-    return true;
-}
-
-/**** PUdpHackStart ****/
-
-PUdpHackStart::PUdpHackStart(PMsgDecodeData* nDecodeData) : PUdpMsgAnalyser(nDecodeData)
-{
-    nDecodeData->mName << "/0x20";
-}
-
-PUdpMsgAnalyser* PUdpHackStart::Analyse()
-{
-    mDecodeData->mName << "=Start hackgame";
-
-    mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
-    return this;
-}
-
-bool PUdpHackStart::DoAction()
-{
-    PClient* nClient = mDecodeData->mClient;
-    PChar* tChar = nClient->GetChar();
-    PWorld* CurrentWorld = Worlds->GetWorld(tChar->GetLocation());
-    const PFurnitureItemTemplate* tFurnitureTemplate = NULL;
-    const PDefWorldModel* tFurnitureModel = NULL;
-
-    u32 mRawItemID = mDecodeData->mMessage->U32Data(mDecodeData->Sub0x13Start+24);
-    //if(gDevDebug) Console->Print("Client %d wants to hack itemID %d ***not managed yet***", mDecodeData->mClient->GetID(), mRawItemID);
-
-    // First try to find out if we're hacking an dynamic actor
-    if(WorldActors->IsDynamicActor(mRawItemID) == true)
-    {
-        // Now get the get the function value: (What kind of hackable object)
-        int tFunctionVal = WorldActors->GetWorldActorFunctionID(mRawItemID);
-
-        // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc. Here: Hack difficult
-        tFurnitureModel = GameDefs->WorldModels()->GetDef(tFunctionVal);
-    }
-    else
-    {
-        // Dat files have smaller IDs
-        u32 ItemID = mRawItemID/1024 -1;
-
-        // Now grab the template from .dat file
-        tFurnitureTemplate = CurrentWorld->GetFurnitureItemTemplate(ItemID);
-
-        // Then get the FUNCTION VALUE as furniture model so we can access its subvalues etc
-        tFurnitureModel = CurrentWorld->GetFurnitureItemModel(ItemID);
-    }
-
-    if(tFurnitureModel) // We have an valid worldobject? Fine. Then start the hackgame
-    {
-        u8 tHackDifficult = tFurnitureModel->GetHackDifficulty();
-        u8 tHackPenalty = tFurnitureModel->GetHackPenalty();
-
-        // Print it!
-        if (gDevDebug) Console->Print("Client trying to hack itemID %d. Hack difficult: %d Hack penalty %d", mRawItemID, tHackDifficult, tHackPenalty);
-
-        PMessage* tmpMsg = MsgBuilder->BuildStartHackGameMsg(nClient, mRawItemID, tHackDifficult);
-        nClient->SendUDPMessage(tmpMsg);
-        tmpMsg = NULL;
-    }
-
     mDecodeData->mState = DECODE_ACTION_DONE | DECODE_FINISHED;
     return true;
 }

@@ -367,8 +367,11 @@ bool PAccount::Save(bool CreateMode)
   Query += Ssprintf(", a_priv = %d, a_status = %d, a_bandate = %d", mLevel, mStatus, mBannedUntil);
   if(!CreateMode )
   {
+  	Query += Ssprintf(" a_lastused = NOW()");
     Query += Ssprintf(" WHERE a_id = %d LIMIT 1", mID);
   }
+  else
+	Query += Ssprintf(" a_creationdate = NOW()");
 
   //if(MySQL->InfoQuery(Query.c_str()))
   if(MySQL->Query(Query.c_str()))

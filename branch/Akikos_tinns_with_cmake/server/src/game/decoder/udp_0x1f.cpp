@@ -50,6 +50,8 @@
 #include "udp_itemmanualreload.h"
 #include "udp_itemuse.h"
 #include "udp_deathrespawn.h"
+#include "udp_pvptrade.h"
+#include "udp_npcdialog.h"
 
 /**** PUdp0x1f ****/
 
@@ -67,14 +69,14 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
 
   switch ( MsgType )
   {
-    case 0x00: // Hack announcement?
+    case 0x00:
     {
-      nextAnalyser = new PUdpHackInit( mDecodeData );
+	  nextAnalyser = new PUdpHeldItemBasicAction( mDecodeData );
       break;
     }
     case 0x01:
     {
-      nextAnalyser = new PUdpHeldItemAction( mDecodeData );
+	  nextAnalyser = new PUdpHeldItemAimedAction( mDecodeData );
       break;
     }
     case 0x02:
@@ -85,6 +87,16 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
     case 0x17:
     {
       nextAnalyser = new PUdpUseObject( mDecodeData );
+      break;
+    }
+    case 0x19: // NPC Dialog closed
+    {
+      nextAnalyser = new PUdpNPCDialogClose( mDecodeData );
+      break;
+    }
+    case 0x1a: // NPC Dialog action/reply
+    {
+      nextAnalyser = new PUdpNPCDialogAction( mDecodeData );
       break;
     }
     case 0x1b:
@@ -102,9 +114,9 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
       nextAnalyser = new PUdpItemSlotUse( mDecodeData );
       break;
     }
-    case 0x20: // Start hackgame
+	case 0x20: // Use item for hacking, launcher, "launcher" spell
     {
-      nextAnalyser = new PUdpHackStart( mDecodeData );
+	  nextAnalyser = new PUdpHeldItemLaunchingAction( mDecodeData );
       break;
     }
     case 0x22:
@@ -143,7 +155,7 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
           nextAnalyser = new PUdpItemDropOnItem( mDecodeData );
           break;
         }
-        case 0x18: // And Next byte = 0x0e
+        case 0x18:
         {
           mDecodeData->mName << "/0x18";
           switch ( mDecodeData->mMessage->U8Data( mDecodeData->Sub0x13Start + 9 ) )
@@ -271,6 +283,11 @@ PUdpMsgAnalyser* PUdp0x1f::Analyse()
         }
       }
       break;
+    }
+    case 0x3e:
+    {
+        nextAnalyser = new PUdpPvPTrade( mDecodeData );
+        break;
     }
     case 0x4c:
     {

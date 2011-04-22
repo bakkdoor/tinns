@@ -70,6 +70,7 @@
 #include "def_worlds.h"
 #include "def_worldfile.h"
 #include "def_worldmodels.h"
+#include "def_scripts.h"
 
 #include "gamedefs.h"
 

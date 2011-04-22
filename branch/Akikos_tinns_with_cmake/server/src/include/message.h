@@ -85,7 +85,8 @@ class PMessage
       // Writing methods
         u8* GetMessageDataPointer(u16 nUsedSize); // extends buffer as needed by nUsedSize, and sets UsedSize at min nUsedSize
         PMessage& Fill(u8 Value = 0, u16 StartOffset = 0, u16 FillSize = 0); // !!! Does NOT update UsedSize, fills only up to current maxSize
-        inline PMessage& Clear() { mNextByteOffset = mUsedSize = 0; return *this; }
+		inline PMessage& Reset() { mNextByteOffset = mUsedSize = 0; return *this; }
+		inline PMessage& Clear() { return this->Fill(0).Reset(); }
         PMessage& Write(const void* nData, u16 nLength);
         PMessage& operator << (PMessage& nMessage);
         PMessage& operator << (const char* nString); //for null terminated string ! Copies includes ending \0

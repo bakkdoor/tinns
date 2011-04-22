@@ -41,18 +41,19 @@ add_executable		(gameserver
 			def/def_weapons.cpp def/def_weather.cpp
 			def/def_worldfile.cpp def/def_worldmodels.cpp
 			def/def_worlds.cpp def/gamedefs.cpp
-			def/world_datparser.cpp
+			def/world_datparser.cpp def/def_scripts.cpp
 
 			gamecommands/ban.cpp gamecommands/brightness.cpp
 			gamecommands/broadcast.cpp gamecommands/color.cpp
 			gamecommands/debug.cpp gamecommands/effect.cpp
 			gamecommands/givemoney.cpp gamecommands/h.cpp
-			gamecommands/info.cpp
+			gamecommands/info.cpp gamecommands/npc_shop.cpp
 			gamecommands/jail.cpp gamecommands/kick.cpp
 			gamecommands/listbans.cpp gamecommands/online.cpp
 			gamecommands/rawf.cpp gamecommands/recall.cpp
 			gamecommands/remove.cpp gamecommands/setlevel.cpp
-			gamecommands/settime.cpp gamecommands/shun.cpp
+			gamecommands/settime.cpp gamecommands/setsubskill.cpp
+			gamecommands/shun.cpp gamecommands/setmainskill.cpp
 			gamecommands/skin.cpp gamecommands/spawnactor.cpp
 			gamecommands/speed.cpp gamecommands/takemoney.cpp
 			gamecommands/t.cpp gamecommands/teleport.cpp
@@ -61,6 +62,7 @@ add_executable		(gameserver
 			gamecommands/uptime.cpp gamecommands/v.cpp
 			gamecommands/version.cpp gamecommands/warp.cpp
 			gamecommands/warpto.cpp gamecommands/weather.cpp
+			gamecommands/npc.cpp
 
 			accounts.cpp appartements.cpp buddylist.cpp
 			chars.cpp chat.cpp client.cpp clientmanager.cpp
@@ -69,10 +71,10 @@ add_executable		(gameserver
 			globals.cpp inventory.cpp isc.cpp item.cpp main.cpp
 			msgbuilder.cpp npc.cpp server.cpp skill.cpp sql.cpp
 			subway.cpp terminal.cpp terminal_receivedb.cpp
-			terminal_servermessage.cpp terminal_tryaccess.cpp
+			terminal_tryaccess.cpp npc_conversation.cpp
 			terminal_updatedb.cpp vehicle.cpp vhcaccessrequest.cpp
 			worldactors.cpp worlddatatemplate.cpp worlds.cpp
-			zoning.cpp)
+			zoning.cpp outpost.cpp npc_ai.cpp)
 
 target_link_libraries	(gameserver tinns ${MYSQL_LIBRARY} ${PCRE_LIBRARY}
 			${ZLIB_LIBRARY} ${RT_LIBRARY})

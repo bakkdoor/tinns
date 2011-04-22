@@ -1,0 +1,82 @@
+CHANGELOG FOR GameDB 8 and InfoDB 8
+-----------------------------------
+
+v7 > v8:
+INFOSERVER:
+- No changes so far
+
+GAMESERVER:
+Renamed table 'bug report' to 'bug_report'
+- Changed br_desc from VARCHAR(256) to VARCHAR(1024) as this is the size
+found in .tsc files
+
+Changed table "characters":
+- Added col c_online
+- Added col c_clan
+- Added col c_soullight
+
+Added table "clanlevels"
+
+Changed table "clans":
+- Renamed c_faction to cl_faction, also changed type from INT(10) to INT(2)
+- Renamed c_id to cl_id
+- Renamed c_longname to cl_name, also changed type from VARCHAR(45) to
+CHAR(16) as this is the size found in .tsc files
+- Renamed c_shortname to cl_shortdesc, also changed type from VARCHAR(45) to
+CHAR(64) as this is the size found in .tsc files
+- Added col cl_appid
+- Added col cl_description
+- Added col cl_leader
+- Added col cl_minsympathy
+- Added col cl_money
+- Added col cl_representative
+
+Added table "clanwars"
+
+Added table "datacubes"
+
+Changed table "forum_posts"
+- Added col fp_factionid
+- Added col fp_clanid
+- Changed col fp_content from VARCHAR(1024) to VARCHAR(2048) as this is the
+size found in .tsc files
+
+Changed table "guides"
+- Changed col g_content from VARCHAR(512) to TEXT, as the size in .tsc files
+is set to 32768
+- Added col g_language
+- Added col g_chapter
+- Added col g_part
+
+Added table "moneytransactions"
+
+Changed table "neochronicle"
+- Changed col nc_content from VARCHAR(512) to TEXT, as the size in .tsc files
+is set to 32768
+- Added col nc_lang
+- Added col nc_approved
+- Added col nc_author
+- Added col nc_icon
+
+Changed table "neocron articles"
+- Changed col na_content from VARCHAR(512) to TEXT, as the size in .tsc files
+is set to 32768
+
+Added table "npc_shop"
+
+Changed table "npc_spawns"
+- Added col npc_unknown
+- Added col npc_trader
+- Added col npc_customname
+- Added col npc_customscript
+- Added col npc_shop_quality
+- Added col npc_scripting
+
+Added table "stockx_depots"
+
+Added table "support"
+
+Changed table "vehicles"
+- Added col v_world
+
+Added table "worlds"

@@ -41,9 +41,9 @@ class PSpawnedVehicle;
 
 class PMsgBuilder
 {
-  private:
+private:
 
-  public:
+public:
     PMsgBuilder() {};
     ~PMsgBuilder() {};
 
@@ -71,15 +71,40 @@ class PMsgBuilder
     PMessage* BuildVhcPosUpdate2Msg( PSpawnedVehicle* nVehicle );
 
     PMessage* BuildStartWeaponReloadAnimMsg( PClient* nClient );
-    PMessage* BuildHeldItemUsedMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore = 0 );
+    PMessage* BuildHeldItemUseMsg( u16 nUserCharLocalId, u16 nWeaponId, u32 nTargetRawItemID, u8 nAiming, u8 nTargetedHeight, u8 nScore = 0 );
+    PMessage* BuildHeldItemUse2Msg( u16 nUserCharLocalId, u32 nTargetRawItemID );
+    PMessage* BuildHeldItemUse4Msg( u16 nUserCharLocalId, u32 nTargetRawItemID, u16 nUnknown1, u16 nUnknown2, u8 nTargetedHeight );
     PMessage* BuildHeldItemAddonActivationMsg( PClient* nClient, u8 nState );
 
     // Temp. NPC update message for testing
     PMessage* BuildNpcDeathMsg( PClient* nClient, u32 nNpcId, u8 unknown1 = 0x4a, u8 npcAction = 0x1e );
 
+    PMessage* BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCMassAliveMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
+    PMessage* BuildNPCMassUpdateMsg( u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
+    // Moved here since its a zone broadcast!
+    PMessage* BuildNpcCleanupMsg( u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
 
 // Following methods for unicast messages DO include UDP_ID increment and
 // UDP_ID / SessionID setting when needed (at least for now)
+    PMessage* BuildOutpostClanInfoMsg( PClient* nClient, u32 nClanID, u8 nFaction );
+    PMessage* BuildTryAccessAnswerMsg(PClient* nClient, char *nArea, bool nAllowed);
+    PMessage* BuildReceiveDBAnswerMsg( PClient* nClient, PMessage* nResultBuffer, std::string* nCommandName, u16 nNumRows, u16 nNumFields);
+    PMessage* BuildYouGotEmailsMsg( PClient* nClient, u8 nMailCount );
+ 
+    PMessage* BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  );
+    PMessage* BuildNPCDialogReplyMsg( PClient* nClient, u16 nNextNode, std::vector<int>*nResultBuffer);
+    PMessage* BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScript );
+    PMessage* BuildNPCShoppingListMsg( PClient* nClient, PMessage* nContentList, int nWorldID, u8 nItemQuality);
+    PMessage* BuildNPCBeginAllBuyerTradeMsg( PClient* nClient, int nWorldID );
+ 
+    PMessage* BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing, u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth, u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName);
+    PMessage* BuildNPCSingleAliveMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u8 nAction );
+    PMessage* BuildNPCSingleUpdateMsg( PClient* nClient, u32 nWorldID, u16 nX, u16 nY, u16 nZ, u8 nActionStatus, u8 nHealth, u16 nTarget, u8 nAction );
+ 
+    // NEW for testing. Combined update message
+    PMessage* BuildNPCUpdateMsg(u32 nWorldID, u16 nPosY, u16 nPosZ, u16 nPosX, u8 nActionBM, u16 nHealth, u8 nWeaponState, u8 nUnknown, u32 nTargetID = 0);
+ 
     PMessage* BuildReqInfoAnswerMsg( PClient* nClient, u16 nReqType, u32 nInfoId, void* nResponse, u16 nResponseLength );
 
     PMessage* BuildPacket0Msg( PClient* nClient );
@@ -102,6 +127,7 @@ class PMsgBuilder
 
     PMessage* BuildCharAptLocInfoMsg( PClient* nClient );
 
+    PMessage* BuildLevelUpMessage( PClient* nClient, u8 nMainSkill, u8 nNewLevel, u16 nFreeSkillPoints);
     PMessage* BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 nSkillPoints );
     PMessage* BuildChatAddMsg( PClient* nClient, u32 nAddedCharID, u8 nMode ); // mode = 1 for Direct, 2 for Buddy
 
@@ -144,7 +170,11 @@ class PMsgBuilder
 
     PMessage* BuildTraderItemListMsg( PClient* nClient, u32 nTraderNpcID );
 
-    PMessage* BuildNpcCleanupMsg( PClient* nClient, u32 nNpcId, u8 nCmd = 6 ); // see implementation about nCmd
+    PMessage* BuildHeldItemUse3Msg(  PClient* nClient, u16 nUnknown1, u16 nUnknown2, u16 nUnknown3, u16 nUnknown4  );
+
+    PMessage* BuildCharUseTimedDrugMsg( PClient* nClient, const PDefDrug* nDrugDef, u16 nItemId );
+    PMessage* BuildCharUseInstantDrugMsg( PClient* nClient, const PDefDrug* nDrugDef );
+    PMessage* BuildCharUseRecreationUnitMsg( PClient* nClient, u32 nObjectId );
 };
 
 #endif

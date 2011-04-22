@@ -155,7 +155,7 @@ class PChar
     u16 mMana;
     u16 mStamina;
 
-    s8 mSoullight; // *** Not got/saved from DB atm ***
+    s8 mSoullight;
     u8 mCombatRank; // *** Not got/saved from DB atm ***
     u8 mSynaptic; // *** Not got/saved from DB atm ***
     bool mIsDead; // *** Not got/saved from DB atm ***
@@ -177,12 +177,18 @@ class PChar
     u16 mLookingAt;  // Zone charID of currently targeted player
     std::time_t mLookAtTimestamp; // Lifetimer of lookat var
     u32 mLastUsedWorldObjectId; // Last world object clicked on
-    
+
+    u8 mClanLevel; // 1-15
+    u16 mClanID;
+
     bool mIsOnline;
     bool mDirtyFlag;
 
     bool mShunned;
     bool mJailed;
+
+    u32 mDialogNPC; // NPCID the player talks to
+    u16 mCurrentDialogNode; // Node in .lua file we're at right now
 
     class PInventory mInventory;
 
@@ -258,6 +264,8 @@ class PChar
 
     inline u32 GetCash() const { return mCash; }
     u32 SetCash( u32 nCash );  // Does return the new cashvalue, NO udpmessage is sent out!!
+	u32 AddCash( u32 nAmount );
+	u32 TakeCash( u32 nAmount );
 
     inline u32 GetBaseApartment() const { return mPrimaryApt; }
 
@@ -267,9 +275,19 @@ class PChar
     inline bool IsJailed() { return mJailed; };
     inline bool IsShunned() { return mShunned; };
 
+    inline void SetDialogNPC( u32 nNPC ) { mDialogNPC = nNPC; };
+    inline u32 GetDialogNPC() const { return mDialogNPC; };
+
+    inline void SetDialogNode( u16 nNode ) { mCurrentDialogNode = nNode; };
+    inline u16 GetDialogNode() const { return mCurrentDialogNode; };
+
+    inline u8 GetClanLevel() const { return mClanLevel; };
+    inline u16 GetClan() const { return mClanID; };
+    void LoadClanLevel();
+
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();
-    inline u8 GetCombatRank() const { return mCombatRank; }
+    u8 GetCombatRank()
     inline u8 GetSynaptic() const { return mSynaptic; }
     inline bool IsDead() const { return mIsDead; }
 

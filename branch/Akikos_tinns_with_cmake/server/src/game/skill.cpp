@@ -68,7 +68,7 @@ void PSkillHandler::SetMainSkill(MAIN_SKILLS Skill, int value)
 
 void PSkillHandler::SetSubSkill(SUB_SKILLS Skill, int value)
 {
-    switch(Skill)
+    switch (Skill)
     {
 // STR Skills ------------------------
     case SK_MC:
@@ -282,7 +282,7 @@ int PSkillHandler::GetMainSkill(MAIN_SKILLS Skill)
 
 int PSkillHandler::GetSubSkill(SUB_SKILLS Skill)
 {
-    switch(Skill)
+    switch (Skill)
     {
 // STR Skills ------------------------
     case SK_MC:
@@ -420,15 +420,15 @@ int PSkillHandler::GetSKPCost(SUB_SKILLS Skill)
 {
     int skillvalue = GetSubSkill(Skill);
 
-    if(skillvalue < 50)
+    if (skillvalue < 50)
     {
         return 1;
     }
-    else if(skillvalue < 75)
+    else if (skillvalue < 75)
     {
         return 2;
     }
-    else if(skillvalue < 100)
+    else if (skillvalue < 100)
     {
         return 3;
     }
@@ -490,4 +490,209 @@ float PSkillHandler::GetXP(MAIN_SKILLS Skill)
         break;
     };
     return 0;
+}
+
+MAIN_SKILLS PSkillHandler::GetMSfromSS(SUB_SKILLS Skill)
+{
+    switch (Skill)
+    {
+    case SK_HCK:
+    case SK_BRT:
+    case SK_PSU:
+    case SK_WEP:
+    case SK_CST:
+    case SK_RES:
+    case SK_IMP:
+    case SK_WPW:
+        return MS_INT;
+        break;
+
+    case SK_ATL:
+    case SK_END:
+    case SK_FIR:
+    case SK_ENR:
+    case SK_XRR:
+    case SK_POR:
+    case SK_HLT:
+        return MS_CON;
+        break;
+
+    case SK_MC:
+    case SK_HC:
+    case SK_TRA:
+    case SK_FOR:
+        return MS_STR;
+        break;
+
+    case SK_PC:
+    case SK_RC:
+    case SK_TC:
+    case SK_VHC:
+    case SK_AGL:
+    case SK_REP:
+    case SK_REC:
+    case SK_RCL:
+        return MS_DEX;
+        break;
+
+    case SK_PPU:
+    case SK_APU:
+    case SK_MST:
+    case SK_PPW:
+    case SK_PSR:
+        return MS_PSI;
+        break;
+
+    default:
+        return 0;
+        break;
+    }
+}
+
+bool PSkillHandler::IncSubSkillPossible(SUB_SKILLS Skill)
+{
+    // Check if player is able to inc the given subskill (Enough points left to do that)
+    MAIN_SKILLS tMainSkill = GetMSfromSS(Skill);
+
+    // Failsafe
+    if ( tMainSkill == 0 )
+        return false;
+
+    // Compare amount of available skillpoints for given mainskill
+    // with the amount of points required to increase the subskill
+    if ( GetSP( tMainSkill ) >= GetSKPCost( Skill ))
+        return true;
+    else
+        return false;
+}
+
+int PSkillHandler::IncreaseSubSkill(SUB_SKILLS Skill)
+{
+    // Not enough points left? Then exit here
+    if ( IncSubSkillPossible( Skill ) == false)
+        return -1;
+
+    MAIN_SKILLS tMainSkill = GetMSfromSS( Skill );
+    // Remove skillpoints from availabe ones
+    SetSP( tMainSkill, GetSP( tMainSkill ) - GetSKPCost( Skill ));
+
+    // Set new value
+    SetSubSkill(Skill, GetSubSkill( Skill ) + 1 );
+    return GetSP( tMainSkill );
+}
+
+void PSkillHandler::ZeroMSSubSkills(MAIN_SKILLS Skill)
+{
+    // Set all SubSkills for the given Mainskill to Zero
+    switch ( Skill )
+    {
+    case MS_STR:
+        SetSubSkill(SK_MC,0);
+        SetSubSkill(SK_HC,0);
+        SetSubSkill(SK_TRA,0);
+        SetSubSkill(SK_FOR,0);
+        break;
+
+    case MS_DEX:
+        SetSubSkill(SK_PC,0);
+        SetSubSkill(SK_RC,0);
+        SetSubSkill(SK_TC,0);
+        SetSubSkill(SK_VHC,0);
+        SetSubSkill(SK_AGL,0);
+        SetSubSkill(SK_REP,0);
+        SetSubSkill(SK_REC,0);
+        SetSubSkill(SK_RCL,0);
+        break;
+
+    case MS_CON:
+        SetSubSkill(SK_ATL,0);
+        SetSubSkill(SK_END,0);
+        SetSubSkill(SK_FIR,0);
+        SetSubSkill(SK_ENR,0);
+        SetSubSkill(SK_XRR,0);
+        SetSubSkill(SK_POR,0);
+        SetSubSkill(SK_HLT,0);
+        break;
+
+    case MS_INT:
+        SetSubSkill(SK_HCK,0);
+        SetSubSkill(SK_BRT,0);
+        SetSubSkill(SK_PSU,0);
+        SetSubSkill(SK_WEP,0);
+        SetSubSkill(SK_CST,0);
+        SetSubSkill(SK_RES,0);
+        SetSubSkill(SK_IMP,0);
+        SetSubSkill(SK_WPW,0);
+        break;
+
+    case MS_PSI:
+        SetSubSkill(SK_PPU,0);
+        SetSubSkill(SK_APU,0);
+        SetSubSkill(SK_MST,0);
+        SetSubSkill(SK_PPW,0);
+        SetSubSkill(SK_PSR,0);
+        break;
+    }
+}
+
+bool PSkillHandler::IsValidSubSkill(SUB_SKILLS Skill)
+{
+    switch (Skill)
+    {
+    case SK_HCK:
+    case SK_BRT:
+    case SK_PSU:
+    case SK_WEP:
+    case SK_CST:
+    case SK_RES:
+    case SK_IMP:
+    case SK_WPW:
+    case SK_ATL:
+    case SK_END:
+    case SK_FIR:
+    case SK_ENR:
+    case SK_XRR:
+    case SK_POR:
+    case SK_HLT:
+    case SK_MC:
+    case SK_HC:
+    case SK_TRA:
+    case SK_FOR:
+    case SK_PC:
+    case SK_RC:
+    case SK_TC:
+    case SK_VHC:
+    case SK_AGL:
+    case SK_REP:
+    case SK_REC:
+    case SK_RCL:
+    case SK_PPU:
+    case SK_APU:
+    case SK_MST:
+    case SK_PPW:
+    case SK_PSR:
+        return true;
+        break;
+
+    default:
+        return false;
+        break;
+    }
+}
+
+bool PSkillHandler::IsValidMainSkill(MAIN_SKILLS Skill)
+{
+    switch ( Skill )
+    {
+    case MS_STR:
+    case MS_DEX:
+    case MS_CON:
+    case MS_INT:
+    case MS_PSI:
+        return true;
+        break;
+    default:
+        return false;
+        break;
+    }
 }

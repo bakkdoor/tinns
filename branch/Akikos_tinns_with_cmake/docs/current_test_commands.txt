@@ -1,0 +1,17 @@
+Current @test commands are:
+
+@text 1 <npcID> <zoneID> <unknown1> <attackAnim>
+- Let <npcID> (use @debug it) attack <zoneID> which can be any npc or
+player
+  <npcID>: For non-sql NPCs, you have to remove an offset of 255; So the left
+security officer
+  in plaza 1 would have id 48 instead of 303
+  Unknown 1 is .. unknown yet and seems to be unimportant
+  attackAnim is the attack "style" of <npcID>. Varies from npc type to npc
+type
+
+@test 2 <faction ID> <faction ID>
+- Get relation of the 2 given factions. <0 means enemy
+
+
+! IF you find out what an "unknown" value does, tell us !

@@ -87,6 +87,9 @@ PWorldActors* WorldActors = 0;
 PNPCManager* NPCManager = 0;
 PSubway* Subway = 0;
 PTerminal* Terminal = 0;
+PLuaEngine* LuaEngine = 0;
+POutpost* Outposts = 0;
+PMultiPart* MultiPartHandler = 0;
 
 //multi-user chat implementation
 PClientManager *ClientManager = 0;
@@ -158,6 +161,8 @@ bool InitTinNS()
     Worlds->LoadWorlds();
 
     WorldActors = new PWorldActors();
+	LuaEngine = new PLuaEngine();
+
     NPCManager = new PNPCManager();
     Appartements = new PAppartements;
     Subway = new PSubway;
@@ -194,11 +199,21 @@ bool InitTinNS()
     ISC = new PISC();
     Terminal = new PTerminal();
 
+	Outposts = new POutpost();
+
+	MultiPartHandler = new PMultiPart();
+
     return true;
 }
 
 void Shutdown()
 {
+    if(MultiPartHandler)
+        delete MultiPartHandler;
+    if(Outposts)
+        delete Outposts;
+    if(LuaEngine)
+        delete LuaEngine;
     if(Terminal)
         delete Terminal;
     if(WorldActors)

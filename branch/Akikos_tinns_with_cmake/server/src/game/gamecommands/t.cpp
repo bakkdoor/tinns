@@ -141,13 +141,52 @@ void PCommands::doCmd_dev_t()
       source->SendUDPMessage( tmpMsg );
       tmpMsg = NULL;
     }
+    else if ( Arg1[0] == 'e' )
+    {
+      targetObjectId = 1004; //target=int
+      u16 nval = 5;
+      u8 nType = 1; // 1=+ 2=-
+      u16 nDur = 20;
+      u8 nparam = 1;
+
+        nparam = GetArgInt( 2 ) && 0xff;
+
+        tmpMsg = new PMessage( 32 );
+
+        source->IncreaseUDP_ID();
+        *tmpMsg << ( u8 )0x13;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u16 )source->GetSessionID();
+        *tmpMsg << ( u8 )0x0e; // Message length
+        *tmpMsg << ( u8 )0x03;
+        *tmpMsg << ( u16 )source->GetUDP_ID();
+        *tmpMsg << ( u8 )0x1f;
+        *tmpMsg << ( u16 )source->GetLocalID();
+        *tmpMsg << ( u8 )0x25; // ??
+        *tmpMsg << ( u8 )0x06; // ??
+        *tmpMsg << ( u8 )0x01; // 1 effect
+        *tmpMsg << ( u8 )0x01; // effect on intox level ????
+        *tmpMsg << ( u16 )nDur;
+        *tmpMsg << ( u16 )(700+(targetObjectId % 100)); //item id Thyronol
+        *tmpMsg << ( u8 )nType;
+        *tmpMsg << ( u16 )(nval*100); //u32 in nc2.2
+        *tmpMsg << ( u16 )targetObjectId;
+
+
+        ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
+        snprintf( tmpStr, 127, "Sendind drug mod to stat %d, %s %d", targetObjectId, (nType == 1 ? "inc" : "dec"), nval );
+        textMsg = tmpStr;
+
+        source->SendUDPMessage( tmpMsg );
+        tmpMsg = NULL;
+    }
     else if ( Arg1[0] == 'w' )
     {
-      targetObjectId &= 0xffff;
+      /*targetObjectId &= 0xffff;
       u16 val1 = 0;
       if ( ArgC >= 3 )
         val1 = GetArgInt( 3 ) & 0xffff;
-
+*/
       tmpMsg = new PMessage( 15 );
 
       source->IncreaseUDP_ID();
@@ -159,13 +198,25 @@ void PCommands::doCmd_dev_t()
       *tmpMsg << ( u8 )0x03;
       *tmpMsg << ( u16 )source->GetUDP_ID();
       *tmpMsg << ( u8 )0x23;
-      *tmpMsg << ( u16 )0x000f; // cmd = ?
-      *tmpMsg << ( u16 )targetObjectId; //0x0003
-      *tmpMsg << ( u16 )val1; //0x0001
+      *tmpMsg << ( u16 )0x0012; // cmd = ?
+      *tmpMsg << ( u16 )0x0007;
+      *tmpMsg << ( u32 )0x00000000;
 
       ( *tmpMsg )[5] = ( u8 )( tmpMsg->GetSize() - 6 );
 
-      snprintf( tmpStr, 127, "Sending W msg with param %d / %d", targetObjectId, val1 );
+      snprintf( tmpStr, 127, "Sending w msg " );
+      textMsg = tmpStr;
+
+      source->SendUDPMessage( tmpMsg );
+      tmpMsg = NULL;
+    }
+    else if ( Arg1[0] == 'x' )
+    {
+      u8 val1 = targetObjectId &= 0xff;
+
+      tmpMsg = MsgBuilder->BuildUndefineduseMsg( source, val1 );
+
+      snprintf( tmpStr, 127, "Sending x msg with param %d (0x%2x)", val1, val1 );
       textMsg = tmpStr;
 
       source->SendUDPMessage( tmpMsg );
