@@ -28,7 +28,7 @@ CREATION: 24 Oct 2009 Namikon
 */
 
 #include "main.h"
-#include "msgbuilder.h"
+#include "include/msgbuilder.h"
 
 POutpost::POutpost()
 {

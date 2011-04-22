@@ -29,13 +29,13 @@ MODIFIED: 28 Apr 2009 Hammag
 REASON: changed worlds/zones Id from u16 (wrong !!!) to u32
  
  */
- 
- #include "main.h"
- #include "npc.h"
-#include "worlds.h"
-#include "npctemplate.h"
-#include "worlddatatemplate.h"
-#include "msgbuilder.h"
+
+#include "main.h"
+#include "include/npc.h"
+#include "include/worlds.h"
+#include "include/npctemplate.h"
+#include "include/worlddatatemplate.h"
+#include "include/msgbuilder.h"
  
  ///***********************************************************************
 
@@ -654,7 +654,7 @@ void PNPCWorld::Update() // v2; New send function
 
     return;
  }
--
+
 /*
 void PNPCWorld::Update()
 {

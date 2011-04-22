@@ -1,5 +1,5 @@
 #include "main.h"
-#include "npc.h"
+#include "include/npc.h"
 
 // First try of an "AI" :P
 void PNPCWorld::CheckForEnemies(PNPC* nNPC)

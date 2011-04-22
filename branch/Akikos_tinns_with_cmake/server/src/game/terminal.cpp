@@ -32,8 +32,8 @@
 
 
 #include "main.h"
-#include "terminal.h"
-#include "msgbuilder.h"
+#include "include/terminal.h"
+#include "include/msgbuilder.h"
 
 
 PTerminal::PTerminal()

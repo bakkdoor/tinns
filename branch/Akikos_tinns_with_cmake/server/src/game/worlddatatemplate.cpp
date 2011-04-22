@@ -33,11 +33,11 @@
 
 #include "main.h"
 
-#include "worlddatatemplate.h"
-#include "world_datparser.h"
-#include "furnituretemplate.h"
-#include "doortemplate.h"
-#include "npctemplate.h"
+#include "include/worlddatatemplate.h"
+#include "include/world_datparser.h"
+#include "include/furnituretemplate.h"
+#include "include/doortemplate.h"
+#include "include/npctemplate.h"
 
 PWorldDataTemplate::PWorldDataTemplate()
 {

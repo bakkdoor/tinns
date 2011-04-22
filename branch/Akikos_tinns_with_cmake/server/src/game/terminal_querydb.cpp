@@ -31,8 +31,8 @@
 */
 
 #include "main.h"
-#include "terminal.h"
-#include "msgbuilder.h"
+#include "include/terminal.h"
+#include "include/msgbuilder.h"
 
 
 bool PTerminal::HandleQueryDB(PClient* nClient, std::string *nDBCommandName, std::string *nCommandName, std::string *nOptions, u8 nNumOptions)

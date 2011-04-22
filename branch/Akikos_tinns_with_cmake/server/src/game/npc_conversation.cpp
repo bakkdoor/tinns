@@ -28,11 +28,11 @@ CREATION: 11 Oct 2009 Namikon
 */
 
 #include "main.h"
-#include "npc.h"
-#include "worlds.h"
-#include "npctemplate.h"
-#include "worlddatatemplate.h"
-#include "msgbuilder.h"
+#include "include/npc.h"
+#include "include/worlds.h"
+#include "include/npctemplate.h"
+#include "include/worlddatatemplate.h"
+#include "include/msgbuilder.h"
 
 ///***********************************************************************
 

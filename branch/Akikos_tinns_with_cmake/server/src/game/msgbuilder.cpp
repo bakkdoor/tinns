@@ -31,14 +31,14 @@
 */
 
 #include "main.h"
-#include "msgbuilder.h"
+#include "include/msgbuilder.h"
 
-#include "worlds.h"
-#include "appartements.h"
-#include "vehicle.h"
-#include "subway.h"
-#include "item.h"
-#include "container.h"
+#include "include/worlds.h"
+#include "include/appartements.h"
+#include "include/vehicle.h"
+#include "include/subway.h"
+#include "include/item.h"
+#include "include/container.h"
 
 PMessage* PMsgBuilder::BuildOutpostClanInfoMsg( PClient* nClient, u32 nClanID, u8 nFaction )
 {
@@ -1575,7 +1575,7 @@ PMessage* PMsgBuilder::BuildNPCDialogReplyMsg( PClient* nClient, u16 nNextNode, 
  
     return tmpMsg;
  }
--
+
 PMessage* PMsgBuilder::BuildNPCBeginAllBuyerTradeMsg( PClient* nClient, int nWorldID )
  {
     PMessage* tmpMsg = new PMessage();

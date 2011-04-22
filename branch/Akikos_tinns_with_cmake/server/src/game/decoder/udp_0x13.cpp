@@ -161,7 +161,7 @@ PUdpMsgAnalyser* PUdp0x13::Analyse()
                 break;
             }
             }
-			break
+			break;
         }
 
         case 0x0b: // Ping

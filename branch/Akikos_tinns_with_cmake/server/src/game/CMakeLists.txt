@@ -22,6 +22,8 @@ add_executable		(gameserver
 			decoder/udp_subskill.cpp decoder/udp_sync.cpp
 			decoder/udp_terminal.cpp decoder/udp_useobject.cpp
 			decoder/udp_vhc.cpp decoder/udp_zoning.cpp
+			decoder/udp_worldIDinfo.cpp decoder/udp_multipart.cpp
+			decoder/udp_pvptrade.cpp decoder/udp_npcdialog.cpp
 
 			def/def_actionmod.cpp def/def_ammo.cpp
 			def/def_appartements.cpp def/def_appplaces.cpp
@@ -64,17 +66,18 @@ add_executable		(gameserver
 			gamecommands/warpto.cpp gamecommands/weather.cpp
 			gamecommands/npc.cpp
 
+			globals.cpp terminal_querydb.cpp multipart.cpp
 			accounts.cpp appartements.cpp buddylist.cpp
 			chars.cpp chat.cpp client.cpp clientmanager.cpp
 			commands.cpp container.cpp doortemplate.cpp
 			furnituretemplate.cpp gameserver.cpp genreplist.cpp
-			globals.cpp inventory.cpp isc.cpp item.cpp main.cpp
+			inventory.cpp isc.cpp item.cpp main.cpp lua_engine.cpp
 			msgbuilder.cpp npc.cpp server.cpp skill.cpp sql.cpp
 			subway.cpp terminal.cpp terminal_receivedb.cpp
 			terminal_tryaccess.cpp npc_conversation.cpp
 			terminal_updatedb.cpp vehicle.cpp vhcaccessrequest.cpp
 			worldactors.cpp worlddatatemplate.cpp worlds.cpp
-			zoning.cpp outpost.cpp npc_ai.cpp)
+			zoning.cpp outpost.cpp npc_ai.cpp npctemplate.cpp)
 
 target_link_libraries	(gameserver tinns ${MYSQL_LIBRARY} ${PCRE_LIBRARY}
-			${ZLIB_LIBRARY} ${RT_LIBRARY})
+		${ZLIB_LIBRARY} ${RT_LIBRARY} ${LUA_LIBRARY})

@@ -37,10 +37,10 @@
 */
 #include "main.h"
 
-#include "client.h"
-#include "msgbuilder.h"
-#include "worlds.h"
-#include "worldactors.h"
+#include "include/client.h"
+#include "include/msgbuilder.h"
+#include "include/worlds.h"
+#include "include/worldactors.h"
 
 PCommands::PCommands()
 {

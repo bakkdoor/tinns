@@ -11,6 +11,7 @@ find_package		(MYSQL REQUIRED)
 find_package		(PCRE REQUIRED)
 find_package		(ZLIB REQUIRED)
 find_package		(RT REQUIRED)
+find_package		(LUA REQUIRED)
 
 #add_subdirectory	(docs)
 add_subdirectory	(server)

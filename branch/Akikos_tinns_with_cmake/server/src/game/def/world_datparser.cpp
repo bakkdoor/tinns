@@ -36,13 +36,13 @@ REASON: - Added NPC Template stuff
 
 #include "main.h"
 
-#include "world_datparser.h"
-#include "world_datstruct.h"
+#include "include/world_datparser.h"
+#include "def/world_datstruct.h"
 
-#include "worlddatatemplate.h"
-#include "furnituretemplate.h"
-#include "doortemplate.h"
-#include "npctemplate.h"
+#include "include/worlddatatemplate.h"
+#include "include/furnituretemplate.h"
+#include "include/doortemplate.h"
+#include "include/npctemplate.h"
 
 #include <math.h>
 

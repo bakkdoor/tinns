@@ -287,7 +287,7 @@ class PChar
 
     inline s8 GetSoullight() const { return mSoullight; }
     u8 GetMainRank();
-    u8 GetCombatRank()
+    u8 GetCombatRank();
     inline u8 GetSynaptic() const { return mSynaptic; }
     inline bool IsDead() const { return mIsDead; }
 

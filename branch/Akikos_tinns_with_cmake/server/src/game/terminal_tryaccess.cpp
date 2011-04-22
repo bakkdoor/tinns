@@ -32,9 +32,9 @@
  
  */
  
- #include "main.h"
- #include "terminal.h"
-#include "msgbuilder.h"
+#include "main.h"
+#include "include/terminal.h"
+#include "include/msgbuilder.h"
  
 bool PTerminal::DoStockXCheck(PClient* nClient, int nAmountEntered, int nNewAmount)
  {

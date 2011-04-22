@@ -32,8 +32,8 @@
 
 #include "main.h"
 #include "udp_helditemaction.h"
-#include "worlds.h"
-#include "furnituretemplate.h"
+#include "include/worlds.h"
+#include "include/furnituretemplate.h"
 
 /**** PUdpHeldItemBasicAction ****/
 

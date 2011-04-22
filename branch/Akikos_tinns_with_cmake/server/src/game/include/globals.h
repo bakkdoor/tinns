@@ -61,7 +61,7 @@ extern class PTerminal* Terminal;
 extern class PClientManager *ClientManager;
 extern class PNPCManager* NPCManager;
 extern class PChat *Chat;
-extern class PCommands *GameCommandis;
+extern class PCommands *GameCommands;
 
 extern class POutpost *Outposts;
 extern class PMultiPart *MultiPartHandler;

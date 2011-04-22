@@ -35,7 +35,7 @@
 #include "main.h"
 
 #include "include/terminal.h"
-#include "msgbuilder.h"
+#include "include/msgbuilder.h"
 
 bool PTerminal::HandleReceiveDB(PClient* nClient, u16 mTerminalSessionId, std::string *nCommandName, std::string *nOptions, u8 nNumOptions, u16 nDBID, u8 nUnknown)
 {

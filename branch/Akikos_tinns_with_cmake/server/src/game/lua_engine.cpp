@@ -28,7 +28,7 @@ CREATION: 13 Oct 2009 Namikon
 */
 
 #include "main.h"
-#include "msgbuilder.h"
+#include "include/msgbuilder.h"
 
 // ******************************************************************
 // ATTENTION  ATTENTION  ATTENTION  ATTENTION  ATTENTION  ATTENTION

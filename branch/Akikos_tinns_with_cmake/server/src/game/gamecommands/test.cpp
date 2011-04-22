@@ -22,61 +22,65 @@
 
 void PCommands::doCmdtest()
 {
-    if (GetArgInt(1) == 1)^M
-    {^M
-        if(ArgC < 5)^M
-            return;^M
-^M
-        PNPC* targetNPC = NULL;^M
-        PNPCWorld* currentNPCWorld = NULL;^M
-        currentNPCWorld = NPCManager->GetWorld( source->GetChar()->GetLocation() );^M
-        if ( currentNPCWorld )^M
-        {^M
-            targetNPC = currentNPCWorld->GetNPC( GetArgInt(2) );^M
-            if(!targetNPC)^M
-                return;^M
-            // @test 15 <npcID> <target_to_attack> <unknown u8 value>^M
-            targetNPC->Attack(GetArgInt(3), (u8)GetArgInt(5), (u8)GetArgInt(4));^M
-        }^M
-    }^M
-    else if (GetArgInt(1) == 2)^M
-    {^M
-        if(ArgC < 3)^M
-            return;^M
-^M
-        int tF1 = GetArgInt(2);^M
-        int tF2 = GetArgInt(3);^M
-        const PDefFaction* tFactionA = NULL;^M
-        const PDefFaction* tFactionB = NULL;^M
-^M
-        if(tF1 > tF2)^M
-        {^M
-            tFactionA = GameDefs->Factions()->GetDef(tF1);^M
-            tFactionB = GameDefs->Factions()->GetDef(tF2);^M
-        }^M
-        else^M
-        {^M
-            tFactionA = GameDefs->Factions()->GetDef(tF2);^M
-            tFactionB = GameDefs->Factions()->GetDef(tF1);^M
-        }^M
-^M
-        if(tFactionA && tFactionB)^M
-        {^M
-            int tRel = -99;^M
-            if(tF1 > tF2)^M
-                tRel = tFactionA->GetRelation(tF2);^M
-            else
-                tRel = tFactionA->GetRelation(tF1);^M
-^M
-            char buff[150];^M
-            snprintf(buff, 150, "Relation between <%s> and <%s> is: %d", tFactionA->GetName().c_str(), tFactionB->GetName().c_str(), tRel);^M
-            Chat->send(source, CHAT_DIRECT, "Relations", buff);^M
-        }^M
-        else^M
-            Chat->send(source, CHAT_DIRECT, "Relations", "Invalid faction");^M
-    }
-    else if(GetArgInt(1) == 2)
+    if (GetArgInt(1) == 1)
     {
+        if(ArgC < 5)
+            return;
+
+        PNPC* targetNPC = NULL;
+        PNPCWorld* currentNPCWorld = NULL;
+        currentNPCWorld = NPCManager->GetWorld( source->GetChar()->GetLocation() );
+        if ( currentNPCWorld )
+        {
+            targetNPC = currentNPCWorld->GetNPC( GetArgInt(2) );
+            if(!targetNPC)
+                return;
+            // @test 15 <npcID> <target_to_attack> <unknown u8 value>
+            targetNPC->Attack(GetArgInt(3), (u8)GetArgInt(5), (u8)GetArgInt(4));
+        }
+    }
+    else if (GetArgInt(1) == 2)
+    {
+        if(ArgC < 3)
+            return;
+
+        int tF1 = GetArgInt(2);
+        int tF2 = GetArgInt(3);
+        const PDefFaction* tFactionA = NULL;
+        const PDefFaction* tFactionB = NULL;
+
+        if(tF1 > tF2)
+        {
+            tFactionA = GameDefs->Factions()->GetDef(tF1);
+            tFactionB = GameDefs->Factions()->GetDef(tF2);
+        }
+        else
+        {
+            tFactionA = GameDefs->Factions()->GetDef(tF2);
+            tFactionB = GameDefs->Factions()->GetDef(tF1);
+        }
+
+        if(tFactionA && tFactionB)
+        {
+            int tRel = -99;
+            if(tF1 > tF2)
+                tRel = tFactionA->GetRelation(tF2);
+            else
+                tRel = tFactionA->GetRelation(tF1);
+
+            char buff[150];
+            snprintf(buff, 150, "Relation between <%s> and <%s> is: %d", tFactionA->GetName().c_str(), tFactionB->GetName().c_str(), tRel);
+            Chat->send(source, CHAT_DIRECT, "Relations", buff);
+        }
+        else
+            Chat->send(source, CHAT_DIRECT, "Relations", "Invalid faction");
+    }
+
+
+
+
+
+
     /*
         u8 val1 = 0;
         u8 val2 = 0;
@@ -92,7 +96,7 @@ void PCommands::doCmdtest()
             SyntaxError = true;
         }
 
-		if(IsArgNumeric(1) == false)
+        if(IsArgNumeric(1) == false)
             SyntaxError = true;
         if(IsArgNumeric(2) == false)
             SyntaxError = true;
@@ -138,30 +142,30 @@ void PCommands::doCmdtest()
 
         PMessage* tmpMsg = new PMessage(29);
         *tmpMsg << (u8)0x13;
-       *tmpMsg << (u16)0x0000;
-       *tmpMsg << (u16)0x0000;
-       *tmpMsg << (u8)0x16; // Message length
-       *tmpMsg << (u8)0x03;
-       *tmpMsg << (u16)0x0000;
-       *tmpMsg << (u8)0x1b;
-       *tmpMsg << (u8)0x00;
-       *tmpMsg << (u8)0x10;
-       *tmpMsg << (u8)0x00;
-       *tmpMsg << (u8)0x80;
-       *tmpMsg << (u8)0x19;
-       *tmpMsg << (u8)0x55;
-       *tmpMsg << (u8)0x74;
-       *tmpMsg << (u8)0x80;
-       *tmpMsg << (u8)0x82;
-       *tmpMsg << (u8)0xc2;
-       *tmpMsg << (u8)0x84;
-       *tmpMsg << (u8)val1;
-       *tmpMsg << (u8)val2;
-       *tmpMsg << (u8)val3;
-       *tmpMsg << (u16)val4;
-       *tmpMsg << (u16)val5;
-    // *tmpMsg << (u8)0x69;
-    // *tmpMsg << (u8)0x00;
+    	*tmpMsg << (u16)0x0000;
+    	*tmpMsg << (u16)0x0000;
+    	*tmpMsg << (u8)0x16; // Message length
+    	*tmpMsg << (u8)0x03;
+    	*tmpMsg << (u16)0x0000;
+    	*tmpMsg << (u8)0x1b;
+    	*tmpMsg << (u8)0x00;
+    	*tmpMsg << (u8)0x10;
+    	*tmpMsg << (u8)0x00;
+    	*tmpMsg << (u8)0x80;
+    	*tmpMsg << (u8)0x19;
+    	*tmpMsg << (u8)0x55;
+    	*tmpMsg << (u8)0x74;
+    	*tmpMsg << (u8)0x80;
+    	*tmpMsg << (u8)0x82;
+    	*tmpMsg << (u8)0xc2;
+    	*tmpMsg << (u8)0x84;
+    	*tmpMsg << (u8)val1;
+    	*tmpMsg << (u8)val2;
+    	*tmpMsg << (u8)val3;
+    	*tmpMsg << (u16)val4;
+    	*tmpMsg << (u16)val5;
+    //	*tmpMsg << (u8)0x69;
+    //	*tmpMsg << (u8)0x00;
 
         ClientManager->UDPBroadcast(tmpMsg, source);
 
@@ -175,13 +179,13 @@ void PCommands::doCmdtest()
         if(IsArgNumeric(1) == false)
             SyntaxError = true;
 
-		if(SyntaxError == true)
+        if(SyntaxError == true)
         {
             Chat->send(source, CHAT_DIRECT, "Usage", "@test <id>");
             return;
         }
 
-		u16 itemID;
+        u16 itemID;
         char effStr[128];
         PMessage* tmpMsg;
 
@@ -200,9 +204,9 @@ void PCommands::doCmdtest()
         u8 Stack = 0;
 
         bool SyntaxError = false;
-		if(ArgC < 3
+        if(ArgC < 3)
         {
-			SyntaxError = true;
+            SyntaxError = true;
         }
         else
         {
@@ -233,7 +237,7 @@ void PCommands::doCmdtest()
             }
 
             if(IsArgNumeric(3) == true)
-			{
+            {
                 Stack = (u8)GetArgInt(3);
                 if(Stack == 0)
                 {
@@ -245,40 +249,39 @@ void PCommands::doCmdtest()
                 SyntaxError = true;
             }
         }
-
         if(SyntaxError == true)
         {
             Chat->send(source, CHAT_DIRECT, "Usage", "@test <itemID> <quality> <itemID>");
             return;
         }
-
         PMessage* tmpMsg = new PMessage(29);
         source->IncreaseUDP_ID();
         source->IncreaseTransactionID();
 
         *tmpMsg << (u8)0x13;
-       *tmpMsg << (u16)source->GetUDP_ID();
-       *tmpMsg << (u16)source->GetSessionID();
-       *tmpMsg << (u8)0x16; // Message length
-       *tmpMsg << (u8)0x03;
-       *tmpMsg << (u16)source->GetUDP_ID();
-       *tmpMsg << (u8)0x1f;
-       *tmpMsg << (u16)source->GetLocalID();
-       *tmpMsg << (u8)0x25; // ??
-       *tmpMsg << (u8)0x13; // ??
+    	*tmpMsg << (u16)source->GetUDP_ID();
+    	*tmpMsg << (u16)source->GetSessionID();
+    	*tmpMsg << (u8)0x16; // Message length
+    	*tmpMsg << (u8)0x03;
+    	*tmpMsg << (u16)source->GetUDP_ID();
+    	*tmpMsg << (u8)0x1f;
+    	*tmpMsg << (u16)source->GetLocalID();
+    	*tmpMsg << (u8)0x25; // ??
+    	*tmpMsg << (u8)0x13; // ??
         *tmpMsg << (u16)source->GetTransactionID();
-       *tmpMsg << (u8)0x18; // ??
-       *tmpMsg << (u8)0x03; // ??
-       *tmpMsg << (u8)0x01; // ??
-       *tmpMsg << (u8)0x00; // ??
-       *tmpMsg << (u8)0x05; // ??
-       *tmpMsg << (u8)0x00; // ??
-       *tmpMsg << ItemToSpawn;
-       *tmpMsg << (u8)0x02; // ??
-       *tmpMsg << (u8)0x01; // ??
-       *tmpMsg << Quality;
-       *tmpMsg << Stack;
+    	*tmpMsg << (u8)0x18; // ??
+    	*tmpMsg << (u8)0x03; // ??
+    	*tmpMsg << (u8)0x01; // ??
+    	*tmpMsg << (u8)0x00; // ??
+    	*tmpMsg << (u8)0x05; // ??
+    	*tmpMsg << (u8)0x00; // ??
+    	*tmpMsg << ItemToSpawn;
+    	*tmpMsg << (u8)0x02; // ??
+    	*tmpMsg << (u8)0x01; // ??
+    	*tmpMsg << Quality;
+    	*tmpMsg << Stack;
 
-    source->SendUDPMessage(tmpMsg);
-    */
+
+        source->SendUDPMessage(tmpMsg);
+        */
 }

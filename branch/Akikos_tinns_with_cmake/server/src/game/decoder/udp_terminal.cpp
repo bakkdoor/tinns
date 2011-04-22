@@ -336,7 +336,6 @@ PUdpMsgAnalyser* PUdpTryAccessDB::Analyse()
   ( *TmpMsg ) >> mDBId; // variable, increments => DB ID. Look in several terminal .tsc files, ENV(DBID) it is!
   ( *TmpMsg ) >> Unknown3; // constant ? => Size of Options!
   ( *TmpMsg ) >> mCommandName; // null terminated string
-}
 
   while (( TmpMsg->GetNextByteOffset() < mDecodeData->Sub0x13StartNext ) && ( mOptionsCount < mMaxOptions ) )
   {
@@ -354,7 +353,7 @@ PUdpMsgAnalyser* PUdpTryAccessDB::Analyse()
 
   mDecodeData->mState = DECODE_ACTION_READY | DECODE_FINISHED;
   return this;
-
+}
 
 bool PUdpTryAccessDB::DoAction()
 {

@@ -231,7 +231,7 @@ PChar::PChar()
   mJailed = false;
 
   mDialogNPC = 0;
-  mCurrentDialogNode = 0
+  mCurrentDialogNode = 0;
 
   Skill = new PSkillHandler();
   mBuddyList = NULL;
@@ -241,7 +241,7 @@ PChar::PChar()
   //Gets overwritten as soon as the first PingPacket arrives
   mActiveChatChannels = 262144;
   mClanLevel = 0;
-  mClanID = 0
+  mClanID = 0;
 }
 
 PChar::~PChar()

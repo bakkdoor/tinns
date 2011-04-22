@@ -49,7 +49,7 @@ class PInfoServer
         enum {
             s_id,
             s_name,
-            s_wanaddr
+            s_wanaddr,
             s_port,
             s_players,
             s_lastupdate,

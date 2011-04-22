@@ -29,7 +29,7 @@ REASON: - creation
 
 
 #include "main.h"
-#include "npctemplate.h"
+#include "include/npctemplate.h"
 
 PNPCTemplate::PNPCTemplate()
 {
