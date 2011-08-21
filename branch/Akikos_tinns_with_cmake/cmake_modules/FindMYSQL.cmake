@@ -1,6 +1,6 @@
 find_path (MYSQL_INCLUDE_DIR mysql.h /usr/include/mysql)
 
-find_library (MYSQL_LIBRARY NAMES mysqlclient PATH /usr/lib)
+find_library (MYSQL_LIBRARY NAMES mysqlclient PATHS /usr/lib64 /usr/lib)
 
 if (MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY)
 	set (MYSQL_FOUND TRUE)

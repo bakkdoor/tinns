@@ -1,6 +1,6 @@
 find_path (PTHREAD_INCLUDE_DIR pthread.h /usr/include)
 
-find_library (PTHREAD_LIBRARY NAMES pthread PATH /usr/lib)
+find_library (PTHREAD_LIBRARY NAMES pthread PATHS /usr/lib64 /usr/lib)
 
 if (PTHREAD_INCLUDE_DIR AND PTHREAD_LIBRARY)
 	set (PTHREAD_FOUND TRUE)

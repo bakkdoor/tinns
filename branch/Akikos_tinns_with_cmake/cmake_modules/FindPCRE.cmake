@@ -1,6 +1,6 @@
 find_path (PCRE_INCLUDE_DIR pcre.h /usr/include)
 
-find_library (PCRE_LIBRARY NAMES pcre PATH /usr/lib)
+find_library (PCRE_LIBRARY NAMES pcre PATHS /usr/lib64 /usr/lib)
 
 if (PCRE_INCLUDE_DIR AND PCRE_LIBRARY)
 	set (PCRE_FOUND TRUE)

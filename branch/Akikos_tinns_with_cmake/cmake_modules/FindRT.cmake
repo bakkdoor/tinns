@@ -1,6 +1,6 @@
 find_path (RT_INCLUDE_DIR time.h /usr/include)
 
-find_library (RT_LIBRARY NAMES rt PATH /usr/lib)
+find_library (RT_LIBRARY NAMES rt PATHS /usr/lib64 /usr/lib)
 
 if (RT_INCLUDE_DIR AND RT_LIBRARY)
 	set (RT_FOUND TRUE)
