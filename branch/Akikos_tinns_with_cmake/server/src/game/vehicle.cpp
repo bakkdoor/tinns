@@ -453,7 +453,7 @@ PSpawnedVehicle* PSpawnedVehicles::SpawnVehicle( PVehicleInformation const* nVhc
     }
     if ( mNextFreeHint == nSize )
     {
-      mSpawnedVehicles.push_back( NULL );
+      mSpawnedVehicles.push_back( static_cast<PSpawnedVehicle *>(NULL) );
     }
 
     if ( mNextFreeHint < mMaxLocalVhc )

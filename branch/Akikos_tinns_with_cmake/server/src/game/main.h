@@ -80,7 +80,12 @@
 #include "include/console.h"
 
 // MySQL Support
+#ifdef MYSQL_INC_DIR
+#include <mysql/mysql.h>
+#else
 #include <mysql.h>
+#endif
+
 #include "include/sql.h"
 
 #include "include/config.h"

@@ -45,7 +45,12 @@
 #include "include/netcode.h"
 
 // MySQL Support
+#ifdef MYSQL_INC_DIR
+#include <mysql/mysql.h>
+#else
 #include <mysql.h>
+#endif
+
 #include "sql.h"
 #include "include/console.h"
 #include "include/config.h"

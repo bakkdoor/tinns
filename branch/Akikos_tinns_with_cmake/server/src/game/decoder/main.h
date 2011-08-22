@@ -62,7 +62,12 @@
 #include "include/filesystem.h"
 
 // MySQL Support // shouldn't be needed as DB-objects access class should do that
+#ifdef MYSQL_INC_DIR
+#include <mysql/mysql.h>
+#else
 #include <mysql.h>
+#endif
+
 #include "include/sql.h"
 
 #include "include/skill.h"

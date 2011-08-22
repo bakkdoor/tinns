@@ -183,7 +183,7 @@ bool PContainer::AddEntry( PContainerEntry* NewEntry, u8 nSlotId )
   if ( IsSlotAllowed( nSlotId ) )
   {
     for ( u8 i = mContContent->size(); i <= nSlotId; ++i ) // Extend as needed
-      mContContent->push_back( NULL );
+      mContContent->push_back( static_cast<PContainerEntry*>(NULL) );
     if ( mContContent->at( nSlotId ) )
     {
       Console->Print( RED, BLACK, "[Warning] PContainer::AddEntry: Target entry already %d in use !!!", nSlotId );
@@ -685,7 +685,7 @@ bool PContainer2DWorkaround::AddEntry( PContainerEntry* tEntry, u8 nSlotId )
     if ( FindValid2DPos( tEntry ) )
     {
       for ( u8 i = mContContent->size(); i <= nSlotId; ++i ) // Extend as needed
-        mContContent->push_back( NULL );
+        mContContent->push_back( static_cast<PContainerEntry *>(NULL) );
       if ( mContContent->at( nSlotId ) )
       {
         Console->Print( RED, BLACK, "[Warning] PContainer2DWorkaround::AddEntry: Target entry already %d in use !!!", nSlotId );
