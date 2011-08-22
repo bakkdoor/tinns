@@ -62,7 +62,7 @@
 #include "include/filesystem.h"
 
 // MySQL Support // shouldn't be needed as DB-objects access class should do that
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "include/sql.h"
 
 #include "include/skill.h"
@@ -88,8 +88,6 @@
 #include "include/outpost.h"
 #include "include/multipart.h"
 #include "include/terminal.h"
-
-using namespace std;
 
 #endif
 

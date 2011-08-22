@@ -58,17 +58,17 @@ void PCommands::doCmdrawf()
         return;
     }
 
-    ifstream::pos_type size;
+    std::ifstream::pos_type size;
     char *buffer;
 
-    ifstream hexdump (file_to_send, ios::in|ios::binary|ios::ate);
+    std::ifstream hexdump (file_to_send, std::ios::in | std::ios::binary | std::ios::ate);
     if (hexdump.is_open())
     {
         if (gDevDebug) Console->Print("IngameCommand: Sending packet file %s", file_to_send);
 
         size = hexdump.tellg();
         buffer = new char [size];
-        hexdump.seekg (0, ios::beg);
+        hexdump.seekg (0, std::ios::beg);
 
         hexdump.read (buffer, size);
         hexdump.close();

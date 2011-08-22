@@ -400,7 +400,7 @@ bool PPatchServer::HandleFileRequests(PClient *Client, PPatchState *State, const
 
 u32 PPatchServer::StartPatch(PPatchState *State)
 {
-	/*std::*/stringstream path;
+	std::stringstream path;
 	char patchname[13];
 	snprintf(patchname, 13, "sp%06d.pat", State->mCurrentPatch);
 	path << Config->GetOption("patches_path") << "/" << patchname << '\0';

@@ -51,7 +51,5 @@
 #include "include/misc.h"
 #include "globals.h"
 
-using namespace std;
-
 #endif
 

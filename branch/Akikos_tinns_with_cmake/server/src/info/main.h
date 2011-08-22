@@ -45,7 +45,7 @@
 #include "include/netcode.h"
 
 // MySQL Support
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "sql.h"
 #include "include/console.h"
 #include "include/config.h"
@@ -55,8 +55,5 @@
 #include "infoserver.h"
 #include "include/misc.h"
 #include "globals.h"
-
-
-using namespace std;
 
 #endif

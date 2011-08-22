@@ -52,11 +52,9 @@
 #include <cstdlib>
 #include <iostream>
 
-using namespace std;
-
 int main(int argc, char **argv)
 {
-        string targetdir;
+	std::string targetdir;
 	FILE *f;
 
         if(argc == 2)
@@ -96,11 +94,11 @@ int main(int argc, char **argv)
 		
                 fclose(f);
 
-                cout << rev << endl;
+                std::cout << rev << std::endl;
         }
 	else
 	{
-		cout << "0" << endl;
+		std::cout << "0" << std::endl;
 	}
 	return(0);
 }

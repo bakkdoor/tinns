@@ -40,7 +40,7 @@ typedef struct // A single chunk of any multipart sequence
     PMessage* smChunk;
 } s_MessageChunk;
 
-typedef vector<s_MessageChunk> vecMsgChunk; // The vector of an specific multipart sequence, containing all chunks
+typedef std::vector<s_MessageChunk> vecMsgChunk; // The vector of an specific multipart sequence, containing all chunks
 typedef struct
 {
     time_t smTimeStamp;      // To keep track of sequence's lifetimer
@@ -49,7 +49,7 @@ typedef struct
     PClient *smClient;      // Required to call terminal class
 } s_SequenceEntry;
 
-typedef map<u8, s_SequenceEntry> PMultipartMap; // Map of all vectors, indexed by sequencenumber <u8>
+typedef std::map<u8, s_SequenceEntry> PMultipartMap; // Map of all vectors, indexed by sequencenumber <u8>
 
 
 class PMultiPart

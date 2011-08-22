@@ -172,11 +172,11 @@ bool PNPC::SQL_Load()
         if(t_npc->GetDialogScript().length() > 3)
         {
             size_t tfound;
-            string t_dialogscript = t_npc->GetDialogScript();
-            string t_replacechr ("\"");
+            std::string t_dialogscript = t_npc->GetDialogScript();
+            std::string t_replacechr ("\"");
 
             tfound = t_dialogscript.find(t_replacechr);
-            while(tfound != string::npos)
+            while(tfound != std::string::npos)
             {
                 t_dialogscript.replace(tfound, 1, " ");
                 tfound = t_dialogscript.find( t_replacechr, tfound +1 );
@@ -203,8 +203,8 @@ bool PNPC::LoadLUAScript()
 {
     u32 tFileLen = 0;
     PFile* fLua = NULL;
-    string tLuaFile = "";
-    string tHDRFile = "";
+    std::string tLuaFile = "";
+    std::string tHDRFile = "";
 
     // Load LUA script and include the correct header file
     // based in mDialogScript

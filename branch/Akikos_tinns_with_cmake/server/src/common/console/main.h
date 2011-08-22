@@ -42,7 +42,5 @@
 #include "include/types.h"
 #include "include/console.h"
 
-using namespace std;
-
 #endif
 

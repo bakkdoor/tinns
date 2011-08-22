@@ -1,4 +1,4 @@
-find_path (MYSQL_INCLUDE_DIR mysql.h /usr/include/mysql)
+find_path (MYSQL_INCLUDE_DIR mysql.h /usr/include)
 
 find_library (MYSQL_LIBRARY NAMES mysqlclient PATHS /usr/lib64 /usr/lib)
 

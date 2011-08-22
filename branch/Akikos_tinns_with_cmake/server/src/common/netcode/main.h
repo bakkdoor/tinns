@@ -48,8 +48,6 @@
 #include "include/console.h"
 #include "include/config.h"
 
-using namespace std;
-
 /*
 static const int RECVBUFFERSIZE = 4096;
 static const int SENDBUFFERSIZE = 4096;

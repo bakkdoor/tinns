@@ -157,7 +157,7 @@ void ServerSocket::update()
     // copy fd_sets from main-set to temp. read-set
     m_ReadSetTCP = m_MainSetGlobal;
 
-    fdMax = max(m_FdMaxTCP, m_FdMaxUDP);
+    fdMax = std::max(m_FdMaxTCP, m_FdMaxUDP);
     
     //FD_ZERO(&m_ReadSetTCP);
 	//FD_SET (m_ListenerTCP, &m_ReadSetTCP);

@@ -45,8 +45,6 @@
 #include "include/console.h"
 #include "include/misc.h"
 
-using namespace std;
-
 // Better change that to a static members
 extern class PConsole* Console;
 

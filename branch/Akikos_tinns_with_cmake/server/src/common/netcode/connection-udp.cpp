@@ -406,7 +406,7 @@ const u8* ConnectionUDP::read(int* size)
     }
     else
     {
-        *size=min(*size, (s32)_size);
+        *size = std::min(*size, (s32)_size);
     }
 
     u8 const* ptr = tmpMsg->GetMessageData() + tmpMsg->GetNextByteOffset();

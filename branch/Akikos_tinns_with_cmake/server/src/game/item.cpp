@@ -125,7 +125,7 @@ u8 PItem::TakeFromStack(u8 ItemNb)
   u8 retreivedItems = 0;
   if (mStackable)
   {
-	retreivedItems = min(mStackSize, ItemNb);
+	retreivedItems = std::min(mStackSize, ItemNb);
 	mStackSize -= retreivedItems;
   }
   return retreivedItems; 

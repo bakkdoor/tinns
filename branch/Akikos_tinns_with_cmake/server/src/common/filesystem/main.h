@@ -47,8 +47,6 @@
 
 #include "include/filesystem.h"
 
-using namespace std;
-
 // Better change that to a static members
 extern class PConsole* Console;
 //extern class PConfig* Config;

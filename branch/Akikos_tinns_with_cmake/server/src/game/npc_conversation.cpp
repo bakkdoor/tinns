@@ -287,7 +287,7 @@ void PNPC::StartConversation( PClient* nClient )
             if(mVectItemsInShop.size() > 0)
             {
                 Console->Print("Using Vector shopping list");
-                vector <stShopListEntry>::iterator it;
+                std::vector<stShopListEntry>::iterator it;
                 for(it = mVectItemsInShop.begin(); it < mVectItemsInShop.end(); it++)
                     ContentListAddItem(ContentList, (*it).ItemID, (*it).Price, false);
             }

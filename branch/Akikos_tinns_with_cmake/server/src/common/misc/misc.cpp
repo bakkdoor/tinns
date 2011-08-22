@@ -101,10 +101,10 @@ void CleanUpString(std::string *nString)
     if(nString->length() > 3)
     {
         size_t tfound;
-        string t_replacechr ("\"");
+        std::string t_replacechr ("\"");
 
         tfound = nString->find(t_replacechr);
-        while(tfound != string::npos)
+        while(tfound != std::string::npos)
         {
             nString->replace(tfound, 1, " ");
             tfound = nString->find( t_replacechr, tfound +1 );
@@ -191,7 +191,7 @@ void LTrim( char *t )
 void LTrim( std::string *stString )
 {
   unsigned int i;       //Count VAR
-  string buf;      //Temp String VAR
+  std::string buf;      //Temp String VAR
 
   if ( !stString->length() ) return;    //If The Length Is 0
 

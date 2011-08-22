@@ -192,7 +192,7 @@ PMessage* PMsgBuilder::BuildCharHelloMsg( PClient* nClient )
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildReqNPCScriptAnswerMsg( u32 nInfoId, string* nNPCScript )
+PMessage* PMsgBuilder::BuildReqNPCScriptAnswerMsg( u32 nInfoId, std::string *nNPCScript )
  {
     PMessage* tmpMsg;
  
@@ -231,7 +231,7 @@ PMessage* PMsgBuilder::BuildYouGotEmailsMsg( PClient* nClient, u8 nMailCount )
     return tmpMsg;
  }
  
-PMessage* PMsgBuilder::BuildReceiveDBAnswerMsg( PClient* nClient, PMessage* nResultBuffer, std::string* nCommandName, u16 nNumRows, u16 nNumFields)
+PMessage* PMsgBuilder::BuildReceiveDBAnswerMsg( PClient* nClient, PMessage* nResultBuffer, std::string *nCommandName, u16 nNumRows, u16 nNumFields)
  {
     PMessage* tmpMsg = new PMessage();
 /*    nClient->IncreaseUDP_ID();
@@ -1242,7 +1242,7 @@ PMessage* PMsgBuilder::BuildZoningTCPReadyMsg()
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildSendZoneTCPMsg( u32 nLocation, std::string* nWorldName )
+PMessage* PMsgBuilder::BuildSendZoneTCPMsg( u32 nLocation, std::string *nWorldName )
 {
     PMessage* tmpMsg = new PMessage( 14 + nWorldName->size() );
 
@@ -1502,7 +1502,7 @@ PMessage* PMsgBuilder::BuildSubskillIncMsg( PClient* nClient, u8 nSubskill, u16 
 }
  */
 // NPC Dialog. Start dialog with NPC
-PMessage* PMsgBuilder::BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, string* nDialogScript  )
+PMessage* PMsgBuilder::BuildNPCStartDialogMsg( PClient* nClient, u32 nNPCWorldID, std::string *nDialogScript  )
  {
     PMessage* tmpMsg = new PMessage();
     nClient->IncreaseUDP_ID();
@@ -1627,7 +1627,7 @@ PMessage* PMsgBuilder::BuildNPCShoppingListMsg( PClient* nClient, PMessage* nCon
 // ==========================
 PMessage* PMsgBuilder::BuildNPCSingleInfoMsg( PClient* nClient, u32 nWorldID, u16 nTypeID, u16 nClothing,
 u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nUnknown,
-u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
+u16 nTraderID, std::string *nAngleStr, std::string *nNpcName, std::string *nCustomName)
 // Initial NPC Packet that defines how the NPC look, etc
  {
 //    u8 tMsgLen = 29 + nNpcName->size() + nAngleStr->size() + nCustomName->size();
@@ -1665,7 +1665,7 @@ u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
  
 PMessage* PMsgBuilder::BuildNPCMassInfoMsg( u32 nWorldID, u16 nTypeID, u16 nClothing,
 u16 nNameID, u16 nPosY, u16 nPosZ, u16 nPosX, u16 nHealth,
-u16 nTraderID, string* nAngleStr, string* nNpcName, string* nCustomName)
+u16 nTraderID, std::string *nAngleStr, std::string *nNpcName, std::string *nCustomName)
 // Initial NPC Packet that defines how the NPC look, etc
  {
 //    u8 tMsgLen = 29 + nNpcName->size() + nAngleStr->size() + nCustomName->size();
@@ -2965,7 +2965,7 @@ PMessage* PMsgBuilder::BuildRemoveWorldObjectMsg( u32 nWOID )
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildDBRequestStatusMsg( PClient* nClient, std::string* nCommandName, u8 nStatus, u16 nErrCode )
+PMessage* PMsgBuilder::BuildDBRequestStatusMsg( PClient* nClient, std::string *nCommandName, u8 nStatus, u16 nErrCode )
 {
     PMessage* tmpMsg = new PMessage( 32 );
     nClient->IncreaseUDP_ID();
@@ -2988,7 +2988,7 @@ PMessage* PMsgBuilder::BuildDBRequestStatusMsg( PClient* nClient, std::string* n
     return tmpMsg;
 }
 
-PMessage* PMsgBuilder::BuildDBAnswerMsg( PClient* nClient, std::string* nCommandName, std::string* nAnswerData, u16 nRows, u16 nCols )
+PMessage* PMsgBuilder::BuildDBAnswerMsg( PClient* nClient, std::string *nCommandName, std::string *nAnswerData, u16 nRows, u16 nCols )
 {
     u8 i, j, k;
     PMessage* tmpMsg = new PMessage( 32 );

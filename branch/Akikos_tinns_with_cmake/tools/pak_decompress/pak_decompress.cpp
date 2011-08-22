@@ -45,17 +45,14 @@
 		- ideas for a compression tool
 */
 
-
-#include <stdio.h>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 #include <zlib.h>
-#include <assert.h>
-#include <string.h>
 
 #define CHUNK 262144
-
-using namespace std;
 
 int inf(FILE *source, FILE *dest, bool details)
 {
@@ -79,7 +76,7 @@ int inf(FILE *source, FILE *dest, bool details)
 	check = fgetc(source);
 	if(check == 'x')
 	{
-		if(details == true) cout << "Found zLibfile" << endl;
+		if(details == true) std::cout << "Found zLibfile" << std::endl;
 		fseek(source, 0, SEEK_SET);
 	}
 	else
@@ -88,12 +85,12 @@ int inf(FILE *source, FILE *dest, bool details)
 		check = fgetc(source);
 		if(check == 'x')
 		{
-			if(details == true) cout << "Found Neocron file" << endl;
+			if(details == true) std::cout << "Found Neocron file" << std::endl;
 			fseek(source, 16, SEEK_SET);
 		}
 		else
 		{
-			if(details == true) cout << "Error: No compatible file!" << endl;
+			if(details == true) std::cout << "Error: No compatible file!" << std::endl;
 			return -3;
 		}
 	}
@@ -187,7 +184,7 @@ int main(int argc, char **argv) {
 		dst = argv[2];
 	}
 	else {
-		cout << "Usage: pak_decompress source <dest != source> <detailedoutput 1/0>" << std::endl;
+		std::cout << "Usage: pak_decompress source <dest != source> <detailedoutput 1/0>" << std::endl;
 		return(0);
 	}
 	if(argc == 4)
@@ -201,12 +198,12 @@ int main(int argc, char **argv) {
 
 	if(inFile == NULL)
 	{
-		cout << "Cannot open InFile" << endl;
+		std::cout << "Cannot open InFile" << std::endl;
 		return(-1);
 	}
 	if(outFile == NULL)
 	{
-		cout << "Cannot open OutFile" << endl;
+		std::cout << "Cannot open OutFile" << std::endl;
 		return(-2);
 	}
 	ret = inf(inFile, outFile, details);
@@ -222,17 +219,17 @@ int main(int argc, char **argv) {
 	
 	if(ret == Z_OK && details == true)
 	{
-		cout << "bytes read:        " << inSize << std::endl;
-		cout << "bytes written:     " << outSize << std::endl;
-		cout << "compression ratio: " << (100-((float)inSize/(float)outSize*100)) << "%" << std::endl;
+		std::cout << "bytes read:        " << inSize << std::endl;
+		std::cout << "bytes written:     " << outSize << std::endl;
+		std::cout << "compression ratio: " << (100-((float)inSize/(float)outSize*100)) << "%" << std::endl;
 	}
 	else if(ret == Z_OK && details == false)
 	{
-		cout << "[OK]    " << src.c_str() << endl;
+		std::cout << "[OK]    " << src.c_str() << std::endl;
 	}
 	else if(ret != Z_OK && details == false)
 	{
-		cout << "[ERROR] " << src.c_str() << endl;
+		std::cout << "[ERROR] " << src.c_str() << std::endl;
 	}
 
 	return(ret);

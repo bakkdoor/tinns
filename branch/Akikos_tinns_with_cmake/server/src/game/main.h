@@ -80,7 +80,7 @@
 #include "include/console.h"
 
 // MySQL Support
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "include/sql.h"
 
 #include "include/config.h"
@@ -109,8 +109,6 @@
 #include "include/chat.h"
 #include "include/commands.h"
 #include "include/clientmanager.h"
-
-using namespace std;
 
 #endif
 

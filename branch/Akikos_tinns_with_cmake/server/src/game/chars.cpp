@@ -1175,7 +1175,7 @@ bool PChars::AddChar( PChar* nChar )
   if ( !nChar )
     return false;
 
-  mLastID = max( mLastID, nChar->GetID() );
+  mLastID = std::max( mLastID, nChar->GetID() );
   if ( mChars.insert( std::make_pair( nChar->GetID(), nChar ) ).second )
   {
     if ( gDevDebug )

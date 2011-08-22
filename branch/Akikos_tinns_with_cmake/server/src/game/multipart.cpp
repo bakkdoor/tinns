@@ -200,6 +200,6 @@ void PMultiPart::AddMultiPartChunk(PClient *nClient, PMessage *nChunk, u16 nChun
         tSeq.smClient = nClient;
 
         // Finally, push that into our map
-        MsgMap.insert(make_pair(nSequence, tSeq));
+        MsgMap.insert(std::make_pair(nSequence, tSeq));
     }
 }

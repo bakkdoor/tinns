@@ -59,8 +59,8 @@ private:
     u8        mUnknown2c;
     u16       mTradeID;  //mUnknown3; //00 00 ?
     u16       mUnknown4; //04 00 ?
-    string    mActorName;
-    string    mAngle;
+    std::string    mActorName;
+    std::string    mAngle;
 
     /* // Not sure about that. Commented out until someone finds out how to deal with those "extra" informations
     f32 mWaypoint1_Y;
@@ -143,11 +143,11 @@ public:
     {
         return mUnknown4;
     };
-    inline string GetActorName() const
+    inline std::string GetActorName() const
     {
         return mActorName;
     };
-    inline string GetAngle() const
+    inline std::string GetAngle() const
     {
         return mAngle;
     };
@@ -209,11 +209,11 @@ public:
     {
         mUnknown4 = nValue;
     };
-    inline void SetActorName( string nValue )
+    inline void SetActorName( std::string nValue )
     {
         mActorName = nValue;
     };
-    inline void SetAngle( string nValue )
+    inline void SetAngle( std::string nValue )
     {
         mAngle = nValue;
     };

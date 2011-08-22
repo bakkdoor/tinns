@@ -92,7 +92,5 @@
 #define DEF_VEHICLESEATS "defs/vehiclesits.def"
 #define WRLD_WORLDFILE "worlds/worlds.ini"
 
-using namespace std;
-
 #endif
 

@@ -74,7 +74,5 @@
 
 #include "gamedefs.h"
 
-using namespace std;
-
 #endif
 

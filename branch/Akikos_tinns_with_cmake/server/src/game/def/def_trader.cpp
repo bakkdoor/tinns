@@ -73,7 +73,7 @@ bool PDefTrader::LoadFromDef( PTokenList *Tokens )
         {
           if(Idx & 1)
           {
-            if(i->find_first_of('/') == string::npos) // Take care of the "1/5" format
+            if(i->find_first_of('/') == std::string::npos) // Take care of the "1/5" format
             {
               mItemPriceScale[int((Idx - 6) / 2)] = atof( i->c_str() );
             }

@@ -45,8 +45,6 @@
 
 #include "include/console.h"
 
-using namespace std;
-
 // Better change that to a static members if needed (PrintPacket could be outdated, or put in netcode)
 extern class PConsole* Console;
 

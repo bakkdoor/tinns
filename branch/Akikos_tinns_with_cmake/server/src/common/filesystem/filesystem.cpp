@@ -99,7 +99,7 @@ bool PFile::ReadUnpakData(std::FILE *F, u32 Size, u32 UncSize)
 
 int PFile::Read(void *Dest, u32 DestSize)
 {
-	int m = min(mDataSize-mDataOffs, DestSize);
+	int m = std::min(mDataSize-mDataOffs, DestSize);
 	if (m <= 0)
 	  return 0;
 	memcpy(Dest, &mBuffer[mDataOffs], m);
@@ -109,7 +109,7 @@ int PFile::Read(void *Dest, u32 DestSize)
 
 void PFile::Seek(u32 Offset)
 {
-	mDataOffs = min(mDataSize-1, Offset);
+	mDataOffs = std::min(mDataSize-1, Offset);
 }
 
 std::string PFile::ReadString()
@@ -207,11 +207,11 @@ void PFileSystem::ClearCache()
   }
 }
 
-void splitpath(const string &file, string &path, string &name, string &ext)
+void splitpath(const std::string& file, std::string& path, std::string& name, std::string& ext)
 {
 	unsigned long pos = file.rfind(DELIM);
 
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 	{
 		path = "";
 		name = file;
@@ -223,7 +223,7 @@ void splitpath(const string &file, string &path, string &name, string &ext)
 	}
 
 	pos = name.rfind('.');
-	if (pos == string::npos)
+	if (pos == std::string::npos)
 	{
 		ext = "";
 	}
@@ -234,7 +234,7 @@ void splitpath(const string &file, string &path, string &name, string &ext)
 	}
 }
 
-PFile *PFileSystem::Open(const std::string &Package, const char *File, std::string BasePath)
+PFile *PFileSystem::Open(const std::string& Package, const char *File, std::string BasePath)
 {
 	      std::string name = "";
         std::string ext = "";
@@ -270,7 +270,7 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File, std::stri
               path = path.substr(2, path.length() -2);
            }
            unsigned long pos = path.find(DELIM);
-          	if (pos == string::npos)
+          	if (pos == std::string::npos)
           	{
           		pak2 = path;
           		name2 = name;
@@ -280,7 +280,7 @@ PFile *PFileSystem::Open(const std::string &Package, const char *File, std::stri
           		pak2 = path.substr(0, pos);
           		name2 = path.substr(pos + 1) + '\\' + name;
           		pos = name2.find(DELIM);
-          		while (pos != string::npos)
+          		while (pos != std::string::npos)
           		{
           		  name2[pos] = '\\';
           		  pos = name2.find(DELIM);

@@ -39,7 +39,7 @@
 
 bool PTerminal::HandleUpdateDB(PClient* nClient, u16 mTerminalSessionId, std::string *nCommandName, std::string *nOptions, u8 nNumOptions, u16 nDBID, u8 nUnknown)
 {
-    ostringstream tLongSQL; // omg my eyes... Stringstream is one of the worst inventions ever! Stick with printf syntax!!111
+    std::ostringstream tLongSQL; // omg my eyes... Stringstream is one of the worst inventions ever! Stick with printf syntax!!111
     char tShortSQL[1024]; // Use this for small updates that will not exceed 1kb
     memset(tShortSQL, '\0', 1024);
     bool tSuccess = false;

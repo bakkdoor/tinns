@@ -55,7 +55,7 @@
 */
 
 // MySQL Support // shouldn't be needed as DB-objects access class should do that
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include "include/sql.h"
 
 #include "include/filesystem.h"
@@ -81,8 +81,6 @@
 #include "include/worlds.h"
 #include "include/worldactors.h"
 #include "include/npc.h"
-
-using namespace std;
 
 #endif
 

@@ -430,8 +430,8 @@ bool PWorldDatParser::ProcessSec2NPCEntry( u32 nSize )
 {
     PSec2NPC_EntryPart1         tNPCPartA;
     PSec2NPC_EntryPart2         tNPCPartB;
-    string                      tActorName;
-    string                      tAngle;
+    std::string                 tActorName;
+    std::string                 tAngle;
     char                        tStrBuffer[64];
 
     u32 tSizeOfA = sizeof(tNPCPartA);
