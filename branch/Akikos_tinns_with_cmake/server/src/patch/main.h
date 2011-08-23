@@ -40,15 +40,15 @@
 
 //tinns includes
 #include "include/types.h"
-#include "include/netcode.h"
+#include "common/netcode.h"
 
-#include "include/console.h"
-#include "include/config.h"
-#include "include/filesystem.h"
+#include "common/console.h"
+#include "common/config.h"
+#include "common/filesystem.h"
 #include "client.h"
 #include "server.h"
 #include "patchserver.h"
-#include "include/misc.h"
+#include "common/misc.h"
 #include "globals.h"
 
 #endif

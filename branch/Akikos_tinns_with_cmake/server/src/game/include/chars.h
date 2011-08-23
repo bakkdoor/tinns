@@ -61,7 +61,7 @@
 #include "inventory.h"
 #include "buddylist.h"
 #include "genreplist.h"
-#include "include/regex++.h"
+#include "common/regex++.h"
 class PVhcAccessRequestList;
 
 enum PSeatType

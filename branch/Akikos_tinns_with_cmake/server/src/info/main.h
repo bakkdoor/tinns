@@ -42,7 +42,7 @@
 
 //tinns includes
 #include "include/types.h"
-#include "include/netcode.h"
+#include "common/netcode.h"
 
 // MySQL Support
 #ifdef MYSQL_INC_DIR
@@ -52,13 +52,13 @@
 #endif
 
 #include "sql.h"
-#include "include/console.h"
-#include "include/config.h"
+#include "common/console.h"
+#include "common/config.h"
 #include "accounts.h"
 #include "client.h"
 #include "server.h"
 #include "infoserver.h"
-#include "include/misc.h"
+#include "common/misc.h"
 #include "globals.h"
 
 #endif

@@ -44,4 +44,4 @@ add_executable        (gameserver
                        vehicle.cpp vhcaccessrequest.cpp worldactors.cpp worlddatatemplate.cpp worlds.cpp zoning.cpp
                        outpost.cpp npc_ai.cpp npctemplate.cpp)
 
-target_link_libraries (gameserver tinns ${MYSQL_LIBRARY} ${PCRE_LIBRARY} ${ZLIB_LIBRARY} ${RT_LIBRARY} ${LUA_LIBRARY})
+target_link_libraries (gameserver common ${MYSQL_LIBRARY} ${PCRE_LIBRARY} ${ZLIB_LIBRARY} ${RT_LIBRARY} ${LUA_LIBRARY})

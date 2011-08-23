@@ -1,21 +1,6 @@
-//
-// regex.hpp 1.0 Copyright (c) 2003 Peter Petersen (pp@on-time.de)
-// Simple C++ wrapper for PCRE
-//
-// This source file is freeware. You may use it for any purpose without
-// restriction except that the copyright notice as the top of this file as
-// well as this paragraph may not be removed or altered.
-//
+#include "common/regex++.h"
 
-
-
-/*
-	MODIFIED: 09 Jun 2009 Akiko
-	REASON: - adjusted includes for new buildsystem
-*/
-
-#include <string.h>
-#include "include/regex++.h"
+#include <cstring>
 
 RegEx::RegEx(const char * regex, int options)
 {

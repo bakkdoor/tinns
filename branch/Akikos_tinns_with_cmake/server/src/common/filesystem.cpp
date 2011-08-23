@@ -1,68 +1,11 @@
-/*
-	TinNS (TinNS is not a Neocron Server)
-	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
+#include "common/filesystem.h"
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
+#include <sstream>
+#include <cstring>
+#include <zlib.h>
+#include "common/console.h"
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-	02110-1301, USA.
-*/
-
-
-
-/*
-  filesystem.cpp
-  
-  Authors:
-  - Akiko
-  - Namikon
-  - someone else?
-  
-  MODIFIED: Unknown date / Unknown author
-  REASON: - initial release by unknown
-  MODIFIED: 25 Dec 2005 Namikon
-  REASON: - Added GPL
-  MODIFIED: 31 August 2005 Akiko
-  REASON: - modified the path handling of the open function
-  MODIFIED: 29 Sep 2006 Hammag
-  REASON: - added a safety check on read size in PFile::Read       
-  MODIFIED: 07 Oct 2006 Hammag
-  REASON: - Fixed package reading to enable access to "subdirectories" in archive,
-              as well as translation from unix to dos path separator for in-archive search       
-          - Removed the "file not found" message the PFileSystem::Open() was issuing in the corresponding case.
-              A NULL returned for PFile* is sufficient for the calling proc to manage the situation.
-          - Changed file search in archives to case-insensitive
-   
-  MODIFIED: 08 Oct 2006 Hammag
-  REASON: - added ClearCache() methode to clear pak cache when .pak access is not used anymore
-
-*/
-
-#include "main.h"
-
-/*
-	implements file access semantics for Neocron .pak files
-	supports both single packed files and file archives
-
-	how neocron files are accessed:
-	- if path/filename.ext exists, the file is opened
-	- (else) if path/pak_filename.ext exists, the file is opened
-	- (else) if an archive named path_head.pak exists, path_tail\filename.ext is opened from the archive
-	      here path is split in path_head\path_tail
-	
-*/
-const s8 DELIM = '/';
+const int8_t DELIM = '/';
 
 PFile::PFile()
 {
@@ -74,7 +17,7 @@ PFile::~PFile()
 {
 }
 
-bool PFile::ReadData(std::FILE *F, u32 Size)
+bool PFile::ReadData(FILE *F, uint32_t Size)
 {
 	mBuffer.reserve(Size);
 	std::fread(&mBuffer[0], 1, Size, F);
@@ -82,9 +25,9 @@ bool PFile::ReadData(std::FILE *F, u32 Size)
 	return true;
 }
 
-bool PFile::ReadUnpakData(std::FILE *F, u32 Size, u32 UncSize)
+bool PFile::ReadUnpakData(FILE *F, uint32_t Size, uint32_t UncSize)
 {
-	std::vector<u8> temp;
+	std::vector<int8_t> temp;
 	temp.reserve(Size);
 	mBuffer.reserve(UncSize);
 
@@ -92,12 +35,12 @@ bool PFile::ReadUnpakData(std::FILE *F, u32 Size, u32 UncSize)
 
 	unsigned long us=UncSize;
 	unsigned long s=Size;
-	uncompress(&mBuffer[0], &us, &temp[0], s);
+	uncompress(reinterpret_cast<Bytef *>(&mBuffer[0]), &us, reinterpret_cast<const Bytef *>(&temp[0]), s);
 	mDataSize=us;
 	return true;
 }
 
-int PFile::Read(void *Dest, u32 DestSize)
+int PFile::Read(void *Dest, uint32_t DestSize)
 {
 	int m = std::min(mDataSize-mDataOffs, DestSize);
 	if (m <= 0)
@@ -107,7 +50,7 @@ int PFile::Read(void *Dest, u32 DestSize)
 	return m;
 }
 
-void PFile::Seek(u32 Offset)
+void PFile::Seek(uint32_t Offset)
 {
 	mDataOffs = std::min(mDataSize-1, Offset);
 }
@@ -149,7 +92,7 @@ PFileSystem::~PFileSystem()
 	}
 }
 
-PFileSystem::PPakFileList* PFileSystem::CachePak(const std::string &Pak, std::FILE *F)
+PFileSystem::PPakFileList* PFileSystem::CachePak(const std::string &Pak, FILE *F)
 {
 	PPakFiles::iterator n = mPaks.find(Pak);
 	if(n != mPaks.end())

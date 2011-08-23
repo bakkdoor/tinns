@@ -1,45 +1,9 @@
+#include "common/message.h"
 
-/*
-	TinNS (TinNS is not a Neocron Server)
-	Copyright (C) 2005 Linux Addicted Community
-	maintainer Akiko <akiko@gmx.org>
+#include <cstring>
+#include "common/console.h"
 
-	This program is free software; you can redistribute it and/or
-	modify it under the terms of the GNU General Public License
-	as published by the Free Software Foundation; either version 2
-	of the License, or (at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-	02110-1301, USA.
-*/
-
-
-
-/*
-	message.cpp - a data message & message pool class for tcp and udp connections (and maybe more later)
-
-
-	Authors:
-	- Hammag
-
-	MODIFIED: 15 jul 2006 Hammag
-	REASON: - Creation
-*/
-
-/*
-#include "../game/main.h"
-#include "message.h"
-*/
-#include "main.h"
-
-const u16 PMessage::smMsgSizes[] = {MESSAGE_SIZES_LIST};
+const uint16_t PMessage::smMsgSizes[] = {MESSAGE_SIZES_LIST};
 PMsgData* PMessage::smMsgPoolHead[] = {MESSAGE_POOL_INIT};
 int PMessage::smMsgPoolCount[] = {MESSAGE_POOL_COUNT_INIT};
 int PMessage::smMsgCount = 0;
@@ -55,7 +19,7 @@ void PMessage::CheckMsgCount()
   }
 }
 
-PMessage::PMessage(u16 nRequestedSize)
+PMessage::PMessage(uint16_t nRequestedSize)
 {
   GetMsgBuffer(nRequestedSize);
   mUsedSize = 0;
@@ -73,7 +37,7 @@ PMessage::PMessage(PMessage& nMessage)
   ++smMsgCount;
 }
 
-void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used larger unused buffer
+void PMessage::GetMsgBuffer(uint16_t nRequestedSize) //no optimisation to try to used larger unused buffer
 {
 //Console->Print("Allocating buffer for size %d", nRequestedSize);
   for (mPoolId = 0; mPoolId < MESSAGE_SIZES_NB; mPoolId++)
@@ -94,7 +58,7 @@ void PMessage::GetMsgBuffer(u16 nRequestedSize) //no optimisation to try to used
 //Console->Print("Pool Empty, creating new buffers");
     mData = new PMsgData[MESSAGE_ALLOC_NB];
     for (int i = 0; i < MESSAGE_ALLOC_NB; i++)
-      mData[i].mBuffer = new u8[mMaxSize];
+      mData[i].mBuffer = new uint8_t[mMaxSize];
 
     if (MESSAGE_ALLOC_NB > 1)
     {
@@ -121,7 +85,7 @@ void PMessage::ReleaseMsgBuffer()
 //Console->Print("Buffer %08xd back in pool %d.", mData, mPoolId);
 }
 
-void PMessage::CheckAndExtend(u16 nRequestedSize) // This is SIZE checked, not max OFFSET
+void PMessage::CheckAndExtend(uint16_t nRequestedSize) // This is SIZE checked, not max OFFSET
 {
 //Console->Print("Checking size: max %d, req %d", mMaxSize, nRequestedSize);
   if (nRequestedSize > mMaxSize)
@@ -135,14 +99,14 @@ void PMessage::CheckAndExtend(u16 nRequestedSize) // This is SIZE checked, not m
   }
 }
 
-void PMessage::SetNextByteOffset(u16 nPos)
+void PMessage::SetNextByteOffset(uint16_t nPos)
 {
   if (nPos >= mMaxSize)
     CheckAndExtend(nPos+1);
   mNextByteOffset = nPos;
 }
 
-void PMessage::ForceSize(u16 nUsedSize)
+void PMessage::ForceSize(uint16_t nUsedSize)
 {
   if (nUsedSize > mMaxSize)
     CheckAndExtend(nUsedSize);
@@ -150,16 +114,16 @@ void PMessage::ForceSize(u16 nUsedSize)
 }
 
 // Writing methods
-u8* PMessage::GetMessageDataPointer(u16 nUsedSize)
+uint8_t* PMessage::GetMessageDataPointer(uint16_t nUsedSize)
 {
   if (nUsedSize > mMaxSize)
     CheckAndExtend(nUsedSize);
   if (nUsedSize > mUsedSize)
     mUsedSize = nUsedSize;
-  return (u8*) (mData->mBuffer);
+  return (uint8_t*) (mData->mBuffer);
 }
 
-PMessage& PMessage::Fill(u8 Value, u16 StartOffset, u16 FillSize)
+PMessage& PMessage::Fill(uint8_t Value, uint16_t StartOffset, uint16_t FillSize)
 {
   if (FillSize == 0)
     FillSize = mMaxSize;
@@ -171,9 +135,9 @@ PMessage& PMessage::Fill(u8 Value, u16 StartOffset, u16 FillSize)
   return *this;
 }
 
-PMessage& PMessage::Write(const void* nData, u16 nLength)
+PMessage& PMessage::Write(const void* nData, uint16_t nLength)
 {
-  u16 tmpOffset = mNextByteOffset + nLength;
+  uint16_t tmpOffset = mNextByteOffset + nLength;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   memcpy((void*)(mData->mBuffer + mNextByteOffset), (void*)nData, (size_t)nLength);
@@ -184,7 +148,7 @@ PMessage& PMessage::Write(const void* nData, u16 nLength)
 
 PMessage& PMessage::operator << (PMessage& nMessage)
 {
-  u16 tmpOffset = mNextByteOffset + nMessage.mUsedSize;
+  uint16_t tmpOffset = mNextByteOffset + nMessage.mUsedSize;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   memcpy((void*)(mData->mBuffer + mNextByteOffset), (void*)(nMessage.mData->mBuffer), (size_t)(nMessage.mUsedSize));
@@ -196,7 +160,7 @@ PMessage& PMessage::operator << (PMessage& nMessage)
 PMessage& PMessage::operator << (const char* nString) //for null terminated string ! Copies includes ending \0
 {
   int StringL = strlen(nString)+1;
-  u16 tmpOffset = mNextByteOffset + StringL;
+  uint16_t tmpOffset = mNextByteOffset + StringL;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   memcpy((void*)(mData->mBuffer + mNextByteOffset), (void*)nString, (size_t)StringL);
@@ -205,9 +169,9 @@ PMessage& PMessage::operator << (const char* nString) //for null terminated stri
   return *this;
 }
 
-PMessage& PMessage::operator << (u8 nU8)
+PMessage& PMessage::operator << (uint8_t nU8)
 {
-  u16 tmpOffset = mNextByteOffset+1;
+  uint16_t tmpOffset = mNextByteOffset+1;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   mData->mBuffer[mNextByteOffset] = nU8;
@@ -216,43 +180,43 @@ PMessage& PMessage::operator << (u8 nU8)
   return *this;
 }
 
-PMessage& PMessage::operator << (u16 nU16)
+PMessage& PMessage::operator << (uint16_t nU16)
 {
-  u16 tmpOffset = mNextByteOffset+2;
+  uint16_t tmpOffset = mNextByteOffset+2;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
-  *(u16*)(mData->mBuffer + mNextByteOffset) = nU16;
+  *(uint16_t*)(mData->mBuffer + mNextByteOffset) = nU16;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
   return *this;
 }
 
-PMessage& PMessage::operator << (u32 nU32)
+PMessage& PMessage::operator << (uint32_t nU32)
 {
-  u16 tmpOffset = mNextByteOffset+4;
+  uint16_t tmpOffset = mNextByteOffset+4;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
-  *(u32*)(mData->mBuffer + mNextByteOffset) = nU32;
+  *(uint32_t*)(mData->mBuffer + mNextByteOffset) = nU32;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
   return *this;
 }
 
-PMessage& PMessage::operator << (f32 nF32)
+PMessage& PMessage::operator << (float nF32)
 {
-  u16 tmpOffset = mNextByteOffset+4;
+  uint16_t tmpOffset = mNextByteOffset+4;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
-  *(f32*)(mData->mBuffer + mNextByteOffset) = nF32;
+  *(float*)(mData->mBuffer + mNextByteOffset) = nF32;
   mNextByteOffset = tmpOffset;
   UpdateUsedSize();
   return *this;
 }
 
 // Mixt methods
-u8& PMessage::U8Data(u16 nOffset)
+uint8_t& PMessage::U8Data(uint16_t nOffset)
 {
-  u16 tmpOffset = nOffset+1;
+  uint16_t tmpOffset = nOffset+1;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   if (tmpOffset > mUsedSize)
@@ -261,37 +225,37 @@ u8& PMessage::U8Data(u16 nOffset)
   return mData->mBuffer[nOffset];
 }
 
-u16& PMessage::U16Data(u16 nOffset)
+uint16_t& PMessage::U16Data(uint16_t nOffset)
 {
-  u16 tmpOffset = nOffset+2;
+  uint16_t tmpOffset = nOffset+2;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   if (tmpOffset > mUsedSize)
     mUsedSize = tmpOffset;
 
-  return *(u16*)(mData->mBuffer + nOffset);
+  return *(uint16_t*)(mData->mBuffer + nOffset);
 }
 
-u32& PMessage::U32Data(u16 nOffset)
+uint32_t& PMessage::U32Data(uint16_t nOffset)
 {
-  u16 tmpOffset = nOffset+4;
+  uint16_t tmpOffset = nOffset+4;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   if (tmpOffset > mUsedSize)
     mUsedSize = tmpOffset;
 
-  return *(u32*)(mData->mBuffer + nOffset);
+  return *(uint32_t*)(mData->mBuffer + nOffset);
 }
 
-f32& PMessage::F32Data(u16 nOffset)
+float& PMessage::F32Data(uint16_t nOffset)
 {
-  u16 tmpOffset = nOffset+4;
+  uint16_t tmpOffset = nOffset+4;
   if (tmpOffset > mMaxSize)
     CheckAndExtend(tmpOffset);
   if (tmpOffset > mUsedSize)
     mUsedSize = tmpOffset;
 
-  return *(f32*)(mData->mBuffer + nOffset);
+  return *(float*)(mData->mBuffer + nOffset);
 }
 
 PMessage& PMessage::operator = (PMessage& nMessage)
@@ -313,12 +277,12 @@ PMessage& PMessage::operator = (PMessage& nMessage)
 }
 
 // Reading methods
-PMessage* PMessage::GetChunk(u16 StartOffset, u16 ChunkSize, u16 ChunkNumber)
+PMessage* PMessage::GetChunk(uint16_t StartOffset, uint16_t ChunkSize, uint16_t ChunkNumber)
 {
-  u16 ReqStartOffset = StartOffset + ChunkNumber * ChunkSize;
+  uint16_t ReqStartOffset = StartOffset + ChunkNumber * ChunkSize;
   if (ReqStartOffset >= mUsedSize)
     return NULL;
-  u16 RealChunkSize = (ChunkSize < mUsedSize - ReqStartOffset) ? ChunkSize : mUsedSize - ReqStartOffset;
+  uint16_t RealChunkSize = (ChunkSize < mUsedSize - ReqStartOffset) ? ChunkSize : mUsedSize - ReqStartOffset;
 
   PMessage* MsgChunk = new PMessage(RealChunkSize);
   memcpy((void*)(MsgChunk->mData->mBuffer), (void*)(mData->mBuffer + ReqStartOffset), (size_t)RealChunkSize);
@@ -330,7 +294,7 @@ PMessage* PMessage::GetChunk(u16 StartOffset, u16 ChunkSize, u16 ChunkNumber)
 PMessage& PMessage::operator >> (std::string& nString) //read up to null or EOM
 {
   int i;
-  u8* StringStart = mData->mBuffer + mNextByteOffset;
+  uint8_t* StringStart = mData->mBuffer + mNextByteOffset;
   char* FinalStringStart;
   for (i = 0; mNextByteOffset + i < mUsedSize; i++)
   {
@@ -355,34 +319,34 @@ PMessage& PMessage::operator >> (std::string& nString) //read up to null or EOM
   return *this;
 }
 
-PMessage& PMessage::operator >> (u8& nU8)
+PMessage& PMessage::operator >> (uint8_t& nU8)
 {
-  u16 tmpOffset = mNextByteOffset+1;
+  uint16_t tmpOffset = mNextByteOffset+1;
   nU8 = (tmpOffset > mUsedSize) ? 0 : mData->mBuffer[mNextByteOffset];
   mNextByteOffset = tmpOffset;
   return *this;
 }
 
-PMessage& PMessage::operator >> (u16& nU16)
+PMessage& PMessage::operator >> (uint16_t& nU16)
 {
-  u16 tmpOffset = mNextByteOffset+2;
-  nU16 = (tmpOffset > mUsedSize) ? 0 : *(u16*)(mData->mBuffer + mNextByteOffset);
+  uint16_t tmpOffset = mNextByteOffset+2;
+  nU16 = (tmpOffset > mUsedSize) ? 0 : *(uint16_t*)(mData->mBuffer + mNextByteOffset);
   mNextByteOffset = tmpOffset;
   return *this;
 }
 
-PMessage& PMessage::operator >> (u32& nU32)
+PMessage& PMessage::operator >> (uint32_t& nU32)
 {
-  u16 tmpOffset = mNextByteOffset+4;
-  nU32 = (tmpOffset > mUsedSize) ? 0 : *(u32*)(mData->mBuffer + mNextByteOffset);
+  uint16_t tmpOffset = mNextByteOffset+4;
+  nU32 = (tmpOffset > mUsedSize) ? 0 : *(uint32_t*)(mData->mBuffer + mNextByteOffset);
   mNextByteOffset = tmpOffset;
   return *this;
 }
 
-PMessage& PMessage::operator >> (f32& nF32)
+PMessage& PMessage::operator >> (float& nF32)
 {
-  u16 tmpOffset = mNextByteOffset+4;
-  nF32 = (tmpOffset > mUsedSize) ? 0 : *(f32*)(mData->mBuffer + mNextByteOffset);
+  uint16_t tmpOffset = mNextByteOffset+4;
+  nF32 = (tmpOffset > mUsedSize) ? 0 : *(float*)(mData->mBuffer + mNextByteOffset);
   mNextByteOffset = tmpOffset;
   return *this;
 }
@@ -453,7 +417,7 @@ void PMessage::Dump()
     sAsciiDump = "";
     for (j = 0; (j < 16) && ((i+j) < mUsedSize); j++)
     {
-      snprintf(tmpStr, 64, " %02hx",(u8)tmpBuff[i+j]);
+      snprintf(tmpStr, 64, " %02hx",(uint8_t)tmpBuff[i+j]);
       sDump += tmpStr;
       sAsciiDump += ((tmpBuff[i+j]>'\x19') && (tmpBuff[i+j]<'\x7F')) ? tmpBuff[i+j] : '.';
     }
@@ -470,6 +434,6 @@ void PMessage::DumpHead(char* nComment)
   char* tmpBuff = (char*) GetMessageData();
 
   Console->Print("%s T:%02hx UID:%04hx UHID:%04hx Fnct:%02hx Seq:%04hx Cmd:%02hx Cmd2:%02hx Cmd3:%02hx",
-      nComment, (u8)tmpBuff[0], *(u16*)&tmpBuff[1], *(u16*)&tmpBuff[3], (u8)tmpBuff[6], *(u16*)&tmpBuff[7], (u8)tmpBuff[9], (u8)tmpBuff[10], (u8)tmpBuff[12] );
+      nComment, (uint8_t)tmpBuff[0], *(uint16_t*)&tmpBuff[1], *(uint16_t*)&tmpBuff[3], (uint8_t)tmpBuff[6], *(uint16_t*)&tmpBuff[7], (uint8_t)tmpBuff[9], (uint8_t)tmpBuff[10], (uint8_t)tmpBuff[12] );
 
 }

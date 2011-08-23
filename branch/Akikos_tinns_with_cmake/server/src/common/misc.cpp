@@ -1,68 +1,24 @@
-/*
- TinNS (TinNS is not a Neocron Server)
- Copyright (C) 2005 Linux Addicted Community
- maintainer Akiko <akiko@gmx.org>
+#include "common/misc.h"
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
+#include <cstring>
+#include <cstdarg>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "common/console.h"
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- 02110-1301, USA.
-*/
-
-
-
-/*
-        misc.cpp
-
-        Authors:
-        - Akiko
-        - Namikon
-        - someone else?
-
-        MODIFIED: Unknown date / Unknown author
-        REASON: - initial release by unknown
-
-        MODIFIED: 25 Dec 2005 Namikon
-        REASON: - Added GPL
-        MODIFIED: 07 Jan 2006 Namikon
-        REASON: - Added function to trim a string/char
-       MODIFIED: 01 Jul 2006 hammag
-       REASON: - add IPlongToString()
-       MODIFIED: 27 Aug 2006 Hammag
-       REASON: - Merged misc function from all 3 servers
-       MODIFIED: 11 Dec 2006 Hammag
-       REASON: - Commented out GetSVNRev() that is not used anymore
-
-       TODO:
-               - Put Network Utility function in a netutility.cpp in netcode
-               - Put GetAccessString() as a static member of Accounts class
-*/
-
-#include "main.h"
-
-u32 IPStringToDWord( const char *IP )
+uint32_t IPStringToDWord( const char *IP )
 {
   if ( !IP )
     return 0;
 
-  u32 a, b, c, d;
+  uint32_t a, b, c, d;
   if ( std::sscanf( IP, "%u.%u.%u.%u", &a, &b, &c, &d ) != 4 )
     return 0;
 
   return ( d << 24 ) | ( c << 16 ) | ( b << 8 ) | a;
 }
 
-char *IPlongToString( const u32 IP )
+char *IPlongToString( const uint32_t IP )
 {
   struct in_addr in_IP;
 
@@ -73,7 +29,7 @@ char *IPlongToString( const u32 IP )
 //NEW
 //this function allow to print a packet
 //just for tracking values
-void PrintPacket( u8 *Packet, int PacketSize )
+void PrintPacket( uint8_t *Packet, int PacketSize )
 {
   Console->Print( "inside : PrintPacket" );
 
@@ -82,10 +38,10 @@ void PrintPacket( u8 *Packet, int PacketSize )
   {
     Console->Print( "PacketSize is : %d", PacketSize );
 
-    u8 value = 0;
+    uint8_t value = 0;
     for ( int i = 0;i < PacketSize;i++ )
     {
-      value = *( u8* ) & Packet[i];
+      value = *( uint8_t* ) & Packet[i];
       Console->Print( "value[%d] is : %x", i, value );
     }
   }
@@ -245,10 +201,10 @@ std::string &Ssprintf( const char *fmt, ... )
   return tmpstring;
 }
 
-u16 DistanceApprox( const u16 x1, const u16 y1, const u16 z1, const u16 x2, const u16 y2, const u16 z2 )
+uint16_t DistanceApprox( const uint16_t x1, const uint16_t y1, const uint16_t z1, const uint16_t x2, const uint16_t y2, const uint16_t z2 )
 {
-  u16 DX, DY, DZ, DMax;
-  u32 DMinSum, DApprox;
+  uint16_t DX, DY, DZ, DMax;
+  uint32_t DMinSum, DApprox;
 
   DMax = DX = ( x1 >= x2 ) ? x1 - x2 : x2 - x1;
   DMinSum = DY = ( y1 >= y2 ) ? y1 - y2 : y2 - y1;
@@ -268,7 +224,7 @@ u16 DistanceApprox( const u16 x1, const u16 y1, const u16 z1, const u16 x2, cons
     DMinSum += DZ;
   }
 
-  DApprox = DMax + ( u32 )( 0.33 * DMinSum );
+  DApprox = DMax + ( uint32_t )( 0.33 * DMinSum );
   if ( DApprox > 65535 )
   {
     DApprox = 65535;
@@ -287,27 +243,27 @@ u16 DistanceApprox( const u16 x1, const u16 y1, const u16 z1, const u16 x2, cons
   if (fDist != 0) Console->Print("Dist: %f\tApprox: %d\tError: %d (%d%)", fDist, DApprox, (int)(DApprox-fDist), (int)(100*(DApprox-fDist)/fDist));
   */
 
-  return ( u16 )DApprox;
+  return ( uint16_t )DApprox;
 }
 
 /*** Portable pseudo-random number generator ***/
 // until native standardized C++ lib support
 
-u32 mInternalRand = 1;
+uint32_t mInternalRand = 1;
 
-void InitRandom( u32 nInitialisationValue )
+void InitRandom( uint32_t nInitialisationValue )
 {
   mInternalRand = nInitialisationValue;
 }
 
-u16 GetRandom( u16 MaxVal, u16 MinVal )
+uint16_t GetRandom( uint16_t MaxVal, uint16_t MinVal )
 {
   mInternalRand = mInternalRand * 1103515245 + 12345; //from rand() manpage
-  return ( u16 )( MinVal + (( mInternalRand >> 16 ) % 32768 % ( MaxVal - MinVal + 1 ) ) );
+  return ( uint16_t )( MinVal + (( mInternalRand >> 16 ) % 32768 % ( MaxVal - MinVal + 1 ) ) );
 }
 
-f32 GetRandomFloat()
+float GetRandomFloat()
 {
   mInternalRand = mInternalRand * 1103515245 + 12345; //from rand() manpage
-  return (( f32 )(( mInternalRand >> 16 ) % 32768 ) / ( f32 )32768 );
+  return (( float )(( mInternalRand >> 16 ) % 32768 ) / ( float )32768 );
 }

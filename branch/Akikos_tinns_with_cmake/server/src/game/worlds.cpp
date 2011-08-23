@@ -32,7 +32,7 @@
 
 #include "main.h"
 
-#include "include/filesystem.h"
+#include "common/filesystem.h"
 #include "include/def_worlds.h"
 #include "include/gamedefs.h"
 #include "include/furnituretemplate.h"

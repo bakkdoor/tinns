@@ -72,12 +72,13 @@
 
 //tinns includes
 #include "include/types.h"
-#include "include/netcode.h"
+#include "common/netcode.h"
 /*
 #include "../gamemonkey/gmMachine.h"
 #include "../gamemonkey/gmCall.h"
 */
-#include "include/console.h"
+#include "common/console.h"
+#include "common/misc.h"
 
 // MySQL Support
 #ifdef MYSQL_INC_DIR
@@ -88,8 +89,8 @@
 
 #include "include/sql.h"
 
-#include "include/config.h"
-#include "include/filesystem.h"
+#include "common/config.h"
+#include "common/filesystem.h"
 #include "include/defparser.h"
 
 #include "include/skill.h"
@@ -97,7 +98,6 @@
 #include "include/accounts.h"
 #include "include/client.h"
 #include "include/server.h"
-#include "include/misc.h"
 #include "include/gameserver.h"
 #include "include/globals.h"
 #include "include/defs.h"

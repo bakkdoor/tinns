@@ -48,14 +48,14 @@
 
 //tinns includes
 #include "include/types.h"
-#include "include/config.h"
+#include "common/config.h"
 
-#include "include/console.h"
-#include "include/misc.h"
+#include "common/console.h"
+#include "common/misc.h"
 
 #include "include/globals.h"
 
-#include "include/filesystem.h"
+#include "common/filesystem.h"
 #include "include/defparser.h"
 #include "include/defs.h"
 

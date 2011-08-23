@@ -1,3 +1,2 @@
-add_library (tinns config/config.cpp console/console.cpp filesystem/filesystem.cpp misc/misc.cpp
-             netcode/serversocket.cpp netcode/udpmanager.cpp netcode/message.cpp netcode/connection-tcp.cpp
-             netcode/connection-udp.cpp regex/regex++.cpp)
+add_library (common config.cpp console.cpp filesystem.cpp misc.cpp message.cpp netcode.cpp
+             regex++.cpp)
