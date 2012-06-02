@@ -5,6 +5,7 @@ set                    (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
 
 set                    (USE_SQLITE3 false CACHE BOOL "Use SQLITE3 instead of MySQL")
 set                    (USE_MYSQL_INCLUDE_DIR false CACHE BOOL "MySQL includes in ../include/mysql/")
+set                    (BOOST_INCLUDE_DIR "/usr/local/boost_1_49_0/")
 
 add_definitions        (-std=c++0x -W -Wall -march=native -mtune=native -O2 -D_THREAD_SAFE -D_REENTRANT)
 
