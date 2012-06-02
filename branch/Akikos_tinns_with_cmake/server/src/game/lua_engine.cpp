@@ -265,7 +265,8 @@ void PLuaEngine::AddScriptResult(int nResult)
 
 PLuaEngine::PLuaEngine()
 {
-    mLua = lua_open();
+	// New lua function 
+    mLua = luaL_newstate();
     mRunning = false;
 }
 
