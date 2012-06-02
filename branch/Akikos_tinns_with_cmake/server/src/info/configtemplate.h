@@ -44,6 +44,9 @@ const char* InfoConfigTemplate[][2] = {
   {"isc_connect_pw", "changeme"},
   {"username_filter", "^[a-z][\\w\\-]{2,14}$"},
   {"password_filter", "^[[:graph:]]{3,15}$"},
+  {"sqlite_databasefile", "infoDB.s3db"},
+  {"database_type", "sqlite"},
+  
   
 // For futur use:
 //  {"max_chars_per_account", "4"},

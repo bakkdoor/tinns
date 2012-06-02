@@ -1,4 +1,4 @@
-include_directories (${TINNS_SOURCE_DIR}/server/src/game)
+include_directories (${TINNS_SOURCE_DIR}/server/src/game ${LUA_INCLUDE_DIR})
 
 add_executable        (gameserver
                       # decoder stuff
