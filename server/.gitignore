@@ -1,0 +1,8 @@
+*.o
+*.flags
+*.dep
+gameserver
+infoserver
+patchserver
+src/lib/libtinns.a
+src/dev-tools/cleandepfile
